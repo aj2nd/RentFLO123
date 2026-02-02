@@ -1,0 +1,54 @@
+Project: RentBro (Fintech Operating System) Instructions: Build the core financial engine for a rent-advance business.
+
+1. Database Schema (The Truth):
+
+Properties: ID, owner_name, tenant_id, monthly_rent, payout_day (e.g., 1st).
+
+Ledger:
+
+id, property_id.
+
+amount_advanced: The rent we fronted the owner.
+
+amount_collected: What the tenant paid us.
+
+status: 'ARREARS' (Tenant hasn't paid), 'SETTLED' (Both sides done), or 'EXPOSED' (We paid owner, tenant hasn't paid us).
+
+2. The 'Manual Payout' Admin Panel:
+
+Create a hidden /admin route.
+
+It must list all owners due for payment today.
+
+Next to each name, a big black button: "MARK AS PAID MANUALLY".
+
+When clicked, it updates the amount_advanced in the DB and triggers a "Payment Successful" notification to the Landlord.
+
+3. The Razorpay Webhook (The Collection):
+
+When a tenant pays via the app, the webhook must find the corresponding Ledger entry and update amount_collected.
+
+If amount_collected >= amount_advanced, mark the property status as 'SETTLED'.
+
+4. Design Language (Steve Jobs / Minimalist):
+
+Font: 'Inter' (Tight tracking).
+
+Colors: Background #000000. Text #FFFFFF.
+
+Contrast: Use high-contrast borders (2px solid white) for buttons.
+
+Owner View: Large text: "₹[Amount] CREDITED TO YOUR BANK".
+
+Tenant View: Large text: "RENT DUE: ₹[Amount]".
+
+Action: Build the Node.js server, PostgreSQL schema, and the Admin 'Manual Payout' toggle first. Stop when the API can successfully 'Mark as Paid' and 'Collect from Tenant'.
+
+The "Head Chef" Secrets for RentBro
+To make this feel like a $100k app, we need to handle these 3 details:
+
+The "Proof of Transfer": In your Admin Panel, when you mark a rent as "Paid Manually," the AI should give you an upload field to attach a screenshot of the bank transfer. This keeps your records 100% audit-proof.
+
+The 5% Calculus: The AI will be instructed to calculate your Service Fee automatically. If rent is ₹20,000, the Admin panel will say: "Transfer ₹19,000 to Owner (5% Fee Retained: ₹1,000)."
+
+The Haptic Success: For the Tenant, paying rent is painful. We make the "Success" screen feel rewarding—explosive minimalist animations (just lines and shapes) to celebrate the completion of their biggest monthly task.
