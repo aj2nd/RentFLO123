@@ -1,4 +1,3 @@
-import { Link } from "wouter";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 
 export default function LandingPage() {
@@ -7,9 +6,9 @@ export default function LandingPage() {
       {/* Nav */}
       <nav className="fixed w-full z-50 px-6 py-6 flex justify-between items-center backdrop-blur-sm border-b border-white/5">
         <div className="text-2xl font-bold tracking-tighter">RentBro.</div>
-        <Link href="/api/login" className="px-6 py-2 bg-white text-black font-medium text-sm hover:bg-zinc-200 transition-colors rounded-none">
+        <a href="/api/login" className="px-6 py-2 bg-white text-black font-medium text-sm hover:bg-zinc-200 transition-colors rounded-none" data-testid="link-login">
           LOGIN
-        </Link>
+        </a>
       </nav>
 
       {/* Hero */}
@@ -27,9 +26,9 @@ export default function LandingPage() {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 pt-8">
-            <Link href="/api/login" className="inline-flex items-center justify-center h-14 px-8 bg-white text-black font-bold text-lg tracking-tight hover:bg-zinc-200 transition-all group rounded-none">
+            <a href="/api/login" className="inline-flex items-center justify-center h-14 px-8 bg-white text-black font-bold text-lg tracking-tight hover:bg-zinc-200 transition-all group rounded-none" data-testid="button-get-started">
               GET STARTED <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
-            </Link>
+            </a>
             <button className="inline-flex items-center justify-center h-14 px-8 border border-zinc-800 text-zinc-400 hover:text-white hover:border-white transition-all font-medium rounded-none">
               VIEW DEMO
             </button>
