@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -39,14 +39,25 @@
 @layer base {
   * {
     @apply border-border;
+    border-radius: 0 !important;
   }
   body {
-    @apply bg-background text-foreground font-sans antialiased selection:bg-white selection:text-black;
+    @apply bg-background text-foreground antialiased selection:bg-white selection:text-black;
+    font-family: 'Inter', system-ui, sans-serif;
     font-feature-settings: "ss01", "ss02", "cv01", "cv02";
   }
   
   h1, h2, h3, h4, h5, h6 {
     @apply tracking-tighter font-medium;
+  }
+  
+  .font-display, .font-serif {
+    font-family: 'Playfair Display', Georgia, serif;
+  }
+  
+  .currency-display {
+    font-family: 'Playfair Display', Georgia, serif;
+    letter-spacing: -0.02em;
   }
 }
 
