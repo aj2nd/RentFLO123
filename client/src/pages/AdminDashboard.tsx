@@ -64,7 +64,7 @@ function FileUpload({ onFileChange, currentValue }: { onFileChange: (dataUrl: st
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm text-white truncate">{fileName || "Receipt uploaded"}</p>
-            <p className="text-xs text-green-500 flex items-center gap-1">
+            <p className="text-xs text-zinc-400 flex items-center gap-1">
               <Check size={12} /> Ready for submission
             </p>
           </div>
@@ -260,7 +260,7 @@ function PayoutRow({ ledger }: { ledger: any }) {
       <div className="mb-4 md:mb-0">
         <div className="flex items-center gap-3 mb-1">
           <h3 className="text-lg font-medium text-white">{ledger.property.address}</h3>
-          <span className="text-xs bg-red-900/30 text-red-500 px-2 py-0.5 border border-red-900/50">
+          <span className="text-xs bg-zinc-800 text-white px-2 py-0.5 border border-zinc-600">
             DUE NOW
           </span>
         </div>
@@ -293,7 +293,7 @@ function PayoutRow({ ledger }: { ledger: any }) {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-zinc-400">Platform Fee (5%)</span>
-                  <span className="text-red-400">- ₹{fee.toLocaleString()}</span>
+                  <span className="text-zinc-400">- ₹{fee.toLocaleString()}</span>
                 </div>
                 <div className="h-px bg-zinc-800 my-2" />
                 <div className="flex justify-between font-bold text-lg">

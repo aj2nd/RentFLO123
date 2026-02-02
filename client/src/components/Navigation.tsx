@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, Users, Home, LogOut, Wallet } from "lucide-react";
+import { LayoutDashboard, Users, Home, LogOut, Wallet, Wrench } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 
 export function Navigation() {
@@ -9,10 +9,10 @@ export function Navigation() {
   const isActive = (path: string) => location === path;
 
   // Simple role simulation for demo purposes based on route
-  // In a real app, this would check user.role
   const isTenantView = location.startsWith("/tenant");
   const isOwnerView = location.startsWith("/owner");
-  const isAdminView = location.startsWith("/admin");
+  const isAdminView = location === "/admin";
+  const isMaintenanceView = location === "/admin/maintenance";
 
   return (
     <nav className="fixed left-0 top-0 h-full w-20 md:w-64 bg-background border-r border-white/10 flex flex-col justify-between py-8 z-50 transition-all duration-300">
@@ -28,6 +28,12 @@ export function Navigation() {
             icon={<LayoutDashboard size={20} />} 
             label="Admin Console" 
             active={isAdminView} 
+          />
+          <NavItem 
+            href="/admin/maintenance" 
+            icon={<Wrench size={20} />} 
+            label="Maintenance" 
+            active={isMaintenanceView} 
           />
           <NavItem 
             href="/owner" 
@@ -47,7 +53,8 @@ export function Navigation() {
       <div className="px-3">
         <button 
           onClick={() => logout()}
-          className="flex items-center gap-4 px-3 py-3 w-full text-zinc-500 hover:text-white hover:bg-zinc-900 rounded-lg transition-all duration-200 group"
+          className="flex items-center gap-4 px-3 py-3 w-full text-zinc-500 hover:text-white hover:bg-zinc-900 transition-all duration-200 group"
+          data-testid="button-logout"
         >
           <LogOut size={20} className="group-hover:translate-x-1 transition-transform" />
           <span className="font-medium hidden md:block">Sign Out</span>
@@ -62,7 +69,7 @@ function NavItem({ href, icon, label, active }: { href: string; icon: React.Reac
     <Link 
       href={href}
       className={`
-        flex items-center gap-4 px-3 py-3 rounded-lg transition-all duration-200
+        flex items-center gap-4 px-3 py-3 transition-all duration-200
         ${active 
           ? "bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.1)]" 
           : "text-zinc-500 hover:text-white hover:bg-zinc-900"
@@ -70,7 +77,7 @@ function NavItem({ href, icon, label, active }: { href: string; icon: React.Reac
       `}
     >
       {icon}
-      <span className="font-medium hidden md:block">{label}</span>
+      <span className="font-medium hidden md:block" style={{ fontFamily: 'Inter, sans-serif' }}>{label}</span>
     </Link>
   );
 }

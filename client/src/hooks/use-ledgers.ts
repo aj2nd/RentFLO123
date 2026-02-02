@@ -91,3 +91,100 @@ export function useCreateOrder() {
     },
   });
 }
+
+// === PARTIAL PAYMENTS ===
+export function usePaymentsByLedger(ledgerId: string) {
+  return useQuery({
+    queryKey: [api.payments.listByLedger.path, ledgerId],
+    queryFn: async () => {
+      const url = buildUrl(api.payments.listByLedger.path, { ledgerId });
+      const res = await fetch(url, { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to fetch payments");
+      return api.payments.listByLedger.responses[200].parse(await res.json());
+    },
+    enabled: !!ledgerId,
+  });
+}
+
+export function useCreatePartialPayment() {
+  return useMutation({
+    mutationFn: async ({ ledgerId, amount }: { ledgerId: string; amount: number }) => {
+      const url = buildUrl(api.payments.create.path, { ledgerId });
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ amount }),
+      });
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || "Failed to create partial payment");
+      }
+      return api.payments.create.responses[200].parse(await res.json());
+    },
+  });
+}
+
+// === MAINTENANCE TICKETS ===
+export function useTickets(propertyId?: string) {
+  return useQuery({
+    queryKey: [api.tickets.list.path, propertyId],
+    queryFn: async () => {
+      const url = propertyId 
+        ? `${api.tickets.list.path}?propertyId=${propertyId}` 
+        : api.tickets.list.path;
+      const res = await fetch(url, { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to fetch tickets");
+      return api.tickets.list.responses[200].parse(await res.json());
+    },
+  });
+}
+
+export function useCreateTicket() {
+  return useMutation({
+    mutationFn: async (data: { propertyId: string; tenantId: string; title: string; description: string; photoUrl?: string }) => {
+      const res = await fetch(api.tickets.create.path, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || "Failed to create ticket");
+      }
+      return api.tickets.create.responses[201].parse(await res.json());
+    },
+  });
+}
+
+export function useResolveTicket() {
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const url = buildUrl(api.tickets.resolve.path, { id });
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      });
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || "Failed to resolve ticket");
+      }
+      return api.tickets.resolve.responses[200].parse(await res.json());
+    },
+  });
+}
+
+export function useTicketCounts(propertyId: string) {
+  return useQuery({
+    queryKey: [api.tickets.countsByProperty.path, propertyId],
+    queryFn: async () => {
+      const url = buildUrl(api.tickets.countsByProperty.path, { id: propertyId });
+      const res = await fetch(url, { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to fetch ticket counts");
+      return api.tickets.countsByProperty.responses[200].parse(await res.json());
+    },
+    enabled: !!propertyId,
+  });
+}

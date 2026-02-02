@@ -43,23 +43,23 @@ export default function LandingPage() {
           <div className="relative z-10 space-y-6">
              <div className="w-full h-40 border border-white/10 bg-black/50 backdrop-blur-md p-6 flex flex-col justify-between group-hover:translate-y-[-5px] transition-transform duration-500">
                <div className="flex justify-between">
-                 <div className="h-2 w-20 bg-zinc-800 rounded-full"></div>
-                 <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse"></div>
+                 <div className="h-2 w-20 bg-zinc-800"></div>
+                 <div className="h-2 w-2 bg-white animate-pulse"></div>
                </div>
                <div className="space-y-2">
-                 <div className="h-10 w-48 bg-white/10 rounded-sm"></div>
-                 <div className="h-3 w-32 bg-zinc-800 rounded-full"></div>
+                 <div className="h-10 w-48 bg-white/10"></div>
+                 <div className="h-3 w-32 bg-zinc-800"></div>
                </div>
              </div>
 
              <div className="w-full h-40 border border-white/10 bg-black/50 backdrop-blur-md p-6 flex flex-col justify-between group-hover:translate-y-[-5px] transition-transform duration-500 delay-100">
                <div className="flex justify-between">
-                 <div className="h-2 w-20 bg-zinc-800 rounded-full"></div>
-                 <div className="h-2 w-2 bg-zinc-800 rounded-full"></div>
+                 <div className="h-2 w-20 bg-zinc-800"></div>
+                 <div className="h-2 w-2 bg-zinc-800"></div>
                </div>
                <div className="space-y-2">
-                 <div className="h-10 w-32 bg-white/10 rounded-sm"></div>
-                 <div className="h-3 w-24 bg-zinc-800 rounded-full"></div>
+                 <div className="h-10 w-32 bg-white/10"></div>
+                 <div className="h-3 w-24 bg-zinc-800"></div>
                </div>
              </div>
              

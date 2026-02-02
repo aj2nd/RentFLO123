@@ -9,6 +9,7 @@ import { Loader2 } from "lucide-react";
 import NotFound from "@/pages/not-found";
 import LandingPage from "@/pages/LandingPage";
 import AdminDashboard from "@/pages/AdminDashboard";
+import AdminMaintenance from "@/pages/AdminMaintenance";
 import OwnerDashboard from "@/pages/OwnerDashboard";
 import TenantDashboard from "@/pages/TenantDashboard";
 import { Navigation } from "@/components/Navigation";
@@ -45,6 +46,9 @@ function Router() {
       {/* Protected Routes */}
       <Route path="/admin">
         <PrivateRoute component={AdminDashboard} />
+      </Route>
+      <Route path="/admin/maintenance">
+        <PrivateRoute component={AdminMaintenance} />
       </Route>
       <Route path="/owner">
         <PrivateRoute component={OwnerDashboard} />

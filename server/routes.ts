@@ -153,12 +153,11 @@ export async function registerRoutes(
     }
   });
 
-  // Razorpay Webhook - Payment Verification
+  // Razorpay Webhook - Payment Verification (handles partial payments)
   app.post('/api/razorpay/webhook', async (req, res) => {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
     
-    // In production, verify signature using Razorpay utility
-    // For now, we trust the webhook call
+    // Verify signature
     const crypto = await import('crypto');
     const expectedSignature = crypto
       .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET || '')
@@ -169,7 +168,6 @@ export async function registerRoutes(
       return res.status(400).json({ message: 'Invalid signature' });
     }
 
-    // Get the order to find the ledger
     try {
       const razorpay = getRazorpay();
       if (!razorpay) {
@@ -180,14 +178,34 @@ export async function registerRoutes(
 
       if (ledgerId) {
         const ledger = await storage.getLedger(ledgerId);
-        if (ledger) {
-          const amountPaid = Number(order.amount) / 100; // Convert from paise
-          const newAmountCollected = (ledger.amountCollected || 0) + amountPaid;
-          const isSettled = newAmountCollected >= (ledger.amountAdvanced || 0);
+        const property = ledger ? await storage.getProperty(ledger.propertyId) : null;
+        
+        if (ledger && property) {
+          const amountPaid = Number(order.amount_paid) / 100; // amount_paid for partial payments
+          
+          // Update or find the payment record
+          const existingPayments = await storage.getPaymentsByLedger(ledgerId);
+          const pendingPayment = existingPayments.find(p => p.razorpayOrderId === razorpay_order_id);
+          
+          if (pendingPayment) {
+            await storage.updatePayment(pendingPayment.id, {
+              razorpayPaymentId: razorpay_payment_id,
+              status: 'SUCCESS',
+            });
+          }
+          
+          // Sum all successful payments for this ledger
+          const allPayments = await storage.getPaymentsByLedger(ledgerId);
+          const totalCollected = allPayments
+            .filter(p => p.status === 'SUCCESS')
+            .reduce((sum, p) => sum + p.amount, 0);
+          
+          // Determine if fully settled (collected >= monthly rent)
+          const isSettled = totalCollected >= property.monthlyRent;
 
           await storage.updateLedger(ledgerId, {
-            amountCollected: newAmountCollected,
-            status: isSettled ? 'SETTLED' : ledger.status,
+            amountCollected: totalCollected,
+            status: isSettled ? 'SETTLED' : (ledger.amountAdvanced > 0 ? 'EXPOSED' : 'ARREARS'),
           });
         }
       }
@@ -242,6 +260,130 @@ export async function registerRoutes(
       };
       
       res.json(stats);
+  });
+
+  // === PARTIAL PAYMENTS (Split Engine) ===
+  
+  // Get payments for a ledger
+  app.get(api.payments.listByLedger.path, async (req, res) => {
+    const { ledgerId } = req.params;
+    const payments = await storage.getPaymentsByLedger(ledgerId);
+    res.json(payments);
+  });
+
+  // Create partial payment with Razorpay
+  app.post(api.payments.create.path, async (req, res) => {
+    const { ledgerId } = req.params;
+    const ledger = await storage.getLedger(ledgerId);
+    if (!ledger) {
+      return res.status(404).json({ message: 'Ledger not found' });
+    }
+
+    const property = await storage.getProperty(ledger.propertyId);
+    if (!property) {
+      return res.status(404).json({ message: 'Property not found' });
+    }
+
+    const razorpay = getRazorpay();
+    if (!razorpay) {
+      return res.status(500).json({ 
+        message: 'Razorpay not configured. Please add RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET to secrets.' 
+      });
+    }
+
+    try {
+      const input = api.payments.create.input.parse(req.body);
+      const amountInPaise = input.amount * 100;
+      
+      // Create Razorpay order with partial_payment enabled
+      const order = await razorpay.orders.create({
+        amount: amountInPaise,
+        currency: 'INR',
+        receipt: `partial_${ledgerId}_${Date.now()}`,
+        partial_payment: true, // CRITICAL: Enable partial payments
+        first_payment_min_amount: 100, // Minimum 1 rupee
+        notes: {
+          ledgerId: ledgerId,
+          propertyId: property.id,
+          monthYear: ledger.monthYear,
+          paymentType: 'partial',
+        }
+      });
+
+      // Create payment record in pending state
+      const payment = await storage.createPayment({
+        ledgerId: ledgerId,
+        amount: input.amount,
+        razorpayOrderId: order.id,
+        status: 'PENDING',
+      });
+
+      res.json({
+        payment,
+        orderId: order.id,
+        amount: order.amount,
+        currency: order.currency,
+        keyId: process.env.RAZORPAY_KEY_ID!,
+      });
+    } catch (err: any) {
+      console.error('Partial payment order creation failed:', err);
+      return res.status(500).json({ 
+        message: 'Failed to create payment order', 
+        error: err.message 
+      });
+    }
+  });
+
+  // === MAINTENANCE TICKETS ===
+  
+  // Get all tickets
+  app.get(api.tickets.list.path, async (req, res) => {
+    const { propertyId, status } = req.query;
+    const tickets = await storage.getTickets(
+      typeof propertyId === 'string' ? propertyId : undefined,
+      typeof status === 'string' ? status : undefined
+    );
+    res.json(tickets);
+  });
+
+  // Create ticket (Tenant)
+  app.post(api.tickets.create.path, async (req, res) => {
+    try {
+      const input = api.tickets.create.input.parse(req.body);
+      const ticket = await storage.createTicket(input);
+      res.status(201).json(ticket);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({
+          message: err.errors[0].message,
+          field: err.errors[0].path.join('.'),
+        });
+      }
+      throw err;
+    }
+  });
+
+  // Resolve ticket (Admin)
+  app.post(api.tickets.resolve.path, async (req, res) => {
+    const { id } = req.params;
+    const ticket = await storage.getTicket(id);
+    if (!ticket) {
+      return res.status(404).json({ message: 'Ticket not found' });
+    }
+
+    const updated = await storage.updateTicket(id, {
+      status: 'RESOLVED',
+      resolvedAt: new Date(),
+      // resolvedBy would come from session in production
+    });
+    res.json(updated);
+  });
+
+  // Get ticket counts by property
+  app.get(api.tickets.countsByProperty.path, async (req, res) => {
+    const { id } = req.params;
+    const counts = await storage.getTicketCountsByProperty(id);
+    res.json(counts);
   });
 
   // Seed Data

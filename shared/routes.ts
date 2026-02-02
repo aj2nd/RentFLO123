@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { insertPropertySchema, insertLedgerSchema, properties, ledgers } from './schema';
+import { insertPropertySchema, insertLedgerSchema, insertMaintenanceTicketSchema, properties, ledgers, payments, maintenanceTickets } from './schema';
 
 // ============================================
 // SHARED ERROR SCHEMAS
@@ -114,7 +114,69 @@ export const api = {
             })
         }
     }
-  }
+  },
+  payments: {
+    listByLedger: {
+      method: 'GET' as const,
+      path: '/api/ledgers/:ledgerId/payments',
+      responses: {
+        200: z.array(z.custom<typeof payments.$inferSelect>()),
+      },
+    },
+    create: {
+      method: 'POST' as const,
+      path: '/api/ledgers/:ledgerId/payments',
+      input: z.object({
+        amount: z.number(), // Amount in rupees (will convert to paise server-side)
+      }),
+      responses: {
+        200: z.object({
+          payment: z.custom<typeof payments.$inferSelect>(),
+          orderId: z.string(),
+          amount: z.number(),
+          currency: z.string(),
+          keyId: z.string(),
+        }),
+        500: errorSchemas.internal,
+      },
+    },
+  },
+  tickets: {
+    list: {
+      method: 'GET' as const,
+      path: '/api/tickets',
+      responses: {
+        200: z.array(z.custom<typeof maintenanceTickets.$inferSelect & { property: typeof properties.$inferSelect }>()),
+      },
+    },
+    create: {
+      method: 'POST' as const,
+      path: '/api/tickets',
+      input: insertMaintenanceTicketSchema,
+      responses: {
+        201: z.custom<typeof maintenanceTickets.$inferSelect>(),
+        400: errorSchemas.validation,
+      },
+    },
+    resolve: {
+      method: 'POST' as const,
+      path: '/api/tickets/:id/resolve',
+      responses: {
+        200: z.custom<typeof maintenanceTickets.$inferSelect>(),
+        404: errorSchemas.notFound,
+      },
+    },
+    countsByProperty: {
+      method: 'GET' as const,
+      path: '/api/properties/:id/ticket-counts',
+      responses: {
+        200: z.object({
+          open: z.number(),
+          resolved: z.number(),
+        }),
+      },
+    },
+  },
 };
 
 // ============================================
