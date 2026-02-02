@@ -45,9 +45,26 @@ Preferred communication style: Simple, everyday language.
 
 ### Recent Changes (Feb 2026)
 - Added role-based routing: Users are automatically redirected to their role-specific dashboard
-- **Tenant Dashboard**: Flexible Payment toggle (Full Only vs Custom amount), Report Issue form with photo uploads
-- **Owner Dashboard**: "RENT CREDITED" displayed in large serif font (Georgia) for recent payouts, Property Health widget with open/resolved ticket counts
-- **Admin Dashboard**: Total Exposure tracker prominently displays financial exposure (Advanced - Collected)
+- **Onboarding Flow**: New users without roles see `/onboarding` with "I AM A LANDLORD" and "I AM A TENANT" role selection buttons
+- **Tenant Dashboard**: 
+  - Flexible Payment toggle (Full Only vs Custom amount)
+  - Report Issue form with photo uploads
+  - "Join My Home" section: Search properties by landlord email, join vacant properties
+  - Recent Activity section showing split payment history
+- **Owner Dashboard**: 
+  - "RENT CREDITED" displayed in large serif font (Georgia) for recent payouts
+  - Property Health widget with open/resolved ticket counts
+  - "Add New Property" modal with address, rent, payout day, and optional tenant email
+  - Recent Activity section showing ledger entries (Rent Advanced/Pending Advance)
+- **Admin Dashboard**: 
+  - Total Exposure tracker prominently displays financial exposure (Advanced - Collected)
+  - Master Property List showing all properties with Occupied/Vacant status badges
+
+### API Endpoints
+- **POST /api/auth/set-role**: Set user role (TENANT/OWNER/ADMIN)
+- **GET /api/auth/user-by-email**: Lookup user by email address
+- **GET /api/properties/by-owner-email**: Get properties by owner's email
+- **POST /api/properties/:id/join**: Tenant joins a vacant property
 
 ### Key Workflows
 1. **Manual Payout (Admin)**: Admin marks owner as paid, uploads proof of transfer screenshot, updates ledger `amountAdvanced`

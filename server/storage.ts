@@ -16,7 +16,9 @@ export interface IStorage {
   // Properties
   getProperties(): Promise<Property[]>;
   getProperty(id: string): Promise<Property | undefined>;
+  getPropertiesByOwnerEmail(email: string): Promise<Property[]>;
   createProperty(property: CreatePropertyRequest): Promise<Property>;
+  updatePropertyTenant(propertyId: string, tenantId: string): Promise<Property | undefined>;
   
   // Ledgers
   getLedgers(propertyId?: string, status?: string): Promise<(Ledger & { property: Property })[]>;
@@ -50,6 +52,25 @@ export class DatabaseStorage implements IStorage {
 
   async createProperty(insertProperty: CreatePropertyRequest): Promise<Property> {
     const [property] = await db.insert(properties).values(insertProperty).returning();
+    return property;
+  }
+
+  async getPropertiesByOwnerEmail(email: string): Promise<Property[]> {
+    const { users } = await import("@shared/schema");
+    const result = await db
+      .select({ property: properties })
+      .from(properties)
+      .innerJoin(users, eq(properties.ownerId, users.id))
+      .where(eq(users.email, email));
+    return result.map(r => r.property);
+  }
+
+  async updatePropertyTenant(propertyId: string, tenantId: string): Promise<Property | undefined> {
+    const [property] = await db
+      .update(properties)
+      .set({ tenantId })
+      .where(eq(properties.id, propertyId))
+      .returning();
     return property;
   }
 

@@ -53,7 +53,7 @@ export default function Onboarding() {
         <Button
           onClick={() => handleRoleSelect("OWNER")}
           disabled={setRoleMutation.isPending}
-          className="h-64 bg-white text-black hover:bg-zinc-200 border-2 border-white rounded-none flex flex-col items-center justify-center gap-6 transition-all hover:scale-[1.02] active:scale-[0.98]"
+          className="h-64 bg-white text-black hover:bg-zinc-200 border-2 border-white rounded-none flex flex-col items-center justify-center gap-6"
           data-testid="button-select-landlord"
         >
           {setRoleMutation.isPending && selectedRole === "OWNER" ? (
@@ -70,7 +70,7 @@ export default function Onboarding() {
         <Button
           onClick={() => handleRoleSelect("TENANT")}
           disabled={setRoleMutation.isPending}
-          className="h-64 bg-black text-white hover:bg-zinc-900 border-2 border-white rounded-none flex flex-col items-center justify-center gap-6 transition-all hover:scale-[1.02] active:scale-[0.98]"
+          className="h-64 bg-black text-white hover:bg-zinc-900 border-2 border-white rounded-none flex flex-col items-center justify-center gap-6"
           data-testid="button-select-tenant"
         >
           {setRoleMutation.isPending && selectedRole === "TENANT" ? (

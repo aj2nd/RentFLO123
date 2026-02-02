@@ -1,11 +1,12 @@
 import { useLedgers, usePayOwner, useAdminDashboard } from "@/hooks/use-ledgers";
+import { useProperties } from "@/hooks/use-properties";
 import { StatCard } from "@/components/StatCard";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import { useState, useRef } from "react";
-import { Loader2, AlertCircle, Upload, Check, X, Image } from "lucide-react";
+import { Loader2, AlertCircle, Upload, Check, X, Image, Building2, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { motion } from "framer-motion";
@@ -104,8 +105,9 @@ function FileUpload({ onFileChange, currentValue }: { onFileChange: (dataUrl: st
 export default function AdminDashboard() {
   const { data: stats, isLoading: statsLoading } = useAdminDashboard();
   const { data: ledgers, isLoading: ledgersLoading } = useLedgers({ status: 'ARREARS' });
+  const { data: properties, isLoading: propsLoading } = useProperties();
   
-  const isLoading = statsLoading || ledgersLoading;
+  const isLoading = statsLoading || ledgersLoading || propsLoading;
 
   const chartData = stats ? [
     { name: 'Advanced', value: stats.totalAdvanced },
@@ -228,7 +230,7 @@ export default function AdminDashboard() {
                   itemStyle={{ color: '#fff' }}
                   cursor={{fill: 'transparent'}}
                 />
-                <Bar dataKey="value" radius={[4, 4, 0, 0]} barSize={60}>
+                <Bar dataKey="value" radius={0} barSize={60}>
                   {chartData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={index === 0 ? '#ffffff' : '#52525b'} />
                   ))}
@@ -236,6 +238,58 @@ export default function AdminDashboard() {
               </BarChart>
             </ResponsiveContainer>
           </div>
+        </div>
+      </div>
+
+      {/* Master Property List */}
+      <div className="mt-12">
+        <div className="flex items-center gap-3 mb-6">
+          <Building2 className="text-white" size={24} />
+          <h2 className="text-2xl font-semibold tracking-tight">All Properties</h2>
+          <span className="text-xs font-mono uppercase text-zinc-500 border border-zinc-800 px-2 py-1 ml-auto">
+            {properties?.length || 0} Total
+          </span>
+        </div>
+
+        <div className="border border-white/10 overflow-hidden">
+          <table className="w-full text-left">
+            <thead className="bg-zinc-900 text-zinc-400 text-xs uppercase tracking-wider">
+              <tr>
+                <th className="p-4 font-medium">Property Address</th>
+                <th className="p-4 font-medium">Monthly Rent</th>
+                <th className="p-4 font-medium">Owner ID</th>
+                <th className="p-4 font-medium text-center">Occupancy</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-zinc-900">
+              {properties?.map(property => (
+                <tr key={property.id} className="hover:bg-zinc-900/50 transition-colors" data-testid={`row-property-${property.id}`}>
+                  <td className="p-4 font-medium truncate max-w-[200px]">{property.address}</td>
+                  <td className="p-4 font-mono">₹{property.monthlyRent.toLocaleString()}</td>
+                  <td className="p-4 text-zinc-400 font-mono text-sm">{property.ownerId.slice(0, 8)}...</td>
+                  <td className="p-4 text-center">
+                    {property.tenantId ? (
+                      <span className="inline-flex items-center gap-2 text-xs bg-white text-black border-2 border-white px-3 py-1 uppercase tracking-wide font-medium">
+                        <Users size={12} />
+                        Occupied
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-2 text-xs bg-zinc-900 text-zinc-400 border-2 border-zinc-700 px-3 py-1 uppercase tracking-wide font-medium">
+                        Vacant
+                      </span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+              {(!properties || properties.length === 0) && (
+                <tr>
+                  <td colSpan={4} className="p-8 text-center text-zinc-500">
+                    No properties registered yet.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

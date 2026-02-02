@@ -1,14 +1,16 @@
 import { useProperties } from "@/hooks/use-properties";
 import { useLedgers, useCreatePartialPayment, usePaymentsByLedger, useCreateTicket } from "@/hooks/use-ledgers";
-import { Loader2, Home, ArrowRight, ShieldCheck, Wrench, Upload, X, ToggleLeft, ToggleRight } from "lucide-react";
+import { Loader2, Home, ArrowRight, ShieldCheck, Wrench, Upload, X, ToggleLeft, ToggleRight, Search, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { useState, useEffect } from "react";
 import { SuccessAnimation } from "@/components/SuccessAnimation";
 import { useToast } from "@/hooks/use-toast";
-import { queryClient } from "@/lib/queryClient";
+import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/use-auth";
+import type { Property } from "@shared/schema";
 
 declare global {
   interface Window {
@@ -32,6 +34,11 @@ export default function TenantDashboard() {
   const [ticketTitle, setTicketTitle] = useState("");
   const [ticketDescription, setTicketDescription] = useState("");
   const [ticketPhoto, setTicketPhoto] = useState<string>("");
+  
+  const [landlordEmail, setLandlordEmail] = useState("");
+  const [availableProperties, setAvailableProperties] = useState<Property[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [isJoining, setIsJoining] = useState(false);
 
   const unpaidLedger = ledgers?.find(l => l.amountCollected < l.property.monthlyRent);
   const property = unpaidLedger?.property;
@@ -116,6 +123,53 @@ export default function TenantDashboard() {
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleSearchProperties = async () => {
+    if (!landlordEmail.trim()) {
+      toast({ title: "Enter Email", description: "Please enter your landlord's email address.", variant: "destructive" });
+      return;
+    }
+    
+    setIsSearching(true);
+    try {
+      const res = await fetch(`/api/properties/by-owner-email?email=${encodeURIComponent(landlordEmail)}`, {
+        credentials: "include",
+      });
+      if (res.ok) {
+        const props = await res.json();
+        const available = props.filter((p: Property) => !p.tenantId);
+        setAvailableProperties(available);
+        if (available.length === 0) {
+          toast({ title: "No Properties Found", description: "No available properties found for this landlord." });
+        }
+      } else {
+        toast({ title: "Error", description: "Failed to search properties.", variant: "destructive" });
+      }
+    } catch {
+      toast({ title: "Error", description: "Failed to search properties.", variant: "destructive" });
+    }
+    setIsSearching(false);
+  };
+
+  const handleJoinProperty = async (propertyId: string) => {
+    setIsJoining(true);
+    try {
+      const res = await apiRequest("POST", `/api/properties/${propertyId}/join`);
+      if (res.ok) {
+        toast({ title: "Success!", description: "You've been linked to this property." });
+        queryClient.invalidateQueries({ queryKey: ['/api/properties'] });
+        queryClient.invalidateQueries({ queryKey: ['/api/ledgers'] });
+        setAvailableProperties([]);
+        setLandlordEmail("");
+      } else {
+        const err = await res.json();
+        toast({ title: "Error", description: err.message || "Failed to join property.", variant: "destructive" });
+      }
+    } catch {
+      toast({ title: "Error", description: "Failed to join property.", variant: "destructive" });
+    }
+    setIsJoining(false);
   };
 
   const handleSubmitTicket = () => {
@@ -303,6 +357,37 @@ export default function TenantDashboard() {
             </div>
           </div>
 
+          {paymentsData && paymentsData.length > 0 && (
+            <div className="border-t border-zinc-800 pt-8 mb-8">
+              <div className="flex items-center gap-3 mb-6">
+                <ArrowRight className="text-zinc-400" size={20} />
+                <h3 className="text-xl font-bold tracking-tight" style={{ fontFamily: 'Inter, sans-serif' }}>Recent Activity</h3>
+              </div>
+              <div className="space-y-3">
+                {paymentsData.slice(0, 5).map((payment) => (
+                  <div 
+                    key={payment.id} 
+                    className="flex items-center justify-between p-4 border border-zinc-800 bg-zinc-900/50"
+                    data-testid={`activity-${payment.id}`}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className={`w-2 h-2 ${payment.status === 'SUCCESS' ? 'bg-white' : 'bg-zinc-600'}`} />
+                      <div>
+                        <p className="font-medium text-white">
+                          {payment.status === 'SUCCESS' ? 'Split Payment' : payment.status === 'PENDING' ? 'Payment Pending' : 'Payment Failed'}
+                        </p>
+                        <p className="text-xs text-zinc-500 font-mono">
+                          {new Date(payment.createdAt!).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        </p>
+                      </div>
+                    </div>
+                    <span className="font-mono text-lg">₹{payment.amount.toLocaleString()}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="border-t border-zinc-800 pt-8">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
@@ -375,12 +460,76 @@ export default function TenantDashboard() {
           </div>
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center py-20 border border-zinc-900 bg-zinc-950/30">
-          <div className="w-20 h-20 bg-zinc-900 flex items-center justify-center mb-6">
-            <Home size={32} className="text-zinc-500" />
+        <div className="space-y-8">
+          <div className="border-2 border-white p-8 bg-zinc-950">
+            <div className="flex items-center gap-4 mb-6">
+              <Building2 size={32} className="text-white" />
+              <div>
+                <h2 className="text-3xl font-bold tracking-tighter" style={{ fontFamily: 'Inter, sans-serif' }}>Join My Home</h2>
+                <p className="text-zinc-500">Link yourself to a property by searching your landlord's email.</p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="landlordEmail" className="text-zinc-400 uppercase text-xs tracking-wider">Landlord Email</Label>
+                <div className="flex gap-4">
+                  <Input
+                    id="landlordEmail"
+                    type="email"
+                    value={landlordEmail}
+                    onChange={(e) => setLandlordEmail(e.target.value)}
+                    placeholder="landlord@example.com"
+                    className="bg-zinc-900 border-2 border-zinc-700 focus:border-white rounded-none h-12 flex-1"
+                    data-testid="input-landlord-email"
+                  />
+                  <Button
+                    onClick={handleSearchProperties}
+                    disabled={isSearching}
+                    className="bg-white text-black hover:bg-zinc-200 border-2 border-white rounded-none h-12 px-6"
+                    data-testid="button-search-landlord"
+                  >
+                    {isSearching ? <Loader2 className="animate-spin" /> : <Search size={18} />}
+                    <span className="ml-2">Search</span>
+                  </Button>
+                </div>
+              </div>
+
+              {availableProperties.length > 0 && (
+                <div className="space-y-3 mt-6">
+                  <p className="text-sm text-zinc-400 uppercase tracking-wider">Available Properties</p>
+                  {availableProperties.map((prop) => (
+                    <div 
+                      key={prop.id} 
+                      className="flex items-center justify-between p-4 border border-zinc-800 bg-zinc-900 hover:border-zinc-600 transition-colors"
+                      data-testid={`property-option-${prop.id}`}
+                    >
+                      <div>
+                        <p className="font-medium text-white">{prop.address}</p>
+                        <p className="text-sm text-zinc-500">Rent: ₹{prop.monthlyRent.toLocaleString()}/month</p>
+                      </div>
+                      <Button
+                        onClick={() => handleJoinProperty(prop.id)}
+                        disabled={isJoining}
+                        className="bg-white text-black hover:bg-zinc-200 rounded-none"
+                        data-testid={`button-join-${prop.id}`}
+                      >
+                        {isJoining ? <Loader2 className="animate-spin" size={16} /> : "Join"}
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
-          <h2 className="text-3xl font-bold tracking-tighter mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>You're all caught up!</h2>
-          <p className="text-zinc-500">No rent payments due at this time.</p>
+
+          <div className="flex flex-col items-center justify-center py-12 border border-zinc-900 bg-zinc-950/30">
+            <div className="w-16 h-16 bg-zinc-900 flex items-center justify-center mb-4">
+              <Home size={24} className="text-zinc-500" />
+            </div>
+            <h3 className="text-xl font-bold tracking-tighter mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>No Active Rent</h3>
+            <p className="text-zinc-500 text-sm">Once you join a property, your rent payments will appear here.</p>
+          </div>
         </div>
       )}
     </div>

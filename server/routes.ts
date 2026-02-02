@@ -62,6 +62,38 @@ export async function registerRoutes(
     res.json(property);
   });
 
+  // Look up properties by owner email (for tenant join)
+  app.get("/api/properties/by-owner-email", async (req, res) => {
+    const { email } = req.query;
+    if (!email || typeof email !== 'string') {
+      return res.status(400).json({ message: 'Email is required' });
+    }
+    const props = await storage.getPropertiesByOwnerEmail(email);
+    res.json(props);
+  });
+
+  // Join property as tenant
+  app.post("/api/properties/:id/join", async (req: any, res) => {
+    const { id } = req.params;
+    const userId = req.user?.claims?.sub;
+    
+    if (!userId) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const property = await storage.getProperty(id);
+    if (!property) {
+      return res.status(404).json({ message: 'Property not found' });
+    }
+
+    if (property.tenantId) {
+      return res.status(400).json({ message: 'Property already has a tenant' });
+    }
+
+    const updated = await storage.updatePropertyTenant(id, userId);
+    res.json(updated);
+  });
+
   // Ledgers
   app.get(api.ledgers.list.path, async (req, res) => {
     const { propertyId, status } = req.query;

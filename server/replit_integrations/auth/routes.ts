@@ -37,4 +37,25 @@ export function registerAuthRoutes(app: Express): void {
       res.status(500).json({ message: "Failed to set role" });
     }
   });
+
+  // Look up user by email (for property tenant assignment)
+  app.get("/api/auth/user-by-email", isAuthenticated, async (req: any, res) => {
+    try {
+      const { email } = req.query;
+
+      if (!email || typeof email !== 'string') {
+        return res.status(400).json({ message: "Email is required" });
+      }
+
+      const user = await authStorage.getUserByEmail(email);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      res.json({ id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName });
+    } catch (error) {
+      console.error("Error looking up user:", error);
+      res.status(500).json({ message: "Failed to look up user" });
+    }
+  });
 }
