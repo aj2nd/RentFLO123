@@ -60,7 +60,7 @@ export default function OwnerDashboard() {
             </div>
             {!hasPendingKyc && (
               <Link href="/verify">
-                <Button className="bg-white text-black hover:bg-zinc-200" data-testid="button-complete-kyc">
+                <Button className="bg-white text-black rounded-none" data-testid="button-complete-kyc">
                   Complete KYC
                 </Button>
               </Link>
@@ -222,7 +222,7 @@ function AddPropertyModal({ isVerified }: { isVerified?: boolean }) {
     return (
       <Button
         disabled
-        className="bg-zinc-800 text-zinc-500 cursor-not-allowed gap-2"
+        className="bg-zinc-800 text-zinc-500 cursor-not-allowed gap-2 rounded-none"
         title="Complete KYC verification to add properties"
       >
         <Plus size={20} />

@@ -262,7 +262,7 @@ export default function TenantDashboard() {
             </div>
             {!hasPendingKyc && (
               <Link href="/verify">
-                <Button className="bg-white text-black hover:bg-zinc-200" data-testid="button-complete-kyc">
+                <Button className="bg-white text-black rounded-none" data-testid="button-complete-kyc">
                   Complete KYC
                 </Button>
               </Link>
@@ -392,7 +392,7 @@ export default function TenantDashboard() {
               <Button 
                 onClick={handlePartialPayment}
                 disabled={isCreatingPayment || (flexiblePaymentEnabled && !paymentAmount) || !isVerified}
-                className={`w-full ${isVerified ? 'bg-white text-black hover:bg-zinc-200' : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'} border-0 h-16 text-lg font-bold tracking-tighter uppercase`}
+                className={`w-full ${isVerified ? 'bg-white text-black' : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'} border-0 h-16 text-lg font-bold tracking-tighter uppercase rounded-none`}
                 data-testid="button-pay-now"
               >
                 {isCreatingPayment ? <Loader2 className="animate-spin mr-2 w-5 h-5" /> : (
