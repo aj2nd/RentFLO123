@@ -4,11 +4,102 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
-import { useState } from "react";
-import { Loader2, AlertCircle, Upload } from "lucide-react";
+import { useState, useRef } from "react";
+import { Loader2, AlertCircle, Upload, Check, X, Image } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { motion } from "framer-motion";
+
+function FileUpload({ onFileChange, currentValue }: { onFileChange: (dataUrl: string) => void; currentValue: string }) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [fileName, setFileName] = useState<string>("");
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    setFileName(file.name);
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const result = reader.result as string;
+      onFileChange(result);
+      setIsUploading(false);
+    };
+    reader.onerror = () => {
+      setIsUploading(false);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const clearFile = () => {
+    setFileName("");
+    onFileChange("");
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*,.pdf"
+        onChange={handleFileSelect}
+        className="hidden"
+        data-testid="input-file-upload"
+      />
+      
+      {currentValue ? (
+        <div className="flex items-center gap-3 p-3 border-2 border-white bg-zinc-900">
+          <div className="w-10 h-10 border border-zinc-700 flex items-center justify-center bg-zinc-800">
+            {currentValue.startsWith("data:image") ? (
+              <img src={currentValue} alt="Receipt" className="w-full h-full object-cover" />
+            ) : (
+              <Image size={18} className="text-zinc-400" />
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm text-white truncate">{fileName || "Receipt uploaded"}</p>
+            <p className="text-xs text-green-500 flex items-center gap-1">
+              <Check size={12} /> Ready for submission
+            </p>
+          </div>
+          <Button
+            type="button"
+            size="icon"
+            variant="ghost"
+            onClick={clearFile}
+            className="text-zinc-400 hover:text-white"
+            data-testid="button-clear-file"
+          >
+            <X size={16} />
+          </Button>
+        </div>
+      ) : (
+        <Button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={isUploading}
+          className="w-full h-20 bg-zinc-900 border-2 border-dashed border-zinc-700 hover:border-white hover:bg-zinc-800 text-zinc-400 hover:text-white rounded-none flex flex-col gap-2 transition-all"
+          data-testid="button-upload-receipt"
+        >
+          {isUploading ? (
+            <Loader2 className="animate-spin" size={24} />
+          ) : (
+            <>
+              <Upload size={24} />
+              <span className="text-sm">Click to upload bank transfer screenshot</span>
+            </>
+          )}
+        </Button>
+      )}
+    </div>
+  );
+}
 
 export default function AdminDashboard() {
   const { data: stats, isLoading: statsLoading } = useAdminDashboard();
@@ -221,18 +312,12 @@ function PayoutRow({ ledger }: { ledger: any }) {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-400">Proof of Transfer (URL)</label>
-                <div className="flex gap-2">
-                   <Input 
-                    {...form.register("proofOfTransferUrl")}
-                    placeholder="https://..." 
-                    className="bg-zinc-950 border-zinc-800 text-white rounded-none h-12 focus:ring-1 focus:ring-white focus:border-white"
-                  />
-                  <div className="w-12 h-12 border border-zinc-800 flex items-center justify-center bg-zinc-900">
-                    <Upload size={18} className="text-zinc-500" />
-                  </div>
-                </div>
-                <p className="text-xs text-zinc-600">Enter a URL to the transaction screenshot or receipt.</p>
+                <label className="text-sm font-medium text-zinc-400">Bank Transfer Receipt</label>
+                <FileUpload 
+                  onFileChange={(dataUrl) => form.setValue("proofOfTransferUrl", dataUrl)}
+                  currentValue={form.watch("proofOfTransferUrl")}
+                />
+                <p className="text-xs text-zinc-600">Upload screenshot of bank transfer as proof of payment.</p>
               </div>
 
               <Button 

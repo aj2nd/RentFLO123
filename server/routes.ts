@@ -5,6 +5,22 @@ import { api, errorSchemas } from "@shared/routes";
 import { z } from "zod";
 import { setupAuth, registerAuthRoutes } from "./replit_integrations/auth";
 import { authStorage } from "./replit_integrations/auth/storage";
+import Razorpay from "razorpay";
+
+// Lazy initialize Razorpay (keys from secrets) - only when needed
+let razorpayInstance: Razorpay | null = null;
+function getRazorpay(): Razorpay | null {
+  if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+    return null;
+  }
+  if (!razorpayInstance) {
+    razorpayInstance = new Razorpay({
+      key_id: process.env.RAZORPAY_KEY_ID,
+      key_secret: process.env.RAZORPAY_KEY_SECRET,
+    });
+  }
+  return razorpayInstance;
+}
 
 export async function registerRoutes(
   httpServer: Server,
@@ -87,7 +103,103 @@ export async function registerRoutes(
     }
   });
 
-  // Collect Rent (Tenant/Webhook)
+  // Create Razorpay Order for Tenant Payment
+  app.post('/api/ledgers/:id/create-order', async (req, res) => {
+    const { id } = req.params;
+    const ledger = await storage.getLedger(id);
+    if (!ledger) {
+      return res.status(404).json({ message: 'Ledger not found' });
+    }
+
+    // Get property to know the rent amount
+    const property = await storage.getProperty(ledger.propertyId);
+    if (!property) {
+      return res.status(404).json({ message: 'Property not found' });
+    }
+
+    // Check if Razorpay keys are configured
+    const razorpay = getRazorpay();
+    if (!razorpay) {
+      return res.status(500).json({ 
+        message: 'Razorpay not configured. Please add RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET to secrets.' 
+      });
+    }
+
+    try {
+      // Create a real Razorpay order
+      const order = await razorpay.orders.create({
+        amount: property.monthlyRent * 100, // Amount in paise
+        currency: 'INR',
+        receipt: `rent_${id}_${Date.now()}`,
+        notes: {
+          ledgerId: id,
+          propertyId: property.id,
+          monthYear: ledger.monthYear,
+        }
+      });
+
+      res.json({
+        orderId: order.id,
+        amount: order.amount,
+        currency: order.currency,
+        keyId: process.env.RAZORPAY_KEY_ID, // Frontend needs this to open Razorpay checkout
+      });
+    } catch (err: any) {
+      console.error('Razorpay order creation failed:', err);
+      return res.status(500).json({ 
+        message: 'Failed to create payment order', 
+        error: err.message 
+      });
+    }
+  });
+
+  // Razorpay Webhook - Payment Verification
+  app.post('/api/razorpay/webhook', async (req, res) => {
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+    
+    // In production, verify signature using Razorpay utility
+    // For now, we trust the webhook call
+    const crypto = await import('crypto');
+    const expectedSignature = crypto
+      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET || '')
+      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+      .digest('hex');
+
+    if (expectedSignature !== razorpay_signature) {
+      return res.status(400).json({ message: 'Invalid signature' });
+    }
+
+    // Get the order to find the ledger
+    try {
+      const razorpay = getRazorpay();
+      if (!razorpay) {
+        return res.status(500).json({ message: 'Razorpay not configured' });
+      }
+      const order = await razorpay.orders.fetch(razorpay_order_id);
+      const ledgerId = order.notes?.ledgerId as string;
+
+      if (ledgerId) {
+        const ledger = await storage.getLedger(ledgerId);
+        if (ledger) {
+          const amountPaid = Number(order.amount) / 100; // Convert from paise
+          const newAmountCollected = (ledger.amountCollected || 0) + amountPaid;
+          const isSettled = newAmountCollected >= (ledger.amountAdvanced || 0);
+
+          await storage.updateLedger(ledgerId, {
+            amountCollected: newAmountCollected,
+            status: isSettled ? 'SETTLED' : ledger.status,
+          });
+        }
+      }
+
+      res.json({ status: 'ok' });
+    } catch (err: any) {
+      console.error('Webhook processing error:', err);
+      res.status(500).json({ message: 'Webhook processing failed' });
+    }
+  });
+
+  // Collect Rent (Manual/Testing - also updates ledger after successful payment)
   app.post(api.ledgers.collectRent.path, async (req, res) => {
     const { id } = req.params;
     const ledger = await storage.getLedger(id);
@@ -103,7 +215,7 @@ export async function registerRoutes(
 
       const updated = await storage.updateLedger(id, {
         amountCollected: newAmountCollected,
-        status: isSettled ? 'SETTLED' : ledger.status // Keep existing status if not settled (e.g. stay EXPOSED or ARREARS)
+        status: isSettled ? 'SETTLED' : ledger.status
       });
 
       res.json(updated);

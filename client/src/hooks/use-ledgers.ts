@@ -73,3 +73,21 @@ export function useAdminDashboard() {
         }
     });
 }
+
+export function useCreateOrder() {
+  return useMutation({
+    mutationFn: async ({ id }: { id: string }) => {
+      const url = buildUrl(api.ledgers.createOrder.path, { id });
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      });
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || "Failed to create payment order");
+      }
+      return api.ledgers.createOrder.responses[200].parse(await res.json());
+    },
+  });
+}

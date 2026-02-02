@@ -84,6 +84,21 @@ export const api = {
         200: z.custom<typeof ledgers.$inferSelect>(),
         404: errorSchemas.notFound,
       },
+    },
+    // Create Razorpay order for tenant payment
+    createOrder: {
+      method: 'POST' as const,
+      path: '/api/ledgers/:id/create-order',
+      responses: {
+        200: z.object({
+          orderId: z.string(),
+          amount: z.number(),
+          currency: z.string(),
+          keyId: z.string(),
+        }),
+        404: errorSchemas.notFound,
+        500: errorSchemas.internal,
+      },
     }
   },
   admin: {

@@ -1,18 +1,44 @@
 import { useProperties } from "@/hooks/use-properties";
-import { useLedgers, useCollectRent } from "@/hooks/use-ledgers";
+import { useLedgers, useCollectRent, useCreateOrder } from "@/hooks/use-ledgers";
 import { Loader2, Home, ArrowRight, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SuccessAnimation } from "@/components/SuccessAnimation";
 import { useToast } from "@/hooks/use-toast";
 
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
+
 export default function TenantDashboard() {
   const { data: properties, isLoading: propsLoading } = useProperties();
-  const { data: ledgers, isLoading: ledgersLoading } = useLedgers();
-  const { mutate: payRent, isPending } = useCollectRent();
+  const { data: ledgers, isLoading: ledgersLoading, refetch: refetchLedgers } = useLedgers();
+  const { mutate: createOrder, isPending: isCreatingOrder } = useCreateOrder();
+  const { mutate: payRent, isPending: isPayingRent } = useCollectRent();
   const { toast } = useToast();
   
   const [showSuccess, setShowSuccess] = useState(false);
+  const [razorpayLoaded, setRazorpayLoaded] = useState(false);
+
+  // Load Razorpay script
+  useEffect(() => {
+    if (window.Razorpay) {
+      setRazorpayLoaded(true);
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    script.onload = () => setRazorpayLoaded(true);
+    document.body.appendChild(script);
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
+
+  const isPending = isCreatingOrder || isPayingRent;
 
   if (propsLoading || ledgersLoading) {
     return (
@@ -32,19 +58,61 @@ export default function TenantDashboard() {
 
   const handlePayment = () => {
     if (!unpaidLedger) return;
-    
-    payRent(
-      { 
-        id: unpaidLedger.id, 
-        data: { amountCollected: unpaidLedger.property.monthlyRent } 
-      },
+
+    // Create Razorpay order
+    createOrder(
+      { id: unpaidLedger.id },
       {
-        onSuccess: () => {
-          setShowSuccess(true);
-          setTimeout(() => setShowSuccess(false), 3000);
+        onSuccess: (orderData) => {
+          if (!razorpayLoaded || !window.Razorpay) {
+            toast({ title: "Payment Error", description: "Payment system not loaded. Please refresh.", variant: "destructive" });
+            return;
+          }
+
+          const options = {
+            key: orderData.keyId,
+            amount: orderData.amount,
+            currency: orderData.currency,
+            name: "RentBro",
+            description: `Rent payment for ${property?.address}`,
+            order_id: orderData.orderId,
+            handler: function (response: any) {
+              // After successful payment, update the ledger
+              payRent(
+                { 
+                  id: unpaidLedger.id, 
+                  data: { amountCollected: property?.monthlyRent || 0 } 
+                },
+                {
+                  onSuccess: () => {
+                    setShowSuccess(true);
+                    refetchLedgers();
+                    setTimeout(() => setShowSuccess(false), 3000);
+                  },
+                  onError: () => {
+                    toast({ title: "Record Update Failed", description: "Payment was successful but record update failed.", variant: "destructive" });
+                  }
+                }
+              );
+            },
+            prefill: {
+              name: "Tenant",
+              email: "tenant@example.com",
+            },
+            theme: {
+              color: "#000000",
+            },
+          };
+
+          const razorpayInstance = new window.Razorpay(options);
+          razorpayInstance.open();
         },
-        onError: () => {
-          toast({ title: "Payment Failed", description: "Please try again.", variant: "destructive" });
+        onError: (error: any) => {
+          toast({ 
+            title: "Payment Setup Failed", 
+            description: error.message || "Could not create payment order.", 
+            variant: "destructive" 
+          });
         }
       }
     );
