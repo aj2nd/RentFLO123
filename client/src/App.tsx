@@ -8,6 +8,7 @@ import { Loader2 } from "lucide-react";
 
 import NotFound from "@/pages/not-found";
 import LandingPage from "@/pages/LandingPage";
+import Onboarding from "@/pages/Onboarding";
 import AdminDashboard from "@/pages/AdminDashboard";
 import AdminMaintenance from "@/pages/AdminMaintenance";
 import OwnerDashboard from "@/pages/OwnerDashboard";
@@ -30,7 +31,11 @@ function PrivateRoute({ component: Component, allowedRoles }: { component: React
     return null;
   }
 
-  if (allowedRoles && user?.role && !allowedRoles.includes(user.role)) {
+  if (!user?.role) {
+    return <Redirect to="/onboarding" />;
+  }
+
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
     const roleRedirects: Record<string, string> = {
       'ADMIN': '/admin',
       'OWNER': '/owner',
@@ -62,19 +67,52 @@ function DashboardRedirect() {
     return <LandingPage />;
   }
 
+  if (!user.role) {
+    return <Redirect to="/onboarding" />;
+  }
+
   const roleRedirects: Record<string, string> = {
     'ADMIN': '/admin',
     'OWNER': '/owner',
     'TENANT': '/tenant',
   };
   
-  return <Redirect to={roleRedirects[user.role || 'TENANT']} />;
+  return <Redirect to={roleRedirects[user.role]} />;
+}
+
+function OnboardingRoute() {
+  const { isAuthenticated, isLoading, user } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-black text-white">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    window.location.href = "/api/login";
+    return null;
+  }
+
+  if (user?.role) {
+    const roleRedirects: Record<string, string> = {
+      'ADMIN': '/admin',
+      'OWNER': '/owner',
+      'TENANT': '/tenant',
+    };
+    return <Redirect to={roleRedirects[user.role]} />;
+  }
+
+  return <Onboarding />;
 }
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={DashboardRedirect} />
+      <Route path="/onboarding" component={OnboardingRoute} />
       
       {/* Protected Routes with Role Restrictions */}
       <Route path="/admin">
