@@ -41,6 +41,13 @@ Preferred communication style: Simple, everyday language.
 - **Provider**: Replit Auth via OpenID Connect
 - **Session Storage**: PostgreSQL-backed sessions using connect-pg-simple
 - **User Management**: Automatic user upsert on authentication with profile sync
+- **User Roles**: Role field (TENANT/OWNER/ADMIN) determines dashboard access and permissions
+
+### Recent Changes (Feb 2026)
+- Added role-based routing: Users are automatically redirected to their role-specific dashboard
+- **Tenant Dashboard**: Flexible Payment toggle (Full Only vs Custom amount), Report Issue form with photo uploads
+- **Owner Dashboard**: "RENT CREDITED" displayed in large serif font (Georgia) for recent payouts, Property Health widget with open/resolved ticket counts
+- **Admin Dashboard**: Total Exposure tracker prominently displays financial exposure (Advanced - Collected)
 
 ### Key Workflows
 1. **Manual Payout (Admin)**: Admin marks owner as paid, uploads proof of transfer screenshot, updates ledger `amountAdvanced`
