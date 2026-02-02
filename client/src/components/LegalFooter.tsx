@@ -31,6 +31,14 @@ export function LegalFooter() {
           >
             Cancellation/Refund Policy
           </Link>
+          <span className="text-zinc-800">|</span>
+          <Link 
+            href="/support" 
+            className="hover:text-white transition-colors"
+            data-testid="link-contact-support"
+          >
+            Contact Support
+          </Link>
         </div>
         <a 
           href="mailto:help@rentbro.com" 

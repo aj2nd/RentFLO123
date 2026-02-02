@@ -7,9 +7,14 @@ export default function Refund() {
         </h1>
         
         <div className="space-y-6 text-zinc-300">
+          <section className="bg-zinc-900 p-6 border-2 border-white">
+            <h2 className="text-xl font-semibold mb-3 text-white">IMPORTANT: Non-Refundable Advances</h2>
+            <p className="text-white font-medium">Rent advances are non-refundable once disbursed to the property owner. Once RentBro has transferred the advance amount to the landlord's bank account, the transaction is final and cannot be reversed. The tenant remains legally obligated to complete all scheduled payments as agreed in the rent advance agreement.</p>
+          </section>
+
           <section>
             <h2 className="text-xl font-semibold mb-3 text-white">1. Rent Advance Cancellation</h2>
-            <p>Once a rent advance has been disbursed to a property owner, it cannot be cancelled. The tenant remains obligated to complete all scheduled payments as agreed.</p>
+            <p>Once a rent advance has been disbursed to a property owner, it cannot be cancelled. The advance is a commitment made by RentBro on behalf of the tenant, and the tenant must fulfill their payment obligations according to the agreed schedule.</p>
           </section>
 
           <section>

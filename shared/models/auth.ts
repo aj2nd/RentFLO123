@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { index, jsonb, pgTable, timestamp, varchar } from "drizzle-orm/pg-core";
+import { index, jsonb, pgTable, timestamp, varchar, boolean, text } from "drizzle-orm/pg-core";
 
 // Session storage table.
 // (IMPORTANT) This table is mandatory for Replit Auth, don't drop it.
@@ -22,6 +22,16 @@ export const users = pgTable("users", {
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
   role: varchar("role", { enum: ['TENANT', 'OWNER', 'ADMIN'] }),
+  // KYC Fields
+  isVerified: boolean("is_verified").default(false),
+  fullLegalName: text("full_legal_name"),
+  panNumber: text("pan_number"),
+  aadhaarNumber: text("aadhaar_number"),
+  kycDocumentUrl: text("kyc_document_url"),
+  // Landlord-specific fields
+  bankAccountNumber: text("bank_account_number"),
+  ifscCode: text("ifsc_code"),
+  cancelledChequeUrl: text("cancelled_cheque_url"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

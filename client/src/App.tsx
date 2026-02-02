@@ -17,6 +17,8 @@ import Ledger from "@/pages/Ledger";
 import Terms from "@/pages/Terms";
 import Privacy from "@/pages/Privacy";
 import Refund from "@/pages/Refund";
+import Support from "@/pages/Support";
+import Verify from "@/pages/Verify";
 import { Navigation } from "@/components/Navigation";
 import { LegalFooter } from "@/components/LegalFooter";
 
@@ -136,10 +138,16 @@ function Router() {
         <PrivateRoute component={Ledger} allowedRoles={['ADMIN', 'OWNER', 'TENANT']} />
       </Route>
       
+      {/* KYC Verification */}
+      <Route path="/verify">
+        <PrivateRoute component={Verify} allowedRoles={['TENANT', 'OWNER']} />
+      </Route>
+      
       {/* Legal Pages (Public) */}
       <Route path="/terms" component={Terms} />
       <Route path="/privacy" component={Privacy} />
       <Route path="/refund" component={Refund} />
+      <Route path="/support" component={Support} />
 
       <Route component={NotFound} />
     </Switch>

@@ -424,6 +424,62 @@ export async function registerRoutes(
     res.json(counts);
   });
 
+  // === KYC ROUTES ===
+  
+  // Submit KYC documents
+  app.post("/api/kyc/submit", async (req: any, res) => {
+    const userId = req.user?.claims?.sub;
+    if (!userId) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const { fullLegalName, panNumber, aadhaarNumber, kycDocumentUrl, bankAccountNumber, ifscCode, cancelledChequeUrl } = req.body;
+
+    if (!fullLegalName || !panNumber || !aadhaarNumber) {
+      return res.status(400).json({ message: 'Full legal name, PAN number, and Aadhaar number are required' });
+    }
+
+    const updated = await authStorage.updateUser(userId, {
+      fullLegalName,
+      panNumber,
+      aadhaarNumber,
+      kycDocumentUrl,
+      bankAccountNumber,
+      ifscCode,
+      cancelledChequeUrl,
+      isVerified: false, // Set to false, admin will verify
+    });
+
+    res.json(updated);
+  });
+
+  // Get users pending KYC verification (Admin only)
+  app.get("/api/kyc/pending", async (req: any, res) => {
+    const pendingUsers = await authStorage.getUsersPendingVerification();
+    res.json(pendingUsers);
+  });
+
+  // Verify user (Admin only)
+  app.post("/api/kyc/verify/:userId", async (req: any, res) => {
+    const { userId } = req.params;
+    
+    const updated = await authStorage.updateUser(userId, {
+      isVerified: true,
+    });
+
+    if (!updated) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json(updated);
+  });
+
+  // Get all users (Admin only)
+  app.get("/api/users", async (req: any, res) => {
+    const users = await authStorage.getAllUsers();
+    res.json(users);
+  });
+
   // Seed Data
   await seedDatabase();
 

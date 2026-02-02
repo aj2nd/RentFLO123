@@ -1,7 +1,7 @@
 import { useProperties, useCreateProperty } from "@/hooks/use-properties";
 import { useLedgers, useTicketCounts } from "@/hooks/use-ledgers";
 import { useAuth } from "@/hooks/use-auth";
-import { Loader2, TrendingUp, Calendar, CreditCard, Wrench, CheckCircle, AlertCircle, Plus } from "lucide-react";
+import { Loader2, TrendingUp, Calendar, CreditCard, Wrench, CheckCircle, AlertCircle, Plus, Shield, Clock } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,10 +9,19 @@ import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
+import { Link } from "wouter";
+import { useQuery } from "@tanstack/react-query";
+import type { User } from "@shared/schema";
 
 export default function OwnerDashboard() {
   const { data: properties, isLoading: propsLoading } = useProperties();
   const { data: ledgers, isLoading: ledgersLoading } = useLedgers();
+  const { data: currentUser } = useQuery<User>({
+    queryKey: ["/api/auth/user"],
+  });
+
+  const isVerified = currentUser?.isVerified;
+  const hasPendingKyc = currentUser?.panNumber && !isVerified;
 
   if (propsLoading || ledgersLoading) {
     return (
@@ -28,12 +37,44 @@ export default function OwnerDashboard() {
 
   return (
     <div className="min-h-screen bg-black text-white p-8 md:p-12 pl-28 md:pl-72 flex flex-col">
+      {/* Verification Banner */}
+      {!isVerified && (
+        <div className={`mb-8 p-6 border-2 ${hasPendingKyc ? 'border-yellow-500 bg-yellow-500/10' : 'border-zinc-700 bg-zinc-900'}`}>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              {hasPendingKyc ? (
+                <Clock className="w-8 h-8 text-yellow-500" />
+              ) : (
+                <Shield className="w-8 h-8 text-zinc-400" />
+              )}
+              <div>
+                <h3 className={`text-lg font-semibold ${hasPendingKyc ? 'text-yellow-500' : 'text-white'}`}>
+                  {hasPendingKyc ? 'Verification in Progress' : 'Complete KYC Verification'}
+                </h3>
+                <p className="text-zinc-400 text-sm">
+                  {hasPendingKyc 
+                    ? 'Your documents are being reviewed. This usually takes 1-2 business days.'
+                    : 'Verify your identity to add properties and receive rent advances.'}
+                </p>
+              </div>
+            </div>
+            {!hasPendingKyc && (
+              <Link href="/verify">
+                <Button className="bg-white text-black hover:bg-zinc-200" data-testid="button-complete-kyc">
+                  Complete KYC
+                </Button>
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
+
       <header className="mb-12 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-4xl md:text-5xl font-bold tracking-tighter mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>Owner Portal</h1>
           <p className="text-zinc-500">Welcome back. Your portfolio overview.</p>
         </div>
-        <AddPropertyModal />
+        <AddPropertyModal isVerified={isVerified} />
       </header>
 
       <div className="mb-16">
@@ -170,12 +211,25 @@ interface AddPropertyFormData {
   tenantEmail: string;
 }
 
-function AddPropertyModal() {
+function AddPropertyModal({ isVerified }: { isVerified?: boolean }) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [isLookingUpTenant, setIsLookingUpTenant] = useState(false);
   const createProperty = useCreateProperty();
+
+  if (!isVerified) {
+    return (
+      <Button
+        disabled
+        className="bg-zinc-800 text-zinc-500 cursor-not-allowed gap-2"
+        title="Complete KYC verification to add properties"
+      >
+        <Plus size={20} />
+        Add Property (KYC Required)
+      </Button>
+    );
+  }
   
   const { register, handleSubmit, reset, formState: { errors } } = useForm<AddPropertyFormData>({
     defaultValues: {

@@ -1,6 +1,6 @@
 import { useProperties } from "@/hooks/use-properties";
 import { useLedgers, useCreatePartialPayment, usePaymentsByLedger, useCreateTicket } from "@/hooks/use-ledgers";
-import { Loader2, Home, ArrowRight, ShieldCheck, Wrench, Upload, X, ToggleLeft, ToggleRight, Search, Building2 } from "lucide-react";
+import { Loader2, Home, ArrowRight, ShieldCheck, Wrench, Upload, X, ToggleLeft, ToggleRight, Search, Building2, Shield, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,7 +10,9 @@ import { SuccessAnimation } from "@/components/SuccessAnimation";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/use-auth";
-import type { Property } from "@shared/schema";
+import type { Property, User } from "@shared/schema";
+import { Link } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 
 declare global {
   interface Window {
@@ -25,6 +27,13 @@ export default function TenantDashboard() {
   const { toast } = useToast();
   const { mutate: createTicket, isPending: isCreatingTicket } = useCreateTicket();
   const { user } = useAuth();
+  
+  const { data: currentUser } = useQuery<User>({
+    queryKey: ["/api/auth/user"],
+  });
+
+  const isVerified = currentUser?.isVerified;
+  const hasPendingKyc = currentUser?.panNumber && !isVerified;
   
   const [showSuccess, setShowSuccess] = useState(false);
   const [razorpayLoaded, setRazorpayLoaded] = useState(false);
@@ -62,6 +71,17 @@ export default function TenantDashboard() {
 
   const handlePartialPayment = () => {
     if (!unpaidLedger) return;
+    
+    // Block unverified users from making payments
+    if (!isVerified) {
+      toast({ 
+        title: "KYC Required", 
+        description: "Please complete your KYC verification before making payments.", 
+        variant: "destructive" 
+      });
+      return;
+    }
+    
     const amountToUse = flexiblePaymentEnabled ? paymentAmount : String(remaining);
     const amount = parseInt(amountToUse, 10);
     if (isNaN(amount) || amount <= 0) {
@@ -219,6 +239,38 @@ export default function TenantDashboard() {
     <div className="min-h-screen bg-black text-white p-8 md:p-12 pl-28 md:pl-72 flex flex-col max-w-7xl mx-auto">
       <SuccessAnimation show={showSuccess} message="Payment Successful" />
       
+      {/* Verification Banner */}
+      {!isVerified && (
+        <div className={`mb-8 p-6 border-2 ${hasPendingKyc ? 'border-yellow-500 bg-yellow-500/10' : 'border-zinc-700 bg-zinc-900'}`}>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              {hasPendingKyc ? (
+                <Clock className="w-8 h-8 text-yellow-500" />
+              ) : (
+                <Shield className="w-8 h-8 text-zinc-400" />
+              )}
+              <div>
+                <h3 className={`text-lg font-semibold ${hasPendingKyc ? 'text-yellow-500' : 'text-white'}`}>
+                  {hasPendingKyc ? 'Verification in Progress' : 'Complete KYC Verification'}
+                </h3>
+                <p className="text-zinc-400 text-sm">
+                  {hasPendingKyc 
+                    ? 'Your documents are being reviewed. This usually takes 1-2 business days.'
+                    : 'Verify your identity to make rent payments.'}
+                </p>
+              </div>
+            </div>
+            {!hasPendingKyc && (
+              <Link href="/verify">
+                <Button className="bg-white text-black hover:bg-zinc-200" data-testid="button-complete-kyc">
+                  Complete KYC
+                </Button>
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
+      
       <header className="mb-12">
         <div className="inline-flex items-center gap-2 px-3 py-1 border border-zinc-800 bg-zinc-900/50 mb-6">
           <span className="w-2 h-2 bg-white animate-pulse"></span>
@@ -339,8 +391,8 @@ export default function TenantDashboard() {
 
               <Button 
                 onClick={handlePartialPayment}
-                disabled={isCreatingPayment || (flexiblePaymentEnabled && !paymentAmount)}
-                className="w-full bg-white text-black hover:bg-zinc-200 border-0 h-16 text-lg font-bold tracking-tighter uppercase"
+                disabled={isCreatingPayment || (flexiblePaymentEnabled && !paymentAmount) || !isVerified}
+                className={`w-full ${isVerified ? 'bg-white text-black hover:bg-zinc-200' : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'} border-0 h-16 text-lg font-bold tracking-tighter uppercase`}
                 data-testid="button-pay-now"
               >
                 {isCreatingPayment ? <Loader2 className="animate-spin mr-2 w-5 h-5" /> : (

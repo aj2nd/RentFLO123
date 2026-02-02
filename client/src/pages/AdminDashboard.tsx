@@ -6,10 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import { useState, useRef } from "react";
-import { Loader2, AlertCircle, Upload, Check, X, Image, Building2, Users } from "lucide-react";
+import { Loader2, AlertCircle, Upload, Check, X, Image, Building2, Users, Download, Shield, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { motion } from "framer-motion";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import type { User, Payment } from "@shared/schema";
 
 function FileUpload({ onFileChange, currentValue }: { onFileChange: (dataUrl: string) => void; currentValue: string }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -106,6 +109,65 @@ export default function AdminDashboard() {
   const { data: stats, isLoading: statsLoading } = useAdminDashboard();
   const { data: ledgers, isLoading: ledgersLoading } = useLedgers({ status: 'ARREARS' });
   const { data: properties, isLoading: propsLoading } = useProperties();
+  const [activeTab, setActiveTab] = useState<'overview' | 'kyc' | 'users'>('overview');
+  
+  const { data: pendingKyc, isLoading: kycLoading } = useQuery<User[]>({
+    queryKey: ["/api/kyc/pending"],
+  });
+
+  const { data: allUsers } = useQuery<User[]>({
+    queryKey: ["/api/users"],
+  });
+
+  const { data: allPayments } = useQuery<Payment[]>({
+    queryKey: ["/api/payments"],
+  });
+
+  const { toast } = useToast();
+
+  const verifyUserMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      return apiRequest("POST", `/api/kyc/verify/${userId}`);
+    },
+    onSuccess: () => {
+      toast({ title: "User Verified", description: "KYC verification approved successfully." });
+      queryClient.invalidateQueries({ queryKey: ["/api/kyc/pending"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/users"] });
+    },
+    onError: (error: Error) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const downloadAuditLog = () => {
+    if (!allPayments || allPayments.length === 0) {
+      toast({ title: "No Data", description: "No transactions to export.", variant: "destructive" });
+      return;
+    }
+
+    const headers = ["Transaction UUID", "Timestamp", "Ledger ID", "Amount", "Status", "Razorpay Order ID"];
+    const rows = allPayments.map(p => [
+      p.id,
+      p.createdAt ? new Date(p.createdAt).toISOString() : "",
+      p.ledgerId,
+      p.amount,
+      p.status,
+      p.razorpayOrderId || ""
+    ]);
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map(row => row.join(","))
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `rentbro_audit_log_${new Date().toISOString().split("T")[0]}.csv`;
+    link.click();
+    
+    toast({ title: "Download Started", description: "Audit log CSV is being downloaded." });
+  };
   
   const isLoading = statsLoading || ledgersLoading || propsLoading;
 
@@ -124,16 +186,176 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-black text-white p-8 md:p-12 pl-28 md:pl-72">
-      <header className="mb-12">
-        <h1 className="text-4xl md:text-5xl font-bold tracking-tighter mb-4">Financial Overview</h1>
-        <p className="text-zinc-500 max-w-xl">
-          Track property performance, manage payouts, and reconcile ledgers. 
-          System status: <span className="text-white font-medium">Operational</span>
-        </p>
+      <header className="mb-8">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+          <div>
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tighter mb-2">Admin Dashboard</h1>
+            <p className="text-zinc-500">
+              System status: <span className="text-white font-medium">Operational</span>
+            </p>
+          </div>
+          <Button
+            onClick={downloadAuditLog}
+            className="bg-zinc-900 text-white hover:bg-zinc-800 border border-zinc-700 gap-2"
+            data-testid="button-download-audit"
+          >
+            <Download size={16} />
+            Download Audit Log
+          </Button>
+        </div>
+
+        {/* Tab Navigation */}
+        <div className="flex gap-4 border-b border-zinc-800">
+          <button
+            onClick={() => setActiveTab('overview')}
+            className={`pb-3 px-1 text-sm font-medium transition-colors ${activeTab === 'overview' ? 'text-white border-b-2 border-white' : 'text-zinc-500 hover:text-zinc-300'}`}
+            data-testid="tab-overview"
+          >
+            Financial Overview
+          </button>
+          <button
+            onClick={() => setActiveTab('kyc')}
+            className={`pb-3 px-1 text-sm font-medium transition-colors flex items-center gap-2 ${activeTab === 'kyc' ? 'text-white border-b-2 border-white' : 'text-zinc-500 hover:text-zinc-300'}`}
+            data-testid="tab-kyc"
+          >
+            <Shield size={14} />
+            KYC Approvals
+            {pendingKyc && pendingKyc.length > 0 && (
+              <span className="bg-white text-black text-xs px-2 py-0.5">{pendingKyc.length}</span>
+            )}
+          </button>
+          <button
+            onClick={() => setActiveTab('users')}
+            className={`pb-3 px-1 text-sm font-medium transition-colors flex items-center gap-2 ${activeTab === 'users' ? 'text-white border-b-2 border-white' : 'text-zinc-500 hover:text-zinc-300'}`}
+            data-testid="tab-users"
+          >
+            <Users size={14} />
+            All Users
+          </button>
+        </div>
       </header>
 
+      {activeTab === 'kyc' && (
+        <div className="mt-8">
+          <h2 className="text-2xl font-semibold tracking-tight mb-6">Pending KYC Verifications</h2>
+          {kycLoading ? (
+            <div className="flex items-center justify-center p-12">
+              <Loader2 className="w-8 h-8 animate-spin" />
+            </div>
+          ) : pendingKyc && pendingKyc.length > 0 ? (
+            <div className="space-y-4">
+              {pendingKyc.map((user) => (
+                <div key={user.id} className="p-6 border border-zinc-800 bg-zinc-950 flex flex-col md:flex-row md:items-center justify-between gap-4" data-testid={`kyc-row-${user.id}`}>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <h3 className="text-lg font-medium">{user.fullLegalName || `${user.firstName} ${user.lastName}`}</h3>
+                      <span className="text-xs bg-yellow-500/20 text-yellow-400 px-2 py-0.5 border border-yellow-500/30">PENDING</span>
+                      <span className="text-xs bg-zinc-800 px-2 py-0.5">{user.role}</span>
+                    </div>
+                    <p className="text-zinc-500 text-sm">{user.email}</p>
+                    <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                      <div>
+                        <p className="text-zinc-500">PAN</p>
+                        <p className="font-mono">{user.panNumber}</p>
+                      </div>
+                      <div>
+                        <p className="text-zinc-500">Aadhaar</p>
+                        <p className="font-mono">{user.aadhaarNumber}</p>
+                      </div>
+                      {user.role === 'OWNER' && user.bankAccountNumber && (
+                        <>
+                          <div>
+                            <p className="text-zinc-500">Bank A/C</p>
+                            <p className="font-mono">{user.bankAccountNumber}</p>
+                          </div>
+                          <div>
+                            <p className="text-zinc-500">IFSC</p>
+                            <p className="font-mono">{user.ifscCode}</p>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                    <div className="mt-3 flex gap-4">
+                      {user.kycDocumentUrl && (
+                        <a href={user.kycDocumentUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-zinc-400 hover:text-white underline">
+                          View ID Document
+                        </a>
+                      )}
+                      {user.cancelledChequeUrl && (
+                        <a href={user.cancelledChequeUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-zinc-400 hover:text-white underline">
+                          View Cancelled Cheque
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                  <Button
+                    onClick={() => verifyUserMutation.mutate(user.id)}
+                    disabled={verifyUserMutation.isPending}
+                    className="bg-white text-black hover:bg-zinc-200 gap-2"
+                    data-testid={`button-verify-${user.id}`}
+                  >
+                    <CheckCircle size={16} />
+                    Verify User
+                  </Button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="p-12 border border-zinc-800 bg-zinc-950/30 text-center">
+              <Shield className="w-12 h-12 mx-auto mb-4 text-zinc-600" />
+              <p className="text-zinc-500">No pending KYC verifications.</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {activeTab === 'users' && (
+        <div className="mt-8">
+          <h2 className="text-2xl font-semibold tracking-tight mb-6">All Users</h2>
+          <div className="border border-white/10 overflow-hidden">
+            <table className="w-full text-left">
+              <thead className="bg-zinc-900 text-zinc-400 text-xs uppercase tracking-wider">
+                <tr>
+                  <th className="p-4 font-medium">Name</th>
+                  <th className="p-4 font-medium">Email</th>
+                  <th className="p-4 font-medium">Role</th>
+                  <th className="p-4 font-medium text-center">KYC Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-zinc-900">
+                {allUsers?.map(user => (
+                  <tr key={user.id} className="hover:bg-zinc-900/50 transition-colors" data-testid={`row-user-${user.id}`}>
+                    <td className="p-4 font-medium">{user.firstName} {user.lastName}</td>
+                    <td className="p-4 text-zinc-400">{user.email}</td>
+                    <td className="p-4">
+                      <span className="text-xs bg-zinc-800 px-2 py-1">{user.role || 'NO ROLE'}</span>
+                    </td>
+                    <td className="p-4 text-center">
+                      {user.isVerified ? (
+                        <span className="inline-flex items-center gap-1 text-xs bg-green-500/20 text-green-400 border border-green-500/30 px-2 py-1">
+                          <CheckCircle size={12} />
+                          Verified
+                        </span>
+                      ) : user.panNumber ? (
+                        <span className="inline-flex items-center gap-1 text-xs bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 px-2 py-1">
+                          Pending
+                        </span>
+                      ) : (
+                        <span className="text-xs text-zinc-600">Not Submitted</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'overview' && (
+      <>
       {/* Exposure Tracker - Main Focus */}
-      <div className="mb-12 p-8 border-2 border-white bg-zinc-950">
+      <div className="mb-12 p-8 border-2 border-white bg-zinc-950 mt-8">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
           <div>
             <p className="text-zinc-400 text-sm uppercase tracking-widest mb-2">Total Exposure</p>
@@ -292,6 +514,8 @@ export default function AdminDashboard() {
           </table>
         </div>
       </div>
+      </>
+      )}
     </div>
   );
 }
