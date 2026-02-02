@@ -52,13 +52,21 @@ Preferred communication style: Simple, everyday language.
   - "Join My Home" section: Search properties by landlord email, join vacant properties
   - Recent Activity section showing split payment history
 - **Owner Dashboard**: 
-  - "RENT CREDITED" displayed in large serif font (Georgia) for recent payouts
+  - "RENT CREDITED" displayed in large serif font (Playfair Display) for recent payouts
   - Property Health widget with open/resolved ticket counts
   - "Add New Property" modal with address, rent, payout day, and optional tenant email
   - Recent Activity section showing ledger entries (Rent Advanced/Pending Advance)
 - **Admin Dashboard**: 
   - Total Exposure tracker prominently displays financial exposure (Advanced - Collected)
   - Master Property List showing all properties with Occupied/Vacant status badges
+- **Institutional-Grade Upgrades (Feb 2026)**:
+  - Typography: Global Inter font for UI, Playfair Display for headlines/currency (.font-display, .currency-display)
+  - Zero-Radius Constraint: Global 0px border-radius enforced via CSS
+  - Master Ledger: Unified transaction view at `/ledger` with Date, Transaction ID, Action badges, running Balance
+  - Legal Compliance: Terms of Service, Privacy Policy, Cancellation/Refund Policy pages
+  - LegalFooter component on all pages with links to legal pages and support email
+  - PWA Readiness: manifest.json with black theme (#000000) and icon placeholders
+  - Tenant Auto-Match: `pendingTenantEmail` field on properties enables automatic tenant binding at registration
 
 ### API Endpoints
 - **POST /api/auth/set-role**: Set user role (TENANT/OWNER/ADMIN)
