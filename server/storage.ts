@@ -27,6 +27,7 @@ export interface IStorage {
   updateLedger(id: string, updates: Partial<InsertLedger>): Promise<Ledger>;
   
   // Payments (multi-installment)
+  getAllPayments(): Promise<Payment[]>;
   getPaymentsByLedger(ledgerId: string): Promise<Payment[]>;
   createPayment(payment: CreatePaymentRequest): Promise<Payment>;
   updatePayment(id: string, updates: Partial<InsertPayment>): Promise<Payment>;
@@ -128,6 +129,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Payments
+  async getAllPayments(): Promise<Payment[]> {
+    return await db.select().from(payments).orderBy(desc(payments.createdAt));
+  }
+
   async getPaymentsByLedger(ledgerId: string): Promise<Payment[]> {
     return await db.select().from(payments)
       .where(eq(payments.ledgerId, ledgerId))

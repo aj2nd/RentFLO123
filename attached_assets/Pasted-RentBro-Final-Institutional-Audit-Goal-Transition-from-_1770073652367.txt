@@ -1,0 +1,47 @@
+RentBro Final Institutional Audit. Goal: Transition from MVP to High-Fidelity Fintech OS.
+
+1. The Identity Engine:
+
+Role-Gate Logic: Implement a strict /onboarding flow. If a user is not assigned a role, they cannot bypass this screen.
+
+Landlord Property Factory: Owners must be able to list a property with Address, Rent, and a 'Day of Month' trigger.
+
+Tenant Auto-Match: On Tenant login, the system must scan for their email in the properties table and auto-bind them to their home.
+
+2. The Master Ledger (Institutional Transparency):
+
+Unified Transaction View: Build a bank-grade 'Ledger' tab for all users.
+
+Audit Trail: Every entry must show: Date, Transaction ID, Action (e.g., 'Capital Advanced'), and Balance.
+
+Admin Command Center: Ensure the 'Total Exposure' metric is live-synced to the global ledger.
+
+3. Professional UI/UX Refinement:
+
+Typography: Enforce 'Inter' for UI and 'Playfair Display' for headlines and currency.
+
+Zero-Radius Constraint: Every button, card, and input must have border-radius: 0px.
+
+Micro-interactions: Add a subtle fade-in animation to all dashboard widgets to make the 'Loading' state feel premium.
+
+4. Reliability:
+
+Data Integrity: Ensure all money calculations use Decimal or cents logic to avoid floating-point errors.
+
+PWA Readiness: Finalize the manifest.json with high-res black-and-white icons for iOS/Android home screens.
+
+The "Institutional" Checklist for You
+To be "most advanced known to mankind," you need to handle the human side of the technology:
+
+Legal Footer: Add a footer with "Terms of Service," "Privacy Policy," and "Cancellation/Refund Policy." Razorpay will not approve your live account without these links being visible on your site.
+
+Domain Name: Once the Agent gives you the .replit.app link, buy rentbro.in or rentbro.com. Using a custom domain is the single fastest way to look "Institutional".
+
+Support Email: Set up help@rentbro.com. Don't use a Gmail address for a fintech business.
+
+The "RentBro" Payout Loop
+The Landlord opens the app: Sees "RENT PAID" in giant letters.
+
+The Tenant opens the app: Sees a clean progress bar of their split payments.
+
+You open the app: See your 5% margin accumulating and your exposure shrinking in real-time.

@@ -13,7 +13,12 @@ import AdminDashboard from "@/pages/AdminDashboard";
 import AdminMaintenance from "@/pages/AdminMaintenance";
 import OwnerDashboard from "@/pages/OwnerDashboard";
 import TenantDashboard from "@/pages/TenantDashboard";
+import Ledger from "@/pages/Ledger";
+import Terms from "@/pages/Terms";
+import Privacy from "@/pages/Privacy";
+import Refund from "@/pages/Refund";
 import { Navigation } from "@/components/Navigation";
+import { LegalFooter } from "@/components/LegalFooter";
 
 function PrivateRoute({ component: Component, allowedRoles }: { component: React.ComponentType, allowedRoles?: string[] }) {
   const { isAuthenticated, isLoading, user } = useAuth();
@@ -127,6 +132,14 @@ function Router() {
       <Route path="/tenant">
         <PrivateRoute component={TenantDashboard} allowedRoles={['TENANT', 'ADMIN']} />
       </Route>
+      <Route path="/ledger">
+        <PrivateRoute component={Ledger} allowedRoles={['ADMIN', 'OWNER', 'TENANT']} />
+      </Route>
+      
+      {/* Legal Pages (Public) */}
+      <Route path="/terms" component={Terms} />
+      <Route path="/privacy" component={Privacy} />
+      <Route path="/refund" component={Refund} />
 
       <Route component={NotFound} />
     </Switch>
@@ -139,6 +152,7 @@ function App() {
       <TooltipProvider>
         <Toaster />
         <Router />
+        <LegalFooter />
       </TooltipProvider>
     </QueryClientProvider>
   );

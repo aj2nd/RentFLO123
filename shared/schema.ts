@@ -14,6 +14,7 @@ export const properties = pgTable("properties", {
   address: text("address").notNull(),
   ownerId: varchar("owner_id").references(() => users.id).notNull(), // Landlord
   tenantId: varchar("tenant_id").references(() => users.id), // Tenant (optional initially)
+  pendingTenantEmail: text("pending_tenant_email"), // Email of tenant awaiting auto-match
   monthlyRent: integer("monthly_rent").notNull(),
   payoutDay: integer("payout_day").notNull().default(1),
   createdAt: timestamp("created_at").defaultNow(),

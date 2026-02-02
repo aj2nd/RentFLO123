@@ -222,6 +222,7 @@ function AddPropertyModal() {
         payoutDay: parseInt(data.payoutDay),
         ownerId: user.id,
         tenantId,
+        pendingTenantEmail: !tenantId && data.tenantEmail.trim() ? data.tenantEmail.toLowerCase().trim() : undefined,
       });
       
       toast({

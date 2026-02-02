@@ -296,10 +296,16 @@ export async function registerRoutes(
 
   // === PARTIAL PAYMENTS (Split Engine) ===
   
+  // Get all payments (for ledger view)
+  app.get("/api/payments", async (req, res) => {
+    const payments = await storage.getAllPayments();
+    res.json(payments);
+  });
+
   // Get payments for a ledger
   app.get(api.payments.listByLedger.path, async (req, res) => {
     const { ledgerId } = req.params;
-    const payments = await storage.getPaymentsByLedger(ledgerId);
+    const payments = await storage.getPaymentsByLedger(String(ledgerId));
     res.json(payments);
   });
 

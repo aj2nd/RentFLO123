@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, Users, Home, LogOut, Wallet, Wrench } from "lucide-react";
+import { LayoutDashboard, Users, Home, LogOut, Wallet, Wrench, Receipt } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 
 export function Navigation() {
@@ -46,6 +46,12 @@ export function Navigation() {
             icon={<Home size={20} />} 
             label="Tenant View" 
             active={isTenantView} 
+          />
+          <NavItem 
+            href="/ledger" 
+            icon={<Receipt size={20} />} 
+            label="Ledger" 
+            active={location === "/ledger"} 
           />
         </div>
       </div>

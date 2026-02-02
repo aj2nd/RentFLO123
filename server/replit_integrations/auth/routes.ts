@@ -1,6 +1,9 @@
 import type { Express } from "express";
 import { authStorage } from "./storage";
 import { isAuthenticated } from "./replitAuth";
+import { db } from "../../db";
+import { properties } from "@shared/schema";
+import { eq, isNull } from "drizzle-orm";
 
 // Register auth-specific routes
 export function registerAuthRoutes(app: Express): void {
@@ -16,7 +19,7 @@ export function registerAuthRoutes(app: Express): void {
     }
   });
 
-  // Set user role (during onboarding)
+  // Set user role (during onboarding) with Tenant Auto-Match
   app.post("/api/auth/set-role", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
@@ -29,6 +32,23 @@ export function registerAuthRoutes(app: Express): void {
       const user = await authStorage.updateUserRole(userId, role);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
+      }
+
+      // Tenant Auto-Match: If user is a tenant with an email, find any property
+      // that has been pre-configured with their email and auto-bind them
+      if (role === 'TENANT' && user.email) {
+        const matchingProperties = await db.select().from(properties)
+          .where(eq(properties.pendingTenantEmail, user.email.toLowerCase()));
+        
+        // Auto-bind tenant to all matching properties
+        for (const property of matchingProperties) {
+          await db.update(properties)
+            .set({ 
+              tenantId: userId, 
+              pendingTenantEmail: null // Clear the pending email after match
+            })
+            .where(eq(properties.id, property.id));
+        }
       }
 
       res.json(user);
