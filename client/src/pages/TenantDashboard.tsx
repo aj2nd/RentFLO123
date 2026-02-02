@@ -1,6 +1,6 @@
 import { useProperties } from "@/hooks/use-properties";
 import { useLedgers, useCreatePartialPayment, usePaymentsByLedger, useCreateTicket } from "@/hooks/use-ledgers";
-import { Loader2, Home, ArrowRight, ShieldCheck, Wrench, Upload, X } from "lucide-react";
+import { Loader2, Home, ArrowRight, ShieldCheck, Wrench, Upload, X, ToggleLeft, ToggleRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -8,6 +8,7 @@ import { useState, useEffect } from "react";
 import { SuccessAnimation } from "@/components/SuccessAnimation";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
+import { useAuth } from "@/hooks/use-auth";
 
 declare global {
   interface Window {
@@ -21,10 +22,12 @@ export default function TenantDashboard() {
   const { mutate: createPartialPayment, isPending: isCreatingPayment } = useCreatePartialPayment();
   const { toast } = useToast();
   const { mutate: createTicket, isPending: isCreatingTicket } = useCreateTicket();
+  const { user } = useAuth();
   
   const [showSuccess, setShowSuccess] = useState(false);
   const [razorpayLoaded, setRazorpayLoaded] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState<string>("");
+  const [flexiblePaymentEnabled, setFlexiblePaymentEnabled] = useState(false);
   const [showMaintenanceForm, setShowMaintenanceForm] = useState(false);
   const [ticketTitle, setTicketTitle] = useState("");
   const [ticketDescription, setTicketDescription] = useState("");
@@ -51,8 +54,9 @@ export default function TenantDashboard() {
   }, []);
 
   const handlePartialPayment = () => {
-    if (!unpaidLedger || !paymentAmount) return;
-    const amount = parseInt(paymentAmount, 10);
+    if (!unpaidLedger) return;
+    const amountToUse = flexiblePaymentEnabled ? paymentAmount : String(remaining);
+    const amount = parseInt(amountToUse, 10);
     if (isNaN(amount) || amount <= 0) {
       toast({ title: "Invalid Amount", description: "Please enter a valid amount.", variant: "destructive" });
       return;
@@ -123,7 +127,7 @@ export default function TenantDashboard() {
     createTicket(
       {
         propertyId: property.id,
-        tenantId: "user_tenant_1", // In production, from session
+        tenantId: user?.id || "",
         title: ticketTitle,
         description: ticketDescription,
         photoUrl: ticketPhoto || undefined,
@@ -215,58 +219,79 @@ export default function TenantDashboard() {
             </div>
 
             <div className="bg-zinc-950 border border-zinc-800 p-8 flex flex-col gap-6">
-              <div>
-                <h3 className="text-2xl font-bold mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>Split Payment</h3>
-                <p className="text-zinc-500 text-sm">Pay any amount towards your rent.</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-2xl font-bold mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>Payment</h3>
+                  <p className="text-zinc-500 text-sm">Choose your payment method.</p>
+                </div>
+                <button 
+                  onClick={() => setFlexiblePaymentEnabled(!flexiblePaymentEnabled)}
+                  className="flex items-center gap-2 px-3 py-2 border border-zinc-700 hover:bg-zinc-800 transition-colors"
+                  data-testid="toggle-flexible-payment"
+                >
+                  {flexiblePaymentEnabled ? (
+                    <ToggleRight className="text-white" size={24} />
+                  ) : (
+                    <ToggleLeft className="text-zinc-500" size={24} />
+                  )}
+                  <span className="text-sm uppercase tracking-wider">{flexiblePaymentEnabled ? 'Flexible' : 'Full Only'}</span>
+                </button>
               </div>
 
-              <div className="space-y-4">
-                <div>
-                  <label className="text-xs uppercase tracking-wider text-zinc-400 mb-2 block">Amount to Pay (₹)</label>
-                  <Input
-                    type="number"
-                    value={paymentAmount}
-                    onChange={(e) => setPaymentAmount(e.target.value)}
-                    placeholder={`Max ₹${remaining.toLocaleString()}`}
-                    className="bg-zinc-900 border-zinc-700 text-white h-14 text-lg font-mono"
-                    data-testid="input-payment-amount"
-                  />
-                </div>
-                
-                <div className="flex gap-2 flex-wrap">
-                  {[1000, 5000, 10000].map((preset) => (
+              {flexiblePaymentEnabled ? (
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-xs uppercase tracking-wider text-zinc-400 mb-2 block">Amount to Pay (₹)</label>
+                    <Input
+                      type="number"
+                      value={paymentAmount}
+                      onChange={(e) => setPaymentAmount(e.target.value)}
+                      placeholder={`Max ₹${remaining.toLocaleString()}`}
+                      className="bg-zinc-900 border-zinc-700 text-white h-14 text-lg font-mono"
+                      data-testid="input-payment-amount"
+                    />
+                  </div>
+                  
+                  <div className="flex gap-2 flex-wrap">
+                    {[1000, 5000, 10000].map((preset) => (
+                      <Button
+                        key={preset}
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPaymentAmount(String(Math.min(preset, remaining)))}
+                        className="border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+                        data-testid={`button-preset-${preset}`}
+                      >
+                        ₹{preset.toLocaleString()}
+                      </Button>
+                    ))}
                     <Button
-                      key={preset}
                       variant="outline"
                       size="sm"
-                      onClick={() => setPaymentAmount(String(Math.min(preset, remaining)))}
+                      onClick={() => setPaymentAmount(String(remaining))}
                       className="border-zinc-700 text-zinc-300 hover:bg-zinc-800"
-                      data-testid={`button-preset-${preset}`}
+                      data-testid="button-preset-full"
                     >
-                      ₹{preset.toLocaleString()}
+                      Full: ₹{remaining.toLocaleString()}
                     </Button>
-                  ))}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setPaymentAmount(String(remaining))}
-                    className="border-zinc-700 text-zinc-300 hover:bg-zinc-800"
-                    data-testid="button-preset-full"
-                  >
-                    Full: ₹{remaining.toLocaleString()}
-                  </Button>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="p-4 border border-zinc-800 bg-zinc-900/50 text-center">
+                  <p className="text-zinc-400 text-sm mb-2">Full payment amount</p>
+                  <p className="text-3xl font-bold font-mono" data-testid="text-full-amount">₹{remaining.toLocaleString()}</p>
+                </div>
+              )}
 
               <Button 
                 onClick={handlePartialPayment}
-                disabled={isCreatingPayment || !paymentAmount}
+                disabled={isCreatingPayment || (flexiblePaymentEnabled && !paymentAmount)}
                 className="w-full bg-white text-black hover:bg-zinc-200 border-0 h-16 text-lg font-bold tracking-tighter uppercase"
                 data-testid="button-pay-now"
               >
                 {isCreatingPayment ? <Loader2 className="animate-spin mr-2 w-5 h-5" /> : (
                   <span className="flex items-center gap-3">
-                    Pay ₹{paymentAmount || '0'} <ArrowRight size={20} />
+                    Pay ₹{flexiblePaymentEnabled ? (paymentAmount || '0') : remaining.toLocaleString()} <ArrowRight size={20} />
                   </span>
                 )}
               </Button>

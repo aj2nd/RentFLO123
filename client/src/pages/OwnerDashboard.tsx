@@ -27,20 +27,22 @@ export default function OwnerDashboard() {
 
       <div className="mb-16">
         {latestPayment ? (
-          <div className="border-l-4 border-white pl-8 py-2">
-            <p className="text-zinc-500 text-lg mb-2 uppercase tracking-widest font-medium">Last Payout Received</p>
-            <h2 className="text-6xl md:text-8xl font-bold tracking-tighter text-white" style={{ fontFamily: 'Inter, sans-serif' }} data-testid="text-last-payout">
-              ₹{latestPayment.amountAdvanced.toLocaleString()}
+          <div className="border-l-4 border-white pl-8 py-4">
+            <h2 className="text-5xl md:text-7xl font-bold tracking-tight text-white mb-4" style={{ fontFamily: 'Georgia, Times, serif' }} data-testid="text-rent-credited">
+              RENT CREDITED
             </h2>
+            <p className="text-6xl md:text-8xl font-bold tracking-tighter text-white" style={{ fontFamily: 'Inter, sans-serif' }} data-testid="text-last-payout">
+              ₹{latestPayment.amountAdvanced.toLocaleString()}
+            </p>
             <p className="text-zinc-400 mt-4 flex items-center gap-2">
               <span className="w-2 h-2 bg-white inline-block"></span>
-              Credited to HDFC Bank ****4921
+              Credited to your bank account on {new Date(latestPayment.updatedAt || latestPayment.createdAt!).toLocaleDateString()}
             </p>
           </div>
         ) : (
           <div className="border-l-4 border-zinc-800 pl-8 py-2">
              <p className="text-zinc-500 text-lg mb-2 uppercase tracking-widest font-medium">Payout Status</p>
-             <h2 className="text-5xl font-bold tracking-tighter text-zinc-700" style={{ fontFamily: 'Inter, sans-serif' }}>NO RECENT ACTIVITY</h2>
+             <h2 className="text-5xl font-bold tracking-tighter text-zinc-700" style={{ fontFamily: 'Georgia, Times, serif' }}>AWAITING PAYOUT</h2>
           </div>
         )}
       </div>

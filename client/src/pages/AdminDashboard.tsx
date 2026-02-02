@@ -130,6 +130,29 @@ export default function AdminDashboard() {
         </p>
       </header>
 
+      {/* Exposure Tracker - Main Focus */}
+      <div className="mb-12 p-8 border-2 border-white bg-zinc-950">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div>
+            <p className="text-zinc-400 text-sm uppercase tracking-widest mb-2">Total Exposure</p>
+            <h2 className="text-5xl md:text-7xl font-bold tracking-tighter" style={{ fontFamily: 'Inter, sans-serif' }} data-testid="text-total-exposure">
+              ₹{((stats?.totalAdvanced || 0) - (stats?.totalCollected || 0)).toLocaleString()}
+            </h2>
+            <p className="text-zinc-500 mt-2">Rent Advanced to Owners − Rent Collected from Tenants</p>
+          </div>
+          <div className="flex gap-8">
+            <div className="text-center">
+              <p className="text-3xl font-mono text-white" data-testid="text-advanced">₹{(stats?.totalAdvanced || 0).toLocaleString()}</p>
+              <p className="text-xs text-zinc-500 uppercase tracking-wider mt-1">Advanced</p>
+            </div>
+            <div className="text-center">
+              <p className="text-3xl font-mono text-white" data-testid="text-collected">₹{(stats?.totalCollected || 0).toLocaleString()}</p>
+              <p className="text-xs text-zinc-500 uppercase tracking-wider mt-1">Collected</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
         <StatCard 

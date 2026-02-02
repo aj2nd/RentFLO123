@@ -1,4 +1,4 @@
-import { Switch, Route, useLocation } from "wouter";
+import { Switch, Route, useLocation, Redirect } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -14,8 +14,8 @@ import OwnerDashboard from "@/pages/OwnerDashboard";
 import TenantDashboard from "@/pages/TenantDashboard";
 import { Navigation } from "@/components/Navigation";
 
-function PrivateRoute({ component: Component }: { component: React.ComponentType }) {
-  const { isAuthenticated, isLoading } = useAuth();
+function PrivateRoute({ component: Component, allowedRoles }: { component: React.ComponentType, allowedRoles?: string[] }) {
+  const { isAuthenticated, isLoading, user } = useAuth();
 
   if (isLoading) {
     return (
@@ -30,6 +30,15 @@ function PrivateRoute({ component: Component }: { component: React.ComponentType
     return null;
   }
 
+  if (allowedRoles && user?.role && !allowedRoles.includes(user.role)) {
+    const roleRedirects: Record<string, string> = {
+      'ADMIN': '/admin',
+      'OWNER': '/owner',
+      'TENANT': '/tenant',
+    };
+    return <Redirect to={roleRedirects[user.role] || '/'} />;
+  }
+
   return (
     <>
       <Navigation />
@@ -38,23 +47,47 @@ function PrivateRoute({ component: Component }: { component: React.ComponentType
   );
 }
 
+function DashboardRedirect() {
+  const { user, isLoading } = useAuth();
+  
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-black text-white">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
+  
+  if (!user) {
+    return <LandingPage />;
+  }
+
+  const roleRedirects: Record<string, string> = {
+    'ADMIN': '/admin',
+    'OWNER': '/owner',
+    'TENANT': '/tenant',
+  };
+  
+  return <Redirect to={roleRedirects[user.role || 'TENANT']} />;
+}
+
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={LandingPage} />
+      <Route path="/" component={DashboardRedirect} />
       
-      {/* Protected Routes */}
+      {/* Protected Routes with Role Restrictions */}
       <Route path="/admin">
-        <PrivateRoute component={AdminDashboard} />
+        <PrivateRoute component={AdminDashboard} allowedRoles={['ADMIN']} />
       </Route>
       <Route path="/admin/maintenance">
-        <PrivateRoute component={AdminMaintenance} />
+        <PrivateRoute component={AdminMaintenance} allowedRoles={['ADMIN']} />
       </Route>
       <Route path="/owner">
-        <PrivateRoute component={OwnerDashboard} />
+        <PrivateRoute component={OwnerDashboard} allowedRoles={['OWNER', 'ADMIN']} />
       </Route>
       <Route path="/tenant">
-        <PrivateRoute component={TenantDashboard} />
+        <PrivateRoute component={TenantDashboard} allowedRoles={['TENANT', 'ADMIN']} />
       </Route>
 
       <Route component={NotFound} />
