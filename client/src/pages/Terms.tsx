@@ -9,17 +9,17 @@ export default function Terms() {
         <div className="space-y-6 text-zinc-300">
           <section>
             <h2 className="text-xl font-semibold mb-3 text-white">1. Agreement to Terms</h2>
-            <p>By accessing or using RentBro's services, you agree to be bound by these Terms of Service. If you disagree with any part of these terms, you may not access the service.</p>
+            <p>By accessing or using RentFlo's services, you agree to be bound by these Terms of Service. If you disagree with any part of these terms, you may not access the service.</p>
           </section>
 
           <section>
             <h2 className="text-xl font-semibold mb-3 text-white">2. Description of Service</h2>
-            <p>RentBro is a rent-advance service that provides liquidity to property owners by advancing rent payments before tenant collection. Our platform manages property registration, payment processing, KYC verification, and tenant-landlord coordination.</p>
+            <p>RentFlo is a rent-advance service that provides liquidity to property owners by advancing rent payments before tenant collection. Our platform manages property registration, payment processing, KYC verification, and tenant-landlord coordination.</p>
           </section>
 
           <section>
             <h2 className="text-xl font-semibold mb-3 text-white">3. Service Fee</h2>
-            <p><strong className="text-white">RentBro charges a 5% service fee</strong> on all rent advances provided to property owners. This fee is deducted from the advance amount before disbursement. For example, if the monthly rent is ₹10,000, the property owner will receive ₹9,500 (after deducting the 5% service fee of ₹500). The tenant remains obligated to pay the full rent amount.</p>
+            <p><strong className="text-white">RentFlo charges a 5% service fee</strong> on all rent advances provided to property owners. This fee is deducted from the advance amount before disbursement. For example, if the monthly rent is ₹10,000, the property owner will receive ₹9,500 (after deducting the 5% service fee of ₹500). The tenant remains obligated to pay the full rent amount.</p>
           </section>
 
           <section>
@@ -29,12 +29,12 @@ export default function Terms() {
 
           <section>
             <h2 className="text-xl font-semibold mb-3 text-white">5. Payment Terms</h2>
-            <p>All payments are processed through Razorpay. By using our payment services, you agree to Razorpay's terms of service. RentBro charges a service fee as disclosed during the transaction process.</p>
+            <p>All payments are processed through Razorpay. By using our payment services, you agree to Razorpay's terms of service. RentFlo charges a service fee as disclosed during the transaction process.</p>
           </section>
 
           <section>
             <h2 className="text-xl font-semibold mb-3 text-white">6. Limitation of Liability</h2>
-            <p>RentBro shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use of or inability to use the service.</p>
+            <p>RentFlo shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use of or inability to use the service.</p>
           </section>
 
           <section>
@@ -44,7 +44,7 @@ export default function Terms() {
 
           <section>
             <h2 className="text-xl font-semibold mb-3 text-white">8. Contact</h2>
-            <p>For questions about these Terms, please contact us at <a href="mailto:legal@rentbro.com" className="text-white underline">legal@rentbro.com</a>.</p>
+            <p>For questions about these Terms, please contact us at <a href="mailto:legal@rentflo.com" className="text-white underline">legal@rentflo.com</a>.</p>
           </section>
         </div>
 

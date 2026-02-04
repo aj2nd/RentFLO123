@@ -39,7 +39,7 @@ export default function Privacy() {
 
           <section>
             <h2 className="text-xl font-semibold mb-3 text-white">7. Contact</h2>
-            <p>For privacy-related inquiries, contact us at <a href="mailto:privacy@rentbro.com" className="text-white underline">privacy@rentbro.com</a>.</p>
+            <p>For privacy-related inquiries, contact us at <a href="mailto:privacy@rentflo.com" className="text-white underline">privacy@rentflo.com</a>.</p>
           </section>
         </div>
 

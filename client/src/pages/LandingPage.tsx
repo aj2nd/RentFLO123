@@ -5,7 +5,7 @@ export default function LandingPage() {
     <div className="min-h-screen bg-black text-white selection:bg-white selection:text-black">
       {/* Nav */}
       <nav className="fixed w-full z-50 px-6 py-6 flex justify-between items-center backdrop-blur-sm border-b border-white/5">
-        <div className="text-2xl font-bold tracking-tighter">RentBro.</div>
+        <div className="text-2xl font-bold tracking-tighter">RentFlo.</div>
         <a href="/api/login" className="px-6 py-2 bg-white text-black font-medium text-sm hover:bg-zinc-200 transition-colors rounded-none" data-testid="link-login">
           LOGIN
         </a>
@@ -90,7 +90,7 @@ export default function LandingPage() {
       </section>
       
       <footer className="py-12 px-6 md:px-12 border-t border-zinc-900 text-center text-zinc-600 text-sm">
-        <p>© 2025 RentBro Operating System. All rights reserved.</p>
+        <p>© 2025 RentFlo Operating System. All rights reserved.</p>
       </footer>
     </div>
   );

@@ -102,7 +102,7 @@ export default function TenantDashboard() {
             key: orderData.keyId,
             amount: orderData.amount,
             currency: orderData.currency,
-            name: "RentBro",
+            name: "RentFlo",
             description: `Partial rent payment for ${property?.address}`,
             order_id: orderData.orderId,
             handler: function (response: any) {
@@ -274,7 +274,7 @@ export default function TenantDashboard() {
       <header className="mb-12">
         <div className="inline-flex items-center gap-2 px-3 py-1 border border-zinc-800 bg-zinc-900/50 mb-6">
           <span className="w-2 h-2 bg-white animate-pulse"></span>
-          <span className="text-xs font-medium uppercase tracking-wider text-zinc-400">RentBro Secure Pay</span>
+          <span className="text-xs font-medium uppercase tracking-wider text-zinc-400">RentFlo Secure Pay</span>
         </div>
         <h1 className="text-4xl md:text-5xl font-bold tracking-tighter mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>Tenant Dashboard</h1>
         <p className="text-zinc-500">Manage your stay at {property?.address || "your residence"}.</p>

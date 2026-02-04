@@ -1,6 +1,6 @@
 {
-  "name": "RentBro - Fintech Operating System",
-  "short_name": "RentBro",
+  "name": "RentFlo - Fintech Operating System",
+  "short_name": "RentFlo",
   "description": "Rent advance platform providing liquidity to landlords",
   "start_url": "/",
   "display": "standalone",

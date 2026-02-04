@@ -9,12 +9,12 @@ export default function Refund() {
         <div className="space-y-6 text-zinc-300">
           <section className="bg-zinc-900 p-6 border-2 border-white">
             <h2 className="text-xl font-semibold mb-3 text-white">IMPORTANT: Non-Refundable Advances</h2>
-            <p className="text-white font-medium">Rent advances are non-refundable once disbursed to the property owner. Once RentBro has transferred the advance amount to the landlord's bank account, the transaction is final and cannot be reversed. The tenant remains legally obligated to complete all scheduled payments as agreed in the rent advance agreement.</p>
+            <p className="text-white font-medium">Rent advances are non-refundable once disbursed to the property owner. Once RentFlo has transferred the advance amount to the landlord's bank account, the transaction is final and cannot be reversed. The tenant remains legally obligated to complete all scheduled payments as agreed in the rent advance agreement.</p>
           </section>
 
           <section>
             <h2 className="text-xl font-semibold mb-3 text-white">1. Rent Advance Cancellation</h2>
-            <p>Once a rent advance has been disbursed to a property owner, it cannot be cancelled. The advance is a commitment made by RentBro on behalf of the tenant, and the tenant must fulfill their payment obligations according to the agreed schedule.</p>
+            <p>Once a rent advance has been disbursed to a property owner, it cannot be cancelled. The advance is a commitment made by RentFlo on behalf of the tenant, and the tenant must fulfill their payment obligations according to the agreed schedule.</p>
           </section>
 
           <section>
@@ -24,7 +24,7 @@ export default function Refund() {
 
           <section>
             <h2 className="text-xl font-semibold mb-3 text-white">3. Service Fee Refunds</h2>
-            <p>Service fees charged by RentBro are non-refundable. These fees compensate for the financial risk and administrative costs incurred in providing the rent advance service.</p>
+            <p>Service fees charged by RentFlo are non-refundable. These fees compensate for the financial risk and administrative costs incurred in providing the rent advance service.</p>
           </section>
 
           <section>
@@ -39,7 +39,7 @@ export default function Refund() {
 
           <section>
             <h2 className="text-xl font-semibold mb-3 text-white">6. Dispute Resolution</h2>
-            <p>For payment disputes or refund requests, please contact our support team at <a href="mailto:support@rentbro.com" className="text-white underline">support@rentbro.com</a>. We will investigate and respond within 5 business days.</p>
+            <p>For payment disputes or refund requests, please contact our support team at <a href="mailto:support@rentflo.com" className="text-white underline">support@rentflo.com</a>. We will investigate and respond within 5 business days.</p>
           </section>
 
           <section>

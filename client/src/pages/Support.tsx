@@ -24,11 +24,11 @@ export default function Support() {
                 <div>
                   <p className="text-white font-medium">Email Support</p>
                   <a 
-                    href="mailto:support@rentbro.com" 
+                    href="mailto:support@rentflo.com" 
                     className="text-zinc-400 hover:text-white transition-colors"
                     data-testid="support-email"
                   >
-                    support@rentbro.com
+                    support@rentflo.com
                   </a>
                 </div>
               </div>
@@ -88,7 +88,7 @@ export default function Support() {
             <h2 className="text-xl font-semibold mb-4 text-white">Escalation</h2>
             <p>
               If your issue remains unresolved after 48 hours, please escalate to our senior support team at{" "}
-              <a href="mailto:escalation@rentbro.com" className="text-white underline">escalation@rentbro.com</a>
+              <a href="mailto:escalation@rentflo.com" className="text-white underline">escalation@rentflo.com</a>
             </p>
           </section>
         </div>

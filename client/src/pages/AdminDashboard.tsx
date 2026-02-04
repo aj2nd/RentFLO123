@@ -163,7 +163,7 @@ export default function AdminDashboard() {
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = `rentbro_audit_log_${new Date().toISOString().split("T")[0]}.csv`;
+    link.download = `rentflo_audit_log_${new Date().toISOString().split("T")[0]}.csv`;
     link.click();
     
     toast({ title: "Download Started", description: "Audit log CSV is being downloaded." });
