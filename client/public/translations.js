@@ -76,7 +76,12 @@ const translations = {
   }
 };
 
-// Export for ES modules
+// Export to window for browser script access
+if (typeof window !== 'undefined') {
+  window.translations = translations;
+}
+
+// Export for ES modules (Node.js)
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { translations };
 }
