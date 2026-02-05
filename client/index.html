@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    <title>RentFLO - Never Chase Rent</title>
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#000000" />
@@ -11,10 +12,260 @@
     <meta name="apple-mobile-web-app-title" content="RentFLO" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Fira+Code:wght@300..700&family=Geist+Mono:wght@100..900&family=Geist:wght@100..900&family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400..700;1,400..700&family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Outfit:wght@100..900&family=Oxanium:wght@200..800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=Roboto:ital,wght@0,100..900;1,100..900&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&family=Space+Grotesk:wght@300..700&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+    <!-- Noto Sans for Devanagari (Hindi) and Kannada scripts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Noto+Sans+Kannada:wght@400;500;600;700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+    <style>
+      /* i18n Header Styles */
+      .i18n-header {
+        position: sticky;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 9999;
+        background-color: #000000;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        padding: 12px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 56px;
+        font-family: 'Inter', 'Noto Sans Devanagari', 'Noto Sans Kannada', sans-serif;
+      }
+
+      .i18n-header .logo {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #ffffff;
+        font-weight: 700;
+        font-size: 20px;
+        letter-spacing: -0.5px;
+      }
+
+      .i18n-header .logo-placeholder {
+        width: 32px;
+        height: 32px;
+        background: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #000000;
+        font-weight: 700;
+        font-size: 14px;
+      }
+
+      .i18n-header .language-switcher {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .i18n-header .language-switcher label {
+        color: #a1a1aa;
+        font-size: 12px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .i18n-header .language-select {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background-color: #18181b;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 9999px;
+        color: #ffffff;
+        padding: 8px 36px 8px 16px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        outline: none;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        font-family: 'Inter', 'Noto Sans Devanagari', 'Noto Sans Kannada', sans-serif;
+        line-height: 1.6;
+        min-height: 40px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23a1a1aa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        background-size: 16px;
+      }
+
+      .i18n-header .language-select:hover {
+        border-color: rgba(255, 255, 255, 0.4);
+      }
+
+      .i18n-header .language-select:focus {
+        border-color: #ffffff;
+        box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
+      }
+
+      .i18n-header .language-select option {
+        background-color: #18181b;
+        color: #ffffff;
+        padding: 8px;
+      }
+
+      /* Responsive adjustments */
+      @media (max-width: 480px) {
+        .i18n-header {
+          padding: 10px 16px;
+        }
+
+        .i18n-header .logo {
+          font-size: 16px;
+        }
+
+        .i18n-header .logo-placeholder {
+          width: 28px;
+          height: 28px;
+          font-size: 12px;
+        }
+
+        .i18n-header .language-switcher label {
+          display: none;
+        }
+
+        .i18n-header .language-select {
+          padding: 6px 32px 6px 12px;
+          font-size: 13px;
+          min-height: 36px;
+        }
+      }
+
+      /* Body adjustment for sticky header */
+      body {
+        padding-top: 0;
+        margin: 0;
+      }
+    </style>
   </head>
   <body>
+    <!-- i18n Language Switcher Header -->
+    <header class="i18n-header" data-testid="header-i18n">
+      <div class="logo">
+        <div class="logo-placeholder" data-testid="logo-placeholder">RF</div>
+        <span>RentFLO</span>
+      </div>
+      <div class="language-switcher">
+        <label for="language-select" data-i18n="change_language">Change Language</label>
+        <select id="language-select" class="language-select" data-testid="select-language">
+          <option value="en">English</option>
+          <option value="hi">हिन्दी</option>
+          <option value="kn">ಕನ್ನಡ</option>
+        </select>
+      </div>
+    </header>
+
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+
+    <!-- i18n Script -->
+    <script src="/translations.js"></script>
+    <script>
+      (function() {
+        // i18n Configuration
+        const STORAGE_KEY = 'rentflo_language';
+        const DEFAULT_LANG = 'en';
+        const SUPPORTED_LANGS = ['en', 'hi', 'kn'];
+
+        // Get translations (loaded from translations.js)
+        function getTranslations() {
+          return window.translations || {
+            en: { change_language: 'Change Language' },
+            hi: { change_language: 'भाषा बदलें' },
+            kn: { change_language: 'ಭಾಷೆ ಬದಲಾಯಿಸಿ' }
+          };
+        }
+
+        // Get saved language or default
+        function getSavedLanguage() {
+          try {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved && SUPPORTED_LANGS.includes(saved)) {
+              return saved;
+            }
+          } catch (e) {
+            console.warn('localStorage not available');
+          }
+          return DEFAULT_LANG;
+        }
+
+        // Save language preference
+        function saveLanguage(lang) {
+          try {
+            localStorage.setItem(STORAGE_KEY, lang);
+          } catch (e) {
+            console.warn('Could not save language preference');
+          }
+        }
+
+        // Update all elements with data-i18n attribute
+        function updateTranslations(lang) {
+          const t = getTranslations();
+          const langData = t[lang] || t[DEFAULT_LANG];
+
+          document.querySelectorAll('[data-i18n]').forEach(function(el) {
+            const key = el.getAttribute('data-i18n');
+            if (langData[key]) {
+              el.textContent = langData[key];
+            }
+          });
+
+          // Update HTML lang attribute for SEO/accessibility
+          document.documentElement.lang = lang;
+
+          // Dispatch custom event for React components to listen
+          window.dispatchEvent(new CustomEvent('languageChange', { detail: { lang: lang } }));
+        }
+
+        // Initialize i18n
+        function initI18n() {
+          const select = document.getElementById('language-select');
+          if (!select) return;
+
+          const currentLang = getSavedLanguage();
+          
+          // Set initial select value
+          select.value = currentLang;
+          
+          // Apply initial translations
+          updateTranslations(currentLang);
+
+          // Listen for language changes
+          select.addEventListener('change', function(e) {
+            const newLang = e.target.value;
+            saveLanguage(newLang);
+            updateTranslations(newLang);
+          });
+        }
+
+        // Run on DOM ready
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', initI18n);
+        } else {
+          initI18n();
+        }
+
+        // Expose for React integration
+        window.i18n = {
+          getLanguage: getSavedLanguage,
+          setLanguage: function(lang) {
+            if (SUPPORTED_LANGS.includes(lang)) {
+              saveLanguage(lang);
+              updateTranslations(lang);
+              const select = document.getElementById('language-select');
+              if (select) select.value = lang;
+            }
+          },
+          translate: function(key) {
+            const t = getTranslations();
+            const lang = getSavedLanguage();
+            return (t[lang] && t[lang][key]) || (t[DEFAULT_LANG] && t[DEFAULT_LANG][key]) || key;
+          }
+        };
+      })();
+    </script>
   </body>
 </html>
