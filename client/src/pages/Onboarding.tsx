@@ -19,7 +19,7 @@ export default function Onboarding() {
     onSuccess: (_, role) => {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       toast({
-        title: "Welcome to RentFlo",
+        title: "Welcome to RentFLO",
         description: role === "OWNER" ? "Let's set up your first property." : "Find your home and start paying rent.",
       });
       setLocation(role === "OWNER" ? "/owner" : "/tenant");
@@ -42,7 +42,7 @@ export default function Onboarding() {
     <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-8">
       <div className="max-w-2xl w-full text-center mb-16">
         <h1 className="text-5xl md:text-7xl font-bold tracking-tighter mb-4" style={{ fontFamily: 'Inter, sans-serif' }}>
-          RENTFLO
+          RentFLO
         </h1>
         <p className="text-zinc-400 text-lg">
           The future of rent management. Tell us who you are.

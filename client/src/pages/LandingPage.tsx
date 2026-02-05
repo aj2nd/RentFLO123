@@ -5,7 +5,7 @@ export default function LandingPage() {
     <div className="min-h-screen bg-black text-white selection:bg-white selection:text-black">
       {/* Nav */}
       <nav className="fixed w-full z-50 px-6 py-6 flex justify-between items-center backdrop-blur-sm border-b border-white/5">
-        <div className="text-2xl font-bold tracking-tighter">RentFlo.</div>
+        <div className="text-2xl font-bold tracking-tighter">RentFLO.</div>
         <a href="/api/login" className="px-6 py-2 bg-white text-black font-medium text-sm hover:bg-zinc-200 transition-colors rounded-none" data-testid="link-login">
           LOGIN
         </a>
@@ -15,9 +15,9 @@ export default function LandingPage() {
       <main className="pt-32 pb-20 px-6 md:px-12 max-w-8xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center min-h-[90vh]">
         <div className="space-y-8">
           <h1 className="text-6xl md:text-8xl font-bold tracking-tighter leading-[0.9] glow-text">
-            LIQUIDITY<br />
-            FOR<br />
-            LANDLORDS.
+            NEVER<br />
+            CHASE<br />
+            RENT.
           </h1>
           <p className="text-xl md:text-2xl text-zinc-400 font-light max-w-md border-l border-zinc-800 pl-6">
             We pay your rent on the 1st. <br/>
@@ -90,7 +90,7 @@ export default function LandingPage() {
       </section>
       
       <footer className="py-12 px-6 md:px-12 border-t border-zinc-900 text-center text-zinc-600 text-sm">
-        <p>© 2025 RentFlo Operating System. All rights reserved.</p>
+        <p>© 2025 RentFLO Operating System. All rights reserved.</p>
       </footer>
     </div>
   );

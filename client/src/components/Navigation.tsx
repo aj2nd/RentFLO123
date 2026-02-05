@@ -18,7 +18,7 @@ export function Navigation() {
     <nav className="fixed left-0 top-0 h-full w-20 md:w-64 bg-background border-r border-white/10 flex flex-col justify-between py-8 z-50 transition-all duration-300">
       <div className="flex flex-col gap-2">
         <div className="px-6 mb-12">
-          <h1 className="text-2xl font-bold tracking-tighter text-white hidden md:block">RentFlo.</h1>
+          <h1 className="text-2xl font-bold tracking-tighter text-white hidden md:block">RentFLO.</h1>
           <h1 className="text-2xl font-bold tracking-tighter text-white md:hidden">RF.</h1>
         </div>
 

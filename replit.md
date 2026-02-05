@@ -1,8 +1,8 @@
-# RentFlo - Fintech Operating System
+# RentFLO - Fintech Operating System
 
 ## Overview
 
-RentFlo is a rent-advance fintech platform that provides liquidity for landlords by advancing rent payments before tenant collection. The system manages the complete lifecycle of rent advances: paying property owners upfront, collecting from tenants via Razorpay, and tracking financial exposure through a ledger system. The application features role-based dashboards for Admins, Owners, and Tenants with a strict black-and-white minimalist design aesthetic.
+RentFLO is a rent-advance fintech platform that provides liquidity for landlords by advancing rent payments before tenant collection. The system manages the complete lifecycle of rent advances: paying property owners upfront, collecting from tenants via Razorpay, and tracking financial exposure through a ledger system. The application features role-based dashboards for Admins, Owners, and Tenants with a strict black-and-white minimalist design aesthetic.
 
 ## User Preferences
 
