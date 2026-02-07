@@ -122,11 +122,11 @@ function Router() {
       <Route path="/onboarding" component={OnboardingRoute} />
       
       {/* Protected Routes with Role Restrictions */}
-      <Route path="/admin">
-        <PrivateRoute component={AdminDashboard} allowedRoles={['ADMIN']} />
-      </Route>
       <Route path="/admin/maintenance">
         <PrivateRoute component={AdminMaintenance} allowedRoles={['ADMIN']} />
+      </Route>
+      <Route path="/admin">
+        <PrivateRoute component={AdminDashboard} allowedRoles={['ADMIN']} />
       </Route>
       <Route path="/owner">
         <PrivateRoute component={OwnerDashboard} allowedRoles={['OWNER', 'ADMIN']} />

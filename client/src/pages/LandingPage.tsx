@@ -1,13 +1,16 @@
 import { ArrowRight, CheckCircle2 } from "lucide-react";
+import { useI18n } from "@/hooks/use-i18n";
 
 export default function LandingPage() {
+  const { t } = useI18n();
+
   return (
     <div className="min-h-screen bg-black text-white selection:bg-white selection:text-black">
       {/* Nav */}
       <nav className="fixed w-full z-50 px-6 py-6 flex justify-between items-center backdrop-blur-sm border-b border-white/5">
         <div className="text-2xl font-bold tracking-tighter">RentFLO.</div>
-        <a href="/api/login" className="px-6 py-2 bg-white text-black font-medium text-sm hover:bg-zinc-200 transition-colors rounded-none" data-testid="link-login">
-          LOGIN
+        <a href="/api/login" className="px-6 py-2 bg-white text-black font-medium text-sm hover:bg-zinc-200 transition-colors rounded-none" data-testid="link-login" data-i18n="login">
+          {t("login")}
         </a>
       </nav>
 
@@ -20,17 +23,26 @@ export default function LandingPage() {
             RENT.
           </h1>
           <p className="text-xl md:text-2xl text-zinc-400 font-light max-w-md border-l border-zinc-800 pl-6">
-            We pay your rent on the 1st. <br/>
-            Your tenant pays us later. <br/>
-            Zero friction.
+            <span data-i18n="we_pay_your_rent">{t("we_pay_your_rent")}</span> <br/>
+            <span data-i18n="your_tenant_pays_later">{t("your_tenant_pays_later")}</span> <br/>
+            <span data-i18n="zero_friction">{t("zero_friction")}</span>
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 pt-8">
             <a href="/api/login" className="inline-flex items-center justify-center h-14 px-8 bg-white text-black font-bold text-lg tracking-tight hover:bg-zinc-200 transition-all group rounded-none" data-testid="button-get-started">
-              GET STARTED <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
+              <span data-i18n="get_started">{t("get_started")}</span> <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
             </a>
-            <button className="inline-flex items-center justify-center h-14 px-8 border border-zinc-800 text-zinc-400 hover:text-white hover:border-white transition-all font-medium rounded-none">
-              VIEW DEMO
+            <button 
+              onClick={() => {
+                const section = document.getElementById('features-section');
+                if (section) {
+                  section.scrollIntoView({ behavior: 'smooth' });
+                }
+              }}
+              className="inline-flex items-center justify-center h-14 px-8 border border-zinc-800 text-zinc-400 hover:text-white hover:border-white transition-all font-medium rounded-none"
+              data-testid="button-view-demo"
+            >
+              <span data-i18n="view_demo">{t("view_demo")}</span>
             </button>
           </div>
         </div>
@@ -72,23 +84,31 @@ export default function LandingPage() {
       </main>
 
       {/* Features / USP */}
-      <section className="py-24 px-6 md:px-12 border-t border-zinc-900">
+      <section id="features-section" className="py-24 px-6 md:px-12 border-t border-zinc-900">
         <div className="max-w-3xl mx-auto flex flex-col" style={{ gap: '48px' }}>
            <Feature 
-             title="Get Your Rent on Time" 
-             desc="Rent credited on the 1st, every month."
+             title={t("usp_1_title")} 
+             desc={t("usp_1_desc")}
+             titleKey="usp_1_title"
+             descKey="usp_1_desc"
            />
            <Feature 
-             title="Zero Risk" 
-             desc="You get paid even if the tenant delays or leaves."
+             title={t("usp_2_title")} 
+             desc={t("usp_2_desc")}
+             titleKey="usp_2_title"
+             descKey="usp_2_desc"
            />
            <Feature 
-             title="Easy Repairs & Maintenance" 
-             desc="We manage repairs from start to finish."
+             title={t("usp_3_title")} 
+             desc={t("usp_3_desc")}
+             titleKey="usp_3_title"
+             descKey="usp_3_desc"
            />
            <Feature 
-             title="No Tenant Chasing" 
-             desc="We handle all follow-ups and disputes for you."
+             title={t("usp_4_title")} 
+             desc={t("usp_4_desc")}
+             titleKey="usp_4_title"
+             descKey="usp_4_desc"
            />
         </div>
       </section>
@@ -100,15 +120,15 @@ export default function LandingPage() {
   );
 }
 
-function Feature({ title, desc }: { title: string, desc: string }) {
+function Feature({ title, desc, titleKey, descKey }: { title: string, desc: string, titleKey: string, descKey: string }) {
   return (
     <div className="flex items-start gap-5">
       <div className="flex-shrink-0 mt-1">
         <CheckCircle2 className="w-7 h-7 text-white" strokeWidth={2.5} />
       </div>
       <div>
-        <h3 className="text-xl md:text-2xl tracking-tight text-white" style={{ fontWeight: 800 }}>{title}</h3>
-        <p className="mt-2 text-base leading-relaxed" style={{ fontWeight: 400, color: '#86868b' }}>{desc}</p>
+        <h3 className="text-xl md:text-2xl tracking-tight text-white" style={{ fontWeight: 800 }} data-i18n={titleKey}>{title}</h3>
+        <p className="mt-2 text-base leading-relaxed" style={{ fontWeight: 400, color: '#86868b' }} data-i18n={descKey}>{desc}</p>
       </div>
     </div>
   );
