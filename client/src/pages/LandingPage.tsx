@@ -71,20 +71,24 @@ export default function LandingPage() {
         </div>
       </main>
 
-      {/* Features */}
+      {/* Features / USP */}
       <section className="py-24 px-6 md:px-12 border-t border-zinc-900">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12">
+        <div className="max-w-3xl mx-auto flex flex-col" style={{ gap: '48px' }}>
            <Feature 
-             title="Instant Payouts" 
-             desc="Rent is credited to your bank account on day 1, regardless of when the tenant pays."
+             title="Get Your Rent on Time" 
+             desc="Rent credited on the 1st, every month."
            />
            <Feature 
-             title="Automated Ledger" 
-             desc="Real-time tracking of all your properties, advanced amounts, and settlements."
+             title="Zero Risk" 
+             desc="You get paid even if the tenant delays or leaves."
            />
            <Feature 
-             title="Risk Free" 
-             desc="We assume the risk of tenant delays. You maintain consistent cash flow."
+             title="Easy Repairs & Maintenance" 
+             desc="We manage repairs from start to finish."
+           />
+           <Feature 
+             title="No Tenant Chasing" 
+             desc="We handle all follow-ups and disputes for you."
            />
         </div>
       </section>
@@ -98,10 +102,14 @@ export default function LandingPage() {
 
 function Feature({ title, desc }: { title: string, desc: string }) {
   return (
-    <div className="space-y-4">
-      <CheckCircle2 className="w-8 h-8 text-white" />
-      <h3 className="text-2xl font-bold tracking-tight text-white">{title}</h3>
-      <p className="text-zinc-500 leading-relaxed">{desc}</p>
+    <div className="flex items-start gap-5">
+      <div className="flex-shrink-0 mt-1">
+        <CheckCircle2 className="w-7 h-7 text-white" strokeWidth={2.5} />
+      </div>
+      <div>
+        <h3 className="text-xl md:text-2xl tracking-tight text-white" style={{ fontWeight: 800 }}>{title}</h3>
+        <p className="mt-2 text-base leading-relaxed" style={{ fontWeight: 400, color: '#86868b' }}>{desc}</p>
+      </div>
     </div>
   );
 }
