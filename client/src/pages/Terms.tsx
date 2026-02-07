@@ -1,7 +1,10 @@
+import { LegalHeader } from "@/components/LegalHeader";
+
 export default function Terms() {
   return (
     <div className="min-h-screen bg-black text-white p-8 pb-24" style={{ fontFamily: 'Inter, sans-serif' }}>
       <div className="max-w-3xl mx-auto">
+        <LegalHeader />
         <h1 className="text-4xl font-bold mb-8 tracking-tighter" style={{ fontFamily: 'Playfair Display, Georgia, serif' }}>
           Terms of Service
         </h1>

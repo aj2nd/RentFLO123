@@ -74,7 +74,7 @@ export default function OwnerDashboard() {
           <h1 className="text-4xl md:text-5xl font-bold tracking-tighter mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>Owner Portal</h1>
           <p className="text-zinc-500">Welcome back. Your portfolio overview.</p>
         </div>
-        <AddPropertyModal isVerified={isVerified} />
+        <AddPropertyModal isVerified={isVerified ?? undefined} />
       </header>
 
       <div className="mb-16">
