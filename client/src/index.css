@@ -45,6 +45,19 @@
     @apply bg-background text-foreground antialiased selection:bg-white selection:text-black;
     font-family: 'Inter', system-ui, sans-serif;
     font-feature-settings: "ss01", "ss02", "cv01", "cv02";
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    -webkit-tap-highlight-color: transparent;
+  }
+  button, a, [role="button"], select, input[type="submit"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  nav, header, .sidebar, button, a, select, label, [role="button"] {
+    -webkit-user-select: none;
+    user-select: none;
   }
   
   h1, h2, h3, h4, h5, h6 {
