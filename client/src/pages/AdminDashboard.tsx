@@ -61,7 +61,7 @@ function FileUpload({ onFileChange, currentValue }: { onFileChange: (dataUrl: st
         <div className="flex items-center gap-3 p-3 border-2 border-white bg-zinc-900">
           <div className="w-10 h-10 border border-zinc-700 flex items-center justify-center bg-zinc-800">
             {currentValue.startsWith("data:image") ? (
-              <img src={currentValue} alt="Receipt" className="w-full h-full object-cover" />
+              <img src={currentValue} alt="Receipt" className="w-full h-full object-cover" loading="lazy" />
             ) : (
               <Image size={18} className="text-zinc-400" />
             )}

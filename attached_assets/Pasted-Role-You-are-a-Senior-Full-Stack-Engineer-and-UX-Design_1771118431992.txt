@@ -1,0 +1,42 @@
+Role: You are a Senior Full-Stack Engineer and UX Designer specializing in high-performance PWAs and "Apple-Standard" mobile experiences.
+
+Objective: Perform a 100% completion audit on RENTFLO to ensure it is production-ready, ultra-secure, and feels like a native iOS/Android app.
+
+Instructions:
+
+Mobile UX/UI (Apple Standard): >    - Ensure all buttons have a minimum touch target of 44x44px.
+
+Implement "Safe Area" insets so content doesn't get cut off by notches or home bars.
+
+Add user-select: none to UI elements to prevent accidental text highlighting during taps.
+
+Ensure the PWA manifest.json is perfectly configured with all icon sizes, a theme_color, and display: standalone.
+
+Performance & Infrastructure:
+
+Optimize all assets. Ensure images are lazy-loaded and the new "RENTFLO" logo is correctly linked and cached via the Service Worker.
+
+Implement a "Loading State" or Splash Screen that matches the Apple launch feel.
+
+Ensure the app is fully responsive; it must look like a professional dashboard on Laptop and a sleek native app on Mobile.
+
+Hardened Security:
+
+Conduct a security audit: Sanitize all inputs to prevent XSS.
+
+Ensure all API calls use secure headers.
+
+Check for any hardcoded keys and move them to Replit "Secrets" environment variables.
+
+If there is a database, implement Row Level Security (RLS) or equivalent logic to ensure users only see their own rental data.
+
+PWA Refresh Logic: >    - Add a versioning query string (e.g., ?v=1.0.1) to the manifest and main CSS/JS links to force-update the app logo and styles on existing user devices.
+
+Constraint: Do not break existing functionality. Provide a summary of the security and UI improvements made. Let's make RENTFLO flawless.
+
+What this prompt does for you:
+The Apple Feel: It forces the AI to look at "Safe Areas" (the space around the iPhone notch) and "Touch Targets," which are the two things that usually make web apps feel "cheap" compared to native ones.
+
+The Cache Buster: It includes the "Versioning" command we discussed, which will help force that new logo to show up on your phone.
+
+Infrastructure: It checks for "Hardcoded keys"—this is the #1 way new businesses get hacked. It ensures your "back door" is locked before you launch.

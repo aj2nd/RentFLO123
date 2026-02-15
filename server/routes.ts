@@ -1,11 +1,46 @@
-import type { Express } from "express";
+import type { Express, RequestHandler } from "express";
 import type { Server } from "http";
 import { storage } from "./storage";
 import { api, errorSchemas } from "@shared/routes";
 import { z } from "zod";
-import { setupAuth, registerAuthRoutes } from "./replit_integrations/auth";
+import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
 import { authStorage } from "./replit_integrations/auth/storage";
 import Razorpay from "razorpay";
+import xss from "xss";
+
+function sanitizeStrings(obj: any): any {
+  if (typeof obj === 'string') return xss(obj);
+  if (Array.isArray(obj)) return obj.map(sanitizeStrings);
+  if (obj && typeof obj === 'object') {
+    const sanitized: any = {};
+    for (const key of Object.keys(obj)) {
+      sanitized[key] = sanitizeStrings(obj[key]);
+    }
+    return sanitized;
+  }
+  return obj;
+}
+
+const sanitizeBody: RequestHandler = (req, _res, next) => {
+  if (req.body && typeof req.body === 'object') {
+    req.body = sanitizeStrings(req.body);
+  }
+  next();
+};
+
+const requireRole = (...roles: string[]): RequestHandler => {
+  return async (req: any, res, next) => {
+    const userId = req.user?.claims?.sub;
+    if (!userId) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+    const user = await authStorage.getUser(userId);
+    if (!user || !roles.includes(user.role || '')) {
+      return res.status(403).json({ message: 'Forbidden: insufficient permissions' });
+    }
+    next();
+  };
+};
 
 // Lazy initialize Razorpay (keys from secrets) - only when needed
 let razorpayInstance: Razorpay | null = null;
@@ -30,15 +65,18 @@ export async function registerRoutes(
   await setupAuth(app);
   registerAuthRoutes(app);
 
+  // === GLOBAL MIDDLEWARE ===
+  app.use("/api", sanitizeBody);
+
   // === API ROUTES ===
 
   // Properties
-  app.get(api.properties.list.path, async (req, res) => {
+  app.get(api.properties.list.path, isAuthenticated, async (req, res) => {
     const properties = await storage.getProperties();
     res.json(properties);
   });
 
-  app.post(api.properties.create.path, async (req, res) => {
+  app.post(api.properties.create.path, isAuthenticated, async (req, res) => {
     try {
       const input = api.properties.create.input.parse(req.body);
       const property = await storage.createProperty(input);
@@ -54,7 +92,7 @@ export async function registerRoutes(
     }
   });
 
-  app.get(api.properties.get.path, async (req, res) => {
+  app.get(api.properties.get.path, isAuthenticated, async (req, res) => {
     const property = await storage.getProperty(req.params.id);
     if (!property) {
       return res.status(404).json({ message: 'Property not found' });
@@ -63,7 +101,7 @@ export async function registerRoutes(
   });
 
   // Look up properties by owner email (for tenant join)
-  app.get("/api/properties/by-owner-email", async (req, res) => {
+  app.get("/api/properties/by-owner-email", isAuthenticated, async (req, res) => {
     const { email } = req.query;
     if (!email || typeof email !== 'string') {
       return res.status(400).json({ message: 'Email is required' });
@@ -73,7 +111,7 @@ export async function registerRoutes(
   });
 
   // Join property as tenant
-  app.post("/api/properties/:id/join", async (req: any, res) => {
+  app.post("/api/properties/:id/join", isAuthenticated, async (req: any, res) => {
     const { id } = req.params;
     const userId = req.user?.claims?.sub;
     
@@ -95,7 +133,7 @@ export async function registerRoutes(
   });
 
   // Ledgers
-  app.get(api.ledgers.list.path, async (req, res) => {
+  app.get(api.ledgers.list.path, isAuthenticated, async (req, res) => {
     const { propertyId, status } = req.query;
     const ledgers = await storage.getLedgers(
         typeof propertyId === 'string' ? propertyId : undefined,
@@ -105,7 +143,7 @@ export async function registerRoutes(
   });
 
   // Manual Payout (Admin)
-  app.post(api.ledgers.payOwner.path, async (req, res) => {
+  app.post(api.ledgers.payOwner.path, isAuthenticated, requireRole('ADMIN'), async (req, res) => {
     const { id } = req.params;
     const ledger = await storage.getLedger(id);
     if (!ledger) {
@@ -136,7 +174,7 @@ export async function registerRoutes(
   });
 
   // Create Razorpay Order for Tenant Payment
-  app.post('/api/ledgers/:id/create-order', async (req, res) => {
+  app.post('/api/ledgers/:id/create-order', isAuthenticated, async (req, res) => {
     const { id } = req.params;
     const ledger = await storage.getLedger(id);
     if (!ledger) {
@@ -186,6 +224,8 @@ export async function registerRoutes(
   });
 
   // Razorpay Webhook - Payment Verification (handles partial payments)
+  // NOTE: Intentionally unauthenticated - Razorpay sends webhook callbacks without session cookies.
+  // Security is enforced via HMAC signature verification below.
   app.post('/api/razorpay/webhook', async (req, res) => {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
     
@@ -250,7 +290,7 @@ export async function registerRoutes(
   });
 
   // Collect Rent (Manual/Testing - also updates ledger after successful payment)
-  app.post(api.ledgers.collectRent.path, async (req, res) => {
+  app.post(api.ledgers.collectRent.path, isAuthenticated, requireRole('ADMIN'), async (req, res) => {
     const { id } = req.params;
     const ledger = await storage.getLedger(id);
     if (!ledger) {
@@ -280,7 +320,7 @@ export async function registerRoutes(
   });
   
   // Admin Dashboard Stats
-  app.get(api.admin.dashboard.path, async (req, res) => {
+  app.get(api.admin.dashboard.path, isAuthenticated, requireRole('ADMIN'), async (req, res) => {
       const ledgers = await storage.getLedgers();
       const properties = await storage.getProperties();
       
@@ -297,20 +337,20 @@ export async function registerRoutes(
   // === PARTIAL PAYMENTS (Split Engine) ===
   
   // Get all payments (for ledger view)
-  app.get("/api/payments", async (req, res) => {
+  app.get("/api/payments", isAuthenticated, async (req, res) => {
     const payments = await storage.getAllPayments();
     res.json(payments);
   });
 
   // Get payments for a ledger
-  app.get(api.payments.listByLedger.path, async (req, res) => {
+  app.get(api.payments.listByLedger.path, isAuthenticated, async (req, res) => {
     const { ledgerId } = req.params;
     const payments = await storage.getPaymentsByLedger(String(ledgerId));
     res.json(payments);
   });
 
   // Create partial payment with Razorpay
-  app.post(api.payments.create.path, async (req, res) => {
+  app.post(api.payments.create.path, isAuthenticated, async (req, res) => {
     const { ledgerId } = req.params;
     const ledger = await storage.getLedger(ledgerId);
     if (!ledger) {
@@ -375,7 +415,7 @@ export async function registerRoutes(
   // === MAINTENANCE TICKETS ===
   
   // Get all tickets
-  app.get(api.tickets.list.path, async (req, res) => {
+  app.get(api.tickets.list.path, isAuthenticated, async (req, res) => {
     const { propertyId, status } = req.query;
     const tickets = await storage.getTickets(
       typeof propertyId === 'string' ? propertyId : undefined,
@@ -385,7 +425,7 @@ export async function registerRoutes(
   });
 
   // Create ticket (Tenant)
-  app.post(api.tickets.create.path, async (req, res) => {
+  app.post(api.tickets.create.path, isAuthenticated, async (req, res) => {
     try {
       const input = api.tickets.create.input.parse(req.body);
       const ticket = await storage.createTicket(input);
@@ -402,7 +442,7 @@ export async function registerRoutes(
   });
 
   // Resolve ticket (Admin)
-  app.post(api.tickets.resolve.path, async (req, res) => {
+  app.post(api.tickets.resolve.path, isAuthenticated, requireRole('ADMIN'), async (req, res) => {
     const { id } = req.params;
     const ticket = await storage.getTicket(id);
     if (!ticket) {
@@ -418,7 +458,7 @@ export async function registerRoutes(
   });
 
   // Get ticket counts by property
-  app.get(api.tickets.countsByProperty.path, async (req, res) => {
+  app.get(api.tickets.countsByProperty.path, isAuthenticated, async (req, res) => {
     const { id } = req.params;
     const counts = await storage.getTicketCountsByProperty(id);
     res.json(counts);
@@ -454,13 +494,13 @@ export async function registerRoutes(
   });
 
   // Get users pending KYC verification (Admin only)
-  app.get("/api/kyc/pending", async (req: any, res) => {
+  app.get("/api/kyc/pending", isAuthenticated, requireRole('ADMIN'), async (req: any, res) => {
     const pendingUsers = await authStorage.getUsersPendingVerification();
     res.json(pendingUsers);
   });
 
   // Verify user (Admin only)
-  app.post("/api/kyc/verify/:userId", async (req: any, res) => {
+  app.post("/api/kyc/verify/:userId", isAuthenticated, requireRole('ADMIN'), async (req: any, res) => {
     const { userId } = req.params;
     
     const updated = await authStorage.updateUser(userId, {
@@ -475,7 +515,7 @@ export async function registerRoutes(
   });
 
   // Get all users (Admin only)
-  app.get("/api/users", async (req: any, res) => {
+  app.get("/api/users", isAuthenticated, requireRole('ADMIN'), async (req: any, res) => {
     const users = await authStorage.getAllUsers();
     res.json(users);
   });

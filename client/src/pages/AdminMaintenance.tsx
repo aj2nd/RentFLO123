@@ -169,7 +169,7 @@ export default function AdminMaintenance() {
           data-testid="modal-image-preview"
         >
           <div className="max-w-4xl max-h-[80vh] p-4">
-            <img src={selectedImage} alt="Maintenance issue" className="max-w-full max-h-full object-contain border border-zinc-700" />
+            <img src={selectedImage} alt="Maintenance issue" className="max-w-full max-h-full object-contain border border-zinc-700" loading="lazy" />
             <p className="text-zinc-500 text-center mt-4 text-sm">Click anywhere to close</p>
           </div>
         </div>
