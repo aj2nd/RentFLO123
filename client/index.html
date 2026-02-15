@@ -4,9 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover" />
     <title>RentFLO - Never Chase Rent</title>
-    <link rel="icon" type="image/png" href="/favicon.png?v=2" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=2" />
-    <link rel="manifest" href="/manifest.json?v=2" />
+    <link rel="icon" type="image/png" href="/favicon.png?v=final_v1" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=final_v1" />
+    <link rel="manifest" href="/manifest.json?v=final_v1" />
     <meta name="theme-color" content="#000000" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -28,6 +28,7 @@
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
         padding: 12px 24px;
+        padding-top: calc(12px + env(safe-area-inset-top));
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -140,7 +141,7 @@
     <!-- i18n Language Switcher Header -->
     <header class="i18n-header" data-testid="header-i18n">
       <div class="logo">
-        <img src="/icon-192x192.png?v=2" alt="RentFLO" class="logo-img" data-testid="logo-img" />
+        <img src="/house-logo.png?v=final_v1" alt="RentFLO" class="logo-img" data-testid="logo-img" width="32" height="32" />
         <span>RentFLO</span>
       </div>
       <div class="language-switcher">
@@ -155,7 +156,7 @@
 
     <div id="root">
       <div id="splash-screen" style="position:fixed;inset:0;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:99999;transition:opacity 0.3s ease-out;">
-        <img src="/icon-192x192.png?v=2" alt="RentFLO" style="width:80px;height:80px;object-fit:contain;margin-bottom:24px;animation:splashPulse 1.5s ease-in-out infinite;" />
+        <img src="/icon-512x512.png?v=final_v1" alt="RentFLO" style="width:120px;height:120px;object-fit:contain;margin-bottom:24px;animation:splashPulse 1.5s ease-in-out infinite;" />
         <div style="color:#fff;font-family:'Inter',sans-serif;font-size:28px;font-weight:700;letter-spacing:-1px;">RentFLO</div>
         <div style="color:#71717a;font-family:'Inter',sans-serif;font-size:12px;font-weight:500;margin-top:8px;text-transform:uppercase;letter-spacing:2px;">Loading</div>
       </div>

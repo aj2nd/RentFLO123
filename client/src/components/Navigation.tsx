@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { LayoutDashboard, Home, LogOut, Wallet, Wrench, Receipt, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
-import logoImg from "@assets/logo_1771118074315.jpg";
+import houseLogoImg from "@assets/WhatsApp_Image_2026-02-15_at_5.46.47_AM_(1)_1771120129394.jpeg";
 
 export function Navigation() {
   const [location] = useLocation();
@@ -50,7 +50,7 @@ export function Navigation() {
       <div className="flex flex-col gap-2">
         <div className="px-3 md:px-6 mb-12">
           <Link href="/" className="flex items-center gap-2 cursor-pointer">
-            <img src={logoImg} alt="RentFLO" className="w-10 h-10 object-contain" data-testid="link-logo-img" />
+            <img src={houseLogoImg} alt="RentFLO" className="w-10 h-10 object-contain" data-testid="link-logo-img" />
             <span className="text-xl font-bold tracking-tighter text-white hidden md:block" data-testid="link-logo">RentFLO</span>
           </Link>
         </div>

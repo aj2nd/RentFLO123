@@ -1,6 +1,6 @@
 import { Link } from "wouter";
 import { ArrowLeft } from "lucide-react";
-import logoImg from "@assets/logo_1771118074315.jpg";
+import houseLogoImg from "@assets/WhatsApp_Image_2026-02-15_at_5.46.47_AM_(1)_1771120129394.jpeg";
 
 export function LegalHeader() {
   return (
@@ -14,7 +14,7 @@ export function LegalHeader() {
         <span className="text-sm font-medium uppercase tracking-wider" style={{ fontFamily: 'Inter, sans-serif' }}>Back to Home</span>
       </Link>
       <Link href="/" className="flex items-center gap-2" data-testid="link-legal-logo">
-        <img src={logoImg} alt="RentFLO" className="w-7 h-7 object-contain" />
+        <img src={houseLogoImg} alt="RentFLO" className="w-7 h-7 object-contain" />
         <span className="text-lg font-bold tracking-tighter text-white" style={{ fontFamily: 'Inter, sans-serif' }}>RentFLO</span>
       </Link>
     </header>
