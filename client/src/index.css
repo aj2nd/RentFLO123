@@ -6,32 +6,32 @@
 
 :root {
   --background: 0 0% 0%; /* Pure Black */
-  --foreground: 0 0% 100%; /* Pure White */
+  --foreground: 180 100% 76%; /* Tiffany Blue */
   
   --card: 0 0% 3%; /* Very dark gray, almost black */
-  --card-foreground: 0 0% 100%;
+  --card-foreground: 180 100% 76%;
   
   --popover: 0 0% 3%;
-  --popover-foreground: 0 0% 100%;
+  --popover-foreground: 180 100% 76%;
   
-  --primary: 0 0% 100%; /* White primary actions */
-  --primary-foreground: 0 0% 0%; /* Black text on white buttons */
+  --primary: 180 100% 76%; /* Tiffany blue primary actions */
+  --primary-foreground: 0 0% 0%; /* Black text on blue buttons */
   
   --secondary: 0 0% 12%; /* Dark gray for secondary elements */
-  --secondary-foreground: 0 0% 100%;
+  --secondary-foreground: 180 100% 76%;
   
   --muted: 0 0% 12%;
-  --muted-foreground: 0 0% 60%;
+  --muted-foreground: 180 35% 62%;
   
-  --accent: 0 0% 15%;
-  --accent-foreground: 0 0% 100%;
+  --accent: 180 100% 76%;
+  --accent-foreground: 0 0% 0%;
   
   --destructive: 0 0% 40%;
-  --destructive-foreground: 0 0% 100%;
+  --destructive-foreground: 180 100% 76%;
 
-  --border: 0 0% 20%;
-  --input: 0 0% 20%;
-  --ring: 0 0% 100%;
+  --border: 180 65% 28%;
+  --input: 180 65% 28%;
+  --ring: 180 100% 76%;
   
   --radius: 0px; /* Sharp corners for the brutalist/minimalist look */
 }
@@ -42,7 +42,7 @@
     border-radius: 0 !important;
   }
   body {
-    @apply bg-background text-foreground antialiased selection:bg-white selection:text-black;
+    @apply bg-background text-foreground antialiased selection:bg-[#6FFFE9] selection:text-black;
     font-family: 'Inter', system-ui, sans-serif;
     font-feature-settings: "ss01", "ss02", "cv01", "cv02";
     padding-top: env(safe-area-inset-top);
@@ -81,14 +81,14 @@
   }
   
   .glass-panel {
-    @apply bg-black/80 backdrop-blur-xl border border-white/10;
+    @apply bg-black/80 backdrop-blur-xl border border-[#6FFFE9]/15;
   }
   
   .high-contrast-border {
-    @apply border border-white/20 hover:border-white transition-colors duration-300;
+    @apply border border-[#6FFFE9]/25 hover:border-[#6FFFE9] transition-colors duration-300;
   }
 
   .glow-text {
-    text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+    text-shadow: 0 0 20px rgba(111, 255, 233, 0.45);
   }
 }

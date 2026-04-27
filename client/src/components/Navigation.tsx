@@ -46,19 +46,19 @@ export function Navigation() {
   const visibleItems = navItems.filter(item => role && item.roles.includes(role));
 
   return (
-    <nav className="fixed left-0 top-0 h-full w-20 md:w-64 bg-background border-r border-white/10 flex flex-col justify-between py-8 z-50 transition-all duration-300">
+    <nav className="fixed left-0 top-0 h-full w-20 md:w-64 bg-background border-r border-[#6FFFE9]/10 flex flex-col justify-between py-8 z-50 transition-all duration-300">
       <div className="flex flex-col gap-2">
         <div className="px-3 md:px-6 mb-12">
           <Link href="/" className="flex items-center gap-2 cursor-pointer">
             <img src={houseLogoImg} alt="RentFLO" className="w-10 h-10 object-contain" data-testid="link-logo-img" />
-            <span className="text-xl font-bold tracking-tighter text-white hidden md:block" data-testid="link-logo">RentFLO</span>
+            <span className="text-xl font-bold tracking-tighter text-[#6FFFE9] hidden md:block" data-testid="link-logo">RentFLO</span>
           </Link>
         </div>
 
         <div className="space-y-1 px-3">
           {isLoading ? (
             <div className="flex items-center justify-center py-4">
-              <Loader2 className="w-5 h-5 animate-spin text-zinc-500" />
+              <Loader2 className="w-5 h-5 animate-spin text-[#6FFFE9]/70" />
             </div>
           ) : (
             visibleItems.map((item) => (
@@ -77,7 +77,7 @@ export function Navigation() {
       <div className="px-3">
         <button 
           onClick={() => logout()}
-          className="flex items-center gap-4 px-3 py-3 w-full text-zinc-500 hover:text-white hover:bg-zinc-900 transition-all duration-200 group"
+          className="flex items-center gap-4 px-3 py-3 w-full text-[#9DEFE4] hover:text-[#6FFFE9] hover:bg-[#6FFFE9]/10 transition-all duration-200 group"
           data-testid="button-logout"
         >
           <LogOut size={20} className="group-hover:translate-x-1 transition-transform" />
@@ -95,8 +95,8 @@ function NavItem({ href, icon, label, active }: { href: string; icon: React.Reac
       className={`
         flex items-center gap-4 px-3 py-3 transition-all duration-200
         ${active 
-          ? "bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.1)]" 
-          : "text-zinc-500 hover:text-white hover:bg-zinc-900"
+          ? "bg-[#6FFFE9] text-black shadow-[0_0_20px_rgba(111,255,233,0.18)]" 
+          : "text-[#9DEFE4] hover:text-[#6FFFE9] hover:bg-[#6FFFE9]/10"
         }
       `}
       data-testid={`nav-${href.replace(/\//g, '-').slice(1) || 'home'}`}
