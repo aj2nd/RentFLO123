@@ -1,6 +1,6 @@
 import { Link } from "wouter";
 import { ArrowLeft } from "lucide-react";
-import houseLogoImg from "@assets/WhatsApp_Image_2026-02-15_at_5.46.47_AM_(1)_1771120129394.jpeg";
+import houseLogoImg from "@assets/IMG_7091_1777311348772.png";
 
 export function LegalHeader() {
   return (

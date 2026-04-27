@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { LayoutDashboard, Home, LogOut, Wallet, Wrench, Receipt, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
-import houseLogoImg from "@assets/WhatsApp_Image_2026-02-15_at_5.46.47_AM_(1)_1771120129394.jpeg";
+import houseLogoImg from "@assets/IMG_7091_1777311348772.png";
 
 export function Navigation() {
   const [location] = useLocation();

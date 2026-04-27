@@ -46,7 +46,7 @@ Preferred communication style: Simple, everyday language.
 - **Admin Authorization**: Admin-only routes additionally require `requireRole('ADMIN')` middleware
 - **Security Headers**: Helmet middleware provides X-Content-Type-Options, X-Frame-Options, HSTS, X-XSS-Protection
 - **XSS Sanitization**: Global `sanitizeBody` middleware strips HTML from all text inputs in request bodies via `xss` library
-- **PWA**: Splash screen with RENTFLO logo, icons at 192x192/512x512/maskable with ?v=2 cache busting
+- **PWA**: Splash screen with RENTFLO logo, icons at 192x192/512x512/maskable with cache-busted asset versions
 - **Mobile UX**: Safe-area-insets, 44px min touch targets, tap-highlight disabled, user-select:none on interactive elements
 
 ### Recent Changes (Feb 2026)
