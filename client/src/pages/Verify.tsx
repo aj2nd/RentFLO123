@@ -1,18 +1,19 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Navigation } from "@/components/Navigation";
-import { Upload, CheckCircle, Clock, AlertCircle } from "lucide-react";
+import { Upload, CheckCircle, Clock, ShieldCheck } from "lucide-react";
 import type { User } from "@shared/schema";
 
+type DocType = "PAN" | "AADHAAR";
+
 export default function Verify() {
-  const { user } = useAuth();
   const { toast } = useToast();
+  const [docType, setDocType] = useState<DocType>("PAN");
   const [formData, setFormData] = useState({
     fullLegalName: "",
     panNumber: "",
@@ -29,201 +30,290 @@ export default function Verify() {
 
   const submitKycMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
-      return apiRequest("POST", "/api/kyc/submit", data);
+      const res = await apiRequest("POST", "/api/kyc/submit", data);
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || "Submission failed");
+      }
+      return res.json();
     },
     onSuccess: () => {
       toast({
         title: "KYC Submitted",
-        description: "Your verification documents have been submitted. We'll review them within 1-2 business days.",
+        description: "We'll review your documents within 1–2 business days.",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
     },
     onError: (error: Error) => {
-      toast({
-        title: "Submission Failed",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast({ title: "Submission Failed", description: error.message, variant: "destructive" });
     },
   });
 
-  const handleFileUpload = async (
+  const handleFileUpload = (
     e: React.ChangeEvent<HTMLInputElement>,
     field: "kycDocumentUrl" | "cancelledChequeUrl"
   ) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64 = reader.result as string;
-      setFormData((prev) => ({ ...prev, [field]: base64 }));
-    };
+    reader.onloadend = () =>
+      setFormData((prev) => ({ ...prev, [field]: reader.result as string }));
     reader.readAsDataURL(file);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    submitKycMutation.mutate(formData);
+    if (!formData.fullLegalName.trim()) {
+      toast({ title: "Full legal name is required", variant: "destructive" });
+      return;
+    }
+    if (docType === "PAN" && !formData.panNumber.trim()) {
+      toast({ title: "PAN number is required", variant: "destructive" });
+      return;
+    }
+    if (docType === "AADHAAR" && !formData.aadhaarNumber.trim()) {
+      toast({ title: "Aadhaar number is required", variant: "destructive" });
+      return;
+    }
+    submitKycMutation.mutate({
+      ...formData,
+      panNumber: docType === "PAN" ? formData.panNumber : "",
+      aadhaarNumber: docType === "AADHAAR" ? formData.aadhaarNumber : "",
+    });
   };
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-white">Loading...</div>
+        <div className="w-8 h-8 border-2 border-[#6FFFE9] border-t-transparent animate-spin" />
       </div>
     );
   }
 
   const isOwner = currentUser?.role === "OWNER";
   const isVerified = currentUser?.isVerified;
-  const hasPendingKyc = currentUser?.panNumber && !isVerified;
+  const hasPendingKyc = (currentUser?.panNumber || currentUser?.aadhaarNumber) && !isVerified;
 
   return (
-    <div className="min-h-screen bg-black text-white" style={{ fontFamily: "Inter, sans-serif" }}>
+    <div className="min-h-screen bg-black text-[#6FFFE9]" style={{ fontFamily: "Inter, sans-serif" }}>
       <Navigation />
-      <div className="p-8 pb-24">
-        <div className="max-w-2xl mx-auto">
-          <h1
-            className="text-4xl font-bold mb-2 tracking-tighter"
-            style={{ fontFamily: "Playfair Display, Georgia, serif" }}
-          >
-            KYC Verification
-          </h1>
-          <p className="text-zinc-400 mb-8">Complete your identity verification to unlock all features</p>
 
+      {/* Sidebar offset: w-20 on mobile, w-64 on md+ */}
+      <main className="pl-20 md:pl-64 min-h-screen flex flex-col">
+        <div className="flex-1 p-5 sm:p-8 md:p-10 max-w-2xl w-full mx-0">
+
+          {/* Page header */}
+          <div className="mb-8 pt-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 border border-[#6FFFE9]/20 mb-4">
+              <ShieldCheck size={13} className="text-[#6FFFE9]" />
+              <span className="text-xs font-semibold uppercase tracking-wider text-[#9DEFE4]">Identity Verification</span>
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tighter mb-1 text-[#6FFFE9]">
+              KYC Verification
+            </h1>
+            <p className="text-[#9DEFE4] text-sm sm:text-base">
+              Complete your identity check to unlock all features.
+            </p>
+          </div>
+
+          {/* VERIFIED */}
           {isVerified ? (
-            <div className="bg-zinc-900 p-8 border-2 border-green-500">
-              <div className="flex items-center gap-4 mb-4">
-                <CheckCircle className="w-12 h-12 text-green-500" />
-                <div>
-                  <h2 className="text-2xl font-bold text-green-500">Verified</h2>
-                  <p className="text-zinc-400">Your identity has been verified. All features are unlocked.</p>
-                </div>
+            <div className="border-2 border-[#6FFFE9] p-6 sm:p-8 flex items-start gap-4">
+              <CheckCircle className="w-10 h-10 text-[#6FFFE9] shrink-0 mt-0.5" />
+              <div>
+                <h2 className="text-xl font-bold text-[#6FFFE9]">Verified</h2>
+                <p className="text-[#9DEFE4] text-sm mt-1">
+                  Your identity has been verified. All features are unlocked.
+                </p>
               </div>
             </div>
+
+          /* PENDING */
           ) : hasPendingKyc ? (
-            <div className="bg-zinc-900 p-8 border-2 border-yellow-500">
-              <div className="flex items-center gap-4 mb-4">
-                <Clock className="w-12 h-12 text-yellow-500" />
-                <div>
-                  <h2 className="text-2xl font-bold text-yellow-500">Verification in Progress</h2>
-                  <p className="text-zinc-400">
-                    Your documents are being reviewed. This usually takes 1-2 business days.
-                  </p>
-                </div>
+            <div className="border-2 border-yellow-500/60 bg-yellow-500/5 p-6 sm:p-8 flex items-start gap-4">
+              <Clock className="w-10 h-10 text-yellow-400 shrink-0 mt-0.5" />
+              <div>
+                <h2 className="text-xl font-bold text-yellow-400">Under Review</h2>
+                <p className="text-[#9DEFE4] text-sm mt-1">
+                  Your documents are being reviewed. This usually takes 1–2 business days.
+                </p>
               </div>
             </div>
+
+          /* FORM */
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="bg-zinc-900 p-6 border border-zinc-800">
-                <h2 className="text-xl font-semibold mb-4 text-white flex items-center gap-2">
-                  <AlertCircle className="w-5 h-5" />
+
+              {/* Identity block */}
+              <div className="border border-[#6FFFE9]/15 bg-black p-5 sm:p-6 space-y-5">
+                <h2 className="text-base font-semibold uppercase tracking-wider text-[#9DEFE4]">
                   Identity Information
                 </h2>
 
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="fullLegalName" className="text-zinc-300">
-                      Full Legal Name (as per PAN)
-                    </Label>
-                    <Input
-                      id="fullLegalName"
-                      value={formData.fullLegalName}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, fullLegalName: e.target.value }))}
-                      className="bg-black border-zinc-700 text-white mt-1"
-                      placeholder="Enter your full legal name"
-                      required
-                      data-testid="input-full-legal-name"
-                    />
-                  </div>
+                {/* Full name */}
+                <div className="space-y-1.5">
+                  <Label htmlFor="fullLegalName" className="text-xs uppercase tracking-wider text-[#9DEFE4]">
+                    Full Legal Name
+                  </Label>
+                  <Input
+                    id="fullLegalName"
+                    value={formData.fullLegalName}
+                    onChange={(e) => setFormData((p) => ({ ...p, fullLegalName: e.target.value }))}
+                    className="bg-black border-[#6FFFE9]/25 text-[#6FFFE9] placeholder:text-[#9DEFE4]/40 h-11 rounded-none focus:border-[#6FFFE9]"
+                    placeholder="As it appears on your ID document"
+                    required
+                    data-testid="input-full-legal-name"
+                  />
+                </div>
 
-                  <div>
-                    <Label htmlFor="panNumber" className="text-zinc-300">
+                {/* ID type toggle */}
+                <div className="space-y-2">
+                  <Label className="text-xs uppercase tracking-wider text-[#9DEFE4]">
+                    ID Type <span className="text-[#9DEFE4]/50 normal-case">(choose one)</span>
+                  </Label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setDocType("PAN")}
+                      className={`h-11 text-sm font-semibold uppercase tracking-wide transition-all border ${
+                        docType === "PAN"
+                          ? "bg-[#6FFFE9] text-black border-[#6FFFE9]"
+                          : "bg-black text-[#9DEFE4] border-[#6FFFE9]/25 hover:border-[#6FFFE9]/60"
+                      }`}
+                      data-testid="toggle-pan"
+                    >
+                      PAN Card
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDocType("AADHAAR")}
+                      className={`h-11 text-sm font-semibold uppercase tracking-wide transition-all border ${
+                        docType === "AADHAAR"
+                          ? "bg-[#6FFFE9] text-black border-[#6FFFE9]"
+                          : "bg-black text-[#9DEFE4] border-[#6FFFE9]/25 hover:border-[#6FFFE9]/60"
+                      }`}
+                      data-testid="toggle-aadhaar"
+                    >
+                      Aadhaar
+                    </button>
+                  </div>
+                </div>
+
+                {/* PAN field */}
+                {docType === "PAN" && (
+                  <div className="space-y-1.5">
+                    <Label htmlFor="panNumber" className="text-xs uppercase tracking-wider text-[#9DEFE4]">
                       PAN Number
                     </Label>
                     <Input
                       id="panNumber"
                       value={formData.panNumber}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, panNumber: e.target.value.toUpperCase() }))}
-                      className="bg-black border-zinc-700 text-white mt-1"
+                      onChange={(e) =>
+                        setFormData((p) => ({ ...p, panNumber: e.target.value.toUpperCase() }))
+                      }
+                      className="bg-black border-[#6FFFE9]/25 text-[#6FFFE9] placeholder:text-[#9DEFE4]/40 h-11 rounded-none font-mono focus:border-[#6FFFE9]"
                       placeholder="ABCDE1234F"
                       pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}"
                       maxLength={10}
-                      required
+                      required={docType === "PAN"}
                       data-testid="input-pan-number"
                     />
+                    <p className="text-xs text-[#9DEFE4]/50">10-character alphanumeric (e.g. ABCDE1234F)</p>
                   </div>
+                )}
 
-                  <div>
-                    <Label htmlFor="aadhaarNumber" className="text-zinc-300">
+                {/* Aadhaar field */}
+                {docType === "AADHAAR" && (
+                  <div className="space-y-1.5">
+                    <Label htmlFor="aadhaarNumber" className="text-xs uppercase tracking-wider text-[#9DEFE4]">
                       Aadhaar Number
                     </Label>
                     <Input
                       id="aadhaarNumber"
                       value={formData.aadhaarNumber}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, aadhaarNumber: e.target.value.replace(/\D/g, "") }))}
-                      className="bg-black border-zinc-700 text-white mt-1"
+                      onChange={(e) =>
+                        setFormData((p) => ({
+                          ...p,
+                          aadhaarNumber: e.target.value.replace(/\D/g, "").slice(0, 12),
+                        }))
+                      }
+                      className="bg-black border-[#6FFFE9]/25 text-[#6FFFE9] placeholder:text-[#9DEFE4]/40 h-11 rounded-none font-mono focus:border-[#6FFFE9]"
                       placeholder="1234 5678 9012"
                       maxLength={12}
-                      required
+                      required={docType === "AADHAAR"}
                       data-testid="input-aadhaar-number"
                     />
+                    <p className="text-xs text-[#9DEFE4]/50">12-digit number on your Aadhaar card</p>
                   </div>
+                )}
 
-                  <div>
-                    <Label htmlFor="kycDocument" className="text-zinc-300">
-                      Identity Document (PAN/Aadhaar - PDF or Image)
-                    </Label>
-                    <div className="mt-1 flex items-center gap-4">
-                      <label className="flex items-center gap-2 px-4 py-2 bg-zinc-800 border border-zinc-700 cursor-pointer hover:bg-zinc-700 transition-colors">
-                        <Upload className="w-4 h-4" />
-                        <span>Upload Document</span>
-                        <input
-                          type="file"
-                          accept="image/*,.pdf"
-                          onChange={(e) => handleFileUpload(e, "kycDocumentUrl")}
-                          className="hidden"
-                          data-testid="input-kyc-document"
-                        />
-                      </label>
-                      {formData.kycDocumentUrl && (
-                        <span className="text-green-500 text-sm">Document uploaded</span>
-                      )}
-                    </div>
-                  </div>
+                {/* Upload */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs uppercase tracking-wider text-[#9DEFE4]">
+                    Upload {docType === "PAN" ? "PAN Card" : "Aadhaar Card"}
+                  </Label>
+                  <label
+                    className="flex items-center gap-3 h-11 px-4 border border-[#6FFFE9]/25 cursor-pointer hover:border-[#6FFFE9]/60 transition-colors"
+                    data-testid="label-kyc-upload"
+                  >
+                    <Upload size={15} className="text-[#9DEFE4]" />
+                    <span className="text-sm text-[#9DEFE4]">
+                      {formData.kycDocumentUrl ? "Document uploaded ✓" : "Choose file (image or PDF)"}
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/*,.pdf"
+                      onChange={(e) => handleFileUpload(e, "kycDocumentUrl")}
+                      className="hidden"
+                      data-testid="input-kyc-document"
+                    />
+                  </label>
+                  {formData.kycDocumentUrl && (
+                    <p className="text-xs text-[#6FFFE9]">Document ready for upload.</p>
+                  )}
                 </div>
               </div>
 
+              {/* Bank details — owner only */}
               {isOwner && (
-                <div className="bg-zinc-900 p-6 border border-zinc-800">
-                  <h2 className="text-xl font-semibold mb-4 text-white">Bank Details (Landlord Only)</h2>
+                <div className="border border-[#6FFFE9]/15 bg-black p-5 sm:p-6 space-y-5">
+                  <h2 className="text-base font-semibold uppercase tracking-wider text-[#9DEFE4]">
+                    Bank Details
+                    <span className="ml-2 text-[#9DEFE4]/40 normal-case font-normal text-xs">(landlords only)</span>
+                  </h2>
 
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="bankAccountNumber" className="text-zinc-300">
-                        Bank Account Number
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5 sm:col-span-2">
+                      <Label htmlFor="bankAccountNumber" className="text-xs uppercase tracking-wider text-[#9DEFE4]">
+                        Account Number
                       </Label>
                       <Input
                         id="bankAccountNumber"
                         value={formData.bankAccountNumber}
-                        onChange={(e) => setFormData((prev) => ({ ...prev, bankAccountNumber: e.target.value.replace(/\D/g, "") }))}
-                        className="bg-black border-zinc-700 text-white mt-1"
-                        placeholder="Enter bank account number"
+                        onChange={(e) =>
+                          setFormData((p) => ({
+                            ...p,
+                            bankAccountNumber: e.target.value.replace(/\D/g, ""),
+                          }))
+                        }
+                        className="bg-black border-[#6FFFE9]/25 text-[#6FFFE9] placeholder:text-[#9DEFE4]/40 h-11 rounded-none font-mono focus:border-[#6FFFE9]"
+                        placeholder="Enter account number"
                         required
                         data-testid="input-bank-account"
                       />
                     </div>
 
-                    <div>
-                      <Label htmlFor="ifscCode" className="text-zinc-300">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="ifscCode" className="text-xs uppercase tracking-wider text-[#9DEFE4]">
                         IFSC Code
                       </Label>
                       <Input
                         id="ifscCode"
                         value={formData.ifscCode}
-                        onChange={(e) => setFormData((prev) => ({ ...prev, ifscCode: e.target.value.toUpperCase() }))}
-                        className="bg-black border-zinc-700 text-white mt-1"
+                        onChange={(e) =>
+                          setFormData((p) => ({ ...p, ifscCode: e.target.value.toUpperCase() }))
+                        }
+                        className="bg-black border-[#6FFFE9]/25 text-[#6FFFE9] placeholder:text-[#9DEFE4]/40 h-11 rounded-none font-mono focus:border-[#6FFFE9]"
                         placeholder="HDFC0001234"
                         pattern="[A-Z]{4}0[A-Z0-9]{6}"
                         maxLength={11}
@@ -232,26 +322,26 @@ export default function Verify() {
                       />
                     </div>
 
-                    <div>
-                      <Label htmlFor="cancelledCheque" className="text-zinc-300">
-                        Cancelled Cheque (PDF or Image)
+                    <div className="space-y-1.5">
+                      <Label className="text-xs uppercase tracking-wider text-[#9DEFE4]">
+                        Cancelled Cheque
                       </Label>
-                      <div className="mt-1 flex items-center gap-4">
-                        <label className="flex items-center gap-2 px-4 py-2 bg-zinc-800 border border-zinc-700 cursor-pointer hover:bg-zinc-700 transition-colors">
-                          <Upload className="w-4 h-4" />
-                          <span>Upload Cheque</span>
-                          <input
-                            type="file"
-                            accept="image/*,.pdf"
-                            onChange={(e) => handleFileUpload(e, "cancelledChequeUrl")}
-                            className="hidden"
-                            data-testid="input-cancelled-cheque"
-                          />
-                        </label>
-                        {formData.cancelledChequeUrl && (
-                          <span className="text-green-500 text-sm">Cheque uploaded</span>
-                        )}
-                      </div>
+                      <label
+                        className="flex items-center gap-3 h-11 px-4 border border-[#6FFFE9]/25 cursor-pointer hover:border-[#6FFFE9]/60 transition-colors"
+                        data-testid="label-cheque-upload"
+                      >
+                        <Upload size={15} className="text-[#9DEFE4]" />
+                        <span className="text-sm text-[#9DEFE4]">
+                          {formData.cancelledChequeUrl ? "Uploaded ✓" : "Upload cheque"}
+                        </span>
+                        <input
+                          type="file"
+                          accept="image/*,.pdf"
+                          onChange={(e) => handleFileUpload(e, "cancelledChequeUrl")}
+                          className="hidden"
+                          data-testid="input-cancelled-cheque"
+                        />
+                      </label>
                     </div>
                   </div>
                 </div>
@@ -259,16 +349,16 @@ export default function Verify() {
 
               <Button
                 type="submit"
-                className="w-full bg-white text-black hover:bg-zinc-200 py-6 text-lg font-semibold"
+                className="w-full h-13 bg-[#6FFFE9] text-black hover:bg-[#8CFFF0] text-base font-bold rounded-none"
                 disabled={submitKycMutation.isPending}
                 data-testid="button-submit-kyc"
               >
-                {submitKycMutation.isPending ? "Submitting..." : "Submit for Verification"}
+                {submitKycMutation.isPending ? "Submitting…" : "Submit for Verification"}
               </Button>
             </form>
           )}
         </div>
-      </div>
+      </main>
     </div>
   );
 }

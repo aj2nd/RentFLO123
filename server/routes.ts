@@ -513,8 +513,11 @@ export async function registerRoutes(
 
     const { fullLegalName, panNumber, aadhaarNumber, kycDocumentUrl, bankAccountNumber, ifscCode, cancelledChequeUrl } = req.body;
 
-    if (!fullLegalName || !panNumber || !aadhaarNumber) {
-      return res.status(400).json({ message: 'Full legal name, PAN number, and Aadhaar number are required' });
+    if (!fullLegalName) {
+      return res.status(400).json({ message: 'Full legal name is required' });
+    }
+    if (!panNumber && !aadhaarNumber) {
+      return res.status(400).json({ message: 'Either PAN number or Aadhaar number is required' });
     }
 
     const updated = await authStorage.updateUser(userId, {
