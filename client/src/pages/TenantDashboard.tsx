@@ -2,6 +2,7 @@ import { useProperties } from "@/hooks/use-properties";
 import { useLedgers, useCreatePartialPayment, usePaymentsByLedger, useCreateTicket } from "@/hooks/use-ledgers";
 import { Loader2, Home, ArrowRight, ShieldCheck, Wrench, Upload, X, ToggleLeft, ToggleRight, Search, Building2, Shield, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PayRentButton } from "@/components/PayRentButton";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -389,18 +390,7 @@ export default function TenantDashboard() {
                 </div>
               )}
 
-              <Button 
-                onClick={handlePartialPayment}
-                disabled={isCreatingPayment || (flexiblePaymentEnabled && !paymentAmount) || !isVerified}
-                className={`w-full ${isVerified ? 'bg-white text-black' : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'} border-0 h-16 text-lg font-bold tracking-tighter uppercase rounded-none`}
-                data-testid="button-pay-now"
-              >
-                {isCreatingPayment ? <Loader2 className="animate-spin mr-2 w-5 h-5" /> : (
-                  <span className="flex items-center gap-3">
-                    Pay ₹{flexiblePaymentEnabled ? (paymentAmount || '0') : remaining.toLocaleString()} <ArrowRight size={20} />
-                  </span>
-                )}
-              </Button>
+              <PayRentButton amount={flexiblePaymentEnabled ? Number(paymentAmount || 0) : remaining} vpa="YOUR_VPA@bank" />
               
               <div className="flex items-center justify-center gap-2 text-zinc-600 text-xs uppercase tracking-wider">
                 <ShieldCheck size={14} /> 
