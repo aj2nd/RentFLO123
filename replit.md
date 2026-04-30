@@ -49,6 +49,16 @@ Preferred communication style: Simple, everyday language.
 - **PWA**: Splash screen with RENTFLO logo, icons at 192x192/512x512/maskable with cache-busted asset versions
 - **Mobile UX**: Safe-area-insets, 44px min touch targets, tap-highlight disabled, user-select:none on interactive elements
 
+### Recent Changes (Apr 2026)
+- **Property Setup Flow**: New `/setup` page appears right after role selection on `/onboarding`
+  - **Owner Setup**: Form collects property address, monthly rent, payout day, and optional tenant email → creates property + auto-creates ledger for current month → redirects to owner dashboard
+  - **Tenant Setup**: Search by landlord email, join a vacant property → redirects to tenant dashboard
+  - Skip button available on both flows
+- **Auto-Ledger Creation**: `POST /api/properties` now auto-creates a ledger for the current month so dashboards immediately show data
+- **`/api/properties/mine`**: New endpoint returns only the logged-in user's properties (owner sees their own, tenant sees theirs)
+- **Theme**: Full tiffany blue (#6FFFE9) and black redesign applied globally
+- **New Logo**: Updated to new RentFLO brand logo (house with tiffany orbit ring)
+
 ### Recent Changes (Feb 2026)
 - Added role-based routing: Users are automatically redirected to their role-specific dashboard
 - **Onboarding Flow**: New users without roles see `/onboarding` with "I AM A LANDLORD" and "I AM A TENANT" role selection buttons

@@ -17,6 +17,8 @@ export interface IStorage {
   getProperties(): Promise<Property[]>;
   getProperty(id: string): Promise<Property | undefined>;
   getPropertiesByOwnerEmail(email: string): Promise<Property[]>;
+  getPropertiesByOwnerId(ownerId: string): Promise<Property[]>;
+  getPropertiesByTenantId(tenantId: string): Promise<Property[]>;
   createProperty(property: CreatePropertyRequest): Promise<Property>;
   updatePropertyTenant(propertyId: string, tenantId: string): Promise<Property | undefined>;
   
@@ -64,6 +66,14 @@ export class DatabaseStorage implements IStorage {
       .innerJoin(users, eq(properties.ownerId, users.id))
       .where(eq(users.email, email));
     return result.map(r => r.property);
+  }
+
+  async getPropertiesByOwnerId(ownerId: string): Promise<Property[]> {
+    return await db.select().from(properties).where(eq(properties.ownerId, ownerId));
+  }
+
+  async getPropertiesByTenantId(tenantId: string): Promise<Property[]> {
+    return await db.select().from(properties).where(eq(properties.tenantId, tenantId));
   }
 
   async updatePropertyTenant(propertyId: string, tenantId: string): Promise<Property | undefined> {

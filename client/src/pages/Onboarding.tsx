@@ -22,7 +22,7 @@ export default function Onboarding() {
         title: "Welcome to RentFLO",
         description: role === "OWNER" ? "Let's set up your first property." : "Find your home and start paying rent.",
       });
-      setLocation(role === "OWNER" ? "/owner" : "/tenant");
+      setLocation("/setup");
     },
     onError: () => {
       toast({

@@ -9,6 +9,7 @@ import { Loader2 } from "lucide-react";
 import NotFound from "@/pages/not-found";
 import LandingPage from "@/pages/LandingPage";
 import Onboarding from "@/pages/Onboarding";
+import Setup from "@/pages/Setup";
 import AdminDashboard from "@/pages/AdminDashboard";
 import AdminMaintenance from "@/pages/AdminMaintenance";
 import OwnerDashboard from "@/pages/OwnerDashboard";
@@ -104,15 +105,37 @@ function OnboardingRoute() {
   }
 
   if (user?.role) {
-    const roleRedirects: Record<string, string> = {
-      'ADMIN': '/admin',
-      'OWNER': '/owner',
-      'TENANT': '/tenant',
-    };
-    return <Redirect to={roleRedirects[user.role]} />;
+    return <Redirect to="/setup" />;
   }
 
   return <Onboarding />;
+}
+
+function SetupRoute() {
+  const { isAuthenticated, isLoading, user } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-black text-[#6FFFE9]">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    window.location.href = "/api/login";
+    return null;
+  }
+
+  if (!user?.role) {
+    return <Redirect to="/onboarding" />;
+  }
+
+  if (user.role === 'ADMIN') {
+    return <Redirect to="/admin" />;
+  }
+
+  return <Setup />;
 }
 
 function Router() {
@@ -120,7 +143,8 @@ function Router() {
     <Switch>
       <Route path="/" component={DashboardRedirect} />
       <Route path="/onboarding" component={OnboardingRoute} />
-      
+      <Route path="/setup" component={SetupRoute} />
+
       {/* Protected Routes with Role Restrictions */}
       <Route path="/admin/maintenance">
         <PrivateRoute component={AdminMaintenance} allowedRoles={['ADMIN']} />

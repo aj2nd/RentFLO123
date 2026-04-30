@@ -1,0 +1,322 @@
+import { useState } from "react";
+import { useLocation } from "wouter";
+import { Building2, Home, Search, Loader2, ArrowRight, CheckCircle2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
+import { useCreateProperty } from "@/hooks/use-properties";
+import { queryClient, apiRequest } from "@/lib/queryClient";
+import type { Property } from "@shared/schema";
+import houseLogoImg from "@assets/IMG_7091_1777311348772.png";
+
+export default function Setup() {
+  const { user } = useAuth();
+  const [, setLocation] = useLocation();
+  const { toast } = useToast();
+  const { mutate: createProperty, isPending: isCreating } = useCreateProperty();
+  const role = user?.role;
+
+  // Owner form state
+  const [address, setAddress] = useState("");
+  const [rent, setRent] = useState("");
+  const [payoutDay, setPayoutDay] = useState("1");
+  const [tenantEmail, setTenantEmail] = useState("");
+
+  // Tenant search state
+  const [landlordEmail, setLandlordEmail] = useState("");
+  const [searchResults, setSearchResults] = useState<Property[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [isJoining, setIsJoining] = useState(false);
+  const [joined, setJoined] = useState(false);
+
+  const handleOwnerSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const rentNum = parseInt(rent, 10);
+    const payoutDayNum = parseInt(payoutDay, 10);
+    if (!address.trim()) {
+      toast({ title: "Address required", variant: "destructive" });
+      return;
+    }
+    if (isNaN(rentNum) || rentNum <= 0) {
+      toast({ title: "Enter a valid monthly rent", variant: "destructive" });
+      return;
+    }
+    if (isNaN(payoutDayNum) || payoutDayNum < 1 || payoutDayNum > 28) {
+      toast({ title: "Payout day must be between 1 and 28", variant: "destructive" });
+      return;
+    }
+    createProperty(
+      {
+        address: address.trim(),
+        monthlyRent: rentNum,
+        payoutDay: payoutDayNum,
+        ownerId: user?.id || "",
+        pendingTenantEmail: tenantEmail.trim() || undefined,
+      },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: ["/api/properties"] });
+          queryClient.invalidateQueries({ queryKey: ["/api/ledgers"] });
+          toast({ title: "Property added!", description: "Your property and rent cycle are set up." });
+          setLocation("/owner");
+        },
+        onError: (err: any) => {
+          toast({ title: "Failed to add property", description: err.message, variant: "destructive" });
+        },
+      }
+    );
+  };
+
+  const handleSearch = async () => {
+    if (!landlordEmail.trim()) {
+      toast({ title: "Enter your landlord's email", variant: "destructive" });
+      return;
+    }
+    setIsSearching(true);
+    setSearchResults([]);
+    try {
+      const res = await fetch(`/api/properties/by-owner-email?email=${encodeURIComponent(landlordEmail)}`, {
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Search failed");
+      const props: Property[] = await res.json();
+      const vacant = props.filter((p) => !p.tenantId);
+      setSearchResults(vacant);
+      if (vacant.length === 0) {
+        toast({ title: "No properties found", description: "No available (vacant) properties for that landlord." });
+      }
+    } catch {
+      toast({ title: "Search failed", variant: "destructive" });
+    }
+    setIsSearching(false);
+  };
+
+  const handleJoin = async (propertyId: string) => {
+    setIsJoining(true);
+    try {
+      const res = await apiRequest("POST", `/api/properties/${propertyId}/join`);
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || "Failed to join");
+      }
+      queryClient.invalidateQueries({ queryKey: ["/api/properties"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/ledgers"] });
+      setJoined(true);
+      toast({ title: "Joined!", description: "You're now linked to this property." });
+      setTimeout(() => setLocation("/tenant"), 1500);
+    } catch (err: any) {
+      toast({ title: "Failed to join", description: err.message, variant: "destructive" });
+    }
+    setIsJoining(false);
+  };
+
+  if (!role) return null;
+
+  return (
+    <div className="min-h-screen bg-black text-[#6FFFE9] flex flex-col items-center justify-center p-6 md:p-12">
+      <div className="w-full max-w-lg">
+        {/* Header */}
+        <div className="flex items-center gap-3 mb-12">
+          <img src={houseLogoImg} alt="RentFLO" className="w-9 h-9 object-contain" />
+          <span className="text-2xl font-bold tracking-tighter text-[#6FFFE9]">RentFLO</span>
+        </div>
+
+        {/* Title */}
+        <div className="mb-10">
+          <div className="inline-flex items-center gap-2 px-3 py-1 border border-[#6FFFE9]/20 mb-5">
+            {role === "OWNER" ? (
+              <Building2 size={14} className="text-[#6FFFE9]" />
+            ) : (
+              <Home size={14} className="text-[#6FFFE9]" />
+            )}
+            <span className="text-xs font-semibold uppercase tracking-wider text-[#9DEFE4]">
+              {role === "OWNER" ? "Landlord Setup" : "Tenant Setup"}
+            </span>
+          </div>
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tighter leading-tight mb-3">
+            {role === "OWNER" ? "Add your property." : "Find your home."}
+          </h1>
+          <p className="text-[#9DEFE4] text-base">
+            {role === "OWNER"
+              ? "Enter your property details to start receiving rent advances."
+              : "Search by your landlord's email to link your account to your home."}
+          </p>
+        </div>
+
+        {/* === OWNER FORM === */}
+        {role === "OWNER" && (
+          <form onSubmit={handleOwnerSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="address" className="text-xs uppercase tracking-wider text-[#9DEFE4]">
+                Property Address
+              </Label>
+              <Input
+                id="address"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                placeholder="e.g. 42 MG Road, Bangalore 560001"
+                className="bg-black border border-[#6FFFE9]/25 text-[#6FFFE9] placeholder:text-[#9DEFE4]/40 h-12 rounded-none focus:border-[#6FFFE9]"
+                data-testid="input-property-address"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="rent" className="text-xs uppercase tracking-wider text-[#9DEFE4]">
+                  Monthly Rent (₹)
+                </Label>
+                <Input
+                  id="rent"
+                  type="number"
+                  min={1}
+                  value={rent}
+                  onChange={(e) => setRent(e.target.value)}
+                  placeholder="e.g. 20000"
+                  className="bg-black border border-[#6FFFE9]/25 text-[#6FFFE9] placeholder:text-[#9DEFE4]/40 h-12 rounded-none focus:border-[#6FFFE9]"
+                  data-testid="input-monthly-rent"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="payoutDay" className="text-xs uppercase tracking-wider text-[#9DEFE4]">
+                  Payout Day (1–28)
+                </Label>
+                <Input
+                  id="payoutDay"
+                  type="number"
+                  min={1}
+                  max={28}
+                  value={payoutDay}
+                  onChange={(e) => setPayoutDay(e.target.value)}
+                  placeholder="1"
+                  className="bg-black border border-[#6FFFE9]/25 text-[#6FFFE9] placeholder:text-[#9DEFE4]/40 h-12 rounded-none focus:border-[#6FFFE9]"
+                  data-testid="input-payout-day"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="tenantEmail" className="text-xs uppercase tracking-wider text-[#9DEFE4]">
+                Tenant Email <span className="text-[#9DEFE4]/50">(optional — invite your tenant)</span>
+              </Label>
+              <Input
+                id="tenantEmail"
+                type="email"
+                value={tenantEmail}
+                onChange={(e) => setTenantEmail(e.target.value)}
+                placeholder="tenant@email.com"
+                className="bg-black border border-[#6FFFE9]/25 text-[#6FFFE9] placeholder:text-[#9DEFE4]/40 h-12 rounded-none focus:border-[#6FFFE9]"
+                data-testid="input-tenant-email"
+              />
+            </div>
+
+            <Button
+              type="submit"
+              disabled={isCreating}
+              className="w-full h-14 bg-[#6FFFE9] text-black font-bold text-base rounded-none hover:bg-[#8CFFF0] transition-colors mt-2"
+              data-testid="button-setup-submit"
+            >
+              {isCreating ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <span className="flex items-center gap-2">
+                  Set Up Property <ArrowRight size={18} />
+                </span>
+              )}
+            </Button>
+
+            <button
+              type="button"
+              onClick={() => setLocation("/owner")}
+              className="w-full text-center text-sm text-[#9DEFE4]/60 hover:text-[#9DEFE4] transition-colors py-2"
+              data-testid="button-skip-setup"
+            >
+              Skip for now
+            </button>
+          </form>
+        )}
+
+        {/* === TENANT FLOW === */}
+        {role === "TENANT" && !joined && (
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="landlordEmail" className="text-xs uppercase tracking-wider text-[#9DEFE4]">
+                Landlord's Email Address
+              </Label>
+              <div className="flex gap-3">
+                <Input
+                  id="landlordEmail"
+                  type="email"
+                  value={landlordEmail}
+                  onChange={(e) => setLandlordEmail(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                  placeholder="landlord@email.com"
+                  className="flex-1 bg-black border border-[#6FFFE9]/25 text-[#6FFFE9] placeholder:text-[#9DEFE4]/40 h-12 rounded-none focus:border-[#6FFFE9]"
+                  data-testid="input-landlord-email"
+                />
+                <Button
+                  type="button"
+                  onClick={handleSearch}
+                  disabled={isSearching}
+                  className="h-12 px-5 bg-[#6FFFE9] text-black rounded-none hover:bg-[#8CFFF0]"
+                  data-testid="button-search-properties"
+                >
+                  {isSearching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search size={18} />}
+                </Button>
+              </div>
+            </div>
+
+            {searchResults.length > 0 && (
+              <div className="space-y-3">
+                <p className="text-xs uppercase tracking-wider text-[#9DEFE4]">Available Properties</p>
+                {searchResults.map((prop) => (
+                  <div
+                    key={prop.id}
+                    className="border border-[#6FFFE9]/20 p-5 flex items-center justify-between gap-4"
+                    data-testid={`property-card-${prop.id}`}
+                  >
+                    <div className="space-y-1">
+                      <p className="font-semibold text-[#6FFFE9] leading-snug" data-testid={`property-address-${prop.id}`}>
+                        {prop.address}
+                      </p>
+                      <p className="text-sm text-[#9DEFE4]">
+                        ₹{prop.monthlyRent.toLocaleString()} / month · Payout day {prop.payoutDay}
+                      </p>
+                    </div>
+                    <Button
+                      onClick={() => handleJoin(prop.id)}
+                      disabled={isJoining}
+                      className="bg-[#6FFFE9] text-black rounded-none hover:bg-[#8CFFF0] shrink-0"
+                      data-testid={`button-join-${prop.id}`}
+                    >
+                      {isJoining ? <Loader2 className="w-4 h-4 animate-spin" /> : "Join"}
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={() => setLocation("/tenant")}
+              className="w-full text-center text-sm text-[#9DEFE4]/60 hover:text-[#9DEFE4] transition-colors py-2"
+              data-testid="button-skip-setup"
+            >
+              Skip for now
+            </button>
+          </div>
+        )}
+
+        {/* === JOINED SUCCESS === */}
+        {role === "TENANT" && joined && (
+          <div className="flex flex-col items-center gap-4 py-8">
+            <CheckCircle2 className="w-16 h-16 text-[#6FFFE9]" />
+            <p className="text-xl font-bold text-[#6FFFE9]">You're all set!</p>
+            <p className="text-[#9DEFE4] text-sm">Redirecting to your dashboard…</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

@@ -76,10 +76,28 @@ export async function registerRoutes(
     res.json(properties);
   });
 
-  app.post(api.properties.create.path, isAuthenticated, async (req, res) => {
+  app.post(api.properties.create.path, isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user?.claims?.sub;
       const input = api.properties.create.input.parse(req.body);
+      // Enforce: ownerId must be the logged-in user (unless admin)
+      const user = await authStorage.getUser(userId);
+      if (user?.role !== 'ADMIN') {
+        input.ownerId = userId;
+      }
       const property = await storage.createProperty(input);
+
+      // Auto-create a ledger for the current month
+      const now = new Date();
+      const monthYear = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      await storage.createLedger({
+        propertyId: property.id,
+        amountAdvanced: 0,
+        amountCollected: 0,
+        status: 'ARREARS',
+        monthYear,
+      });
+
       res.status(201).json(property);
     } catch (err) {
       if (err instanceof z.ZodError) {
@@ -98,6 +116,26 @@ export async function registerRoutes(
       return res.status(404).json({ message: 'Property not found' });
     }
     res.json(property);
+  });
+
+  // My properties — filtered by the logged-in user's role
+  app.get("/api/properties/mine", isAuthenticated, async (req: any, res) => {
+    const userId = req.user?.claims?.sub;
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
+    const user = await authStorage.getUser(userId);
+    if (!user) return res.status(401).json({ message: "Unauthorized" });
+
+    if (user.role === "OWNER") {
+      const props = await storage.getPropertiesByOwnerId(userId);
+      return res.json(props);
+    }
+    if (user.role === "TENANT") {
+      const props = await storage.getPropertiesByTenantId(userId);
+      return res.json(props);
+    }
+    // ADMIN sees all
+    const props = await storage.getProperties();
+    return res.json(props);
   });
 
   // Look up properties by owner email (for tenant join)
