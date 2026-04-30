@@ -42,9 +42,11 @@ export function PayRentButton({ amount, vpa }: PayRentButtonProps) {
     if (fallbackTimer.current) {
       window.clearTimeout(fallbackTimer.current);
     }
-    const intentLink = `intent://pay?${upiLink.split("?")[1]}#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;end`;
-    window.location.assign(intentLink);
+    const opened = window.open(upiLink, "_self");
     fallbackTimer.current = window.setTimeout(() => {
+      if (!opened || opened.closed) {
+        navigator.clipboard.writeText(upiLink).catch(() => {});
+      }
       setShowFallback(true);
       setIsProcessing(false);
     }, 2000);
@@ -111,10 +113,6 @@ export function PayRentButton({ amount, vpa }: PayRentButtonProps) {
           </div>
         </div>
       )}
-
-      <a href={upiLink} className="sr-only" aria-hidden="true" tabIndex={-1} data-testid="link-upi-direct">
-        Open UPI
-      </a>
 
       {/* Integrate backend S2S webhook verification here; deep links do not confirm payment automatically. */}
     </div>
