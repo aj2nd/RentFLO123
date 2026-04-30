@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Copy, QrCode, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -12,6 +12,7 @@ export function PayRentButton({ amount, vpa }: PayRentButtonProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [showFallback, setShowFallback] = useState(false);
   const [copied, setCopied] = useState(false);
+  const fallbackTimer = useRef<number | null>(null);
   const { toast } = useToast();
 
   const upiLink = useMemo(() => {
@@ -38,8 +39,12 @@ export function PayRentButton({ amount, vpa }: PayRentButtonProps) {
     setIsProcessing(true);
     setShowFallback(false);
     sessionStorage.setItem("rentflo-payrent-processing", "1");
-    window.location.href = upiLink;
-    window.setTimeout(() => {
+    if (fallbackTimer.current) {
+      window.clearTimeout(fallbackTimer.current);
+    }
+    const intentLink = `intent://pay?${upiLink.split("?")[1]}#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;end`;
+    window.location.assign(intentLink);
+    fallbackTimer.current = window.setTimeout(() => {
       setShowFallback(true);
       setIsProcessing(false);
     }, 2000);
@@ -106,6 +111,10 @@ export function PayRentButton({ amount, vpa }: PayRentButtonProps) {
           </div>
         </div>
       )}
+
+      <a href={upiLink} className="sr-only" aria-hidden="true" tabIndex={-1} data-testid="link-upi-direct">
+        Open UPI
+      </a>
 
       {/* Integrate backend S2S webhook verification here; deep links do not confirm payment automatically. */}
     </div>
