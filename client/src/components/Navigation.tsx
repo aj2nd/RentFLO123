@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, Home, LogOut, Wallet, Wrench, Receipt, Loader2 } from "lucide-react";
+import { LayoutDashboard, Home, LogOut, Wallet, Wrench, Receipt, Loader2, ShieldCheck, FileSignature } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import houseLogoImg from "@assets/IMG_7091_1777311348772.png";
 
@@ -40,6 +40,18 @@ export function Navigation() {
       icon: <Receipt size={20} />,
       label: "Ledger",
       roles: ["ADMIN", "OWNER", "TENANT"],
+    },
+    {
+      href: "/verify",
+      icon: <ShieldCheck size={20} />,
+      label: "KYC Verification",
+      roles: ["OWNER", "TENANT"],
+    },
+    {
+      href: "/agreement",
+      icon: <FileSignature size={20} />,
+      label: "Agreement",
+      roles: ["OWNER", "TENANT"],
     },
   ];
 

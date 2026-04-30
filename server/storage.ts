@@ -1,11 +1,12 @@
 import { db } from "./db";
 import { eq, desc, sql } from "drizzle-orm";
 import {
-  properties, ledgers, payments, maintenanceTickets,
+  properties, ledgers, payments, maintenanceTickets, agreements,
   type Property, type InsertProperty,
   type Ledger, type InsertLedger,
   type Payment, type InsertPayment,
   type MaintenanceTicket, type InsertMaintenanceTicket,
+  type Agreement,
   type CreatePropertyRequest,
   type CreateLedgerRequest,
   type CreatePaymentRequest,
@@ -40,6 +41,11 @@ export interface IStorage {
   createTicket(ticket: CreateMaintenanceTicketRequest): Promise<MaintenanceTicket>;
   updateTicket(id: string, updates: Partial<InsertMaintenanceTicket>): Promise<MaintenanceTicket>;
   getTicketCountsByProperty(propertyId: string): Promise<{ open: number; resolved: number }>;
+
+  // Agreements
+  getAgreementByProperty(propertyId: string): Promise<Agreement | undefined>;
+  getOrCreateAgreement(propertyId: string): Promise<Agreement>;
+  signAgreement(propertyId: string, role: 'OWNER' | 'TENANT', signatureUrl: string): Promise<Agreement>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -219,6 +225,38 @@ export class DatabaseStorage implements IStorage {
       open: results.filter(t => t.status === 'OPEN' || t.status === 'IN_PROGRESS').length,
       resolved: results.filter(t => t.status === 'RESOLVED').length
     };
+  }
+
+  // Agreements
+  async getAgreementByProperty(propertyId: string): Promise<Agreement | undefined> {
+    const [agreement] = await db.select().from(agreements).where(eq(agreements.propertyId, propertyId));
+    return agreement;
+  }
+
+  async getOrCreateAgreement(propertyId: string): Promise<Agreement> {
+    const existing = await this.getAgreementByProperty(propertyId);
+    if (existing) return existing;
+    const [created] = await db.insert(agreements).values({ propertyId, status: 'PENDING' }).returning();
+    return created;
+  }
+
+  async signAgreement(propertyId: string, role: 'OWNER' | 'TENANT', signatureUrl: string): Promise<Agreement> {
+    const agreement = await this.getOrCreateAgreement(propertyId);
+    const now = new Date();
+    const updates: Partial<typeof agreement> = role === 'OWNER'
+      ? { ownerSignatureUrl: signatureUrl, ownerSignedAt: now }
+      : { tenantSignatureUrl: signatureUrl, tenantSignedAt: now };
+
+    const current = { ...agreement, ...updates };
+    const newStatus = current.ownerSignatureUrl && current.tenantSignatureUrl
+      ? 'FULLY_SIGNED'
+      : role === 'OWNER' ? 'OWNER_SIGNED' : 'TENANT_SIGNED';
+
+    const [updated] = await db.update(agreements)
+      .set({ ...updates, status: newStatus } as Partial<Agreement>)
+      .where(eq(agreements.id, agreement.id))
+      .returning();
+    return updated;
   }
 }
 

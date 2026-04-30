@@ -106,6 +106,27 @@ export const maintenanceTicketsRelations = relations(maintenanceTickets, ({ one 
   }),
 }));
 
+// === AGREEMENTS TABLE — Tripartite digital contract ===
+export const agreements = pgTable("agreements", {
+  id: varchar("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  propertyId: varchar("property_id").references(() => properties.id).notNull().unique(),
+  ownerSignatureUrl: text("owner_signature_url"),
+  ownerSignedAt: timestamp("owner_signed_at"),
+  tenantSignatureUrl: text("tenant_signature_url"),
+  tenantSignedAt: timestamp("tenant_signed_at"),
+  status: text("status", {
+    enum: ['PENDING', 'OWNER_SIGNED', 'TENANT_SIGNED', 'FULLY_SIGNED'],
+  }).default('PENDING').notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const agreementsRelations = relations(agreements, ({ one }) => ({
+  property: one(properties, {
+    fields: [agreements.propertyId],
+    references: [properties.id],
+  }),
+}));
+
 // === ZOD SCHEMAS ===
 export const insertPropertySchema = createInsertSchema(properties).omit({ 
   id: true, 
@@ -148,6 +169,13 @@ export type CreatePropertyRequest = InsertProperty;
 export type CreateLedgerRequest = InsertLedger;
 export type CreatePaymentRequest = InsertPayment;
 export type CreateMaintenanceTicketRequest = InsertMaintenanceTicket;
+
+export const insertAgreementSchema = createInsertSchema(agreements).omit({
+  id: true,
+  createdAt: true,
+});
+export type Agreement = typeof agreements.$inferSelect;
+export type InsertAgreement = z.infer<typeof insertAgreementSchema>;
 
 // Specific request types for actions
 export type MarkPaidRequest = {

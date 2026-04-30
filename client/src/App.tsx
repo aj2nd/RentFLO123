@@ -20,6 +20,7 @@ import Privacy from "@/pages/Privacy";
 import Refund from "@/pages/Refund";
 import Support from "@/pages/Support";
 import Verify from "@/pages/Verify";
+import AgreementPage from "@/pages/Agreement";
 import { Navigation } from "@/components/Navigation";
 import { LegalFooter } from "@/components/LegalFooter";
 
@@ -165,6 +166,11 @@ function Router() {
       {/* KYC Verification */}
       <Route path="/verify">
         <PrivateRoute component={Verify} allowedRoles={['TENANT', 'OWNER']} />
+      </Route>
+
+      {/* Tripartite Agreement */}
+      <Route path="/agreement">
+        <PrivateRoute component={AgreementPage} allowedRoles={['TENANT', 'OWNER']} />
       </Route>
       
       {/* Legal Pages (Public) */}

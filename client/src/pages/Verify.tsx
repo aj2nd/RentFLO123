@@ -6,13 +6,15 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Navigation } from "@/components/Navigation";
-import { Upload, CheckCircle, Clock, ShieldCheck } from "lucide-react";
+import { Upload, CheckCircle, Clock, ShieldCheck, FileSignature } from "lucide-react";
+import { useLocation } from "wouter";
 import type { User } from "@shared/schema";
 
 type DocType = "PAN" | "AADHAAR";
 
 export default function Verify() {
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const [docType, setDocType] = useState<DocType>("PAN");
   const [formData, setFormData] = useState({
     fullLegalName: "",
@@ -118,14 +120,24 @@ export default function Verify() {
 
           {/* VERIFIED */}
           {isVerified ? (
-            <div className="border-2 border-[#6FFFE9] p-6 sm:p-8 flex items-start gap-4">
-              <CheckCircle className="w-10 h-10 text-[#6FFFE9] shrink-0 mt-0.5" />
-              <div>
-                <h2 className="text-xl font-bold text-[#6FFFE9]">Verified</h2>
-                <p className="text-[#9DEFE4] text-sm mt-1">
-                  Your identity has been verified. All features are unlocked.
-                </p>
+            <div className="border-2 border-[#6FFFE9] p-6 sm:p-8 space-y-5">
+              <div className="flex items-start gap-4">
+                <CheckCircle className="w-10 h-10 text-[#6FFFE9] shrink-0 mt-0.5" />
+                <div>
+                  <h2 className="text-xl font-bold text-[#6FFFE9]">KYC Verified</h2>
+                  <p className="text-[#9DEFE4] text-sm mt-1">
+                    Your identity has been verified. Next step: sign your tripartite agreement.
+                  </p>
+                </div>
               </div>
+              <Button
+                className="w-full h-12 bg-[#6FFFE9] text-black hover:bg-[#8CFFF0] font-bold rounded-none flex items-center justify-center gap-2"
+                onClick={() => setLocation("/agreement")}
+                data-testid="button-go-to-agreement"
+              >
+                <FileSignature size={16} />
+                Sign Your Agreement
+              </Button>
             </div>
 
           /* PENDING */

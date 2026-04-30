@@ -555,6 +555,62 @@ export async function registerRoutes(
     res.json(updated);
   });
 
+  // ─── AGREEMENT ROUTES ────────────────────────────────────────────────────
+  // GET /api/agreements/mine — fetch agreement for the logged-in user's property
+  app.get("/api/agreements/mine", isAuthenticated, async (req: any, res) => {
+    const userId = req.user?.claims?.sub;
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+
+    const dbUser = await authStorage.getUser(userId);
+    if (!dbUser?.role || dbUser.role === 'ADMIN') {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
+
+    let userProperties: any[] = [];
+    if (dbUser.role === 'OWNER') {
+      userProperties = await storage.getPropertiesByOwnerId(userId);
+    } else {
+      userProperties = await storage.getPropertiesByTenantId(userId);
+    }
+
+    if (!userProperties.length) {
+      return res.json({ property: null, agreement: null });
+    }
+
+    const property = userProperties[0];
+    const agreement = await storage.getAgreementByProperty(property.id);
+    return res.json({ property, agreement: agreement || null });
+  });
+
+  // POST /api/agreements/sign — submit digital signature for the tripartite agreement
+  app.post("/api/agreements/sign", isAuthenticated, async (req: any, res) => {
+    const userId = req.user?.claims?.sub;
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+
+    const dbUser = await authStorage.getUser(userId);
+    if (!dbUser?.role || dbUser.role === 'ADMIN') {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
+
+    const { signatureUrl, propertyId } = req.body;
+    if (!signatureUrl || !propertyId) {
+      return res.status(400).json({ message: 'signatureUrl and propertyId are required' });
+    }
+
+    // Verify the user owns or rents this property
+    const property = await storage.getProperty(propertyId);
+    if (!property) return res.status(404).json({ message: 'Property not found' });
+
+    const isOwner = property.ownerId === userId;
+    const isTenant = property.tenantId === userId;
+    if (!isOwner && !isTenant) {
+      return res.status(403).json({ message: 'You are not associated with this property' });
+    }
+
+    const agreement = await storage.signAgreement(propertyId, isOwner ? 'OWNER' : 'TENANT', signatureUrl);
+    return res.json(agreement);
+  });
+
   // Get all users (Admin only)
   app.get("/api/users", isAuthenticated, requireRole('ADMIN'), async (req: any, res) => {
     const users = await authStorage.getAllUsers();
