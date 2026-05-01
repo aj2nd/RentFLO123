@@ -124,38 +124,40 @@ export default function LedgerPage() {
   const totalExposure = Math.abs(runningBalance);
 
   return (
-    <div className="min-h-screen bg-black text-white p-8" style={{ fontFamily: 'Inter, sans-serif' }}>
+    <div className="min-h-screen bg-black text-white pl-20 md:pl-64" style={{ fontFamily: 'Inter, sans-serif' }}>
+      <div className="p-4 sm:p-6 md:p-10">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
-        <header className="flex items-center justify-between mb-12">
-          <div className="flex items-center gap-4">
-            <Receipt className="w-8 h-8" />
-            <h1 className="text-4xl font-bold tracking-tighter" style={{ fontFamily: 'Playfair Display, Georgia, serif' }}>
+        <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+          <div className="flex items-center gap-3">
+            <Receipt className="w-6 h-6 sm:w-8 sm:h-8 shrink-0" />
+            <h1 className="text-2xl sm:text-4xl font-bold tracking-tighter" style={{ fontFamily: 'Playfair Display, Georgia, serif' }}>
               Master Ledger
             </h1>
           </div>
-          <div className="text-right">
+          <div className="sm:text-right">
             <p className="text-xs text-zinc-500 uppercase tracking-widest mb-1">Current Exposure</p>
-            <p className="text-3xl font-bold font-mono" style={{ fontFamily: 'Playfair Display, Georgia, serif' }} data-testid="text-ledger-exposure">
+            <p className="text-2xl sm:text-3xl font-bold font-mono" style={{ fontFamily: 'Playfair Display, Georgia, serif' }} data-testid="text-ledger-exposure">
               ₹{totalExposure.toLocaleString()}
             </p>
           </div>
         </header>
 
+        {/* Desktop table */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.4 }}
-          className="border-2 border-white/10"
+          className="hidden sm:block border-2 border-white/10 overflow-x-auto"
         >
-          <table className="w-full text-left" data-testid="table-ledger">
+          <table className="w-full text-left min-w-[640px]" data-testid="table-ledger">
             <thead className="bg-zinc-900 text-zinc-400 text-xs uppercase tracking-wider">
               <tr>
                 <th className="p-4 font-medium">Date</th>
-                <th className="p-4 font-medium">Transaction ID</th>
+                <th className="p-4 font-medium">Txn ID</th>
                 <th className="p-4 font-medium">Property</th>
                 <th className="p-4 font-medium">Action</th>
                 <th className="p-4 font-medium text-right">Amount</th>
@@ -172,22 +174,16 @@ export default function LedgerPage() {
                   className="hover:bg-zinc-900/50 transition-colors"
                   data-testid={`row-transaction-${txn.id}`}
                 >
-                  <td className="p-4 text-zinc-400 font-mono text-sm">
-                    {new Date(txn.date).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric',
-                    })}
+                  <td className="p-4 text-zinc-400 font-mono text-sm whitespace-nowrap">
+                    {new Date(txn.date).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' })}
                   </td>
-                  <td className="p-4 font-mono text-sm text-zinc-300">{txn.reference}</td>
-                  <td className="p-4 font-medium truncate max-w-[200px]">{txn.property}</td>
-                  <td className="p-4">
-                    <ActionBadge action={txn.action} />
-                  </td>
-                  <td className={`p-4 text-right font-mono text-lg ${txn.amount >= 0 ? 'text-white' : 'text-zinc-400'}`}>
+                  <td className="p-4 font-mono text-sm text-zinc-300 whitespace-nowrap">{txn.reference}</td>
+                  <td className="p-4 font-medium truncate max-w-[160px]">{txn.property}</td>
+                  <td className="p-4 whitespace-nowrap"><ActionBadge action={txn.action} /></td>
+                  <td className={`p-4 text-right font-mono whitespace-nowrap ${txn.amount >= 0 ? 'text-white' : 'text-zinc-400'}`}>
                     {txn.amount >= 0 ? '+' : ''}₹{Math.abs(txn.amount).toLocaleString()}
                   </td>
-                  <td className={`p-4 text-right font-mono text-lg ${txn.balance >= 0 ? 'text-white' : 'text-zinc-500'}`}>
+                  <td className={`p-4 text-right font-mono whitespace-nowrap ${txn.balance >= 0 ? 'text-white' : 'text-zinc-500'}`}>
                     ₹{txn.balance.toLocaleString()}
                   </td>
                 </motion.tr>
@@ -195,7 +191,7 @@ export default function LedgerPage() {
               {transactions.length === 0 && (
                 <tr>
                   <td colSpan={6} className="p-12 text-center text-zinc-500">
-                    No transactions recorded yet. The ledger will populate as rent advances and collections occur.
+                    No transactions recorded yet.
                   </td>
                 </tr>
               )}
@@ -203,10 +199,45 @@ export default function LedgerPage() {
           </table>
         </motion.div>
 
-        <div className="mt-8 text-center text-zinc-600 text-xs uppercase tracking-widest">
+        {/* Mobile card list */}
+        <div className="sm:hidden space-y-3">
+          {transactions.length === 0 && (
+            <div className="p-8 border border-zinc-900 text-center text-zinc-500 text-sm">
+              No transactions recorded yet.
+            </div>
+          )}
+          {transactions.map((txn, index) => (
+            <motion.div
+              key={txn.id}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05 * index, duration: 0.3 }}
+              className="border border-zinc-800 bg-zinc-950/50 p-4 space-y-3"
+              data-testid={`card-transaction-${txn.id}`}
+            >
+              <div className="flex items-start justify-between gap-2">
+                <ActionBadge action={txn.action} />
+                <span className={`font-mono font-bold text-base ${txn.amount >= 0 ? 'text-white' : 'text-zinc-400'}`}>
+                  {txn.amount >= 0 ? '+' : ''}₹{Math.abs(txn.amount).toLocaleString()}
+                </span>
+              </div>
+              <p className="text-sm font-medium text-white truncate">{txn.property}</p>
+              <div className="flex justify-between text-xs text-zinc-500">
+                <span className="font-mono">{txn.reference}</span>
+                <span>{new Date(txn.date).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+              </div>
+              <div className="text-xs text-zinc-600 text-right">
+                Balance: <span className={`font-mono ${txn.balance >= 0 ? 'text-zinc-300' : 'text-zinc-500'}`}>₹{txn.balance.toLocaleString()}</span>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        <div className="mt-6 text-center text-zinc-600 text-xs uppercase tracking-widest">
           Bank-Grade Audit Trail • Real-Time Sync • Institutional Transparency
         </div>
       </motion.div>
+      </div>
     </div>
   );
 }

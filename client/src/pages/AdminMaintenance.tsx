@@ -39,24 +39,25 @@ export default function AdminMaintenance() {
   const resolvedTickets = tickets?.filter(t => t.status === 'RESOLVED') || [];
 
   return (
-    <div className="min-h-screen bg-black text-white p-8 md:p-12 pl-28 md:pl-72">
-      <header className="mb-12">
-        <h1 className="text-4xl md:text-5xl font-bold tracking-tighter mb-4" style={{ fontFamily: 'Inter, sans-serif' }}>Maintenance Portal</h1>
-        <p className="text-zinc-500">Manage all property maintenance requests.</p>
+    <div className="min-h-screen bg-black text-white pl-20 md:pl-64">
+      <div className="p-4 sm:p-6 md:p-10">
+      <header className="mb-8">
+        <h1 className="text-3xl sm:text-4xl font-bold tracking-tighter mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>Maintenance Portal</h1>
+        <p className="text-zinc-500 text-sm">Manage all property maintenance requests.</p>
       </header>
 
-      <div className="grid grid-cols-3 gap-6 mb-12">
-        <div className="border border-zinc-800 p-6 bg-zinc-950" data-testid="stat-total-tickets">
-          <p className="text-zinc-400 text-sm uppercase tracking-wider mb-2">Total Tickets</p>
-          <p className="text-4xl font-bold font-mono">{tickets?.length || 0}</p>
+      <div className="grid grid-cols-3 gap-3 sm:gap-6 mb-8">
+        <div className="border border-zinc-800 p-3 sm:p-6 bg-zinc-950" data-testid="stat-total-tickets">
+          <p className="text-zinc-400 text-xs uppercase tracking-wider mb-1 sm:mb-2">Total</p>
+          <p className="text-2xl sm:text-4xl font-bold font-mono">{tickets?.length || 0}</p>
         </div>
-        <div className="border border-zinc-700 p-6 bg-zinc-900" data-testid="stat-open-tickets">
-          <p className="text-zinc-300 text-sm uppercase tracking-wider mb-2">Open</p>
-          <p className="text-4xl font-bold font-mono text-white">{openTickets.length}</p>
+        <div className="border border-zinc-700 p-3 sm:p-6 bg-zinc-900" data-testid="stat-open-tickets">
+          <p className="text-zinc-300 text-xs uppercase tracking-wider mb-1 sm:mb-2">Open</p>
+          <p className="text-2xl sm:text-4xl font-bold font-mono text-white">{openTickets.length}</p>
         </div>
-        <div className="border border-zinc-800 p-6 bg-zinc-950" data-testid="stat-resolved-tickets">
-          <p className="text-zinc-500 text-sm uppercase tracking-wider mb-2">Resolved</p>
-          <p className="text-4xl font-bold font-mono text-zinc-400">{resolvedTickets.length}</p>
+        <div className="border border-zinc-800 p-3 sm:p-6 bg-zinc-950" data-testid="stat-resolved-tickets">
+          <p className="text-zinc-500 text-xs uppercase tracking-wider mb-1 sm:mb-2">Resolved</p>
+          <p className="text-2xl sm:text-4xl font-bold font-mono text-zinc-400">{resolvedTickets.length}</p>
         </div>
       </div>
 
@@ -78,23 +79,23 @@ export default function AdminMaintenance() {
                 className="border border-zinc-800 p-6 bg-zinc-950 hover:border-zinc-600 transition-colors"
                 data-testid={`ticket-open-${ticket.id}`}
               >
-                <div className="flex justify-between items-start gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <Clock size={16} className="text-white" />
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2 mb-2">
+                      <Clock size={14} className="text-white shrink-0" />
                       <span className="text-xs uppercase tracking-wider text-white border border-zinc-600 px-2 py-0.5">
                         {ticket.status}
                       </span>
-                      <span className="text-zinc-500 text-sm font-mono">{new Date(ticket.createdAt!).toLocaleDateString()}</span>
+                      <span className="text-zinc-500 text-xs font-mono">{new Date(ticket.createdAt!).toLocaleDateString()}</span>
                     </div>
-                    <h3 className="text-xl font-semibold mb-2">{ticket.title}</h3>
-                    <p className="text-zinc-400 text-sm mb-3">{ticket.description}</p>
-                    <p className="text-zinc-600 text-xs uppercase tracking-wider">
+                    <h3 className="text-lg sm:text-xl font-semibold mb-1">{ticket.title}</h3>
+                    <p className="text-zinc-400 text-sm mb-2">{ticket.description}</p>
+                    <p className="text-zinc-600 text-xs uppercase tracking-wider truncate">
                       Property: {ticket.property.address}
                     </p>
                   </div>
                   
-                  <div className="flex flex-col items-end gap-3">
+                  <div className="flex sm:flex-col items-center sm:items-end gap-3 shrink-0">
                     {ticket.photoUrl && (
                       <button 
                         onClick={() => setSelectedImage(ticket.photoUrl)}
@@ -102,21 +103,21 @@ export default function AdminMaintenance() {
                         data-testid={`button-view-photo-${ticket.id}`}
                       >
                         <ImageIcon size={14} />
-                        View Photo
+                        <span className="hidden sm:inline">View Photo</span>
                       </button>
                     )}
                     <Button
                       onClick={() => handleResolve(ticket.id)}
                       disabled={isResolving && resolvingId === ticket.id}
-                      className="bg-white text-black border border-white hover:bg-zinc-200"
+                      className="bg-white text-black border border-white hover:bg-zinc-200 text-xs sm:text-sm px-3"
                       data-testid={`button-resolve-${ticket.id}`}
                     >
                       {isResolving && resolvingId === ticket.id ? (
-                        <Loader2 className="animate-spin mr-2 w-4 h-4" />
+                        <Loader2 className="animate-spin mr-1 w-3 h-3" />
                       ) : (
-                        <CheckCircle size={16} className="mr-2" />
+                        <CheckCircle size={14} className="mr-1" />
                       )}
-                      Mark Resolved
+                      Resolve
                     </Button>
                   </div>
                 </div>
@@ -137,8 +138,8 @@ export default function AdminMaintenance() {
             No resolved tickets yet.
           </div>
         ) : (
-          <div className="border border-zinc-800 overflow-hidden">
-            <table className="w-full text-left">
+          <div className="border border-zinc-800 overflow-x-auto">
+            <table className="w-full text-left min-w-[480px]">
               <thead className="bg-zinc-900 text-zinc-400 text-xs uppercase tracking-wider">
                 <tr>
                   <th className="p-4 font-medium">Date</th>
@@ -174,6 +175,7 @@ export default function AdminMaintenance() {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

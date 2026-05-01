@@ -185,11 +185,12 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white p-8 md:p-12 pl-28 md:pl-72">
+    <div className="min-h-screen bg-black text-white pl-20 md:pl-64">
+      <div className="p-4 sm:p-6 md:p-10">
       <header className="mb-8">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tighter mb-2">Admin Dashboard</h1>
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tighter mb-1">Admin Dashboard</h1>
             <p className="text-zinc-500">
               System status: <span className="text-white font-medium">Operational</span>
             </p>
@@ -312,8 +313,8 @@ export default function AdminDashboard() {
       {activeTab === 'users' && (
         <div className="mt-8">
           <h2 className="text-2xl font-semibold tracking-tight mb-6">All Users</h2>
-          <div className="border border-white/10 overflow-hidden">
-            <table className="w-full text-left">
+          <div className="border border-white/10 overflow-x-auto">
+            <table className="w-full text-left min-w-[480px]">
               <thead className="bg-zinc-900 text-zinc-400 text-xs uppercase tracking-wider">
                 <tr>
                   <th className="p-4 font-medium">Name</th>
@@ -355,22 +356,22 @@ export default function AdminDashboard() {
       {activeTab === 'overview' && (
       <>
       {/* Exposure Tracker - Main Focus */}
-      <div className="mb-12 p-8 border-2 border-white bg-zinc-950 mt-8">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+      <div className="mb-8 p-4 sm:p-8 border-2 border-white bg-zinc-950 mt-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <p className="text-zinc-400 text-sm uppercase tracking-widest mb-2">Total Exposure</p>
-            <h2 className="text-5xl md:text-7xl font-bold tracking-tighter" style={{ fontFamily: 'Inter, sans-serif' }} data-testid="text-total-exposure">
+            <p className="text-zinc-400 text-xs sm:text-sm uppercase tracking-widest mb-1 sm:mb-2">Total Exposure</p>
+            <h2 className="text-3xl sm:text-5xl md:text-7xl font-bold tracking-tighter" style={{ fontFamily: 'Inter, sans-serif' }} data-testid="text-total-exposure">
               ₹{((stats?.totalAdvanced || 0) - (stats?.totalCollected || 0)).toLocaleString()}
             </h2>
-            <p className="text-zinc-500 mt-2">Rent Advanced to Owners − Rent Collected from Tenants</p>
+            <p className="text-zinc-500 text-xs sm:text-sm mt-1 sm:mt-2">Advanced to Owners − Collected from Tenants</p>
           </div>
-          <div className="flex gap-8">
+          <div className="flex gap-6 sm:gap-8">
             <div className="text-center">
-              <p className="text-3xl font-mono text-white" data-testid="text-advanced">₹{(stats?.totalAdvanced || 0).toLocaleString()}</p>
+              <p className="text-xl sm:text-3xl font-mono text-white" data-testid="text-advanced">₹{(stats?.totalAdvanced || 0).toLocaleString()}</p>
               <p className="text-xs text-zinc-500 uppercase tracking-wider mt-1">Advanced</p>
             </div>
             <div className="text-center">
-              <p className="text-3xl font-mono text-white" data-testid="text-collected">₹{(stats?.totalCollected || 0).toLocaleString()}</p>
+              <p className="text-xl sm:text-3xl font-mono text-white" data-testid="text-collected">₹{(stats?.totalCollected || 0).toLocaleString()}</p>
               <p className="text-xs text-zinc-500 uppercase tracking-wider mt-1">Collected</p>
             </div>
           </div>
@@ -473,8 +474,8 @@ export default function AdminDashboard() {
           </span>
         </div>
 
-        <div className="border border-white/10 overflow-hidden">
-          <table className="w-full text-left">
+        <div className="border border-white/10 overflow-x-auto">
+          <table className="w-full text-left min-w-[480px]">
             <thead className="bg-zinc-900 text-zinc-400 text-xs uppercase tracking-wider">
               <tr>
                 <th className="p-4 font-medium">Property Address</th>
@@ -516,6 +517,7 @@ export default function AdminDashboard() {
       </div>
       </>
       )}
+      </div>
     </div>
   );
 }

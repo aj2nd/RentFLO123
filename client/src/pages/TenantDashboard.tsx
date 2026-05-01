@@ -237,21 +237,22 @@ export default function TenantDashboard() {
   const progressPercent = totalDue > 0 ? Math.min(100, Math.round((amountPaid / totalDue) * 100)) : 0;
 
   return (
-    <div className="min-h-screen bg-black text-white p-8 md:p-12 pl-28 md:pl-72 flex flex-col max-w-7xl mx-auto">
+    <div className="min-h-screen bg-black text-white pl-20 md:pl-64 flex flex-col">
+      <div className="p-4 sm:p-6 md:p-10 flex flex-col flex-1">
       <SuccessAnimation show={showSuccess} message="Payment Successful" />
       
       {/* Verification Banner */}
       {!isVerified && (
-        <div className={`mb-8 p-6 border-2 ${hasPendingKyc ? 'border-yellow-500 bg-yellow-500/10' : 'border-zinc-700 bg-zinc-900'}`}>
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
+        <div className={`mb-6 p-4 sm:p-5 border-2 ${hasPendingKyc ? 'border-yellow-500 bg-yellow-500/10' : 'border-zinc-700 bg-zinc-900'}`}>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-start gap-3">
               {hasPendingKyc ? (
-                <Clock className="w-8 h-8 text-yellow-500" />
+                <Clock className="w-6 h-6 text-yellow-500 shrink-0 mt-0.5" />
               ) : (
-                <Shield className="w-8 h-8 text-zinc-400" />
+                <Shield className="w-6 h-6 text-zinc-400 shrink-0 mt-0.5" />
               )}
               <div>
-                <h3 className={`text-lg font-semibold ${hasPendingKyc ? 'text-yellow-500' : 'text-white'}`}>
+                <h3 className={`text-base font-semibold ${hasPendingKyc ? 'text-yellow-500' : 'text-white'}`}>
                   {hasPendingKyc ? 'Verification in Progress' : 'Complete KYC Verification'}
                 </h3>
                 <p className="text-zinc-400 text-sm">
@@ -263,7 +264,7 @@ export default function TenantDashboard() {
             </div>
             {!hasPendingKyc && (
               <Link href="/verify">
-                <Button className="bg-white text-black rounded-none" data-testid="button-complete-kyc">
+                <Button className="bg-white text-black rounded-none w-full sm:w-auto" data-testid="button-complete-kyc">
                   Complete KYC
                 </Button>
               </Link>
@@ -272,22 +273,22 @@ export default function TenantDashboard() {
         </div>
       )}
       
-      <header className="mb-12">
-        <div className="inline-flex items-center gap-2 px-3 py-1 border border-zinc-800 bg-zinc-900/50 mb-6">
+      <header className="mb-8">
+        <div className="inline-flex items-center gap-2 px-3 py-1 border border-zinc-800 bg-zinc-900/50 mb-4">
           <span className="w-2 h-2 bg-white animate-pulse"></span>
           <span className="text-xs font-medium uppercase tracking-wider text-zinc-400">RentFLO Secure Pay</span>
         </div>
-        <h1 className="text-4xl md:text-5xl font-bold tracking-tighter mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>Tenant Dashboard</h1>
-        <p className="text-zinc-500">Manage your stay at {property?.address || "your residence"}.</p>
+        <h1 className="text-3xl sm:text-4xl font-bold tracking-tighter mb-1" style={{ fontFamily: 'Inter, sans-serif' }}>Tenant Dashboard</h1>
+        <p className="text-zinc-500 text-sm">Manage your stay at {property?.address || "your residence"}.</p>
       </header>
 
       {unpaidLedger && property ? (
-        <div className="space-y-12">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-            <div className="space-y-8">
+        <div className="space-y-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+            <div className="space-y-6">
               <div>
-                <p className="text-zinc-500 text-sm uppercase tracking-widest font-semibold mb-2">Monthly Rent</p>
-                <h2 className="text-6xl md:text-8xl font-bold tracking-tighter text-white leading-none" style={{ fontFamily: 'Inter, sans-serif' }}>
+                <p className="text-zinc-500 text-xs uppercase tracking-widest font-semibold mb-2">Monthly Rent</p>
+                <h2 className="text-4xl sm:text-6xl md:text-7xl font-bold tracking-tighter text-white leading-none" style={{ fontFamily: 'Inter, sans-serif' }}>
                   ₹{totalDue.toLocaleString()}
                 </h2>
               </div>
@@ -325,7 +326,7 @@ export default function TenantDashboard() {
               )}
             </div>
 
-            <div className="bg-zinc-950 border border-zinc-800 p-8 flex flex-col gap-6">
+            <div className="bg-zinc-950 border border-zinc-800 p-5 sm:p-8 flex flex-col gap-5 sm:gap-6">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-2xl font-bold mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>Payment</h3>
@@ -503,19 +504,19 @@ export default function TenantDashboard() {
         </div>
       ) : (
         <div className="space-y-8">
-          <div className="border-2 border-white p-8 bg-zinc-950">
-            <div className="flex items-center gap-4 mb-6">
-              <Building2 size={32} className="text-white" />
+          <div className="border-2 border-white p-5 sm:p-8 bg-zinc-950">
+            <div className="flex items-start gap-3 mb-5">
+              <Building2 size={24} className="text-white shrink-0 mt-0.5" />
               <div>
-                <h2 className="text-3xl font-bold tracking-tighter" style={{ fontFamily: 'Inter, sans-serif' }}>Join My Home</h2>
-                <p className="text-zinc-500">Link yourself to a property by searching your landlord's email.</p>
+                <h2 className="text-2xl sm:text-3xl font-bold tracking-tighter" style={{ fontFamily: 'Inter, sans-serif' }}>Join My Home</h2>
+                <p className="text-zinc-500 text-sm">Link yourself to a property by searching your landlord's email.</p>
               </div>
             </div>
 
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="landlordEmail" className="text-zinc-400 uppercase text-xs tracking-wider">Landlord Email</Label>
-                <div className="flex gap-4">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <Input
                     id="landlordEmail"
                     type="email"
@@ -528,7 +529,7 @@ export default function TenantDashboard() {
                   <Button
                     onClick={handleSearchProperties}
                     disabled={isSearching}
-                    className="bg-white text-black hover:bg-zinc-200 border-2 border-white rounded-none h-12 px-6"
+                    className="bg-white text-black hover:bg-zinc-200 border-2 border-white rounded-none h-12 px-6 shrink-0"
                     data-testid="button-search-landlord"
                   >
                     {isSearching ? <Loader2 className="animate-spin" /> : <Search size={18} />}
@@ -565,15 +566,16 @@ export default function TenantDashboard() {
             </div>
           </div>
 
-          <div className="flex flex-col items-center justify-center py-12 border border-zinc-900 bg-zinc-950/30">
-            <div className="w-16 h-16 bg-zinc-900 flex items-center justify-center mb-4">
-              <Home size={24} className="text-zinc-500" />
+          <div className="flex flex-col items-center justify-center py-10 border border-zinc-900 bg-zinc-950/30">
+            <div className="w-14 h-14 bg-zinc-900 flex items-center justify-center mb-4">
+              <Home size={22} className="text-zinc-500" />
             </div>
             <h3 className="text-xl font-bold tracking-tighter mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>No Active Rent</h3>
-            <p className="text-zinc-500 text-sm">Once you join a property, your rent payments will appear here.</p>
+            <p className="text-zinc-500 text-sm text-center px-4">Once you join a property, your rent payments will appear here.</p>
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

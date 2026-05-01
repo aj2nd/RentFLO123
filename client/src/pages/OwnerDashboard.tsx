@@ -36,19 +36,20 @@ export default function OwnerDashboard() {
     .sort((a, b) => new Date(b.updatedAt || '').getTime() - new Date(a.updatedAt || '').getTime())[0];
 
   return (
-    <div className="min-h-screen bg-black text-white p-8 md:p-12 pl-28 md:pl-72 flex flex-col">
+    <div className="min-h-screen bg-black text-white pl-20 md:pl-64 flex flex-col">
+      <div className="p-4 sm:p-6 md:p-10 flex flex-col flex-1">
       {/* Verification Banner */}
       {!isVerified && (
-        <div className={`mb-8 p-6 border-2 ${hasPendingKyc ? 'border-yellow-500 bg-yellow-500/10' : 'border-zinc-700 bg-zinc-900'}`}>
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
+        <div className={`mb-6 p-4 sm:p-6 border-2 ${hasPendingKyc ? 'border-yellow-500 bg-yellow-500/10' : 'border-zinc-700 bg-zinc-900'}`}>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-start sm:items-center gap-3">
               {hasPendingKyc ? (
-                <Clock className="w-8 h-8 text-yellow-500" />
+                <Clock className="w-6 h-6 text-yellow-500 shrink-0 mt-0.5 sm:mt-0" />
               ) : (
-                <Shield className="w-8 h-8 text-zinc-400" />
+                <Shield className="w-6 h-6 text-zinc-400 shrink-0 mt-0.5 sm:mt-0" />
               )}
               <div>
-                <h3 className={`text-lg font-semibold ${hasPendingKyc ? 'text-yellow-500' : 'text-white'}`}>
+                <h3 className={`text-base font-semibold ${hasPendingKyc ? 'text-yellow-500' : 'text-white'}`}>
                   {hasPendingKyc ? 'Verification in Progress' : 'Complete KYC Verification'}
                 </h3>
                 <p className="text-zinc-400 text-sm">
@@ -60,7 +61,7 @@ export default function OwnerDashboard() {
             </div>
             {!hasPendingKyc && (
               <Link href="/verify">
-                <Button className="bg-white text-black rounded-none" data-testid="button-complete-kyc">
+                <Button className="bg-white text-black rounded-none w-full sm:w-auto" data-testid="button-complete-kyc">
                   Complete KYC
                 </Button>
               </Link>
@@ -69,37 +70,37 @@ export default function OwnerDashboard() {
         </div>
       )}
 
-      <header className="mb-12 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <header className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tighter mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>Owner Portal</h1>
-          <p className="text-zinc-500">Welcome back. Your portfolio overview.</p>
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tighter mb-1" style={{ fontFamily: 'Inter, sans-serif' }}>Owner Portal</h1>
+          <p className="text-zinc-500 text-sm">Welcome back. Your portfolio overview.</p>
         </div>
         <AddPropertyModal isVerified={isVerified ?? undefined} />
       </header>
 
-      <div className="mb-16">
+      <div className="mb-10">
         {latestPayment ? (
-          <div className="border-2 border-white p-8">
-            <h2 className="text-5xl md:text-7xl font-bold tracking-tight text-white mb-4" style={{ fontFamily: 'Georgia, Times, serif' }} data-testid="text-rent-credited">
+          <div className="border-2 border-white p-5 sm:p-8">
+            <h2 className="text-2xl sm:text-4xl md:text-6xl font-bold tracking-tight text-white mb-3" style={{ fontFamily: 'Georgia, Times, serif' }} data-testid="text-rent-credited">
               RENT CREDITED
             </h2>
-            <p className="text-6xl md:text-8xl font-bold tracking-tighter text-white" style={{ fontFamily: 'Inter, sans-serif' }} data-testid="text-last-payout">
+            <p className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tighter text-white" style={{ fontFamily: 'Inter, sans-serif' }} data-testid="text-last-payout">
               ₹{latestPayment.amountAdvanced.toLocaleString()}
             </p>
-            <p className="text-zinc-400 mt-4 flex items-center gap-2">
-              <span className="w-2 h-2 bg-white inline-block"></span>
+            <p className="text-zinc-400 mt-3 flex items-center gap-2 text-sm">
+              <span className="w-2 h-2 bg-white inline-block shrink-0"></span>
               Credited to your bank account on {new Date(latestPayment.updatedAt || latestPayment.createdAt!).toLocaleDateString()}
             </p>
           </div>
         ) : (
-          <div className="border-2 border-zinc-800 p-8">
-             <p className="text-zinc-500 text-lg mb-2 uppercase tracking-widest font-medium">Payout Status</p>
-             <h2 className="text-5xl font-bold tracking-tighter text-zinc-700" style={{ fontFamily: 'Georgia, Times, serif' }}>AWAITING PAYOUT</h2>
+          <div className="border-2 border-zinc-800 p-5 sm:p-8">
+             <p className="text-zinc-500 text-sm mb-2 uppercase tracking-widest font-medium">Payout Status</p>
+             <h2 className="text-3xl sm:text-4xl font-bold tracking-tighter text-zinc-700" style={{ fontFamily: 'Georgia, Times, serif' }}>AWAITING PAYOUT</h2>
           </div>
         )}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <section>
           <div className="flex items-center gap-3 mb-6">
             <TrendingUp className="text-white" />
@@ -150,6 +151,7 @@ export default function OwnerDashboard() {
              )}
           </div>
         </section>
+      </div>
       </div>
     </div>
   );
