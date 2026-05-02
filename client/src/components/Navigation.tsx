@@ -141,8 +141,8 @@ export function Navigation() {
 export function TopBarLogo() {
   return (
     <Link href="/" className="flex items-center gap-4 cursor-pointer" data-testid="link-topbar-logo">
-      <img src="/favicon.ico" alt="RentFLO" className="w-20 h-20 object-contain flex-shrink-0" />
-      <span className="text-[40px] leading-none font-light tracking-[-0.04em] text-[#D9D9D9]">
+      <img src="/favicon.ico" alt="RentFLO" className="w-28 h-28 object-contain flex-shrink-0" />
+      <span className="text-[48px] leading-none font-light tracking-[-0.04em] text-[#D9D9D9]">
         RentFLO
       </span>
     </Link>
