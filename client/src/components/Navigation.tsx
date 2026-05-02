@@ -14,19 +14,19 @@ export function Navigation() {
   const role = user?.role;
 
   const navItems: { href: string; icon: React.ReactNode; label: string; roles: string[] }[] = [
-    { href: "/admin",            icon: <LayoutDashboard size={20} />, label: t('nav_admin_console'),    roles: ["ADMIN"] },
-    { href: "/admin/maintenance",icon: <Wrench size={20} />,          label: t('nav_maintenance'),      roles: ["ADMIN"] },
-    { href: "/owner",            icon: <Wallet size={20} />,          label: t('nav_owner_portal'),     roles: ["OWNER"] },
-    { href: "/tenant",           icon: <Home size={20} />,            label: t('nav_tenant_dashboard'), roles: ["TENANT"] },
-    { href: "/ledger",           icon: <Receipt size={20} />,         label: t('nav_ledger'),           roles: ["ADMIN", "OWNER", "TENANT"] },
-    { href: "/verify",           icon: <ShieldCheck size={20} />,     label: t('nav_kyc'),              roles: ["OWNER", "TENANT"] },
-    { href: "/agreement",        icon: <FileSignature size={20} />,   label: t('nav_agreement'),        roles: ["OWNER", "TENANT"] },
+    { href: "/admin",             icon: <LayoutDashboard size={20} />, label: t('nav_admin_console'),    roles: ["ADMIN"] },
+    { href: "/admin/maintenance", icon: <Wrench size={20} />,          label: t('nav_maintenance'),      roles: ["ADMIN"] },
+    { href: "/owner",             icon: <Wallet size={20} />,          label: t('nav_owner_portal'),     roles: ["OWNER"] },
+    { href: "/tenant",            icon: <Home size={20} />,            label: t('nav_tenant_dashboard'), roles: ["TENANT"] },
+    { href: "/ledger",            icon: <Receipt size={20} />,         label: t('nav_ledger'),           roles: ["ADMIN", "OWNER", "TENANT"] },
+    { href: "/verify",            icon: <ShieldCheck size={20} />,     label: t('nav_kyc'),              roles: ["OWNER", "TENANT"] },
+    { href: "/agreement",         icon: <FileSignature size={20} />,   label: t('nav_agreement'),        roles: ["OWNER", "TENANT"] },
   ];
 
   const visibleItems = navItems.filter(item => role && item.roles.includes(role));
 
   return (
-    <nav className="fixed left-0 top-0 h-full w-20 md:w-64 bg-black border-r border-white/5 flex flex-col justify-between py-8 z-50 transition-all duration-300">
+    <nav className="fixed left-0 top-0 h-full w-20 md:w-64 bg-black border-r border-[#6FFFE9]/15 flex flex-col justify-between py-8 z-50 transition-all duration-300">
       <div className="flex flex-col gap-2">
         <div className="px-3 md:px-6 mb-12">
           <Link href="/" className="flex items-center gap-2 cursor-pointer">
@@ -38,7 +38,7 @@ export function Navigation() {
         <div className="space-y-1 px-3">
           {isLoading ? (
             <div className="flex items-center justify-center py-4">
-              <Loader2 className="w-5 h-5 animate-spin text-zinc-500" />
+              <Loader2 className="w-5 h-5 animate-spin text-[#6FFFE9]/50" />
             </div>
           ) : (
             visibleItems.map((item) => (
@@ -57,7 +57,7 @@ export function Navigation() {
       <div className="px-3">
         <button
           onClick={() => logout()}
-          className="flex items-center gap-4 px-3 py-3 w-full text-zinc-500 hover:text-zinc-200 hover:bg-white/5 transition-all duration-200 group"
+          className="flex items-center gap-4 px-3 py-3 w-full text-[#9DEFE4]/60 hover:text-[#6FFFE9] hover:bg-[#6FFFE9]/8 transition-all duration-200 group"
           data-testid="button-logout"
         >
           <LogOut size={20} className="group-hover:translate-x-1 transition-transform" />
@@ -75,8 +75,8 @@ function NavItem({ href, icon, label, active }: { href: string; icon: React.Reac
       className={`
         flex items-center gap-4 px-3 py-3 transition-all duration-200
         ${active
-          ? "silver-btn text-black shadow-[0_0_20px_rgba(192,192,192,0.15)]"
-          : "text-zinc-400 hover:text-zinc-100 hover:bg-white/5"
+          ? "text-black"
+          : "text-[#9DEFE4]/75 hover:text-[#6FFFE9] hover:bg-[#6FFFE9]/8"
         }
       `}
       style={active ? {

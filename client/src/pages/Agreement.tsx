@@ -202,7 +202,7 @@ function AgreementBody({ property, userName }: { property: Property; userName: s
         of courts in Mumbai, Maharashtra.
       </p>
 
-      <p className="pt-2 border-t border-[#6FFFE9]/10 text-[#9DEFE4]/60 text-xs">
+      <p className="pt-2 border-t border-[#6FFFE9]/20 text-[#9DEFE4]/70 text-xs">
         By signing below, <strong>{userName}</strong>, you confirm that you have read, understood, and agree
         to be bound by all terms of this Agreement.
       </p>
@@ -285,7 +285,7 @@ export default function AgreementPage() {
 
           {/* Header */}
           <div className="mb-8 pt-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 border border-[#6FFFE9]/20 mb-4">
+            <div className="inline-flex items-center gap-2 px-3 py-1 border border-[#6FFFE9]/35 mb-4">
               <FileText size={13} className="text-[#6FFFE9]" />
               <span className="text-xs font-semibold uppercase tracking-wider text-[#9DEFE4]">Tripartite Agreement</span>
             </div>
@@ -300,7 +300,7 @@ export default function AgreementPage() {
 
           {/* No property */}
           {!data?.property && (
-            <div className="border border-[#6FFFE9]/20 p-6 text-[#9DEFE4] text-sm">
+            <div className="border border-[#6FFFE9]/35 p-6 text-[#9DEFE4] text-sm">
               No property found. Please complete your property setup first.
               <Button
                 className="mt-4 h-10 bg-[#6FFFE9] text-black hover:bg-[#8CFFF0] font-bold rounded-none block"
@@ -340,8 +340,8 @@ export default function AgreementPage() {
           {!signed && !alreadySigned && data?.property && (
             <div className="space-y-6">
               {/* Scrollable agreement text */}
-              <div className="border border-[#6FFFE9]/15 bg-black">
-                <div className="px-5 py-3 border-b border-[#6FFFE9]/10 flex items-center gap-2">
+              <div className="border border-[#6FFFE9]/28 bg-black">
+                <div className="px-5 py-3 border-b border-[#6FFFE9]/20 flex items-center gap-2">
                   <FileText size={14} className="text-[#9DEFE4]" />
                   <span className="text-xs uppercase tracking-wider text-[#9DEFE4] font-semibold">
                     Rent Advance Agreement — {data.property.address}
@@ -356,14 +356,14 @@ export default function AgreementPage() {
                   <AgreementBody property={data.property} userName={userName} />
                 </div>
                 {!scrolledToBottom && (
-                  <div className="px-5 py-2 border-t border-[#6FFFE9]/10 text-[#9DEFE4]/50 text-xs text-center">
+                  <div className="px-5 py-2 border-t border-[#6FFFE9]/20 text-[#9DEFE4]/60 text-xs text-center">
                     ↓ Scroll to read the full agreement before signing
                   </div>
                 )}
               </div>
 
               {/* Signature section */}
-              <div className="border border-[#6FFFE9]/15 bg-black p-5 sm:p-6 space-y-4">
+              <div className="border border-[#6FFFE9]/28 bg-black p-5 sm:p-6 space-y-4">
                 <div className="flex items-center gap-2 mb-1">
                   <PenLine size={15} className="text-[#9DEFE4]" />
                   <h2 className="text-xs font-semibold uppercase tracking-wider text-[#9DEFE4]">
@@ -372,7 +372,7 @@ export default function AgreementPage() {
                 </div>
 
                 {!scrolledToBottom ? (
-                  <div className="h-[140px] sm:h-[160px] border border-[#6FFFE9]/10 flex items-center justify-center text-[#9DEFE4]/40 text-sm text-center px-4">
+                  <div className="h-[140px] sm:h-[160px] border border-[#6FFFE9]/22 flex items-center justify-center text-[#9DEFE4]/50 text-sm text-center px-4">
                     Read the full agreement above to unlock the signature pad.
                   </div>
                 ) : (
@@ -400,7 +400,7 @@ export default function AgreementPage() {
                   <div
                     key={label}
                     className={`flex flex-col items-center justify-center p-3 border text-center ${
-                      s ? "border-[#6FFFE9] bg-[#6FFFE9]/5" : "border-[#6FFFE9]/15"
+                      s ? "border-[#6FFFE9] bg-[#6FFFE9]/8" : "border-[#6FFFE9]/25"
                     }`}
                   >
                     <span className={`text-xs font-semibold uppercase tracking-wider ${s ? "text-[#6FFFE9]" : "text-[#9DEFE4]/50"}`}>

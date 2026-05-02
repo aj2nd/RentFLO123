@@ -90,9 +90,9 @@ export default function Verify() {
         <div className="flex-1 p-5 sm:p-8 md:p-10 max-w-2xl w-full mx-0">
 
           <div className="mb-8 pt-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 border border-[#6FFFE9]/15 mb-4">
-              <ShieldCheck size={13} className="text-zinc-400" />
-              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">{t('kyc_identity_badge')}</span>
+            <div className="inline-flex items-center gap-2 px-3 py-1 border border-[#6FFFE9]/30 mb-4">
+              <ShieldCheck size={13} className="text-[#6FFFE9]" />
+              <span className="text-xs font-semibold uppercase tracking-wider text-[#9DEFE4]">{t('kyc_identity_badge')}</span>
             </div>
             <h1 className="text-3xl sm:text-4xl font-bold tracking-tighter mb-1 silver-text">
               {t('kyc_page_title')}
@@ -102,9 +102,9 @@ export default function Verify() {
 
           {/* VERIFIED */}
           {isVerified ? (
-            <div className="border border-zinc-300/30 p-6 sm:p-8 space-y-5">
+            <div className="border border-[#6FFFE9]/45 bg-[#6FFFE9]/3 p-6 sm:p-8 space-y-5">
               <div className="flex items-start gap-4">
-                <CheckCircle className="w-10 h-10 text-zinc-300 shrink-0 mt-0.5" />
+                <CheckCircle className="w-10 h-10 text-[#6FFFE9] shrink-0 mt-0.5" />
                 <div>
                   <h2 className="text-xl font-bold silver-text">{t('kyc_verified_title')}</h2>
                   <p className="text-zinc-500 text-sm mt-1">{t('kyc_verified_desc')}</p>
@@ -131,8 +131,8 @@ export default function Verify() {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
 
-              <div className="border border-white/8 bg-black p-5 sm:p-6 space-y-5">
-                <h2 className="text-base font-semibold uppercase tracking-wider text-zinc-500">
+              <div className="border border-[#6FFFE9]/18 bg-black p-5 sm:p-6 space-y-5">
+                <h2 className="text-base font-semibold uppercase tracking-wider text-[#9DEFE4]/80">
                   {t('kyc_identity_info')}
                 </h2>
 
@@ -142,7 +142,7 @@ export default function Verify() {
                   </Label>
                   <Input id="fullLegalName" value={formData.fullLegalName}
                     onChange={(e) => setFormData((p) => ({ ...p, fullLegalName: e.target.value }))}
-                    className="bg-black border-white/10 text-zinc-200 placeholder:text-zinc-600 h-11 rounded-none focus:border-[#6FFFE9]/40"
+                    className="bg-black border-[#6FFFE9]/25 text-zinc-200 placeholder:text-zinc-600 h-11 rounded-none focus:border-[#6FFFE9]/60"
                     placeholder={t('kyc_name_placeholder')} required data-testid="input-full-legal-name" />
                 </div>
 
@@ -155,7 +155,7 @@ export default function Verify() {
                       className={`h-11 text-sm font-semibold uppercase tracking-wide transition-all border ${
                         docType === "PAN"
                           ? "border-0 text-black"
-                          : "bg-black text-zinc-400 border-white/10 hover:border-white/20"
+                          : "bg-black text-[#9DEFE4]/70 border-[#6FFFE9]/20 hover:border-[#6FFFE9]/45 hover:text-[#6FFFE9]"
                       }`}
                       style={docType === "PAN" ? SILVER_BTN : undefined}
                       data-testid="toggle-pan">
@@ -165,7 +165,7 @@ export default function Verify() {
                       className={`h-11 text-sm font-semibold uppercase tracking-wide transition-all border ${
                         docType === "AADHAAR"
                           ? "border-0 text-black"
-                          : "bg-black text-zinc-400 border-white/10 hover:border-white/20"
+                          : "bg-black text-[#9DEFE4]/70 border-[#6FFFE9]/20 hover:border-[#6FFFE9]/45 hover:text-[#6FFFE9]"
                       }`}
                       style={docType === "AADHAAR" ? SILVER_BTN : undefined}
                       data-testid="toggle-aadhaar">
@@ -181,7 +181,7 @@ export default function Verify() {
                     </Label>
                     <Input id="panNumber" value={formData.panNumber}
                       onChange={(e) => setFormData((p) => ({ ...p, panNumber: e.target.value.toUpperCase() }))}
-                      className="bg-black border-white/10 text-zinc-200 placeholder:text-zinc-600 h-11 rounded-none font-mono focus:border-[#6FFFE9]/40"
+                      className="bg-black border-[#6FFFE9]/25 text-zinc-200 placeholder:text-zinc-600 h-11 rounded-none font-mono focus:border-[#6FFFE9]/60"
                       placeholder="ABCDE1234F" pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}" maxLength={10}
                       required={docType === "PAN"} data-testid="input-pan-number" />
                     <p className="text-xs text-zinc-600">{t('kyc_pan_hint')}</p>
@@ -195,7 +195,7 @@ export default function Verify() {
                     </Label>
                     <Input id="aadhaarNumber" value={formData.aadhaarNumber}
                       onChange={(e) => setFormData((p) => ({ ...p, aadhaarNumber: e.target.value.replace(/\D/g, "").slice(0, 12) }))}
-                      className="bg-black border-white/10 text-zinc-200 placeholder:text-zinc-600 h-11 rounded-none font-mono focus:border-[#6FFFE9]/40"
+                      className="bg-black border-[#6FFFE9]/25 text-zinc-200 placeholder:text-zinc-600 h-11 rounded-none font-mono focus:border-[#6FFFE9]/60"
                       placeholder="1234 5678 9012" maxLength={12}
                       required={docType === "AADHAAR"} data-testid="input-aadhaar-number" />
                     <p className="text-xs text-zinc-600">{t('kyc_aadhaar_hint')}</p>
@@ -206,8 +206,8 @@ export default function Verify() {
                   <Label className="text-xs uppercase tracking-wider text-zinc-500">
                     {docType === "PAN" ? t('kyc_upload_pan') : t('kyc_upload_aadhaar')}
                   </Label>
-                  <label className="flex items-center gap-3 h-11 px-4 border border-white/10 cursor-pointer hover:border-[#6FFFE9]/30 transition-colors" data-testid="label-kyc-upload">
-                    <Upload size={15} className="text-zinc-500" />
+                  <label className="flex items-center gap-3 h-11 px-4 border border-[#6FFFE9]/25 cursor-pointer hover:border-[#6FFFE9]/55 hover:bg-[#6FFFE9]/4 transition-colors" data-testid="label-kyc-upload">
+                    <Upload size={15} className="text-[#9DEFE4]/70" />
                     <span className="text-sm text-zinc-400">
                       {formData.kycDocumentUrl ? t('kyc_doc_uploaded') : t('kyc_choose_file')}
                     </span>
@@ -216,15 +216,15 @@ export default function Verify() {
                       className="hidden" data-testid="input-kyc-document" />
                   </label>
                   {formData.kycDocumentUrl && (
-                    <p className="text-xs text-zinc-300">{t('kyc_doc_ready')}</p>
+                    <p className="text-xs text-[#6FFFE9]">{t('kyc_doc_ready')}</p>
                   )}
                 </div>
               </div>
 
               {/* Bank details — owner only */}
               {isOwner && (
-                <div className="border border-white/8 bg-black p-5 sm:p-6 space-y-5">
-                  <h2 className="text-base font-semibold uppercase tracking-wider text-zinc-500">
+                <div className="border border-[#6FFFE9]/18 bg-black p-5 sm:p-6 space-y-5">
+                  <h2 className="text-base font-semibold uppercase tracking-wider text-[#9DEFE4]/80">
                     {t('kyc_bank_details')}
                     <span className="ml-2 text-zinc-600 normal-case font-normal text-xs">{t('kyc_landlords_only')}</span>
                   </h2>
@@ -236,7 +236,7 @@ export default function Verify() {
                       </Label>
                       <Input id="bankAccountNumber" value={formData.bankAccountNumber}
                         onChange={(e) => setFormData((p) => ({ ...p, bankAccountNumber: e.target.value.replace(/\D/g, "") }))}
-                        className="bg-black border-white/10 text-zinc-200 placeholder:text-zinc-600 h-11 rounded-none font-mono focus:border-[#6FFFE9]/40"
+                        className="bg-black border-[#6FFFE9]/25 text-zinc-200 placeholder:text-zinc-600 h-11 rounded-none font-mono focus:border-[#6FFFE9]/60"
                         placeholder={t('kyc_account_placeholder')} required data-testid="input-bank-account" />
                     </div>
 
@@ -246,7 +246,7 @@ export default function Verify() {
                       </Label>
                       <Input id="ifscCode" value={formData.ifscCode}
                         onChange={(e) => setFormData((p) => ({ ...p, ifscCode: e.target.value.toUpperCase() }))}
-                        className="bg-black border-white/10 text-zinc-200 placeholder:text-zinc-600 h-11 rounded-none font-mono focus:border-[#6FFFE9]/40"
+                        className="bg-black border-[#6FFFE9]/25 text-zinc-200 placeholder:text-zinc-600 h-11 rounded-none font-mono focus:border-[#6FFFE9]/60"
                         placeholder="HDFC0001234" pattern="[A-Z]{4}0[A-Z0-9]{6}" maxLength={11}
                         required data-testid="input-ifsc-code" />
                     </div>
@@ -255,8 +255,8 @@ export default function Verify() {
                       <Label className="text-xs uppercase tracking-wider text-zinc-500">
                         {t('kyc_cancelled_cheque')}
                       </Label>
-                      <label className="flex items-center gap-3 h-11 px-4 border border-white/10 cursor-pointer hover:border-[#6FFFE9]/30 transition-colors" data-testid="label-cheque-upload">
-                        <Upload size={15} className="text-zinc-500" />
+                      <label className="flex items-center gap-3 h-11 px-4 border border-[#6FFFE9]/25 cursor-pointer hover:border-[#6FFFE9]/55 hover:bg-[#6FFFE9]/4 transition-colors" data-testid="label-cheque-upload">
+                        <Upload size={15} className="text-[#9DEFE4]/70" />
                         <span className="text-sm text-zinc-400">
                           {formData.cancelledChequeUrl ? t('kyc_uploaded_tick') : t('kyc_upload_cheque')}
                         </span>

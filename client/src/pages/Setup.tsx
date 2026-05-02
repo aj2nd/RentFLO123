@@ -102,11 +102,11 @@ export default function Setup() {
         </div>
 
         <div className="mb-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 border border-[#6FFFE9]/20 mb-5">
+          <div className="inline-flex items-center gap-2 px-3 py-1 border border-[#6FFFE9]/30 mb-5">
             {role === "OWNER"
-              ? <Building2 size={14} className="text-zinc-400" />
-              : <Home size={14} className="text-zinc-400" />}
-            <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+              ? <Building2 size={14} className="text-[#6FFFE9]" />
+              : <Home size={14} className="text-[#6FFFE9]" />}
+            <span className="text-xs font-semibold uppercase tracking-wider text-[#9DEFE4]">
               {role === "OWNER" ? t('setup_landlord_badge') : t('setup_tenant_badge')}
             </span>
           </div>
@@ -127,7 +127,7 @@ export default function Setup() {
               </Label>
               <Input id="address" value={address} onChange={(e) => setAddress(e.target.value)}
                 placeholder="e.g. 42 MG Road, Bangalore 560001"
-                className="bg-black border border-[#6FFFE9]/20 text-zinc-200 placeholder:text-zinc-600 h-12 rounded-none focus:border-[#6FFFE9]/50"
+                className="bg-black border border-[#6FFFE9]/30 text-zinc-200 placeholder:text-zinc-600 h-12 rounded-none focus:border-[#6FFFE9]/65"
                 data-testid="input-property-address" />
             </div>
 
@@ -138,7 +138,7 @@ export default function Setup() {
                 </Label>
                 <Input id="rent" type="number" min={1} value={rent} onChange={(e) => setRent(e.target.value)}
                   placeholder="e.g. 20000"
-                  className="bg-black border border-[#6FFFE9]/20 text-zinc-200 placeholder:text-zinc-600 h-12 rounded-none focus:border-[#6FFFE9]/50"
+                  className="bg-black border border-[#6FFFE9]/30 text-zinc-200 placeholder:text-zinc-600 h-12 rounded-none focus:border-[#6FFFE9]/65"
                   data-testid="input-monthly-rent" />
               </div>
               <div className="space-y-2">
@@ -147,7 +147,7 @@ export default function Setup() {
                 </Label>
                 <Input id="payoutDay" type="number" min={1} max={28} value={payoutDay} onChange={(e) => setPayoutDay(e.target.value)}
                   placeholder="1"
-                  className="bg-black border border-[#6FFFE9]/20 text-zinc-200 placeholder:text-zinc-600 h-12 rounded-none focus:border-[#6FFFE9]/50"
+                  className="bg-black border border-[#6FFFE9]/30 text-zinc-200 placeholder:text-zinc-600 h-12 rounded-none focus:border-[#6FFFE9]/65"
                   data-testid="input-payout-day" />
               </div>
             </div>
@@ -158,7 +158,7 @@ export default function Setup() {
               </Label>
               <Input id="tenantEmail" type="email" value={tenantEmail} onChange={(e) => setTenantEmail(e.target.value)}
                 placeholder="tenant@email.com"
-                className="bg-black border border-[#6FFFE9]/20 text-zinc-200 placeholder:text-zinc-600 h-12 rounded-none focus:border-[#6FFFE9]/50"
+                className="bg-black border border-[#6FFFE9]/30 text-zinc-200 placeholder:text-zinc-600 h-12 rounded-none focus:border-[#6FFFE9]/65"
                 data-testid="input-tenant-email" />
             </div>
 
@@ -191,7 +191,7 @@ export default function Setup() {
                   onChange={(e) => setLandlordEmail(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                   placeholder="landlord@email.com"
-                  className="flex-1 bg-black border border-[#6FFFE9]/20 text-zinc-200 placeholder:text-zinc-600 h-12 rounded-none focus:border-[#6FFFE9]/50"
+                  className="flex-1 bg-black border border-[#6FFFE9]/30 text-zinc-200 placeholder:text-zinc-600 h-12 rounded-none focus:border-[#6FFFE9]/65"
                   data-testid="input-landlord-email" />
                 <Button type="button" onClick={handleSearch} disabled={isSearching}
                   className="h-12 px-5 rounded-none border-0" style={SILVER_BTN}
@@ -203,9 +203,9 @@ export default function Setup() {
 
             {searchResults.length > 0 && (
               <div className="space-y-3">
-                <p className="text-xs uppercase tracking-wider text-zinc-500">{t('setup_available_properties')}</p>
+                <p className="text-xs uppercase tracking-wider text-[#9DEFE4]">{t('setup_available_properties')}</p>
                 {searchResults.map((prop) => (
-                  <div key={prop.id} className="border border-white/8 p-5 flex items-center justify-between gap-4"
+                  <div key={prop.id} className="border border-[#6FFFE9]/20 p-5 flex items-center justify-between gap-4"
                     data-testid={`property-card-${prop.id}`}>
                     <div className="space-y-1">
                       <p className="font-semibold text-zinc-200 leading-snug" data-testid={`property-address-${prop.id}`}>

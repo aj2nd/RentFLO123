@@ -117,22 +117,28 @@
     filter: brightness(1.12);
   }
 
-  /* Tiffany glow utilities (secondary accent only) */
+  /* Tiffany glow utilities */
   .glass-panel {
-    @apply bg-black/80 backdrop-blur-xl border border-[#6FFFE9]/15;
+    @apply bg-black/80 backdrop-blur-xl border border-[#6FFFE9]/25;
   }
 
   .high-contrast-border {
-    @apply border border-[#6FFFE9]/20 hover:border-[#6FFFE9]/50 transition-colors duration-300;
+    @apply border border-[#6FFFE9]/30 hover:border-[#6FFFE9]/65 transition-colors duration-300;
   }
 
-  /* Tiffany glow — applied sparingly as secondary accent */
+  /* Tiffany glow */
   .glow-tiffany {
-    text-shadow: 0 0 20px rgba(111, 255, 233, 0.4);
+    text-shadow: 0 0 24px rgba(111, 255, 233, 0.55);
   }
 
-  /* Keep legacy glow-text pointing to tiffany for decorative elements */
+  /* Silver glow on hero text */
   .glow-text {
-    text-shadow: 0 0 30px rgba(192, 192, 192, 0.5);
+    text-shadow: 0 0 30px rgba(192, 192, 192, 0.45), 0 0 60px rgba(111, 255, 233, 0.12);
+  }
+
+  /* Tiffany accent line — thin left border highlight */
+  .tiffany-accent {
+    border-left: 2px solid #6FFFE9;
+    padding-left: 0.75rem;
   }
 }
