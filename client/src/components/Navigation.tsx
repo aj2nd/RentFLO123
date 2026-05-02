@@ -47,9 +47,9 @@ export function Navigation() {
         <div className="flex flex-col gap-2 w-64">
           {/* Logo — 10% larger */}
           <div className="px-6 mb-10 flex items-center gap-2">
-            <Link href="/" className="flex items-center gap-2 cursor-pointer" data-testid="link-logo-img">
-              <img src={houseLogoImg} alt="RentFLO" style={{ width: '53px', height: '53px' }} className="object-contain flex-shrink-0" />
-              <img src={wordmarkImg} alt="RentFLO" style={{ height: '40px' }} className="object-contain flex-shrink-0" data-testid="link-logo" />
+            <Link href="/" className="flex items-center gap-3 cursor-pointer" data-testid="link-logo-img">
+              <img src={houseLogoImg} alt="RentFLO" style={{ width: '80px', height: '80px' }} className="object-contain flex-shrink-0" />
+              <img src={wordmarkImg} alt="RentFLO" style={{ height: '60px' }} className="object-contain flex-shrink-0" data-testid="link-logo" />
             </Link>
           </div>
 
