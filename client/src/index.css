@@ -5,35 +5,42 @@
 @tailwind utilities;
 
 :root {
-  --background: 0 0% 0%; /* Pure Black */
-  --foreground: 180 100% 76%; /* Tiffany Blue */
-  
-  --card: 0 0% 3%; /* Very dark gray, almost black */
-  --card-foreground: 180 100% 76%;
-  
-  --popover: 0 0% 3%;
-  --popover-foreground: 180 100% 76%;
-  
-  --primary: 180 100% 76%; /* Tiffany blue primary actions */
-  --primary-foreground: 0 0% 0%; /* Black text on blue buttons */
-  
-  --secondary: 0 0% 12%; /* Dark gray for secondary elements */
-  --secondary-foreground: 180 100% 76%;
-  
-  --muted: 0 0% 12%;
-  --muted-foreground: 180 35% 62%;
-  
-  --accent: 180 100% 76%;
-  --accent-foreground: 0 0% 0%;
-  
-  --destructive: 0 0% 40%;
-  --destructive-foreground: 180 100% 76%;
+  --background: 0 0% 0%;            /* OLED Black */
+  --foreground: 0 0% 78%;           /* Silver — body text */
 
-  --border: 180 65% 28%;
-  --input: 180 65% 28%;
-  --ring: 180 100% 76%;
-  
-  --radius: 0px; /* Sharp corners for the brutalist/minimalist look */
+  --card: 0 0% 3%;
+  --card-foreground: 0 0% 88%;
+
+  --popover: 0 0% 3%;
+  --popover-foreground: 0 0% 88%;
+
+  --primary: 0 0% 78%;              /* Silver — primary actions */
+  --primary-foreground: 0 0% 0%;   /* Black on silver */
+
+  --secondary: 0 0% 10%;
+  --secondary-foreground: 0 0% 75%;
+
+  --muted: 0 0% 10%;
+  --muted-foreground: 0 0% 50%;     /* Dim silver */
+
+  --accent: 180 100% 76%;           /* Tiffany blue — secondary glow/accent */
+  --accent-foreground: 0 0% 0%;
+
+  --destructive: 0 0% 40%;
+  --destructive-foreground: 0 0% 88%;
+
+  --border: 0 0% 14%;
+  --input: 0 0% 14%;
+  --ring: 180 100% 76%;             /* Tiffany ring */
+
+  --radius: 0px;
+
+  /* Named tokens */
+  --silver: #C0C0C0;
+  --silver-light: #E8E8E8;
+  --silver-dim: #888888;
+  --tiffany: #6FFFE9;
+  --tiffany-dim: #9DEFE4;
 }
 
 @layer base {
@@ -42,7 +49,7 @@
     border-radius: 0 !important;
   }
   body {
-    @apply bg-background text-foreground antialiased selection:bg-[#6FFFE9] selection:text-black;
+    @apply bg-background text-foreground antialiased;
     font-family: 'Inter', system-ui, sans-serif;
     font-feature-settings: "ss01", "ss02", "cv01", "cv02";
     padding-top: env(safe-area-inset-top);
@@ -50,6 +57,12 @@
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
     -webkit-tap-highlight-color: transparent;
+    /* Silver liquid metal selection highlight */
+    --tw-prose-body: #C0C0C0;
+  }
+  ::selection {
+    background: #C0C0C0;
+    color: #000;
   }
   button, a, [role="button"], select, input[type="submit"] {
     min-height: 44px;
@@ -59,36 +72,67 @@
     -webkit-user-select: none;
     user-select: none;
   }
-  
+
   h1, h2, h3, h4, h5, h6 {
     @apply tracking-tighter font-medium;
   }
-  
+
   .font-display, .font-serif {
     font-family: 'Playfair Display', Georgia, serif;
   }
-  
+
   .currency-display {
     font-family: 'Playfair Display', Georgia, serif;
     letter-spacing: -0.02em;
   }
 }
 
-/* Custom utilities for the specific aesthetic */
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
-  
+
+  /* Silver liquid metal gradient text — use on headings / key numbers */
+  .silver-text {
+    background: linear-gradient(
+      135deg,
+      #7A7A7A 0%,
+      #D0D0D0 30%,
+      #F5F5F5 50%,
+      #C8C8C8 65%,
+      #888888 100%
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Silver liquid metal button background */
+  .silver-btn {
+    background: linear-gradient(135deg, #7A7A7A 0%, #C8C8C8 35%, #EFEFEF 50%, #B4B4B4 70%, #7A7A7A 100%);
+    color: #000;
+    transition: filter 0.2s;
+  }
+  .silver-btn:hover {
+    filter: brightness(1.12);
+  }
+
+  /* Tiffany glow utilities (secondary accent only) */
   .glass-panel {
     @apply bg-black/80 backdrop-blur-xl border border-[#6FFFE9]/15;
   }
-  
+
   .high-contrast-border {
-    @apply border border-[#6FFFE9]/25 hover:border-[#6FFFE9] transition-colors duration-300;
+    @apply border border-[#6FFFE9]/20 hover:border-[#6FFFE9]/50 transition-colors duration-300;
   }
 
+  /* Tiffany glow — applied sparingly as secondary accent */
+  .glow-tiffany {
+    text-shadow: 0 0 20px rgba(111, 255, 233, 0.4);
+  }
+
+  /* Keep legacy glow-text pointing to tiffany for decorative elements */
   .glow-text {
-    text-shadow: 0 0 20px rgba(111, 255, 233, 0.45);
+    text-shadow: 0 0 30px rgba(192, 192, 192, 0.5);
   }
 }

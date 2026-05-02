@@ -51,7 +51,7 @@ function SignaturePad({ onSave }: { onSave: (dataUrl: string) => void }) {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d")!;
-    ctx.strokeStyle = "#6FFFE9";
+    ctx.strokeStyle = "#C8C8C8";
     ctx.lineWidth = 2.5;
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
@@ -133,7 +133,8 @@ function SignaturePad({ onSave }: { onSave: (dataUrl: string) => void }) {
           type="button"
           onClick={save}
           disabled={!hasStrokes}
-          className="flex-1 h-10 bg-[#6FFFE9] text-black hover:bg-[#8CFFF0] font-bold rounded-none disabled:opacity-30"
+          className="flex-1 h-10 font-bold rounded-none disabled:opacity-30 border-0"
+          style={{ background: 'linear-gradient(135deg, #7A7A7A 0%, #C8C8C8 35%, #EFEFEF 50%, #B4B4B4 70%, #7A7A7A 100%)', color: '#000' }}
           data-testid="button-confirm-signature"
         >
           <PenLine size={15} className="mr-2" />
@@ -270,13 +271,13 @@ export default function AgreementPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-[#6FFFE9] border-t-transparent animate-spin" />
+        <div className="w-8 h-8 border-2 border-zinc-600 border-t-zinc-200 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-black text-[#6FFFE9]" style={{ fontFamily: "Inter, sans-serif" }}>
+    <div className="min-h-screen bg-black text-zinc-200" style={{ fontFamily: "Inter, sans-serif" }}>
       <Navigation />
 
       <main className="pl-20 md:pl-64 min-h-screen flex flex-col">

@@ -13,6 +13,11 @@ import type { User } from "@shared/schema";
 
 type DocType = "PAN" | "AADHAAR";
 
+const SILVER_BTN: React.CSSProperties = {
+  background: 'linear-gradient(135deg, #7A7A7A 0%, #C8C8C8 35%, #EFEFEF 50%, #B4B4B4 70%, #7A7A7A 100%)',
+  color: '#000',
+};
+
 export default function Verify() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
@@ -28,24 +33,16 @@ export default function Verify() {
     cancelledChequeUrl: "",
   });
 
-  const { data: currentUser, isLoading } = useQuery<User>({
-    queryKey: ["/api/auth/user"],
-  });
+  const { data: currentUser, isLoading } = useQuery<User>({ queryKey: ["/api/auth/user"] });
 
   const submitKycMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
       const res = await apiRequest("POST", "/api/kyc/submit", data);
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.message || "Submission failed");
-      }
+      if (!res.ok) { const err = await res.json(); throw new Error(err.message || "Submission failed"); }
       return res.json();
     },
     onSuccess: () => {
-      toast({
-        title: "KYC Submitted",
-        description: "We'll review your documents within 1–2 business days.",
-      });
+      toast({ title: "KYC Submitted", description: "We'll review your documents within 1–2 business days." });
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
     },
     onError: (error: Error) => {
@@ -53,32 +50,19 @@ export default function Verify() {
     },
   });
 
-  const handleFileUpload = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    field: "kycDocumentUrl" | "cancelledChequeUrl"
-  ) => {
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, field: "kycDocumentUrl" | "cancelledChequeUrl") => {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onloadend = () =>
-      setFormData((prev) => ({ ...prev, [field]: reader.result as string }));
+    reader.onloadend = () => setFormData((prev) => ({ ...prev, [field]: reader.result as string }));
     reader.readAsDataURL(file);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.fullLegalName.trim()) {
-      toast({ title: "Full legal name is required", variant: "destructive" });
-      return;
-    }
-    if (docType === "PAN" && !formData.panNumber.trim()) {
-      toast({ title: "PAN number is required", variant: "destructive" });
-      return;
-    }
-    if (docType === "AADHAAR" && !formData.aadhaarNumber.trim()) {
-      toast({ title: "Aadhaar number is required", variant: "destructive" });
-      return;
-    }
+    if (!formData.fullLegalName.trim()) { toast({ title: "Full legal name is required", variant: "destructive" }); return; }
+    if (docType === "PAN" && !formData.panNumber.trim()) { toast({ title: "PAN number is required", variant: "destructive" }); return; }
+    if (docType === "AADHAAR" && !formData.aadhaarNumber.trim()) { toast({ title: "Aadhaar number is required", variant: "destructive" }); return; }
     submitKycMutation.mutate({
       ...formData,
       panNumber: docType === "PAN" ? formData.panNumber : "",
@@ -89,7 +73,7 @@ export default function Verify() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-[#6FFFE9] border-t-transparent animate-spin" />
+        <div className="w-8 h-8 border-2 border-zinc-600 border-t-zinc-200 animate-spin" />
       </div>
     );
   }
@@ -99,42 +83,35 @@ export default function Verify() {
   const hasPendingKyc = (currentUser?.panNumber || currentUser?.aadhaarNumber) && !isVerified;
 
   return (
-    <div className="min-h-screen bg-black text-[#6FFFE9]" style={{ fontFamily: "Inter, sans-serif" }}>
+    <div className="min-h-screen bg-black text-zinc-200" style={{ fontFamily: "Inter, sans-serif" }}>
       <Navigation />
 
       <main className="pl-20 md:pl-64 min-h-screen flex flex-col">
         <div className="flex-1 p-5 sm:p-8 md:p-10 max-w-2xl w-full mx-0">
 
           <div className="mb-8 pt-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 border border-[#6FFFE9]/20 mb-4">
-              <ShieldCheck size={13} className="text-[#6FFFE9]" />
-              <span className="text-xs font-semibold uppercase tracking-wider text-[#9DEFE4]">{t('kyc_identity_badge')}</span>
+            <div className="inline-flex items-center gap-2 px-3 py-1 border border-[#6FFFE9]/15 mb-4">
+              <ShieldCheck size={13} className="text-zinc-400" />
+              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">{t('kyc_identity_badge')}</span>
             </div>
-            <h1 className="text-3xl sm:text-4xl font-bold tracking-tighter mb-1 text-[#6FFFE9]">
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tighter mb-1 silver-text">
               {t('kyc_page_title')}
             </h1>
-            <p className="text-[#9DEFE4] text-sm sm:text-base">
-              {t('kyc_page_subtitle')}
-            </p>
+            <p className="text-zinc-500 text-sm sm:text-base">{t('kyc_page_subtitle')}</p>
           </div>
 
           {/* VERIFIED */}
           {isVerified ? (
-            <div className="border-2 border-[#6FFFE9] p-6 sm:p-8 space-y-5">
+            <div className="border border-zinc-300/30 p-6 sm:p-8 space-y-5">
               <div className="flex items-start gap-4">
-                <CheckCircle className="w-10 h-10 text-[#6FFFE9] shrink-0 mt-0.5" />
+                <CheckCircle className="w-10 h-10 text-zinc-300 shrink-0 mt-0.5" />
                 <div>
-                  <h2 className="text-xl font-bold text-[#6FFFE9]">{t('kyc_verified_title')}</h2>
-                  <p className="text-[#9DEFE4] text-sm mt-1">
-                    {t('kyc_verified_desc')}
-                  </p>
+                  <h2 className="text-xl font-bold silver-text">{t('kyc_verified_title')}</h2>
+                  <p className="text-zinc-500 text-sm mt-1">{t('kyc_verified_desc')}</p>
                 </div>
               </div>
-              <Button
-                className="w-full h-12 bg-[#6FFFE9] text-black hover:bg-[#8CFFF0] font-bold rounded-none flex items-center justify-center gap-2"
-                onClick={() => setLocation("/agreement")}
-                data-testid="button-go-to-agreement"
-              >
+              <Button className="w-full h-12 rounded-none border-0 flex items-center justify-center gap-2"
+                style={SILVER_BTN} onClick={() => setLocation("/agreement")} data-testid="button-go-to-agreement">
                 <FileSignature size={16} />
                 {t('kyc_sign_agreement')}
               </Button>
@@ -146,9 +123,7 @@ export default function Verify() {
               <Clock className="w-10 h-10 text-yellow-400 shrink-0 mt-0.5" />
               <div>
                 <h2 className="text-xl font-bold text-yellow-400">{t('kyc_under_review_title')}</h2>
-                <p className="text-[#9DEFE4] text-sm mt-1">
-                  {t('kyc_under_review_desc')}
-                </p>
+                <p className="text-zinc-500 text-sm mt-1">{t('kyc_under_review_desc')}</p>
               </div>
             </div>
 
@@ -156,53 +131,44 @@ export default function Verify() {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
 
-              <div className="border border-[#6FFFE9]/15 bg-black p-5 sm:p-6 space-y-5">
-                <h2 className="text-base font-semibold uppercase tracking-wider text-[#9DEFE4]">
+              <div className="border border-white/8 bg-black p-5 sm:p-6 space-y-5">
+                <h2 className="text-base font-semibold uppercase tracking-wider text-zinc-500">
                   {t('kyc_identity_info')}
                 </h2>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="fullLegalName" className="text-xs uppercase tracking-wider text-[#9DEFE4]">
+                  <Label htmlFor="fullLegalName" className="text-xs uppercase tracking-wider text-zinc-500">
                     {t('kyc_full_legal_name')}
                   </Label>
-                  <Input
-                    id="fullLegalName"
-                    value={formData.fullLegalName}
+                  <Input id="fullLegalName" value={formData.fullLegalName}
                     onChange={(e) => setFormData((p) => ({ ...p, fullLegalName: e.target.value }))}
-                    className="bg-black border-[#6FFFE9]/25 text-[#6FFFE9] placeholder:text-[#9DEFE4]/40 h-11 rounded-none focus:border-[#6FFFE9]"
-                    placeholder={t('kyc_name_placeholder')}
-                    required
-                    data-testid="input-full-legal-name"
-                  />
+                    className="bg-black border-white/10 text-zinc-200 placeholder:text-zinc-600 h-11 rounded-none focus:border-[#6FFFE9]/40"
+                    placeholder={t('kyc_name_placeholder')} required data-testid="input-full-legal-name" />
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-xs uppercase tracking-wider text-[#9DEFE4]">
-                    {t('kyc_id_type')} <span className="text-[#9DEFE4]/50 normal-case">{t('kyc_choose_one')}</span>
+                  <Label className="text-xs uppercase tracking-wider text-zinc-500">
+                    {t('kyc_id_type')} <span className="text-zinc-600 normal-case font-normal">{t('kyc_choose_one')}</span>
                   </Label>
                   <div className="grid grid-cols-2 gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setDocType("PAN")}
+                    <button type="button" onClick={() => setDocType("PAN")}
                       className={`h-11 text-sm font-semibold uppercase tracking-wide transition-all border ${
                         docType === "PAN"
-                          ? "bg-[#6FFFE9] text-black border-[#6FFFE9]"
-                          : "bg-black text-[#9DEFE4] border-[#6FFFE9]/25 hover:border-[#6FFFE9]/60"
+                          ? "border-0 text-black"
+                          : "bg-black text-zinc-400 border-white/10 hover:border-white/20"
                       }`}
-                      data-testid="toggle-pan"
-                    >
+                      style={docType === "PAN" ? SILVER_BTN : undefined}
+                      data-testid="toggle-pan">
                       {t('kyc_pan_card')}
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => setDocType("AADHAAR")}
+                    <button type="button" onClick={() => setDocType("AADHAAR")}
                       className={`h-11 text-sm font-semibold uppercase tracking-wide transition-all border ${
                         docType === "AADHAAR"
-                          ? "bg-[#6FFFE9] text-black border-[#6FFFE9]"
-                          : "bg-black text-[#9DEFE4] border-[#6FFFE9]/25 hover:border-[#6FFFE9]/60"
+                          ? "border-0 text-black"
+                          : "bg-black text-zinc-400 border-white/10 hover:border-white/20"
                       }`}
-                      data-testid="toggle-aadhaar"
-                    >
+                      style={docType === "AADHAAR" ? SILVER_BTN : undefined}
+                      data-testid="toggle-aadhaar">
                       {t('kyc_aadhaar')}
                     </button>
                   </div>
@@ -210,155 +176,101 @@ export default function Verify() {
 
                 {docType === "PAN" && (
                   <div className="space-y-1.5">
-                    <Label htmlFor="panNumber" className="text-xs uppercase tracking-wider text-[#9DEFE4]">
+                    <Label htmlFor="panNumber" className="text-xs uppercase tracking-wider text-zinc-500">
                       {t('kyc_pan_number')}
                     </Label>
-                    <Input
-                      id="panNumber"
-                      value={formData.panNumber}
-                      onChange={(e) =>
-                        setFormData((p) => ({ ...p, panNumber: e.target.value.toUpperCase() }))
-                      }
-                      className="bg-black border-[#6FFFE9]/25 text-[#6FFFE9] placeholder:text-[#9DEFE4]/40 h-11 rounded-none font-mono focus:border-[#6FFFE9]"
-                      placeholder="ABCDE1234F"
-                      pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}"
-                      maxLength={10}
-                      required={docType === "PAN"}
-                      data-testid="input-pan-number"
-                    />
-                    <p className="text-xs text-[#9DEFE4]/50">{t('kyc_pan_hint')}</p>
+                    <Input id="panNumber" value={formData.panNumber}
+                      onChange={(e) => setFormData((p) => ({ ...p, panNumber: e.target.value.toUpperCase() }))}
+                      className="bg-black border-white/10 text-zinc-200 placeholder:text-zinc-600 h-11 rounded-none font-mono focus:border-[#6FFFE9]/40"
+                      placeholder="ABCDE1234F" pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}" maxLength={10}
+                      required={docType === "PAN"} data-testid="input-pan-number" />
+                    <p className="text-xs text-zinc-600">{t('kyc_pan_hint')}</p>
                   </div>
                 )}
 
                 {docType === "AADHAAR" && (
                   <div className="space-y-1.5">
-                    <Label htmlFor="aadhaarNumber" className="text-xs uppercase tracking-wider text-[#9DEFE4]">
+                    <Label htmlFor="aadhaarNumber" className="text-xs uppercase tracking-wider text-zinc-500">
                       {t('kyc_aadhaar_number')}
                     </Label>
-                    <Input
-                      id="aadhaarNumber"
-                      value={formData.aadhaarNumber}
-                      onChange={(e) =>
-                        setFormData((p) => ({
-                          ...p,
-                          aadhaarNumber: e.target.value.replace(/\D/g, "").slice(0, 12),
-                        }))
-                      }
-                      className="bg-black border-[#6FFFE9]/25 text-[#6FFFE9] placeholder:text-[#9DEFE4]/40 h-11 rounded-none font-mono focus:border-[#6FFFE9]"
-                      placeholder="1234 5678 9012"
-                      maxLength={12}
-                      required={docType === "AADHAAR"}
-                      data-testid="input-aadhaar-number"
-                    />
-                    <p className="text-xs text-[#9DEFE4]/50">{t('kyc_aadhaar_hint')}</p>
+                    <Input id="aadhaarNumber" value={formData.aadhaarNumber}
+                      onChange={(e) => setFormData((p) => ({ ...p, aadhaarNumber: e.target.value.replace(/\D/g, "").slice(0, 12) }))}
+                      className="bg-black border-white/10 text-zinc-200 placeholder:text-zinc-600 h-11 rounded-none font-mono focus:border-[#6FFFE9]/40"
+                      placeholder="1234 5678 9012" maxLength={12}
+                      required={docType === "AADHAAR"} data-testid="input-aadhaar-number" />
+                    <p className="text-xs text-zinc-600">{t('kyc_aadhaar_hint')}</p>
                   </div>
                 )}
 
                 <div className="space-y-1.5">
-                  <Label className="text-xs uppercase tracking-wider text-[#9DEFE4]">
+                  <Label className="text-xs uppercase tracking-wider text-zinc-500">
                     {docType === "PAN" ? t('kyc_upload_pan') : t('kyc_upload_aadhaar')}
                   </Label>
-                  <label
-                    className="flex items-center gap-3 h-11 px-4 border border-[#6FFFE9]/25 cursor-pointer hover:border-[#6FFFE9]/60 transition-colors"
-                    data-testid="label-kyc-upload"
-                  >
-                    <Upload size={15} className="text-[#9DEFE4]" />
-                    <span className="text-sm text-[#9DEFE4]">
+                  <label className="flex items-center gap-3 h-11 px-4 border border-white/10 cursor-pointer hover:border-[#6FFFE9]/30 transition-colors" data-testid="label-kyc-upload">
+                    <Upload size={15} className="text-zinc-500" />
+                    <span className="text-sm text-zinc-400">
                       {formData.kycDocumentUrl ? t('kyc_doc_uploaded') : t('kyc_choose_file')}
                     </span>
-                    <input
-                      type="file"
-                      accept="image/*,.pdf"
+                    <input type="file" accept="image/*,.pdf"
                       onChange={(e) => handleFileUpload(e, "kycDocumentUrl")}
-                      className="hidden"
-                      data-testid="input-kyc-document"
-                    />
+                      className="hidden" data-testid="input-kyc-document" />
                   </label>
                   {formData.kycDocumentUrl && (
-                    <p className="text-xs text-[#6FFFE9]">{t('kyc_doc_ready')}</p>
+                    <p className="text-xs text-zinc-300">{t('kyc_doc_ready')}</p>
                   )}
                 </div>
               </div>
 
               {/* Bank details — owner only */}
               {isOwner && (
-                <div className="border border-[#6FFFE9]/15 bg-black p-5 sm:p-6 space-y-5">
-                  <h2 className="text-base font-semibold uppercase tracking-wider text-[#9DEFE4]">
+                <div className="border border-white/8 bg-black p-5 sm:p-6 space-y-5">
+                  <h2 className="text-base font-semibold uppercase tracking-wider text-zinc-500">
                     {t('kyc_bank_details')}
-                    <span className="ml-2 text-[#9DEFE4]/40 normal-case font-normal text-xs">{t('kyc_landlords_only')}</span>
+                    <span className="ml-2 text-zinc-600 normal-case font-normal text-xs">{t('kyc_landlords_only')}</span>
                   </h2>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5 sm:col-span-2">
-                      <Label htmlFor="bankAccountNumber" className="text-xs uppercase tracking-wider text-[#9DEFE4]">
+                      <Label htmlFor="bankAccountNumber" className="text-xs uppercase tracking-wider text-zinc-500">
                         {t('kyc_account_number')}
                       </Label>
-                      <Input
-                        id="bankAccountNumber"
-                        value={formData.bankAccountNumber}
-                        onChange={(e) =>
-                          setFormData((p) => ({
-                            ...p,
-                            bankAccountNumber: e.target.value.replace(/\D/g, ""),
-                          }))
-                        }
-                        className="bg-black border-[#6FFFE9]/25 text-[#6FFFE9] placeholder:text-[#9DEFE4]/40 h-11 rounded-none font-mono focus:border-[#6FFFE9]"
-                        placeholder={t('kyc_account_placeholder')}
-                        required
-                        data-testid="input-bank-account"
-                      />
+                      <Input id="bankAccountNumber" value={formData.bankAccountNumber}
+                        onChange={(e) => setFormData((p) => ({ ...p, bankAccountNumber: e.target.value.replace(/\D/g, "") }))}
+                        className="bg-black border-white/10 text-zinc-200 placeholder:text-zinc-600 h-11 rounded-none font-mono focus:border-[#6FFFE9]/40"
+                        placeholder={t('kyc_account_placeholder')} required data-testid="input-bank-account" />
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label htmlFor="ifscCode" className="text-xs uppercase tracking-wider text-[#9DEFE4]">
+                      <Label htmlFor="ifscCode" className="text-xs uppercase tracking-wider text-zinc-500">
                         {t('kyc_ifsc_code')}
                       </Label>
-                      <Input
-                        id="ifscCode"
-                        value={formData.ifscCode}
-                        onChange={(e) =>
-                          setFormData((p) => ({ ...p, ifscCode: e.target.value.toUpperCase() }))
-                        }
-                        className="bg-black border-[#6FFFE9]/25 text-[#6FFFE9] placeholder:text-[#9DEFE4]/40 h-11 rounded-none font-mono focus:border-[#6FFFE9]"
-                        placeholder="HDFC0001234"
-                        pattern="[A-Z]{4}0[A-Z0-9]{6}"
-                        maxLength={11}
-                        required
-                        data-testid="input-ifsc-code"
-                      />
+                      <Input id="ifscCode" value={formData.ifscCode}
+                        onChange={(e) => setFormData((p) => ({ ...p, ifscCode: e.target.value.toUpperCase() }))}
+                        className="bg-black border-white/10 text-zinc-200 placeholder:text-zinc-600 h-11 rounded-none font-mono focus:border-[#6FFFE9]/40"
+                        placeholder="HDFC0001234" pattern="[A-Z]{4}0[A-Z0-9]{6}" maxLength={11}
+                        required data-testid="input-ifsc-code" />
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label className="text-xs uppercase tracking-wider text-[#9DEFE4]">
+                      <Label className="text-xs uppercase tracking-wider text-zinc-500">
                         {t('kyc_cancelled_cheque')}
                       </Label>
-                      <label
-                        className="flex items-center gap-3 h-11 px-4 border border-[#6FFFE9]/25 cursor-pointer hover:border-[#6FFFE9]/60 transition-colors"
-                        data-testid="label-cheque-upload"
-                      >
-                        <Upload size={15} className="text-[#9DEFE4]" />
-                        <span className="text-sm text-[#9DEFE4]">
+                      <label className="flex items-center gap-3 h-11 px-4 border border-white/10 cursor-pointer hover:border-[#6FFFE9]/30 transition-colors" data-testid="label-cheque-upload">
+                        <Upload size={15} className="text-zinc-500" />
+                        <span className="text-sm text-zinc-400">
                           {formData.cancelledChequeUrl ? t('kyc_uploaded_tick') : t('kyc_upload_cheque')}
                         </span>
-                        <input
-                          type="file"
-                          accept="image/*,.pdf"
+                        <input type="file" accept="image/*,.pdf"
                           onChange={(e) => handleFileUpload(e, "cancelledChequeUrl")}
-                          className="hidden"
-                          data-testid="input-cancelled-cheque"
-                        />
+                          className="hidden" data-testid="input-cancelled-cheque" />
                       </label>
                     </div>
                   </div>
                 </div>
               )}
 
-              <Button
-                type="submit"
-                className="w-full h-13 bg-[#6FFFE9] text-black hover:bg-[#8CFFF0] text-base font-bold rounded-none"
-                disabled={submitKycMutation.isPending}
-                data-testid="button-submit-kyc"
-              >
+              <Button type="submit" className="w-full h-13 rounded-none border-0 text-base font-bold"
+                style={SILVER_BTN} disabled={submitKycMutation.isPending} data-testid="button-submit-kyc">
                 {submitKycMutation.isPending ? t('kyc_submitting') : t('kyc_submit')}
               </Button>
             </form>
