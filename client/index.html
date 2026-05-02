@@ -14,7 +14,6 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <!-- Noto Sans for Devanagari (Hindi) and Kannada scripts -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Noto+Sans+Kannada:wght@400;500;600;700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
     <style>
       /* i18n Header Styles */
@@ -25,30 +24,35 @@
         right: 0;
         z-index: 9999;
         background-color: #000000;
-        border-bottom: 1px solid rgba(111, 255, 233, 0.22);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-        padding: 16px 28px;
-        padding-top: calc(16px + env(safe-area-inset-top));
+        border-bottom: 1px solid rgba(111, 255, 233, 0.15);
+        padding: 0 28px;
+        padding-top: env(safe-area-inset-top);
         display: flex;
         align-items: center;
         justify-content: space-between;
-        min-height: 72px;
+        height: 72px;
         font-family: 'Inter', 'Noto Sans Devanagari', 'Noto Sans Kannada', sans-serif;
       }
 
       .i18n-header .logo {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 12px;
         color: #C0C0C0;
-        font-weight: 700;
-        font-size: 23px;
+        font-weight: 600;
+        font-size: 22px;
         letter-spacing: -0.5px;
+        text-decoration: none;
       }
 
       .i18n-header .logo-img {
-        width: 40px;
-        height: 40px;
+        width: 60px;
+        height: 60px;
+        object-fit: contain;
+      }
+
+      .i18n-header .logo-wordmark {
+        height: 42px;
         object-fit: contain;
       }
 
@@ -68,102 +72,94 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        height: 40px;
-        min-height: 40px;
-        padding: 0 24px;
+        height: 38px;
+        padding: 0 22px;
         font-family: 'Inter', sans-serif;
-        font-size: 14px;
-        font-weight: 700;
-        letter-spacing: 0.02em;
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0.01em;
         color: #000;
         background: linear-gradient(135deg, #7A7A7A 0%, #C8C8C8 35%, #EFEFEF 50%, #B4B4B4 70%, #7A7A7A 100%);
         border: none;
         border-radius: 9999px;
         cursor: pointer;
         text-decoration: none;
-        transition: filter 0.2s;
+        transition: opacity 0.2s;
         white-space: nowrap;
         -webkit-user-select: none;
         user-select: none;
       }
 
       .i18n-header .login-btn:hover {
-        filter: brightness(1.12);
+        opacity: 0.88;
       }
 
       .i18n-header .language-switcher label {
-        color: #888888;
-        font-size: 12px;
+        color: #606060;
+        font-size: 11px;
         font-weight: 500;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.6px;
       }
 
       .i18n-header .language-select {
         appearance: none;
         -webkit-appearance: none;
         -moz-appearance: none;
-        background-color: #0a0a0a;
-        border: 1px solid rgba(192, 192, 192, 0.22);
+        background-color: transparent;
+        border: 1px solid rgba(192, 192, 192, 0.18);
         border-radius: 9999px;
-        color: #C0C0C0;
-        padding: 8px 36px 8px 16px;
-        font-size: 14px;
+        color: #A0A0A0;
+        padding: 7px 32px 7px 14px;
+        font-size: 13px;
         font-weight: 500;
         cursor: pointer;
         outline: none;
-        transition: border-color 0.2s, box-shadow 0.2s;
+        transition: border-color 0.2s;
         font-family: 'Inter', 'Noto Sans Devanagari', 'Noto Sans Kannada', sans-serif;
         line-height: 1.6;
-        min-height: 40px;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23a1a1aa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        min-height: 36px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
         background-repeat: no-repeat;
-        background-position: right 12px center;
-        background-size: 16px;
+        background-position: right 10px center;
+        background-size: 14px;
       }
 
       .i18n-header .language-select:hover {
-        border-color: rgba(192, 192, 192, 0.4);
+        border-color: rgba(192, 192, 192, 0.35);
       }
 
       .i18n-header .language-select:focus {
-        border-color: #C0C0C0;
-        box-shadow: 0 0 0 2px rgba(192, 192, 192, 0.12);
+        border-color: rgba(192, 192, 192, 0.5);
       }
 
       .i18n-header .language-select option {
         background-color: #0a0a0a;
         color: #C0C0C0;
-        padding: 8px;
       }
 
-      /* Responsive adjustments */
       @media (max-width: 480px) {
         .i18n-header {
-          padding: 10px 16px;
+          padding: 0 16px;
+          padding-top: env(safe-area-inset-top);
         }
-
-        .i18n-header .logo {
-          font-size: 18px;
-        }
-
         .i18n-header .logo-img {
-          width: 34px;
-          height: 34px;
+          width: 36px;
+          height: 36px;
         }
-
+        .i18n-header .logo-wordmark {
+          height: 26px;
+        }
         .i18n-header .language-switcher label {
           display: none;
         }
-
         .i18n-header .language-select {
-          padding: 6px 32px 6px 12px;
-          font-size: 13px;
-          min-height: 36px;
+          padding: 6px 28px 6px 12px;
+          font-size: 12px;
+          min-height: 34px;
         }
       }
 
-      /* Body adjustment for sticky header */
       body {
         padding-top: 0;
         margin: 0;
@@ -171,12 +167,12 @@
     </style>
   </head>
   <body>
-    <!-- i18n Language Switcher Header -->
+    <!-- Global Header: Logo + Language switcher + conditional Login -->
     <header class="i18n-header" data-testid="header-i18n">
-      <div class="logo">
-        <img src="/logo-icon.jpeg" alt="RentFLO" class="logo-img" data-testid="logo-img" width="32" height="32" />
-        <img src="/logo-wordmark.jpeg" alt="RentFLO" style="height:28px;object-fit:contain;" />
-      </div>
+      <a href="/" class="logo">
+        <img src="/logo-icon.jpeg" alt="RentFLO" class="logo-img" data-testid="logo-img" />
+        <img src="/logo-wordmark.jpeg" alt="RentFLO" class="logo-wordmark" />
+      </a>
       <div class="right-controls">
         <div class="language-switcher">
           <label for="language-select" data-i18n="change_language">Change Language</label>
@@ -192,29 +188,55 @@
 
     <div id="root">
       <div id="splash-screen" style="position:fixed;inset:0;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:99999;transition:opacity 0.3s ease-out;">
-        <img src="/logo-icon.jpeg" alt="RentFLO" style="width:120px;height:120px;object-fit:contain;margin-bottom:24px;animation:splashPulse 1.5s ease-in-out infinite;" />
-        <div style="color:#6fffe9;font-family:'Inter',sans-serif;font-size:28px;font-weight:700;letter-spacing:-1px;">RentFLO</div>
-        <div style="color:#9defe4;font-family:'Inter',sans-serif;font-size:12px;font-weight:500;margin-top:8px;text-transform:uppercase;letter-spacing:2px;">Loading</div>
+        <img src="/logo-icon.jpeg" alt="RentFLO" style="width:100px;height:100px;object-fit:contain;margin-bottom:20px;animation:splashPulse 1.5s ease-in-out infinite;" />
+        <div style="color:#e0e0e0;font-family:'Inter',sans-serif;font-size:26px;font-weight:600;letter-spacing:-0.5px;">RentFLO</div>
+        <div style="color:#6fffe9;font-family:'Inter',sans-serif;font-size:11px;font-weight:500;margin-top:10px;text-transform:uppercase;letter-spacing:3px;opacity:0.7;">Loading</div>
       </div>
       <style>
         @keyframes splashPulse {
-          0%, 100% { opacity: 0.6; transform: scale(1); }
-          50% { opacity: 1; transform: scale(1.05); }
+          0%, 100% { opacity: 0.5; transform: scale(1); }
+          50% { opacity: 1; transform: scale(1.04); }
         }
       </style>
     </div>
     <script type="module" src="/src/main.tsx"></script>
 
-    <!-- i18n Script -->
+    <!-- i18n + Route-aware header Script -->
     <script src="/translations.js"></script>
     <script>
       (function() {
-        // i18n Configuration
         const STORAGE_KEY = 'rentflo_language';
         const DEFAULT_LANG = 'en';
         const SUPPORTED_LANGS = ['en', 'hi', 'kn'];
 
-        // Get translations (loaded from translations.js)
+        // ── Route-aware login button visibility ────────────────────────────
+        function updateHeaderForRoute() {
+          var path = window.location.pathname;
+          var loginBtn = document.getElementById('header-login-btn');
+          if (!loginBtn) return;
+          // Show Login button ONLY on the landing page
+          loginBtn.style.display = (path === '/') ? 'inline-flex' : 'none';
+        }
+
+        // Run immediately on page load
+        updateHeaderForRoute();
+
+        // Listen for browser back/forward navigation
+        window.addEventListener('popstate', updateHeaderForRoute);
+
+        // Intercept React Router (wouter) client-side navigation
+        var _origPushState = history.pushState.bind(history);
+        history.pushState = function() {
+          _origPushState.apply(history, arguments);
+          setTimeout(updateHeaderForRoute, 0);
+        };
+        var _origReplaceState = history.replaceState.bind(history);
+        history.replaceState = function() {
+          _origReplaceState.apply(history, arguments);
+          setTimeout(updateHeaderForRoute, 0);
+        };
+
+        // ── i18n ────────────────────────────────────────────────────────────
         function getTranslations() {
           return window.translations || {
             en: { change_language: 'Change Language' },
@@ -223,89 +245,61 @@
           };
         }
 
-        // Get saved language or default
         function getSavedLanguage() {
           try {
-            const saved = localStorage.getItem(STORAGE_KEY);
-            if (saved && SUPPORTED_LANGS.includes(saved)) {
-              return saved;
-            }
-          } catch (e) {
-            console.warn('localStorage not available');
-          }
+            var saved = localStorage.getItem(STORAGE_KEY);
+            if (saved && SUPPORTED_LANGS.includes(saved)) return saved;
+          } catch (e) {}
           return DEFAULT_LANG;
         }
 
-        // Save language preference
         function saveLanguage(lang) {
-          try {
-            localStorage.setItem(STORAGE_KEY, lang);
-          } catch (e) {
-            console.warn('Could not save language preference');
-          }
+          try { localStorage.setItem(STORAGE_KEY, lang); } catch (e) {}
         }
 
-        // Update all elements with data-i18n attribute
         function updateTranslations(lang) {
-          const t = getTranslations();
-          const langData = t[lang] || t[DEFAULT_LANG];
-
+          var t = getTranslations();
+          var langData = t[lang] || t[DEFAULT_LANG];
           document.querySelectorAll('[data-i18n]').forEach(function(el) {
-            const key = el.getAttribute('data-i18n');
-            if (langData[key]) {
-              el.textContent = langData[key];
-            }
+            var key = el.getAttribute('data-i18n');
+            if (langData[key]) el.textContent = langData[key];
           });
-
-          // Update HTML lang attribute for SEO/accessibility
           document.documentElement.lang = lang;
-
-          // Dispatch custom event for React components to listen
           window.dispatchEvent(new CustomEvent('languageChange', { detail: { lang: lang } }));
         }
 
-        // Initialize i18n
         function initI18n() {
-          const select = document.getElementById('language-select');
+          var select = document.getElementById('language-select');
           if (!select) return;
-
-          const currentLang = getSavedLanguage();
-          
-          // Set initial select value
+          var currentLang = getSavedLanguage();
           select.value = currentLang;
-          
-          // Apply initial translations
           updateTranslations(currentLang);
-
-          // Listen for language changes
           select.addEventListener('change', function(e) {
-            const newLang = e.target.value;
+            var newLang = e.target.value;
             saveLanguage(newLang);
             updateTranslations(newLang);
           });
         }
 
-        // Run on DOM ready
         if (document.readyState === 'loading') {
           document.addEventListener('DOMContentLoaded', initI18n);
         } else {
           initI18n();
         }
 
-        // Expose for React integration
         window.i18n = {
           getLanguage: getSavedLanguage,
           setLanguage: function(lang) {
             if (SUPPORTED_LANGS.includes(lang)) {
               saveLanguage(lang);
               updateTranslations(lang);
-              const select = document.getElementById('language-select');
+              var select = document.getElementById('language-select');
               if (select) select.value = lang;
             }
           },
           translate: function(key) {
-            const t = getTranslations();
-            const lang = getSavedLanguage();
+            var t = getTranslations();
+            var lang = getSavedLanguage();
             return (t[lang] && t[lang][key]) || (t[DEFAULT_LANG] && t[DEFAULT_LANG][key]) || key;
           }
         };

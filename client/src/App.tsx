@@ -24,7 +24,7 @@ import Verify from "@/pages/Verify";
 import AgreementPage from "@/pages/Agreement";
 import { LegalFooter } from "@/components/LegalFooter";
 import { LoadingScreen } from "@/components/LoadingScreen";
-import { Navigation, TopBarLogo } from "@/components/Navigation";
+import { Navigation } from "@/components/Navigation";
 
 function SidebarContent({ children }: { children: React.ReactNode }) {
   const { collapsed } = useSidebar();
@@ -34,18 +34,6 @@ function SidebarContent({ children }: { children: React.ReactNode }) {
       style={{ paddingLeft: collapsed ? '0px' : '256px' }}
     >
       {children}
-    </div>
-  );
-}
-
-function HeaderLogo() {
-  const { collapsed } = useSidebar();
-  return (
-    <div
-      className="fixed top-0 z-40 bg-black/95 backdrop-blur-sm border-b border-[#6FFFE9]/12 h-20 flex items-center px-6 overflow-visible"
-      style={{ left: collapsed ? '0px' : '256px', right: '0px' }}
-    >
-      <TopBarLogo />
     </div>
   );
 }
@@ -75,19 +63,12 @@ function PrivateRoute({ component: Component, allowedRoles }: { component: React
 
   return (
     <>
-      <PrivateNavigation />
-      <HeaderLogo />
+      <Navigation />
       <SidebarContent>
         <Component />
       </SidebarContent>
     </>
   );
-}
-
-function PrivateNavigation() {
-  const [location] = useLocation();
-  if (location === "/" || location === "/onboarding" || location === "/setup") return null;
-  return <Navigation />;
 }
 
 function DashboardRedirect() {
@@ -157,7 +138,6 @@ function Router() {
       <Route path="/onboarding" component={OnboardingRoute} />
       <Route path="/setup" component={SetupRoute} />
 
-      {/* Protected Routes with Role Restrictions */}
       <Route path="/admin/maintenance">
         <PrivateRoute component={AdminMaintenance} allowedRoles={['ADMIN']} />
       </Route>
@@ -173,18 +153,13 @@ function Router() {
       <Route path="/ledger">
         <PrivateRoute component={Ledger} allowedRoles={['ADMIN', 'OWNER', 'TENANT']} />
       </Route>
-      
-      {/* KYC Verification */}
       <Route path="/verify">
         <PrivateRoute component={Verify} allowedRoles={['TENANT', 'OWNER']} />
       </Route>
-
-      {/* Tripartite Agreement */}
       <Route path="/agreement">
         <PrivateRoute component={AgreementPage} allowedRoles={['TENANT', 'OWNER']} />
       </Route>
       
-      {/* Legal Pages (Public) */}
       <Route path="/terms" component={Terms} />
       <Route path="/privacy" component={Privacy} />
       <Route path="/refund" component={Refund} />

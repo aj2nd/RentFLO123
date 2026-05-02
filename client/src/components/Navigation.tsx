@@ -5,6 +5,8 @@ import { useI18n } from "@/hooks/use-i18n";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { NotificationBell } from "@/components/NotificationBell";
 
+const HEADER_HEIGHT = 72;
+
 export function Navigation() {
   const [location] = useLocation();
   const { user, logout, isLoading } = useAuth();
@@ -15,13 +17,13 @@ export function Navigation() {
   const role = user?.role;
 
   const navItems: { href: string; icon: React.ReactNode; label: string; roles: string[] }[] = [
-    { href: "/admin",             icon: <LayoutDashboard size={20} />, label: t('nav_admin_console'),    roles: ["ADMIN"] },
-    { href: "/admin/maintenance", icon: <Wrench size={20} />,          label: t('nav_maintenance'),      roles: ["ADMIN"] },
-    { href: "/owner",             icon: <Wallet size={20} />,          label: t('nav_owner_portal'),     roles: ["OWNER"] },
-    { href: "/tenant",            icon: <Home size={20} />,            label: t('nav_tenant_dashboard'), roles: ["TENANT"] },
-    { href: "/ledger",            icon: <Receipt size={20} />,         label: t('nav_ledger'),           roles: ["ADMIN", "OWNER", "TENANT"] },
-    { href: "/verify",            icon: <ShieldCheck size={20} />,     label: t('nav_kyc'),              roles: ["OWNER", "TENANT"] },
-    { href: "/agreement",         icon: <FileSignature size={20} />,   label: t('nav_agreement'),        roles: ["OWNER", "TENANT"] },
+    { href: "/admin",             icon: <LayoutDashboard size={18} />, label: t('nav_admin_console'),    roles: ["ADMIN"] },
+    { href: "/admin/maintenance", icon: <Wrench size={18} />,          label: t('nav_maintenance'),      roles: ["ADMIN"] },
+    { href: "/owner",             icon: <Wallet size={18} />,          label: t('nav_owner_portal'),     roles: ["OWNER"] },
+    { href: "/tenant",            icon: <Home size={18} />,            label: t('nav_tenant_dashboard'), roles: ["TENANT"] },
+    { href: "/ledger",            icon: <Receipt size={18} />,         label: t('nav_ledger'),           roles: ["ADMIN", "OWNER", "TENANT"] },
+    { href: "/verify",            icon: <ShieldCheck size={18} />,     label: t('nav_kyc'),              roles: ["OWNER", "TENANT"] },
+    { href: "/agreement",         icon: <FileSignature size={18} />,   label: t('nav_agreement'),        roles: ["OWNER", "TENANT"] },
   ];
 
   const visibleItems = navItems.filter(item => role && item.roles.includes(role));
@@ -32,22 +34,27 @@ export function Navigation() {
       {!collapsed && (
         <div
           className="fixed inset-0 z-40"
+          style={{ top: HEADER_HEIGHT }}
           onClick={toggle}
           aria-label="Close sidebar"
         />
       )}
 
-      {/* Sidebar panel */}
+      {/* Sidebar panel — starts below the global header */}
       <nav
-        className="fixed left-0 top-0 h-full bg-black border-r border-[#6FFFE9]/15 flex flex-col justify-between py-8 z-50 overflow-hidden transition-all duration-300 ease-in-out"
-        style={{ width: collapsed ? '0px' : '256px' }}
+        className="fixed left-0 bg-black border-r border-white/[0.06] flex flex-col justify-between z-50 overflow-hidden transition-all duration-300 ease-in-out"
+        style={{
+          top: HEADER_HEIGHT,
+          height: `calc(100vh - ${HEADER_HEIGHT}px)`,
+          width: collapsed ? '0px' : '256px',
+        }}
       >
-        <div className="flex flex-col gap-2 w-64">
+        <div className="flex flex-col gap-1 w-64 pt-4">
           {/* Nav items */}
-          <div className="space-y-1 px-3">
+          <div className="space-y-0.5 px-3">
             {isLoading ? (
-              <div className="flex items-center justify-center py-4">
-                <Loader2 className="w-5 h-5 animate-spin text-[#6FFFE9]/50" />
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-4 h-4 animate-spin text-[#6FFFE9]/40" />
               </div>
             ) : (
               visibleItems.map((item) => (
@@ -64,88 +71,65 @@ export function Navigation() {
           </div>
         </div>
 
-        {/* Footer: notification bell + collapse + logout */}
-        <div className="px-3 flex flex-col gap-1 w-64 overflow-visible">
-          <div className="flex items-center gap-2 px-3 py-2">
+        {/* Footer: alerts + collapse + logout */}
+        <div className="px-3 flex flex-col gap-1 w-64 pb-4">
+          <div className="flex items-center gap-2 px-3 py-2 mb-1">
             <NotificationBell />
-            <span className="text-xs text-[#6FFFE9]/40 uppercase tracking-wider">Alerts</span>
+            <span className="text-[10px] font-medium text-white/25 uppercase tracking-widest">Alerts</span>
           </div>
 
-          {/* Collapse button — liquid glass */}
+          {/* Collapse */}
           <button
             onClick={toggle}
-            className="flex items-center gap-3 px-3 py-3 w-full transition-all duration-200 whitespace-nowrap group overflow-visible"
+            className="flex items-center gap-3 px-3 py-2.5 w-full rounded-lg transition-all duration-200 whitespace-nowrap group"
             style={{
-              background: 'rgba(255,255,255,0.015)',
-              backdropFilter: 'blur(32px) saturate(220%)',
-              WebkitBackdropFilter: 'blur(32px) saturate(220%)',
+              background: 'rgba(255,255,255,0.03)',
               border: '1px solid rgba(255,255,255,0.06)',
-              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -1px 0 rgba(255,255,255,0.03), 0 6px 18px rgba(0,0,0,0.14)',
             }}
             data-testid="button-collapse-sidebar"
           >
-            <ChevronLeft size={18} className="flex-shrink-0 text-[#6FFFE9]/70 group-hover:text-[#6FFFE9] transition-colors" />
-            <span className="text-xs font-medium uppercase tracking-wider text-[#6FFFE9]/60 group-hover:text-[#6FFFE9] transition-colors">Collapse</span>
+            <ChevronLeft size={15} className="flex-shrink-0 text-white/30 group-hover:text-[#6FFFE9]/70 transition-colors" />
+            <span className="text-[11px] font-medium uppercase tracking-widest text-white/25 group-hover:text-[#6FFFE9]/60 transition-colors">Collapse</span>
           </button>
 
+          {/* Sign out */}
           <button
             onClick={() => logout()}
-            className="flex items-center gap-3 px-3 py-3 w-full text-[#9DEFE4]/60 hover:text-[#6FFFE9] hover:bg-[#6FFFE9]/8 transition-all duration-200 group whitespace-nowrap"
+            className="flex items-center gap-3 px-3 py-2.5 w-full rounded-lg text-white/35 hover:text-white/80 hover:bg-white/[0.04] transition-all duration-200 group whitespace-nowrap"
             data-testid="button-logout"
           >
-            <LogOut size={20} className="flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
-            <span className="font-medium">{t('nav_sign_out')}</span>
+            <LogOut size={15} className="flex-shrink-0" />
+            <span className="text-sm font-medium">{t('nav_sign_out')}</span>
           </button>
         </div>
       </nav>
 
-      {/* Floating expand tab — liquid glass, always visible when collapsed */}
+      {/* Floating expand tab — shown when sidebar is collapsed */}
       <button
         onClick={toggle}
-        className="fixed z-50 flex items-center justify-center transition-all duration-300 ease-in-out group overflow-visible"
+        className="fixed z-50 flex items-center justify-center transition-all duration-300 ease-in-out group"
         style={{
-          left: collapsed ? '0px' : '-18px',
-          top: '50%',
+          left: collapsed ? '0px' : '-28px',
+          top: `calc(${HEADER_HEIGHT}px + 50%)`,
           transform: 'translateY(-50%)',
-          width: '30px',
-          height: '68px',
-          background: 'rgba(255,255,255,0.01)',
-          backdropFilter: 'blur(36px) saturate(240%)',
-          WebkitBackdropFilter: 'blur(36px) saturate(240%)',
-          border: '1px solid rgba(255,255,255,0.05)',
+          width: '28px',
+          height: '64px',
+          background: 'rgba(255,255,255,0.04)',
+          backdropFilter: 'blur(20px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+          border: '1px solid rgba(255,255,255,0.08)',
           borderLeft: 'none',
-          borderRadius: '0 10px 10px 0',
-          boxShadow: [
-            'inset 1px 0 0 rgba(255,255,255,0.22)',
-            'inset 0 1px 0 rgba(255,255,255,0.06)',
-            'inset 0 -1px 0 rgba(255,255,255,0.03)',
-            '2px 0 16px rgba(0,0,0,0.16)',
-          ].join(', '),
+          borderRadius: '0 8px 8px 0',
+          boxShadow: 'inset 1px 0 0 rgba(255,255,255,0.12), 0 4px 20px rgba(0,0,0,0.3)',
           opacity: collapsed ? 1 : 0,
           pointerEvents: collapsed ? 'auto' : 'none',
         }}
         data-testid="button-expand-sidebar"
         title="Open sidebar"
       >
-        {/* Inner highlight streak */}
-        <span
-          className="absolute left-1 top-2 bottom-2 w-px rounded-full"
-          style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.08) 100%)' }}
-        />
-        <ChevronRight size={14} className="text-[#6FFFE9] group-hover:text-white transition-colors relative z-10" />
+        <ChevronRight size={13} className="text-white/50 group-hover:text-white/90 transition-colors relative z-10" />
       </button>
     </>
-  );
-}
-
-export function TopBarLogo() {
-  return (
-    <Link href="/" className="flex items-center gap-4 cursor-pointer" data-testid="link-topbar-logo">
-      <img src="/favicon.ico" alt="RentFLO" className="w-28 h-28 object-contain flex-shrink-0" />
-      <span className="text-[48px] leading-none font-light tracking-[-0.04em] text-[#D9D9D9]">
-        RentFLO
-      </span>
-    </Link>
   );
 }
 
@@ -161,20 +145,17 @@ function NavItem({ href, icon, label, active, onNavigate }: {
       href={href}
       onClick={onNavigate}
       className={`
-        flex items-center gap-3 px-3 py-3 transition-all duration-200 whitespace-nowrap
+        flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 whitespace-nowrap
         ${active
-          ? "text-black"
-          : "text-[#9DEFE4]/75 hover:text-[#6FFFE9] hover:bg-[#6FFFE9]/8"
+          ? "bg-white/[0.08] text-white"
+          : "text-white/45 hover:text-white/80 hover:bg-white/[0.04]"
         }
       `}
-      style={active ? {
-        background: 'linear-gradient(135deg, #7A7A7A 0%, #C8C8C8 35%, #EFEFEF 50%, #B4B4B4 70%, #7A7A7A 100%)',
-        color: '#000'
-      } : undefined}
       data-testid={`nav-${href.replace(/\//g, '-').slice(1) || 'home'}`}
     >
       <span className="flex-shrink-0">{icon}</span>
-      <span className="font-medium" style={{ fontFamily: 'Inter, sans-serif' }}>{label}</span>
+      <span className="text-sm font-medium">{label}</span>
+      {active && <span className="ml-auto w-1 h-1 rounded-full bg-[#6FFFE9]" />}
     </Link>
   );
 }
