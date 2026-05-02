@@ -16,21 +16,28 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Noto+Sans+Kannada:wght@400;500;600;700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
     <style>
-      /* i18n Header Styles */
+      /* ── Global reset ─────────────────────────────────── */
+      *, *::before, *::after { box-sizing: border-box; }
+      body { margin: 0; padding: 0; background: #000; }
+
+      /* ── Main header bar ──────────────────────────────── */
       .i18n-header {
         position: sticky;
         top: 0;
         left: 0;
         right: 0;
         z-index: 9999;
-        background-color: #000000;
-        border-bottom: 1px solid rgba(111, 255, 233, 0.15);
-        padding: 0 28px;
+        background: rgba(0, 0, 0, 0.96);
+        backdrop-filter: blur(24px) saturate(180%);
+        -webkit-backdrop-filter: blur(24px) saturate(180%);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        box-shadow: 0 1px 0 rgba(111, 255, 233, 0.08), 0 8px 32px rgba(0, 0, 0, 0.6);
+        padding: 0 36px;
         padding-top: env(safe-area-inset-top);
         display: flex;
         align-items: center;
         justify-content: space-between;
-        height: 164px;
+        height: 189px;
         font-family: 'Inter', 'Noto Sans Devanagari', 'Noto Sans Kannada', sans-serif;
       }
 
@@ -50,14 +57,16 @@
       }
 
       .i18n-header .logo-img {
-        width: 156px;
-        height: 156px;
+        width: 133px;
+        height: 133px;
         object-fit: contain;
+        filter: drop-shadow(0 0 18px rgba(111, 255, 233, 0.18));
       }
 
       .i18n-header .logo-wordmark {
-        height: 110px;
+        height: 94px;
         object-fit: contain;
+        filter: drop-shadow(0 0 12px rgba(192, 192, 192, 0.14));
       }
 
       .i18n-header .right-controls {
@@ -68,127 +77,145 @@
         flex: 1;
       }
 
-      /* Login sub-bar — sits below the header, only on landing page */
+      /* ── Login sub-bar ────────────────────────────────── */
       .i18n-login-bar {
         position: sticky;
-        top: 164px;
+        top: 189px;
         left: 0;
         right: 0;
         z-index: 9998;
-        background-color: #000000;
-        border-bottom: 1px solid rgba(111, 255, 233, 0.10);
-        padding: 10px 28px;
+        background: rgba(0, 0, 0, 0.94);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        padding: 12px 36px;
         display: flex;
         align-items: center;
         justify-content: flex-end;
       }
 
+      /* ── Language switcher ────────────────────────────── */
       .i18n-header .language-switcher {
         display: flex;
         align-items: center;
-        gap: 8px;
-      }
-
-      .login-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        height: 40px;
-        padding: 0 28px;
-        font-family: 'Inter', sans-serif;
-        font-size: 14px;
-        font-weight: 600;
-        letter-spacing: 0.01em;
-        color: #000;
-        background: linear-gradient(135deg, #7A7A7A 0%, #C8C8C8 35%, #EFEFEF 50%, #B4B4B4 70%, #7A7A7A 100%);
-        border: none;
-        border-radius: 9999px;
-        cursor: pointer;
-        text-decoration: none;
-        transition: opacity 0.2s;
-        white-space: nowrap;
-        -webkit-user-select: none;
-        user-select: none;
-      }
-
-      .login-btn:hover {
-        opacity: 0.85;
+        gap: 10px;
       }
 
       .i18n-header .language-switcher label {
-        color: #606060;
-        font-size: 11px;
-        font-weight: 500;
+        color: rgba(255, 255, 255, 0.28);
+        font-size: 10px;
+        font-weight: 600;
         text-transform: uppercase;
-        letter-spacing: 0.6px;
+        letter-spacing: 1.2px;
       }
 
       .i18n-header .language-select {
         appearance: none;
         -webkit-appearance: none;
         -moz-appearance: none;
-        background-color: transparent;
-        border: 1px solid rgba(192, 192, 192, 0.18);
-        border-radius: 9999px;
-        color: #A0A0A0;
-        padding: 7px 32px 7px 14px;
-        font-size: 13px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.10);
+        border-radius: 8px;
+        color: rgba(255, 255, 255, 0.55);
+        padding: 8px 34px 8px 14px;
+        font-size: 12px;
         font-weight: 500;
+        letter-spacing: 0.02em;
         cursor: pointer;
         outline: none;
-        transition: border-color 0.2s;
+        transition: border-color 0.2s, background 0.2s;
         font-family: 'Inter', 'Noto Sans Devanagari', 'Noto Sans Kannada', sans-serif;
-        line-height: 1.6;
+        line-height: 1.5;
         min-height: 36px;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.3)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
         background-repeat: no-repeat;
         background-position: right 10px center;
-        background-size: 14px;
+        background-size: 12px;
       }
 
       .i18n-header .language-select:hover {
-        border-color: rgba(192, 192, 192, 0.35);
+        border-color: rgba(255, 255, 255, 0.22);
+        background-color: rgba(255, 255, 255, 0.06);
       }
 
       .i18n-header .language-select:focus {
-        border-color: rgba(192, 192, 192, 0.5);
+        border-color: rgba(111, 255, 233, 0.35);
       }
 
       .i18n-header .language-select option {
-        background-color: #0a0a0a;
-        color: #C0C0C0;
+        background: #0a0a0a;
+        color: #c0c0c0;
       }
 
-      @media (max-width: 480px) {
+      /* ── Login button ─────────────────────────────────── */
+      .login-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 42px;
+        padding: 0 32px;
+        font-family: 'Inter', sans-serif;
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #000;
+        background: linear-gradient(135deg,
+          #8A8A8A 0%,
+          #D4D4D4 28%,
+          #F2F2F2 48%,
+          #E0E0E0 58%,
+          #C0C0C0 72%,
+          #8A8A8A 100%
+        );
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        text-decoration: none;
+        transition: opacity 0.15s, transform 0.15s;
+        white-space: nowrap;
+        -webkit-user-select: none;
+        user-select: none;
+        box-shadow: 0 2px 12px rgba(192, 192, 192, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+      }
+
+      .login-btn:hover {
+        opacity: 0.88;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 20px rgba(192, 192, 192, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+      }
+
+      .login-btn:active {
+        transform: translateY(0);
+        opacity: 1;
+      }
+
+      /* ── Responsive ───────────────────────────────────── */
+      @media (max-width: 768px) {
         .i18n-header {
-          padding: 0 16px;
+          padding: 0 20px;
           padding-top: env(safe-area-inset-top);
-          height: 120px;
+          height: 138px;
         }
         .i18n-login-bar {
-          top: 120px;
-          padding: 8px 16px;
+          top: 138px;
+          padding: 10px 20px;
         }
         .i18n-header .logo-img {
-          width: 96px;
-          height: 96px;
+          width: 82px;
+          height: 82px;
         }
         .i18n-header .logo-wordmark {
-          height: 72px;
+          height: 61px;
         }
         .i18n-header .language-switcher label {
           display: none;
         }
         .i18n-header .language-select {
-          padding: 6px 28px 6px 12px;
-          font-size: 12px;
+          padding: 7px 28px 7px 12px;
+          font-size: 11px;
           min-height: 34px;
         }
-      }
-
-      body {
-        padding-top: 0;
-        margin: 0;
       }
     </style>
   </head>
