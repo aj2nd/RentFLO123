@@ -46,10 +46,10 @@ export function Navigation() {
       >
         <div className="flex flex-col gap-2 w-64">
           {/* Logo — 10% larger */}
-          <div className="px-6 mb-10 flex items-center gap-2">
+          <div className="px-6 mb-10 flex items-center gap-2 scale-[1.5] origin-left">
             <Link href="/" className="flex items-center gap-2 cursor-pointer" data-testid="link-logo-img">
-              <img src={houseLogoImg} alt="RentFLO" style={{ width: '52px', height: '52px' }} className="object-contain flex-shrink-0" />
-              <img src={wordmarkImg} alt="RentFLO" style={{ height: '39px' }} className="object-contain flex-shrink-0" data-testid="link-logo" />
+              <img src={houseLogoImg} alt="RentFLO" style={{ width: '35px', height: '35px' }} className="object-contain flex-shrink-0" />
+              <img src={wordmarkImg} alt="RentFLO" style={{ height: '26px' }} className="object-contain flex-shrink-0" data-testid="link-logo" />
             </Link>
           </div>
 
@@ -86,11 +86,11 @@ export function Navigation() {
             onClick={toggle}
             className="flex items-center gap-3 px-3 py-3 w-full transition-all duration-200 whitespace-nowrap group overflow-visible"
             style={{
-              background: 'rgba(255,255,255,0.02)',
-              backdropFilter: 'blur(24px) saturate(180%)',
-              WebkitBackdropFilter: 'blur(24px) saturate(180%)',
-              border: '1px solid rgba(255,255,255,0.08)',
-              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -1px 0 rgba(255,255,255,0.04), 0 4px 16px rgba(0,0,0,0.18)',
+              background: 'rgba(255,255,255,0.015)',
+              backdropFilter: 'blur(32px) saturate(220%)',
+              WebkitBackdropFilter: 'blur(32px) saturate(220%)',
+              border: '1px solid rgba(255,255,255,0.06)',
+              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -1px 0 rgba(255,255,255,0.03), 0 6px 18px rgba(0,0,0,0.14)',
             }}
             data-testid="button-collapse-sidebar"
           >
@@ -114,22 +114,22 @@ export function Navigation() {
         onClick={toggle}
         className="fixed z-50 flex items-center justify-center transition-all duration-300 ease-in-out group overflow-visible"
         style={{
-          left: collapsed ? '0px' : '-28px',
+          left: collapsed ? '0px' : '-18px',
           top: '50%',
           transform: 'translateY(-50%)',
-          width: '36px',
-          height: '72px',
-          background: 'rgba(255,255,255,0.02)',
-          backdropFilter: 'blur(28px) saturate(200%)',
-          WebkitBackdropFilter: 'blur(28px) saturate(200%)',
-          border: '1px solid rgba(255,255,255,0.1)',
+          width: '30px',
+          height: '68px',
+          background: 'rgba(255,255,255,0.01)',
+          backdropFilter: 'blur(36px) saturate(240%)',
+          WebkitBackdropFilter: 'blur(36px) saturate(240%)',
+          border: '1px solid rgba(255,255,255,0.05)',
           borderLeft: 'none',
           borderRadius: '0 10px 10px 0',
           boxShadow: [
-            'inset 1px 0 0 rgba(255,255,255,0.2)',
-            'inset 0 1px 0 rgba(255,255,255,0.08)',
-            'inset 0 -1px 0 rgba(255,255,255,0.04)',
-            '2px 0 18px rgba(0,0,0,0.22)',
+            'inset 1px 0 0 rgba(255,255,255,0.22)',
+            'inset 0 1px 0 rgba(255,255,255,0.06)',
+            'inset 0 -1px 0 rgba(255,255,255,0.03)',
+            '2px 0 16px rgba(0,0,0,0.16)',
           ].join(', '),
           opacity: collapsed ? 1 : 0,
           pointerEvents: collapsed ? 'auto' : 'none',
