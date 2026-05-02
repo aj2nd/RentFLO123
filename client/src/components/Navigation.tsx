@@ -1,4 +1,5 @@
 import { Link, useLocation } from "wouter";
+import { useEffect } from "react";
 import { LayoutDashboard, Home, LogOut, Wallet, Wrench, Receipt, Loader2, ShieldCheck, FileSignature, ChevronLeft, ChevronRight, MessageSquare } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
@@ -13,6 +14,14 @@ export function Navigation() {
   const { user, logout, isLoading } = useAuth();
   const { t } = useI18n();
   const { collapsed, toggle } = useSidebar();
+
+  useEffect(() => {
+    if (!collapsed) {
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => { document.body.style.overflow = prev; };
+    }
+  }, [collapsed]);
 
   const isActive = (path: string) => location === path;
   const role = user?.role;
