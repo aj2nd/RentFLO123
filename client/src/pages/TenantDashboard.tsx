@@ -194,10 +194,10 @@ export default function TenantDashboard() {
 
         {/* Verification Banner */}
         {!isVerified && (
-          <div className={`mb-6 p-4 sm:p-5 border-2 ${hasPendingKyc ? 'border-yellow-500 bg-yellow-500/10' : 'border-zinc-700 bg-zinc-900'}`}>
+          <div className={`mb-6 p-4 sm:p-5 border-2 ${hasPendingKyc ? 'border-yellow-500 bg-yellow-500/10' : 'border-[#6FFFE9]/25 bg-[#6FFFE9]/5'}`}>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-start gap-3">
-                {hasPendingKyc ? <Clock className="w-6 h-6 text-yellow-500 shrink-0 mt-0.5" /> : <Shield className="w-6 h-6 text-zinc-400 shrink-0 mt-0.5" />}
+                {hasPendingKyc ? <Clock className="w-6 h-6 text-yellow-500 shrink-0 mt-0.5" /> : <Shield className="w-6 h-6 text-[#6FFFE9] shrink-0 mt-0.5" />}
                 <div>
                   <h3 className={`text-base font-semibold ${hasPendingKyc ? 'text-yellow-500' : 'text-white'}`}>
                     {hasPendingKyc ? t('kyc_banner_in_progress') : t('kyc_banner_complete')}
@@ -219,9 +219,9 @@ export default function TenantDashboard() {
         )}
 
         <header className="mb-8">
-          <div className="inline-flex items-center gap-2 px-3 py-1 border border-zinc-800 bg-zinc-900/50 mb-4">
-            <span className="w-2 h-2 bg-white animate-pulse"></span>
-            <span className="text-xs font-medium uppercase tracking-wider text-zinc-400">{t('tenant_secure_pay')}</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1 border border-[#6FFFE9]/30 bg-[#6FFFE9]/5 mb-4">
+            <span className="w-2 h-2 bg-[#6FFFE9] animate-pulse"></span>
+            <span className="text-xs font-medium uppercase tracking-wider text-[#9DEFE4]">{t('tenant_secure_pay')}</span>
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tighter mb-1" style={{ fontFamily: 'Inter, sans-serif' }}>
             {t('tenant_title')}
@@ -247,8 +247,8 @@ export default function TenantDashboard() {
                     <span className="text-zinc-400 uppercase tracking-wider text-sm">{t('tenant_settlement_progress')}</span>
                     <span className="font-mono text-white" data-testid="text-progress-percent">{progressPercent}% {t('tenant_settled')}</span>
                   </div>
-                  <div className="w-full h-3 bg-zinc-900 border border-zinc-800">
-                    <div className="h-full bg-white transition-all duration-500" style={{ width: `${progressPercent}%` }} data-testid="progress-bar-settlement" />
+                  <div className="w-full h-3 bg-zinc-900 border border-[#6FFFE9]/20">
+                    <div className="h-full bg-[#6FFFE9] transition-all duration-500" style={{ width: `${progressPercent}%` }} data-testid="progress-bar-settlement" />
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-zinc-500">{t('tenant_paid')} <span className="text-white font-mono" data-testid="text-amount-paid">₹{amountPaid.toLocaleString()}</span></span>
@@ -257,8 +257,8 @@ export default function TenantDashboard() {
                 </div>
 
                 {paymentsData && paymentsData.length > 0 && (
-                  <div className="border border-zinc-800 p-4">
-                    <h4 className="text-sm uppercase tracking-wider text-zinc-400 mb-3">{t('tenant_payment_history')}</h4>
+                  <div className="border border-[#6FFFE9]/18 p-4">
+                    <h4 className="text-sm uppercase tracking-wider text-[#9DEFE4]/70 mb-3">{t('tenant_payment_history')}</h4>
                     <div className="space-y-2 max-h-32 overflow-y-auto">
                       {paymentsData.filter(p => p.status === 'SUCCESS').map((payment, idx) => (
                         <div key={payment.id} className="flex justify-between text-sm" data-testid={`payment-entry-${idx}`}>
@@ -271,7 +271,7 @@ export default function TenantDashboard() {
                 )}
               </div>
 
-              <div className="bg-zinc-950 border border-zinc-800 p-5 sm:p-8 flex flex-col gap-5 sm:gap-6">
+              <div className="bg-zinc-950/80 border border-[#6FFFE9]/25 p-5 sm:p-8 flex flex-col gap-5 sm:gap-6">
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="text-2xl font-bold mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>{t('tenant_payment_heading')}</h3>
@@ -279,10 +279,10 @@ export default function TenantDashboard() {
                   </div>
                   <button
                     onClick={() => setFlexiblePaymentEnabled(!flexiblePaymentEnabled)}
-                    className="flex items-center gap-2 px-3 py-2 border border-zinc-700 hover:bg-zinc-800 transition-colors"
+                    className="flex items-center gap-2 px-3 py-2 border border-[#6FFFE9]/25 hover:bg-zinc-800 transition-colors"
                     data-testid="toggle-flexible-payment"
                   >
-                    {flexiblePaymentEnabled ? <ToggleRight className="text-white" size={24} /> : <ToggleLeft className="text-zinc-500" size={24} />}
+                    {flexiblePaymentEnabled ? <ToggleRight className="text-[#6FFFE9]" size={24} /> : <ToggleLeft className="text-zinc-500" size={24} />}
                     <span className="text-sm uppercase tracking-wider">{flexiblePaymentEnabled ? t('tenant_flexible') : t('tenant_full_only')}</span>
                   </button>
                 </div>
@@ -314,7 +314,7 @@ export default function TenantDashboard() {
                     </div>
                   </div>
                 ) : (
-                  <div className="p-4 border border-zinc-800 bg-zinc-900/50 text-center">
+                  <div className="p-4 border border-[#6FFFE9]/18 bg-[#6FFFE9]/3 text-center">
                     <p className="text-zinc-400 text-sm mb-2">{t('tenant_full_payment_amount')}</p>
                     <p className="text-3xl font-bold font-mono" data-testid="text-full-amount">₹{remaining.toLocaleString()}</p>
                   </div>
@@ -330,16 +330,16 @@ export default function TenantDashboard() {
             </div>
 
             {paymentsData && paymentsData.length > 0 && (
-              <div className="border-t border-zinc-800 pt-8 mb-8">
+              <div className="border-t border-[#6FFFE9]/15 pt-8 mb-8">
                 <div className="flex items-center gap-3 mb-6">
-                  <ArrowRight className="text-zinc-400" size={20} />
+                  <ArrowRight className="text-[#6FFFE9]" size={20} />
                   <h3 className="text-xl font-bold tracking-tight" style={{ fontFamily: 'Inter, sans-serif' }}>{t('tenant_recent_activity')}</h3>
                 </div>
                 <div className="space-y-3">
                   {paymentsData.slice(0, 5).map((payment) => (
-                    <div key={payment.id} className="flex items-center justify-between p-4 border border-zinc-800 bg-zinc-900/50" data-testid={`activity-${payment.id}`}>
+                    <div key={payment.id} className="flex items-center justify-between p-4 border border-[#6FFFE9]/18 bg-[#6FFFE9]/3" data-testid={`activity-${payment.id}`}>
                       <div className="flex items-center gap-4">
-                        <div className={`w-2 h-2 ${payment.status === 'SUCCESS' ? 'bg-white' : 'bg-zinc-600'}`} />
+                        <div className={`w-2 h-2 ${payment.status === 'SUCCESS' ? 'bg-[#6FFFE9]' : 'bg-zinc-600'}`} />
                         <div>
                           <p className="font-medium text-white">
                             {payment.status === 'SUCCESS' ? t('tenant_split_payment') : payment.status === 'PENDING' ? t('tenant_payment_pending') : t('tenant_payment_failed')}
@@ -356,10 +356,10 @@ export default function TenantDashboard() {
               </div>
             )}
 
-            <div className="border-t border-zinc-800 pt-8">
+            <div className="border-t border-[#6FFFE9]/15 pt-8">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
-                  <Wrench className="text-zinc-400" size={20} />
+                  <Wrench className="text-[#6FFFE9]/60" size={20} />
                   <h3 className="text-xl font-bold tracking-tight" style={{ fontFamily: 'Inter, sans-serif' }}>{t('tenant_maintenance')}</h3>
                 </div>
                 <Button variant="outline" onClick={() => setShowMaintenanceForm(!showMaintenanceForm)}
@@ -370,7 +370,7 @@ export default function TenantDashboard() {
               </div>
 
               {showMaintenanceForm && (
-                <div className="bg-zinc-950 border border-zinc-800 p-6 space-y-4">
+                <div className="bg-zinc-950/80 border border-[#6FFFE9]/20 p-6 space-y-4">
                   <div>
                     <label className="text-xs uppercase tracking-wider text-zinc-400 mb-2 block">{t('tenant_issue_title')}</label>
                     <Input value={ticketTitle} onChange={(e) => setTicketTitle(e.target.value)}
@@ -405,9 +405,9 @@ export default function TenantDashboard() {
           </div>
         ) : (
           <div className="space-y-8">
-            <div className="border-2 border-white p-5 sm:p-8 bg-zinc-950">
+            <div className="border-2 border-[#6FFFE9]/45 p-5 sm:p-8 bg-zinc-950">
               <div className="flex items-start gap-3 mb-5">
-                <Building2 size={24} className="text-white shrink-0 mt-0.5" />
+                <Building2 size={24} className="text-[#6FFFE9]" />
                 <div>
                   <h2 className="text-2xl sm:text-3xl font-bold tracking-tighter" style={{ fontFamily: 'Inter, sans-serif' }}>{t('tenant_join_home')}</h2>
                   <p className="text-zinc-500 text-sm">{t('tenant_join_home_subtitle')}</p>
@@ -434,7 +434,7 @@ export default function TenantDashboard() {
                   <div className="space-y-3 mt-4">
                     <p className="text-xs uppercase tracking-wider text-zinc-400">{t('tenant_available_properties')}</p>
                     {availableProperties.map((prop) => (
-                      <div key={prop.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 border border-zinc-700" data-testid={`available-property-${prop.id}`}>
+                      <div key={prop.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 border border-[#6FFFE9]/25" data-testid={`available-property-${prop.id}`}>
                         <div>
                           <p className="font-medium text-white">{prop.address}</p>
                           <p className="text-sm text-zinc-500">{t('tenant_rent_label')} ₹{prop.monthlyRent.toLocaleString()}{t('tenant_per_month')}</p>
@@ -450,8 +450,8 @@ export default function TenantDashboard() {
               </div>
             </div>
 
-            <div className="border border-zinc-800 p-8 text-center">
-              <Home size={48} className="text-zinc-700 mx-auto mb-4" />
+            <div className="border border-[#6FFFE9]/15 p-8 text-center">
+              <Home size={48} className="text-[#6FFFE9]/25 mx-auto mb-4" />
               <h3 className="text-xl font-bold mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>{t('tenant_no_active_rent')}</h3>
               <p className="text-zinc-500 text-sm">{t('tenant_no_active_rent_desc')}</p>
             </div>

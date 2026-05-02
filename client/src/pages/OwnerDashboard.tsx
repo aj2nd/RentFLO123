@@ -41,13 +41,13 @@ export default function OwnerDashboard() {
 
         {/* Verification Banner */}
         {!isVerified && (
-          <div className={`mb-6 p-4 sm:p-6 border-2 ${hasPendingKyc ? 'border-yellow-500 bg-yellow-500/10' : 'border-zinc-700 bg-zinc-900'}`}>
+          <div className={`mb-6 p-4 sm:p-6 border-2 ${hasPendingKyc ? 'border-yellow-500 bg-yellow-500/10' : 'border-[#6FFFE9]/25 bg-[#6FFFE9]/5'}`}>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-start sm:items-center gap-3">
                 {hasPendingKyc ? (
                   <Clock className="w-6 h-6 text-yellow-500 shrink-0 mt-0.5 sm:mt-0" />
                 ) : (
-                  <Shield className="w-6 h-6 text-zinc-400 shrink-0 mt-0.5 sm:mt-0" />
+                  <Shield className="w-6 h-6 text-[#6FFFE9] shrink-0 mt-0.5 sm:mt-0" />
                 )}
                 <div>
                   <h3 className={`text-base font-semibold ${hasPendingKyc ? 'text-yellow-500' : 'text-white'}`}>
@@ -81,7 +81,7 @@ export default function OwnerDashboard() {
 
         <div className="mb-10">
           {latestPayment ? (
-            <div className="border-2 border-white p-5 sm:p-8">
+            <div className="border-2 border-[#6FFFE9]/50 p-5 sm:p-8">
               <h2 className="text-2xl sm:text-4xl md:text-6xl font-bold tracking-tight text-white mb-3"
                 style={{ fontFamily: 'Georgia, Times, serif' }} data-testid="text-rent-credited">
                 {t('owner_rent_credited')}
@@ -91,12 +91,12 @@ export default function OwnerDashboard() {
                 ₹{latestPayment.amountAdvanced.toLocaleString()}
               </p>
               <p className="text-zinc-400 mt-3 flex items-center gap-2 text-sm">
-                <span className="w-2 h-2 bg-white inline-block shrink-0"></span>
+                <span className="w-2 h-2 bg-[#6FFFE9] inline-block shrink-0"></span>
                 {t('owner_credited_on')} {new Date(latestPayment.updatedAt || latestPayment.createdAt!).toLocaleDateString()}
               </p>
             </div>
           ) : (
-            <div className="border-2 border-zinc-800 p-5 sm:p-8">
+            <div className="border-2 border-[#6FFFE9]/20 p-5 sm:p-8">
               <p className="text-zinc-500 text-sm mb-2 uppercase tracking-widest font-medium">{t('owner_payout_status')}</p>
               <h2 className="text-3xl sm:text-4xl font-bold tracking-tighter text-zinc-700"
                 style={{ fontFamily: 'Georgia, Times, serif' }}>
@@ -109,7 +109,7 @@ export default function OwnerDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <section>
             <div className="flex items-center gap-3 mb-6">
-              <TrendingUp className="text-white" />
+              <TrendingUp className="text-[#6FFFE9]" />
               <h3 className="text-2xl font-semibold tracking-tight" style={{ fontFamily: 'Inter, sans-serif' }}>
                 {t('owner_active_properties')}
               </h3>
@@ -123,7 +123,7 @@ export default function OwnerDashboard() {
 
           <section>
             <div className="flex items-center gap-3 mb-6">
-              <Calendar className="text-white" />
+              <Calendar className="text-[#6FFFE9]" />
               <h3 className="text-2xl font-semibold tracking-tight" style={{ fontFamily: 'Inter, sans-serif' }}>
                 {t('owner_recent_activity')}
               </h3>
@@ -132,11 +132,11 @@ export default function OwnerDashboard() {
               {ledgers?.slice(0, 8).map(ledger => (
                 <div
                   key={ledger.id}
-                  className="flex items-center justify-between p-4 border border-zinc-800 bg-zinc-900/50"
+                  className="flex items-center justify-between p-4 border border-[#6FFFE9]/18 bg-[#6FFFE9]/3"
                   data-testid={`activity-${ledger.id}`}
                 >
                   <div className="flex items-center gap-4">
-                    <div className={`w-2 h-2 ${ledger.amountAdvanced > 0 ? 'bg-white' : 'bg-zinc-600'}`} />
+                    <div className={`w-2 h-2 ${ledger.amountAdvanced > 0 ? 'bg-[#6FFFE9]' : 'bg-zinc-600'}`} />
                     <div>
                       <p className="font-medium text-white">
                         {ledger.amountAdvanced > 0 ? t('owner_rent_advanced') : t('owner_pending_advance')}
@@ -153,7 +153,7 @@ export default function OwnerDashboard() {
                 </div>
               ))}
               {(!ledgers || ledgers.length === 0) && (
-                <div className="p-8 border border-zinc-800 text-center text-zinc-500">
+                <div className="p-8 border border-[#6FFFE9]/15 text-center text-zinc-500">
                   {t('owner_no_activity')}
                 </div>
               )}
@@ -170,7 +170,7 @@ function PropertyCard({ property }: { property: { id: string; address: string; p
   const { t } = useI18n();
 
   return (
-    <div className="p-6 border border-zinc-900 bg-zinc-950/50 group hover:border-zinc-700 transition-all" data-testid={`card-property-${property.id}`}>
+    <div className="p-6 border border-[#6FFFE9]/15 bg-zinc-950/50 group hover:border-[#6FFFE9]/40 transition-all" data-testid={`card-property-${property.id}`}>
       <div className="flex justify-between items-start mb-4">
         <div>
           <h4 className="font-medium text-lg">{property.address}</h4>
@@ -179,12 +179,12 @@ function PropertyCard({ property }: { property: { id: string; address: string; p
             <span className="flex items-center gap-1"><CreditCard size={14} /> ₹{property.monthlyRent.toLocaleString()}</span>
           </div>
         </div>
-        <div className="h-2 w-2 bg-white shadow-[0_0_10px_rgba(255,255,255,0.3)]"></div>
+        <div className="h-2 w-2 bg-[#6FFFE9] shadow-[0_0_10px_rgba(111,255,233,0.5)] animate-pulse"></div>
       </div>
 
-      <div className="border-t border-zinc-800 pt-4 mt-4">
+      <div className="border-t border-[#6FFFE9]/15 pt-4 mt-4">
         <div className="flex items-center gap-2 mb-3">
-          <Wrench size={14} className="text-zinc-400" />
+          <Wrench size={14} className="text-[#6FFFE9]/60" />
           <span className="text-xs uppercase tracking-wider text-zinc-400">{t('owner_property_health')}</span>
         </div>
         <div className="flex gap-6">
@@ -285,7 +285,7 @@ function AddPropertyModal({ isVerified }: { isVerified?: boolean }) {
           {t('owner_add_property')}
         </Button>
       </DialogTrigger>
-      <DialogContent className="bg-black border-2 border-white rounded-none max-w-md">
+      <DialogContent className="bg-black border-2 border-[#6FFFE9]/35 rounded-none max-w-md">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold tracking-tight" style={{ fontFamily: 'Inter, sans-serif' }}>
             {t('modal_add_property')}
@@ -298,7 +298,7 @@ function AddPropertyModal({ isVerified }: { isVerified?: boolean }) {
               id="address"
               {...register("address", { required: "Address is required" })}
               placeholder="123 Main Street, Apt 4B"
-              className="bg-zinc-900 border-2 border-zinc-700 focus:border-white rounded-none h-12"
+              className="bg-zinc-900 border-2 border-[#6FFFE9]/20 focus:border-[#6FFFE9]/60 rounded-none h-12"
               data-testid="input-property-address"
             />
             {errors.address && <p className="text-sm text-red-400">{errors.address.message}</p>}
@@ -312,7 +312,7 @@ function AddPropertyModal({ isVerified }: { isVerified?: boolean }) {
                 type="number"
                 {...register("monthlyRent", { required: "Rent is required", min: { value: 1, message: "Must be positive" } })}
                 placeholder="25000"
-                className="bg-zinc-900 border-2 border-zinc-700 focus:border-white rounded-none h-12"
+                className="bg-zinc-900 border-2 border-[#6FFFE9]/20 focus:border-[#6FFFE9]/60 rounded-none h-12"
                 data-testid="input-monthly-rent"
               />
               {errors.monthlyRent && <p className="text-sm text-red-400">{errors.monthlyRent.message}</p>}
@@ -324,7 +324,7 @@ function AddPropertyModal({ isVerified }: { isVerified?: boolean }) {
                 type="number"
                 {...register("payoutDay", { required: true, min: 1, max: 28 })}
                 placeholder="1"
-                className="bg-zinc-900 border-2 border-zinc-700 focus:border-white rounded-none h-12"
+                className="bg-zinc-900 border-2 border-[#6FFFE9]/20 focus:border-[#6FFFE9]/60 rounded-none h-12"
                 data-testid="input-payout-day"
               />
             </div>
@@ -337,7 +337,7 @@ function AddPropertyModal({ isVerified }: { isVerified?: boolean }) {
               type="email"
               {...register("tenantEmail")}
               placeholder="tenant@example.com"
-              className="bg-zinc-900 border-2 border-zinc-700 focus:border-white rounded-none h-12"
+              className="bg-zinc-900 border-2 border-[#6FFFE9]/20 focus:border-[#6FFFE9]/60 rounded-none h-12"
               data-testid="input-tenant-email"
             />
             <p className="text-xs text-zinc-500">{t('modal_tenant_email_hint')}</p>

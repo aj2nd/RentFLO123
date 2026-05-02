@@ -52,7 +52,7 @@ function getActionLabel(action: TransactionType): string {
 function ActionBadge({ action }: { action: TransactionType }) {
   const config = {
     CAPITAL_ADVANCED: { icon: TrendingUp, bg: 'bg-white', text: 'text-black' },
-    RENT_COLLECTED: { icon: TrendingDown, bg: 'bg-zinc-800', text: 'text-white' },
+    RENT_COLLECTED: { icon: TrendingDown, bg: 'bg-[#6FFFE9]/15', text: 'text-[#6FFFE9]' },
     PENDING: { icon: Minus, bg: 'bg-zinc-900', text: 'text-zinc-400' },
   };
   const { icon: Icon, bg, text } = config[action] || config.PENDING;
@@ -74,7 +74,7 @@ export default function LedgerPage() {
   if (authLoading || ledgersLoading || paymentsLoading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-white border-t-transparent animate-spin" />
+        <div className="w-8 h-8 border-2 border-[#6FFFE9] border-t-transparent animate-spin" />
       </div>
     );
   }
@@ -110,13 +110,13 @@ export default function LedgerPage() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
           <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
             <div className="flex items-center gap-3">
-              <Receipt className="w-6 h-6 sm:w-8 sm:h-8 shrink-0" />
+              <Receipt className="w-6 h-6 sm:w-8 sm:h-8 shrink-0 text-[#6FFFE9]" />
               <h1 className="text-2xl sm:text-4xl font-bold tracking-tighter" style={{ fontFamily: 'Playfair Display, Georgia, serif' }}>
                 {t('ledger_title')}
               </h1>
             </div>
             <div className="sm:text-right">
-              <p className="text-xs text-zinc-500 uppercase tracking-widest mb-1">{t('ledger_current_exposure')}</p>
+              <p className="text-xs text-[#9DEFE4]/60 uppercase tracking-widest mb-1">{t('ledger_current_exposure')}</p>
               <p className="text-2xl sm:text-3xl font-bold font-mono" style={{ fontFamily: 'Playfair Display, Georgia, serif' }} data-testid="text-ledger-exposure">
                 ₹{totalExposure.toLocaleString()}
               </p>
@@ -125,9 +125,9 @@ export default function LedgerPage() {
 
           {/* Desktop table */}
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2, duration: 0.4 }}
-            className="hidden sm:block border-2 border-white/10 overflow-x-auto">
+            className="hidden sm:block border-2 border-[#6FFFE9]/25 overflow-x-auto">
             <table className="w-full text-left min-w-[640px]" data-testid="table-ledger">
-              <thead className="bg-zinc-900 text-zinc-400 text-xs uppercase tracking-wider">
+              <thead className="bg-zinc-900/80 text-[#9DEFE4]/60 text-xs uppercase tracking-wider">
                 <tr>
                   <th className="p-4 font-medium">{t('ledger_date')}</th>
                   <th className="p-4 font-medium">{t('ledger_txn_id')}</th>
@@ -137,11 +137,11 @@ export default function LedgerPage() {
                   <th className="p-4 font-medium text-right">{t('ledger_balance')}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-900">
+              <tbody className="divide-y divide-[#6FFFE9]/10">
                 {transactions.map((txn, index) => (
                   <motion.tr key={txn.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.05 * index, duration: 0.3 }}
-                    className="hover:bg-zinc-900/50 transition-colors" data-testid={`row-transaction-${txn.id}`}>
+                    className="hover:bg-[#6FFFE9]/5 transition-colors" data-testid={`row-transaction-${txn.id}`}>
                     <td className="p-4 text-zinc-400 font-mono text-sm whitespace-nowrap">
                       {new Date(txn.date).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' })}
                     </td>
@@ -173,7 +173,7 @@ export default function LedgerPage() {
             {transactions.map((txn, index) => (
               <motion.div key={txn.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.05 * index, duration: 0.3 }}
-                className="border border-zinc-800 bg-zinc-950/50 p-4 space-y-3" data-testid={`card-transaction-${txn.id}`}>
+                className="border border-[#6FFFE9]/20 bg-zinc-950/50 p-4 space-y-3" data-testid={`card-transaction-${txn.id}`}>
                 <div className="flex items-start justify-between gap-2">
                   <ActionBadge action={txn.action} />
                   <span className={`font-mono font-bold text-base ${txn.amount >= 0 ? 'text-white' : 'text-zinc-400'}`}>
@@ -192,7 +192,7 @@ export default function LedgerPage() {
             ))}
           </div>
 
-          <div className="mt-6 text-center text-zinc-600 text-xs uppercase tracking-widest">
+          <div className="mt-6 text-center text-[#9DEFE4]/30 text-xs uppercase tracking-widest">
             {t('ledger_footer')}
           </div>
         </motion.div>

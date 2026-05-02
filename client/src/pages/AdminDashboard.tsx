@@ -41,7 +41,7 @@ function FileUpload({ onFileChange, currentValue }: { onFileChange: (dataUrl: st
     <div className="space-y-2">
       <input ref={fileInputRef} type="file" accept="image/*,.pdf" onChange={handleFileSelect} className="hidden" data-testid="input-file-upload" />
       {currentValue ? (
-        <div className="flex items-center gap-3 p-3 border-2 border-white bg-zinc-900">
+        <div className="flex items-center gap-3 p-3 border border-[#6FFFE9]/30 bg-zinc-900">
           <div className="w-10 h-10 border border-zinc-700 flex items-center justify-center bg-zinc-800">
             {currentValue.startsWith("data:image") ? (
               <img src={currentValue} alt="Receipt" className="w-full h-full object-cover" loading="lazy" />
@@ -59,7 +59,7 @@ function FileUpload({ onFileChange, currentValue }: { onFileChange: (dataUrl: st
         </div>
       ) : (
         <Button type="button" onClick={() => fileInputRef.current?.click()} disabled={isUploading}
-          className="w-full h-20 bg-zinc-900 border-2 border-dashed border-zinc-700 hover:border-white hover:bg-zinc-800 text-zinc-400 hover:text-white rounded-none flex flex-col gap-2 transition-all"
+          className="w-full h-20 bg-zinc-900 border-2 border-dashed border-[#6FFFE9]/20 hover:border-[#6FFFE9]/50 hover:bg-zinc-800 text-zinc-400 hover:text-[#6FFFE9] rounded-none flex flex-col gap-2 transition-all"
           data-testid="button-upload-receipt">
           {isUploading ? <Loader2 className="animate-spin" size={24} /> : <><Upload size={24} /><span className="text-sm">Click to upload bank transfer screenshot</span></>}
         </Button>
@@ -126,30 +126,30 @@ export default function AdminDashboard() {
             <div>
               <h1 className="text-3xl sm:text-4xl font-bold tracking-tighter mb-1">{t('admin_title')}</h1>
               <p className="text-zinc-500">
-                {t('admin_system_status')} <span className="text-white font-medium">{t('admin_operational')}</span>
+                {t('admin_system_status')} <span className="text-[#6FFFE9] font-medium">{t('admin_operational')}</span>
               </p>
             </div>
-            <Button onClick={downloadAuditLog} className="bg-zinc-900 text-white hover:bg-zinc-800 border border-zinc-700 gap-2" data-testid="button-download-audit">
+            <Button onClick={downloadAuditLog} className="bg-zinc-900 text-white hover:bg-zinc-800 border border-[#6FFFE9]/25 gap-2" data-testid="button-download-audit">
               <Download size={16} />
               {t('admin_download_audit')}
             </Button>
           </div>
 
-          <div className="flex gap-4 border-b border-zinc-800">
+          <div className="flex gap-4 border-b border-[#6FFFE9]/20">
             <button onClick={() => setActiveTab('overview')}
-              className={`pb-3 px-1 text-sm font-medium transition-colors ${activeTab === 'overview' ? 'text-white border-b-2 border-white' : 'text-zinc-500 hover:text-zinc-300'}`}
+              className={`pb-3 px-1 text-sm font-medium transition-colors ${activeTab === 'overview' ? 'text-[#6FFFE9] border-b-2 border-[#6FFFE9]' : 'text-zinc-500 hover:text-[#9DEFE4]'}`}
               data-testid="tab-overview">{t('admin_tab_overview')}</button>
             <button onClick={() => setActiveTab('kyc')}
-              className={`pb-3 px-1 text-sm font-medium transition-colors flex items-center gap-2 ${activeTab === 'kyc' ? 'text-white border-b-2 border-white' : 'text-zinc-500 hover:text-zinc-300'}`}
+              className={`pb-3 px-1 text-sm font-medium transition-colors flex items-center gap-2 ${activeTab === 'kyc' ? 'text-[#6FFFE9] border-b-2 border-[#6FFFE9]' : 'text-zinc-500 hover:text-[#9DEFE4]'}`}
               data-testid="tab-kyc">
               <Shield size={14} />
               {t('admin_tab_kyc')}
               {pendingKyc && pendingKyc.length > 0 && (
-                <span className="bg-white text-black text-xs px-2 py-0.5">{pendingKyc.length}</span>
+                <span className="bg-[#6FFFE9]/20 text-[#6FFFE9] border border-[#6FFFE9]/40 text-xs px-2 py-0.5">{pendingKyc.length}</span>
               )}
             </button>
             <button onClick={() => setActiveTab('users')}
-              className={`pb-3 px-1 text-sm font-medium transition-colors flex items-center gap-2 ${activeTab === 'users' ? 'text-white border-b-2 border-white' : 'text-zinc-500 hover:text-zinc-300'}`}
+              className={`pb-3 px-1 text-sm font-medium transition-colors flex items-center gap-2 ${activeTab === 'users' ? 'text-[#6FFFE9] border-b-2 border-[#6FFFE9]' : 'text-zinc-500 hover:text-[#9DEFE4]'}`}
               data-testid="tab-users">
               <Users size={14} />
               {t('admin_tab_users')}
@@ -165,7 +165,7 @@ export default function AdminDashboard() {
             ) : pendingKyc && pendingKyc.length > 0 ? (
               <div className="space-y-4">
                 {pendingKyc.map((user) => (
-                  <div key={user.id} className="p-6 border border-zinc-800 bg-zinc-950 flex flex-col md:flex-row md:items-center justify-between gap-4" data-testid={`kyc-row-${user.id}`}>
+                  <div key={user.id} className="p-6 border border-[#6FFFE9]/20 bg-zinc-950 flex flex-col md:flex-row md:items-center justify-between gap-4" data-testid={`kyc-row-${user.id}`}>
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
                         <h3 className="text-lg font-medium">{user.fullLegalName || `${user.firstName} ${user.lastName}`}</h3>
@@ -186,10 +186,10 @@ export default function AdminDashboard() {
                       </div>
                       <div className="mt-3 flex gap-4">
                         {user.kycDocumentUrl && (
-                          <a href={user.kycDocumentUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-zinc-400 hover:text-white underline">{t('admin_kyc_view_doc')}</a>
+                          <a href={user.kycDocumentUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-[#9DEFE4] hover:text-[#6FFFE9] underline">{t('admin_kyc_view_doc')}</a>
                         )}
                         {user.cancelledChequeUrl && (
-                          <a href={user.cancelledChequeUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-zinc-400 hover:text-white underline">{t('admin_kyc_view_cheque')}</a>
+                          <a href={user.cancelledChequeUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-[#9DEFE4] hover:text-[#6FFFE9] underline">{t('admin_kyc_view_cheque')}</a>
                         )}
                       </div>
                     </div>
@@ -202,8 +202,8 @@ export default function AdminDashboard() {
                 ))}
               </div>
             ) : (
-              <div className="p-12 border border-zinc-800 bg-zinc-950/30 text-center">
-                <Shield className="w-12 h-12 mx-auto mb-4 text-zinc-600" />
+              <div className="p-12 border border-[#6FFFE9]/15 bg-[#6FFFE9]/3 text-center">
+                <Shield className="w-12 h-12 mx-auto mb-4 text-[#6FFFE9]/40" />
                 <p className="text-zinc-500">{t('admin_no_kyc')}</p>
               </div>
             )}
@@ -213,9 +213,9 @@ export default function AdminDashboard() {
         {activeTab === 'users' && (
           <div className="mt-8">
             <h2 className="text-2xl font-semibold tracking-tight mb-6">{t('admin_users_title')}</h2>
-            <div className="border border-white/10 overflow-x-auto">
+            <div className="border border-[#6FFFE9]/22 overflow-x-auto">
               <table className="w-full text-left min-w-[480px]">
-                <thead className="bg-zinc-900 text-zinc-400 text-xs uppercase tracking-wider">
+                <thead className="bg-zinc-900/80 text-[#9DEFE4]/60 text-xs uppercase tracking-wider">
                   <tr>
                     <th className="p-4 font-medium">{t('admin_name')}</th>
                     <th className="p-4 font-medium">{t('admin_email')}</th>
@@ -223,9 +223,9 @@ export default function AdminDashboard() {
                     <th className="p-4 font-medium text-center">{t('admin_kyc_status')}</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-900">
+                <tbody className="divide-y divide-[#6FFFE9]/8">
                   {allUsers?.map(user => (
-                    <tr key={user.id} className="hover:bg-zinc-900/50 transition-colors" data-testid={`row-user-${user.id}`}>
+                    <tr key={user.id} className="hover:bg-[#6FFFE9]/5 transition-colors" data-testid={`row-user-${user.id}`}>
                       <td className="p-4 font-medium">{user.firstName} {user.lastName}</td>
                       <td className="p-4 text-zinc-400">{user.email}</td>
                       <td className="p-4"><span className="text-xs bg-zinc-800 px-2 py-1">{user.role || 'NO ROLE'}</span></td>
@@ -252,7 +252,7 @@ export default function AdminDashboard() {
 
         {activeTab === 'overview' && (
           <>
-            <div className="mb-8 p-4 sm:p-8 border-2 border-white bg-zinc-950 mt-6">
+            <div className="mb-8 p-4 sm:p-8 border-2 border-[#6FFFE9]/50 bg-zinc-950 mt-6">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
                   <p className="text-zinc-400 text-xs sm:text-sm uppercase tracking-widest mb-1 sm:mb-2">{t('admin_total_exposure')}</p>
@@ -289,7 +289,7 @@ export default function AdminDashboard() {
                 </div>
                 <div className="space-y-4">
                   {ledgers?.length === 0 ? (
-                    <div className="p-12 border border-zinc-900 bg-zinc-950/30 text-center">
+                    <div className="p-12 border border-[#6FFFE9]/12 bg-zinc-950/30 text-center">
                       <p className="text-zinc-500">{t('admin_no_pending_payouts')}</p>
                     </div>
                   ) : (
@@ -298,7 +298,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              <div className="border border-white/10 bg-zinc-950/30 p-8 h-full flex flex-col justify-between">
+              <div className="border border-[#6FFFE9]/20 bg-zinc-950/30 p-8 h-full flex flex-col justify-between">
                 <div>
                   <h3 className="text-lg font-medium mb-2">{t('admin_liquidity_ratio')}</h3>
                   <p className="text-zinc-500 text-sm mb-8">{t('admin_liquidity_desc')}</p>
@@ -311,7 +311,7 @@ export default function AdminDashboard() {
                       <Tooltip contentStyle={{ backgroundColor: '#000', border: '1px solid #333' }} itemStyle={{ color: '#fff' }} cursor={{ fill: 'transparent' }} />
                       <Bar dataKey="value" radius={0} barSize={60}>
                         {chartData.map((_, index) => (
-                          <Cell key={`cell-${index}`} fill={index === 0 ? '#ffffff' : '#52525b'} />
+                          <Cell key={`cell-${index}`} fill={index === 0 ? '#ffffff' : '#6FFFE9'} />
                         ))}
                       </Bar>
                     </BarChart>
@@ -322,15 +322,15 @@ export default function AdminDashboard() {
 
             <div className="mt-12">
               <div className="flex items-center gap-3 mb-6">
-                <Building2 className="text-white" size={24} />
+                <Building2 className="text-[#6FFFE9]" size={24} />
                 <h2 className="text-2xl font-semibold tracking-tight">{t('admin_all_properties')}</h2>
                 <span className="text-xs font-mono uppercase text-zinc-500 border border-zinc-800 px-2 py-1 ml-auto">
                   {properties?.length || 0} {t('admin_total_label')}
                 </span>
               </div>
-              <div className="border border-white/10 overflow-x-auto">
+              <div className="border border-[#6FFFE9]/22 overflow-x-auto">
                 <table className="w-full text-left min-w-[480px]">
-                  <thead className="bg-zinc-900 text-zinc-400 text-xs uppercase tracking-wider">
+                  <thead className="bg-zinc-900/80 text-[#9DEFE4]/60 text-xs uppercase tracking-wider">
                     <tr>
                       <th className="p-4 font-medium">{t('admin_property_address')}</th>
                       <th className="p-4 font-medium">{t('admin_monthly_rent')}</th>
@@ -338,9 +338,9 @@ export default function AdminDashboard() {
                       <th className="p-4 font-medium text-center">{t('admin_occupancy')}</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-zinc-900">
+                  <tbody className="divide-y divide-[#6FFFE9]/8">
                     {properties?.map(property => (
-                      <tr key={property.id} className="hover:bg-zinc-900/50 transition-colors" data-testid={`row-property-${property.id}`}>
+                      <tr key={property.id} className="hover:bg-[#6FFFE9]/5 transition-colors" data-testid={`row-property-${property.id}`}>
                         <td className="p-4 font-medium truncate max-w-[200px]">{property.address}</td>
                         <td className="p-4 font-mono">₹{property.monthlyRent.toLocaleString()}</td>
                         <td className="p-4 text-zinc-400 font-mono text-sm">{property.ownerId.slice(0, 8)}...</td>
@@ -395,7 +395,7 @@ function PayoutRow({ ledger }: { ledger: any }) {
 
   return (
     <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
-      className="group flex flex-col md:flex-row md:items-center justify-between p-6 border border-zinc-800 bg-zinc-950 hover:border-zinc-600 transition-all duration-300">
+      className="group flex flex-col md:flex-row md:items-center justify-between p-6 border border-[#6FFFE9]/20 bg-zinc-950 hover:border-[#6FFFE9]/45 transition-all duration-300">
       <div className="mb-4 md:mb-0">
         <div className="flex items-center gap-3 mb-1">
           <h3 className="text-lg font-medium text-white">{ledger.property.address}</h3>
@@ -416,12 +416,12 @@ function PayoutRow({ ledger }: { ledger: any }) {
               {t('admin_process_payout')}
             </Button>
           </DialogTrigger>
-          <DialogContent className="bg-black border-zinc-800 text-white sm:max-w-md rounded-none">
+          <DialogContent className="bg-black border-[#6FFFE9]/25 text-white sm:max-w-md rounded-none">
             <DialogHeader>
               <DialogTitle className="text-xl tracking-tighter">{t('admin_confirm_transfer')}</DialogTitle>
             </DialogHeader>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 mt-4">
-              <div className="p-4 border border-zinc-800 bg-zinc-900/30 space-y-2">
+              <div className="p-4 border border-[#6FFFE9]/15 bg-zinc-900/30 space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-zinc-400">{t('admin_monthly_rent')}</span>
                   <span>₹{monthlyRent.toLocaleString()}</span>
@@ -430,7 +430,7 @@ function PayoutRow({ ledger }: { ledger: any }) {
                   <span className="text-zinc-400">{t('admin_platform_fee')}</span>
                   <span className="text-zinc-400">- ₹{fee.toLocaleString()}</span>
                 </div>
-                <div className="h-px bg-zinc-800 my-2" />
+                <div className="h-px bg-[#6FFFE9]/15 my-2" />
                 <div className="flex justify-between font-bold text-lg">
                   <span>{t('admin_net_transfer')}</span>
                   <span>₹{payoutAmount.toLocaleString()}</span>
