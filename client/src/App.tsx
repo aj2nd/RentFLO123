@@ -23,6 +23,7 @@ import Support from "@/pages/Support";
 import Verify from "@/pages/Verify";
 import AgreementPage from "@/pages/Agreement";
 import Messages from "@/pages/Messages";
+import Maintenance from "@/pages/Maintenance";
 import { LegalFooter } from "@/components/LegalFooter";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { Navigation } from "@/components/Navigation";
@@ -162,6 +163,9 @@ function Router() {
       </Route>
       <Route path="/messages">
         <PrivateRoute component={Messages} allowedRoles={['TENANT', 'OWNER', 'ADMIN']} />
+      </Route>
+      <Route path="/maintenance">
+        <PrivateRoute component={Maintenance} allowedRoles={['TENANT', 'OWNER', 'ADMIN']} />
       </Route>
       
       <Route path="/terms" component={Terms} />
