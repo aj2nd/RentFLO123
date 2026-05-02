@@ -48,8 +48,8 @@ export function Navigation() {
           {/* Logo — 10% larger */}
           <div className="px-6 mb-10 flex items-center gap-2">
             <Link href="/" className="flex items-center gap-2 cursor-pointer" data-testid="link-logo-img">
-              <img src={houseLogoImg} alt="RentFLO" style={{ width: '35px', height: '35px' }} className="object-contain flex-shrink-0" />
-              <img src={wordmarkImg} alt="RentFLO" style={{ height: '26px' }} className="object-contain flex-shrink-0" data-testid="link-logo" />
+              <img src={houseLogoImg} alt="RentFLO" style={{ width: '52px', height: '52px' }} className="object-contain flex-shrink-0" />
+              <img src={wordmarkImg} alt="RentFLO" style={{ height: '39px' }} className="object-contain flex-shrink-0" data-testid="link-logo" />
             </Link>
           </div>
 
@@ -75,7 +75,7 @@ export function Navigation() {
         </div>
 
         {/* Footer: notification bell + collapse + logout */}
-        <div className="px-3 flex flex-col gap-1 w-64">
+        <div className="px-3 flex flex-col gap-1 w-64 overflow-visible">
           <div className="flex items-center gap-2 px-3 py-2">
             <NotificationBell />
             <span className="text-xs text-[#6FFFE9]/40 uppercase tracking-wider">Alerts</span>
@@ -84,13 +84,13 @@ export function Navigation() {
           {/* Collapse button — liquid glass */}
           <button
             onClick={toggle}
-            className="flex items-center gap-3 px-3 py-3 w-full transition-all duration-200 whitespace-nowrap group"
+            className="flex items-center gap-3 px-3 py-3 w-full transition-all duration-200 whitespace-nowrap group overflow-visible"
             style={{
-              background: 'linear-gradient(135deg, rgba(111,255,233,0.06) 0%, rgba(255,255,255,0.04) 50%, rgba(111,255,233,0.04) 100%)',
-              backdropFilter: 'blur(12px)',
-              WebkitBackdropFilter: 'blur(12px)',
-              border: '1px solid rgba(111,255,233,0.18)',
-              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08), 0 2px 8px rgba(0,0,0,0.4)',
+              background: 'rgba(255,255,255,0.02)',
+              backdropFilter: 'blur(24px) saturate(180%)',
+              WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -1px 0 rgba(255,255,255,0.04), 0 4px 16px rgba(0,0,0,0.18)',
             }}
             data-testid="button-collapse-sidebar"
           >
@@ -112,27 +112,24 @@ export function Navigation() {
       {/* Floating expand tab — liquid glass, always visible when collapsed */}
       <button
         onClick={toggle}
-        className="fixed z-50 flex items-center justify-center transition-all duration-300 ease-in-out group"
+        className="fixed z-50 flex items-center justify-center transition-all duration-300 ease-in-out group overflow-visible"
         style={{
-          left: collapsed ? '0px' : '-48px',
+          left: collapsed ? '0px' : '-28px',
           top: '50%',
           transform: 'translateY(-50%)',
-          width: '32px',
-          height: '64px',
-          /* Liquid glass core */
-          background: 'linear-gradient(160deg, rgba(111,255,233,0.18) 0%, rgba(255,255,255,0.08) 40%, rgba(111,255,233,0.06) 100%)',
-          backdropFilter: 'blur(16px) saturate(180%)',
-          WebkitBackdropFilter: 'blur(16px) saturate(180%)',
-          /* Layered borders for glass edge */
-          border: '1px solid rgba(111,255,233,0.30)',
+          width: '36px',
+          height: '72px',
+          background: 'rgba(255,255,255,0.02)',
+          backdropFilter: 'blur(28px) saturate(200%)',
+          WebkitBackdropFilter: 'blur(28px) saturate(200%)',
+          border: '1px solid rgba(255,255,255,0.1)',
           borderLeft: 'none',
           borderRadius: '0 10px 10px 0',
           boxShadow: [
-            'inset 1px 0 0 rgba(255,255,255,0.15)',
-            'inset 0 1px 0 rgba(255,255,255,0.12)',
-            'inset 0 -1px 0 rgba(0,0,0,0.2)',
-            '2px 0 16px rgba(111,255,233,0.12)',
-            '0 4px 24px rgba(0,0,0,0.5)',
+            'inset 1px 0 0 rgba(255,255,255,0.2)',
+            'inset 0 1px 0 rgba(255,255,255,0.08)',
+            'inset 0 -1px 0 rgba(255,255,255,0.04)',
+            '2px 0 18px rgba(0,0,0,0.22)',
           ].join(', '),
           opacity: collapsed ? 1 : 0,
           pointerEvents: collapsed ? 'auto' : 'none',
@@ -143,7 +140,7 @@ export function Navigation() {
         {/* Inner highlight streak */}
         <span
           className="absolute left-1 top-2 bottom-2 w-px rounded-full"
-          style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.05) 100%)' }}
+          style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.08) 100%)' }}
         />
         <ChevronRight size={14} className="text-[#6FFFE9] group-hover:text-white transition-colors relative z-10" />
       </button>
