@@ -5,7 +5,7 @@ import { useI18n } from "@/hooks/use-i18n";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { NotificationBell } from "@/components/NotificationBell";
 
-const HEADER_HEIGHT = 72;
+const HEADER_HEIGHT = 88;
 
 export function Navigation() {
   const [location] = useLocation();
