@@ -4,8 +4,6 @@ import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { NotificationBell } from "@/components/NotificationBell";
-import houseLogoImg from "@assets/IMG_7223_1777731010120.jpeg";
-import wordmarkImg from "@assets/IMG_7224_1777731010120.jpeg";
 
 export function Navigation() {
   const [location] = useLocation();
@@ -45,14 +43,6 @@ export function Navigation() {
         style={{ width: collapsed ? '0px' : '256px' }}
       >
         <div className="flex flex-col gap-2 w-64">
-          {/* Logo — 10% larger */}
-          <div className="px-6 mb-10 flex items-center gap-2">
-            <Link href="/" className="flex items-center gap-3 cursor-pointer" data-testid="link-logo-img">
-              <img src={houseLogoImg} alt="RentFLO" style={{ width: '80px', height: '80px' }} className="object-contain flex-shrink-0" />
-              <img src={wordmarkImg} alt="RentFLO" style={{ height: '60px' }} className="object-contain flex-shrink-0" data-testid="link-logo" />
-            </Link>
-          </div>
-
           {/* Nav items */}
           <div className="space-y-1 px-3">
             {isLoading ? (
