@@ -34,23 +34,19 @@
         font-family: 'Inter', 'Noto Sans Devanagari', 'Noto Sans Kannada', sans-serif;
       }
 
-      .i18n-header .logo {
-        position: absolute;
-        left: 50%;
-        transform: translateX(-50%);
+      .i18n-header .logo-left {
         display: flex;
         align-items: center;
-        gap: 12px;
-        color: #C0C0C0;
-        font-weight: 600;
-        font-size: 22px;
-        letter-spacing: -0.5px;
+        flex: 1;
         text-decoration: none;
-        pointer-events: auto;
       }
 
-      .i18n-header .left-spacer {
+      .i18n-header .logo-center {
+        display: flex;
+        align-items: center;
+        justify-content: center;
         flex: 1;
+        text-decoration: none;
       }
 
       .i18n-header .logo-img {
@@ -177,9 +173,10 @@
   <body>
     <!-- Global Header: Logo + Language switcher + conditional Login -->
     <header class="i18n-header" data-testid="header-i18n">
-      <div class="left-spacer"></div>
-      <a href="/" class="logo">
+      <a href="/" class="logo-left">
         <img src="/logo-icon.jpeg" alt="RentFLO" class="logo-img" data-testid="logo-img" />
+      </a>
+      <a href="/" class="logo-center">
         <img src="/logo-wordmark.jpeg" alt="RentFLO" class="logo-wordmark" />
       </a>
       <div class="right-controls">
