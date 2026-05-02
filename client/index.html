@@ -28,15 +28,24 @@
         right: 0;
         z-index: 9999;
         background: #000000;
-        border-bottom: none;
+        border-bottom: 1px solid transparent;
         box-shadow: none;
         padding: 0 36px;
         padding-top: env(safe-area-inset-top);
         display: flex;
         align-items: center;
         justify-content: space-between;
-        height: 189px;
+        height: 210px;
         font-family: 'Inter', 'Noto Sans Devanagari', 'Noto Sans Kannada', sans-serif;
+        transition: background 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease, backdrop-filter 0.4s ease;
+      }
+
+      .i18n-header.glass {
+        background: rgba(0, 0, 0, 0.45);
+        backdrop-filter: blur(36px) saturate(220%) brightness(1.08);
+        -webkit-backdrop-filter: blur(36px) saturate(220%) brightness(1.08);
+        border-bottom: 1px solid rgba(111, 255, 233, 0.07);
+        box-shadow: 0 1px 0 rgba(255,255,255,0.04), 0 8px 40px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.04);
       }
 
       .i18n-header .logo-left {
@@ -80,16 +89,25 @@
       /* ── Login sub-bar ────────────────────────────────── */
       .i18n-login-bar {
         position: sticky;
-        top: 189px;
+        top: 210px;
         left: 0;
         right: 0;
         z-index: 9998;
         background: #000000;
-        border-bottom: none;
+        border-bottom: 1px solid transparent;
         padding: 12px 36px;
         display: flex;
         align-items: center;
         justify-content: flex-end;
+        transition: background 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease, backdrop-filter 0.4s ease;
+      }
+
+      .i18n-login-bar.glass {
+        background: rgba(0, 0, 0, 0.38);
+        backdrop-filter: blur(36px) saturate(220%) brightness(1.08);
+        -webkit-backdrop-filter: blur(36px) saturate(220%) brightness(1.08);
+        border-bottom: 1px solid rgba(111, 255, 233, 0.06);
+        box-shadow: 0 4px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.03);
       }
 
       /* ── Language switcher ────────────────────────────── */
@@ -277,6 +295,20 @@
 
         // Run immediately on page load
         updateHeaderForRoute();
+
+        // ── Scroll-triggered liquid glass ───────────────────────────────────
+        var header = document.querySelector('.i18n-header');
+        var loginBar = document.getElementById('login-bar');
+        var GLASS_THRESHOLD = 40;
+
+        function updateGlass() {
+          var scrolled = window.scrollY > GLASS_THRESHOLD;
+          if (header) header.classList.toggle('glass', scrolled);
+          if (loginBar) loginBar.classList.toggle('glass', scrolled);
+        }
+
+        window.addEventListener('scroll', updateGlass, { passive: true });
+        updateGlass();
 
         // Listen for browser back/forward navigation
         window.addEventListener('popstate', updateHeaderForRoute);
