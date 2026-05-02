@@ -127,6 +127,33 @@ export const agreementsRelations = relations(agreements, ({ one }) => ({
   }),
 }));
 
+// === PUSH SUBSCRIPTIONS TABLE ===
+export const pushSubscriptions = pgTable("push_subscriptions", {
+  id: varchar("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  endpoint: text("endpoint").notNull().unique(),
+  p256dh: text("p256dh").notNull(),
+  auth: text("auth").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// === IN-APP NOTIFICATIONS TABLE ===
+export const notifications = pgTable("notifications", {
+  id: varchar("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  title: text("title").notNull(),
+  body: text("body").notNull(),
+  type: text("type", { enum: ['RENT_ADVANCED', 'RENT_COLLECTED', 'MAINTENANCE_CREATED', 'MAINTENANCE_RESOLVED', 'RENT_DUE'] }).notNull(),
+  read: boolean("read").default(false).notNull(),
+  url: text("url"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export type PushSubscription = typeof pushSubscriptions.$inferSelect;
+export type InsertPushSubscription = typeof pushSubscriptions.$inferInsert;
+export type Notification = typeof notifications.$inferSelect;
+export type InsertNotification = typeof notifications.$inferInsert;
+
 // === ZOD SCHEMAS ===
 export const insertPropertySchema = createInsertSchema(properties).omit({ 
   id: true, 

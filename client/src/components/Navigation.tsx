@@ -3,6 +3,7 @@ import { LayoutDashboard, Home, LogOut, Wallet, Wrench, Receipt, Loader2, Shield
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
 import { useSidebar } from "@/contexts/SidebarContext";
+import { NotificationBell } from "@/components/NotificationBell";
 import houseLogoImg from "@assets/IMG_7223_1777731010120.jpeg";
 import wordmarkImg from "@assets/IMG_7224_1777731010120.jpeg";
 
@@ -63,8 +64,13 @@ export function Navigation() {
           </div>
         </div>
 
-        {/* Footer: collapse + logout */}
+        {/* Footer: notification bell + collapse + logout */}
         <div className="px-3 flex flex-col gap-1 w-64">
+          <div className="flex items-center gap-2 px-3 py-2">
+            <NotificationBell />
+            <span className="text-xs text-[#6FFFE9]/40 uppercase tracking-wider">Alerts</span>
+          </div>
+
           <button
             onClick={toggle}
             className="flex items-center gap-3 px-3 py-3 w-full text-[#6FFFE9]/50 hover:text-[#6FFFE9] hover:bg-[#6FFFE9]/8 transition-all duration-200 whitespace-nowrap"

@@ -49,6 +49,18 @@ Preferred communication style: Simple, everyday language.
 - **PWA**: Splash screen with RENTFLO logo, icons at 192x192/512x512/maskable with cache-busted asset versions
 - **Mobile UX**: Safe-area-insets, 44px min touch targets, tap-highlight disabled, user-select:none on interactive elements
 
+### Recent Changes (May 2026)
+- **Push Notifications**: Full Web Push API implementation
+  - `pushSubscriptions` and `notifications` tables added to schema
+  - `server/push.ts`: VAPID key auto-generation on first run, `sendPushToUser()` and `createNotification()` helpers
+  - Service worker at `client/public/sw.js` handles push events and notification clicks
+  - Registered in `client/src/main.tsx` on page load
+  - `usePushNotifications` hook manages subscribe/unsubscribe lifecycle
+  - `NotificationBell` component in sidebar: unread badge, dropdown panel, push on/off toggle, mark-all-read
+  - Push triggers wired to: rent advanced (→ owner), payment received via Razorpay webhook (→ tenant + owner), maintenance ticket created (→ admins), maintenance ticket resolved (→ tenant)
+  - API routes: `/api/push/vapid-key`, `/api/push/subscribe`, `/api/push/unsubscribe`, `/api/notifications`, `/api/notifications/read`
+- **Sidebar fully collapsible**: width=0 when collapsed, floating `>` tab always visible on left edge, main content gets full width
+
 ### Recent Changes (Apr 2026)
 - **Property Setup Flow**: New `/setup` page appears right after role selection on `/onboarding`
   - **Owner Setup**: Form collects property address, monthly rent, payout day, and optional tenant email → creates property + auto-creates ledger for current month → redirects to owner dashboard

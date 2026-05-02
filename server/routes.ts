@@ -7,6 +7,7 @@ import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integra
 import { authStorage } from "./replit_integrations/auth/storage";
 import Razorpay from "razorpay";
 import xss from "xss";
+import { initVapid, getVapidPublicKey, createNotification } from "./push";
 
 function sanitizeStrings(obj: any): any {
   if (typeof obj === 'string') return xss(obj);
@@ -64,6 +65,9 @@ export async function registerRoutes(
   // === AUTH SETUP ===
   await setupAuth(app);
   registerAuthRoutes(app);
+
+  // === PUSH NOTIFICATIONS INIT ===
+  await initVapid();
 
   // === GLOBAL MIDDLEWARE ===
   app.use("/api", sanitizeBody);
@@ -195,10 +199,20 @@ export async function registerRoutes(
       const updated = await storage.updateLedger(id, {
         amountAdvanced: input.amountAdvanced,
         proofOfTransferUrl: input.proofOfTransferUrl,
-        // If we paid the owner, but haven't collected enough from tenant yet, we are EXPOSED.
-        // If we already collected enough, we might be SETTLED.
         status: ledger.amountCollected >= input.amountAdvanced ? 'SETTLED' : 'EXPOSED',
       });
+
+      // Push notification to the property owner
+      const prop = await storage.getProperty(ledger.propertyId);
+      if (prop?.ownerId) {
+        createNotification(
+          prop.ownerId,
+          "Rent Advanced",
+          `₹${input.amountAdvanced.toLocaleString('en-IN')} has been credited to your account for ${ledger.monthYear}.`,
+          "RENT_ADVANCED",
+          "/owner"
+        ).catch(() => {});
+      }
       
       res.json(updated);
     } catch (err) {
@@ -317,6 +331,27 @@ export async function registerRoutes(
             amountCollected: totalCollected,
             status: isSettled ? 'SETTLED' : (ledger.amountAdvanced > 0 ? 'EXPOSED' : 'ARREARS'),
           });
+
+          // Notify tenant: payment received
+          if (property.tenantId) {
+            createNotification(
+              property.tenantId,
+              "Payment Received",
+              `₹${amountPaid.toLocaleString('en-IN')} received for ${ledger.monthYear}. ${isSettled ? 'Rent fully settled!' : 'Partial payment recorded.'}`,
+              "RENT_COLLECTED",
+              "/tenant"
+            ).catch(() => {});
+          }
+          // Notify owner: tenant paid
+          if (property.ownerId) {
+            createNotification(
+              property.ownerId,
+              "Tenant Payment",
+              `Your tenant paid ₹${amountPaid.toLocaleString('en-IN')} for ${ledger.monthYear}.`,
+              "RENT_COLLECTED",
+              "/owner"
+            ).catch(() => {});
+          }
         }
       }
 
@@ -463,10 +498,24 @@ export async function registerRoutes(
   });
 
   // Create ticket (Tenant)
-  app.post(api.tickets.create.path, isAuthenticated, async (req, res) => {
+  app.post(api.tickets.create.path, isAuthenticated, async (req: any, res) => {
     try {
       const input = api.tickets.create.input.parse(req.body);
       const ticket = await storage.createTicket(input);
+
+      // Notify all admins about new maintenance request
+      const allUsers = await authStorage.getAllUsers();
+      const admins = allUsers.filter((u: any) => u.role === 'ADMIN');
+      for (const admin of admins) {
+        createNotification(
+          admin.id,
+          "New Maintenance Request",
+          `"${ticket.title}" reported for property ${ticket.propertyId.slice(0, 8)}…`,
+          "MAINTENANCE_CREATED",
+          "/admin/maintenance"
+        ).catch(() => {});
+      }
+
       res.status(201).json(ticket);
     } catch (err) {
       if (err instanceof z.ZodError) {
@@ -480,7 +529,7 @@ export async function registerRoutes(
   });
 
   // Resolve ticket (Admin)
-  app.post(api.tickets.resolve.path, isAuthenticated, requireRole('ADMIN'), async (req, res) => {
+  app.post(api.tickets.resolve.path, isAuthenticated, requireRole('ADMIN'), async (req: any, res) => {
     const { id } = req.params;
     const ticket = await storage.getTicket(id);
     if (!ticket) {
@@ -490,8 +539,17 @@ export async function registerRoutes(
     const updated = await storage.updateTicket(id, {
       status: 'RESOLVED',
       resolvedAt: new Date(),
-      // resolvedBy would come from session in production
     });
+
+    // Notify tenant their issue was resolved
+    createNotification(
+      ticket.tenantId,
+      "Issue Resolved",
+      `Your maintenance request "${ticket.title}" has been resolved.`,
+      "MAINTENANCE_RESOLVED",
+      "/tenant"
+    ).catch(() => {});
+
     res.json(updated);
   });
 
@@ -615,6 +673,46 @@ export async function registerRoutes(
   app.get("/api/users", isAuthenticated, requireRole('ADMIN'), async (req: any, res) => {
     const users = await authStorage.getAllUsers();
     res.json(users);
+  });
+
+  // === PUSH NOTIFICATION ROUTES ===
+
+  // Get VAPID public key
+  app.get("/api/push/vapid-key", (_req, res) => {
+    res.json({ publicKey: getVapidPublicKey() });
+  });
+
+  // Subscribe to push
+  app.post("/api/push/subscribe", isAuthenticated, async (req: any, res) => {
+    const userId = req.user?.claims?.sub;
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
+    const { endpoint, p256dh, auth } = req.body;
+    if (!endpoint || !p256dh || !auth) return res.status(400).json({ message: "Missing subscription fields" });
+    await storage.savePushSubscription({ userId, endpoint, p256dh, auth });
+    res.json({ ok: true });
+  });
+
+  // Unsubscribe from push
+  app.post("/api/push/unsubscribe", isAuthenticated, async (req, res) => {
+    const { endpoint } = req.body;
+    if (endpoint) await storage.deletePushSubscription(endpoint);
+    res.json({ ok: true });
+  });
+
+  // List notifications for current user
+  app.get("/api/notifications", isAuthenticated, async (req: any, res) => {
+    const userId = req.user?.claims?.sub;
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
+    const notifs = await storage.getNotifications(userId);
+    res.json(notifs);
+  });
+
+  // Mark all notifications as read
+  app.post("/api/notifications/read", isAuthenticated, async (req: any, res) => {
+    const userId = req.user?.claims?.sub;
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
+    await storage.markNotificationsRead(userId);
+    res.json({ ok: true });
   });
 
   // Seed Data

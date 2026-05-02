@@ -2,11 +2,14 @@ import { db } from "./db";
 import { eq, desc, sql } from "drizzle-orm";
 import {
   properties, ledgers, payments, maintenanceTickets, agreements,
+  pushSubscriptions, notifications,
   type Property, type InsertProperty,
   type Ledger, type InsertLedger,
   type Payment, type InsertPayment,
   type MaintenanceTicket, type InsertMaintenanceTicket,
   type Agreement,
+  type PushSubscription, type InsertPushSubscription,
+  type Notification, type InsertNotification,
   type CreatePropertyRequest,
   type CreateLedgerRequest,
   type CreatePaymentRequest,
@@ -46,6 +49,15 @@ export interface IStorage {
   getAgreementByProperty(propertyId: string): Promise<Agreement | undefined>;
   getOrCreateAgreement(propertyId: string): Promise<Agreement>;
   signAgreement(propertyId: string, role: 'OWNER' | 'TENANT', signatureUrl: string): Promise<Agreement>;
+
+  // Push Subscriptions
+  savePushSubscription(sub: InsertPushSubscription): Promise<PushSubscription>;
+  deletePushSubscription(endpoint: string): Promise<void>;
+
+  // Notifications
+  getNotifications(userId: string): Promise<Notification[]>;
+  getUnreadCount(userId: string): Promise<number>;
+  markNotificationsRead(userId: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -257,6 +269,45 @@ export class DatabaseStorage implements IStorage {
       .where(eq(agreements.id, agreement.id))
       .returning();
     return updated;
+  }
+
+  // Push Subscriptions
+  async savePushSubscription(sub: InsertPushSubscription): Promise<PushSubscription> {
+    const [saved] = await db
+      .insert(pushSubscriptions)
+      .values(sub)
+      .onConflictDoUpdate({ target: pushSubscriptions.endpoint, set: { p256dh: sub.p256dh, auth: sub.auth } })
+      .returning();
+    return saved;
+  }
+
+  async deletePushSubscription(endpoint: string): Promise<void> {
+    await db.delete(pushSubscriptions).where(eq(pushSubscriptions.endpoint, endpoint));
+  }
+
+  // Notifications
+  async getNotifications(userId: string): Promise<Notification[]> {
+    return db
+      .select()
+      .from(notifications)
+      .where(eq(notifications.userId, userId))
+      .orderBy(desc(notifications.createdAt))
+      .limit(50);
+  }
+
+  async getUnreadCount(userId: string): Promise<number> {
+    const rows = await db
+      .select()
+      .from(notifications)
+      .where(eq(notifications.userId, userId));
+    return rows.filter(n => !n.read).length;
+  }
+
+  async markNotificationsRead(userId: string): Promise<void> {
+    await db
+      .update(notifications)
+      .set({ read: true })
+      .where(eq(notifications.userId, userId));
   }
 }
 
