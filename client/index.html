@@ -30,7 +30,7 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        height: 88px;
+        height: 164px;
         font-family: 'Inter', 'Noto Sans Devanagari', 'Noto Sans Kannada', sans-serif;
       }
 
@@ -50,23 +50,37 @@
       }
 
       .i18n-header .logo-img {
-        width: 78px;
-        height: 78px;
+        width: 156px;
+        height: 156px;
         object-fit: contain;
       }
 
       .i18n-header .logo-wordmark {
-        height: 55px;
+        height: 110px;
         object-fit: contain;
       }
 
       .i18n-header .right-controls {
         display: flex;
-        flex-direction: column;
-        align-items: flex-end;
-        justify-content: center;
-        gap: 6px;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-end;
         flex: 1;
+      }
+
+      /* Login sub-bar — sits below the header, only on landing page */
+      .i18n-login-bar {
+        position: sticky;
+        top: 164px;
+        left: 0;
+        right: 0;
+        z-index: 9998;
+        background-color: #000000;
+        border-bottom: 1px solid rgba(111, 255, 233, 0.10);
+        padding: 10px 28px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
       }
 
       .i18n-header .language-switcher {
@@ -75,14 +89,14 @@
         gap: 8px;
       }
 
-      .i18n-header .login-btn {
+      .login-btn {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        height: 38px;
-        padding: 0 22px;
+        height: 40px;
+        padding: 0 28px;
         font-family: 'Inter', sans-serif;
-        font-size: 13px;
+        font-size: 14px;
         font-weight: 600;
         letter-spacing: 0.01em;
         color: #000;
@@ -97,8 +111,8 @@
         user-select: none;
       }
 
-      .i18n-header .login-btn:hover {
-        opacity: 0.88;
+      .login-btn:hover {
+        opacity: 0.85;
       }
 
       .i18n-header .language-switcher label {
@@ -149,13 +163,18 @@
         .i18n-header {
           padding: 0 16px;
           padding-top: env(safe-area-inset-top);
+          height: 120px;
+        }
+        .i18n-login-bar {
+          top: 120px;
+          padding: 8px 16px;
         }
         .i18n-header .logo-img {
-          width: 36px;
-          height: 36px;
+          width: 96px;
+          height: 96px;
         }
         .i18n-header .logo-wordmark {
-          height: 26px;
+          height: 72px;
         }
         .i18n-header .language-switcher label {
           display: none;
@@ -191,9 +210,13 @@
             <option value="kn">ಕನ್ನಡ</option>
           </select>
         </div>
-        <a href="/api/login" class="login-btn" id="header-login-btn" data-testid="button-header-login">Login</a>
       </div>
     </header>
+
+    <!-- Login sub-bar: below the header, only visible on landing page -->
+    <div class="i18n-login-bar" id="login-bar" data-testid="bar-login">
+      <a href="/api/login" class="login-btn" id="header-login-btn" data-testid="button-header-login">Login</a>
+    </div>
 
     <div id="root">
       <div id="splash-screen" style="position:fixed;inset:0;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:99999;transition:opacity 0.3s ease-out;">
@@ -218,13 +241,13 @@
         const DEFAULT_LANG = 'en';
         const SUPPORTED_LANGS = ['en', 'hi', 'kn'];
 
-        // ── Route-aware login button visibility ────────────────────────────
+        // ── Route-aware login bar visibility ────────────────────────────────
         function updateHeaderForRoute() {
           var path = window.location.pathname;
-          var loginBtn = document.getElementById('header-login-btn');
-          if (!loginBtn) return;
-          // Show Login button ONLY on the landing page
-          loginBtn.style.display = (path === '/') ? 'inline-flex' : 'none';
+          var loginBar = document.getElementById('login-bar');
+          if (!loginBar) return;
+          // Show Login bar ONLY on the landing page
+          loginBar.style.display = (path === '/') ? 'flex' : 'none';
         }
 
         // Run immediately on page load
