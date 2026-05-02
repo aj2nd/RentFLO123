@@ -119,7 +119,7 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white pl-20 md:pl-64">
+    <div className="min-h-screen bg-black text-white">
       <div className="p-4 sm:p-6 md:p-10">
         <header className="mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">

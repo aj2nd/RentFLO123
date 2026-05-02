@@ -36,7 +36,7 @@ export default function OwnerDashboard() {
     .sort((a, b) => new Date(b.updatedAt || '').getTime() - new Date(a.updatedAt || '').getTime())[0];
 
   return (
-    <div className="min-h-screen bg-black text-white pl-20 md:pl-64 flex flex-col">
+    <div className="min-h-screen bg-black text-white flex flex-col">
       <div className="p-4 sm:p-6 md:p-10 flex flex-col flex-1">
 
         {/* Verification Banner */}

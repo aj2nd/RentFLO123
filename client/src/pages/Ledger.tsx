@@ -105,7 +105,7 @@ export default function LedgerPage() {
   const totalExposure = Math.abs(runningBalance);
 
   return (
-    <div className="min-h-screen bg-black text-white pl-20 md:pl-64" style={{ fontFamily: 'Inter, sans-serif' }}>
+    <div className="min-h-screen bg-black text-white" style={{ fontFamily: 'Inter, sans-serif' }}>
       <div className="p-4 sm:p-6 md:p-10">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
           <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">

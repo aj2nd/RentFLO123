@@ -26,6 +26,18 @@ import AgreementPage from "@/pages/Agreement";
 import { Navigation } from "@/components/Navigation";
 import { LegalFooter } from "@/components/LegalFooter";
 
+function SidebarContent({ children }: { children: React.ReactNode }) {
+  const { collapsed } = useSidebar();
+  return (
+    <div
+      className="min-h-screen transition-all duration-300"
+      style={{ paddingLeft: collapsed ? '56px' : '256px' }}
+    >
+      {children}
+    </div>
+  );
+}
+
 function PrivateRoute({ component: Component, allowedRoles }: { component: React.ComponentType, allowedRoles?: string[] }) {
   const { isAuthenticated, isLoading, user } = useAuth();
 
@@ -58,7 +70,9 @@ function PrivateRoute({ component: Component, allowedRoles }: { component: React
   return (
     <>
       <Navigation />
-      <Component />
+      <SidebarContent>
+        <Component />
+      </SidebarContent>
     </>
   );
 }
@@ -190,11 +204,13 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <LanguageProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-          <LegalFooter />
-        </TooltipProvider>
+        <SidebarProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Router />
+            <LegalFooter />
+          </TooltipProvider>
+        </SidebarProvider>
       </LanguageProvider>
     </QueryClientProvider>
   );

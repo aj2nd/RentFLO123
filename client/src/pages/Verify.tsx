@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Navigation } from "@/components/Navigation";
 import { Upload, CheckCircle, Clock, ShieldCheck, FileSignature } from "lucide-react";
 import { useLocation } from "wouter";
 import { useI18n } from "@/hooks/use-i18n";
@@ -84,9 +83,7 @@ export default function Verify() {
 
   return (
     <div className="min-h-screen bg-black text-zinc-200" style={{ fontFamily: "Inter, sans-serif" }}>
-      <Navigation />
-
-      <main className="pl-20 md:pl-64 min-h-screen flex flex-col">
+      <main className="min-h-screen flex flex-col">
         <div className="flex-1 p-5 sm:p-8 md:p-10 max-w-2xl w-full mx-0">
 
           <div className="mb-8 pt-2">

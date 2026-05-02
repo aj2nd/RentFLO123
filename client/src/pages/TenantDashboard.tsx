@@ -188,7 +188,7 @@ export default function TenantDashboard() {
   const progressPercent = totalDue > 0 ? Math.min(100, Math.round((amountPaid / totalDue) * 100)) : 0;
 
   return (
-    <div className="min-h-screen bg-black text-white pl-20 md:pl-64 flex flex-col">
+    <div className="min-h-screen bg-black text-white flex flex-col">
       <div className="p-4 sm:p-6 md:p-10 flex flex-col flex-1">
         <SuccessAnimation show={showSuccess} message="Payment Successful" />
 

@@ -4,7 +4,6 @@ import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Navigation } from "@/components/Navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { CheckCircle, FileText, PenLine, RotateCcw } from "lucide-react";
 import type { Property, Agreement } from "@shared/schema";
@@ -278,9 +277,7 @@ export default function AgreementPage() {
 
   return (
     <div className="min-h-screen bg-black text-zinc-200" style={{ fontFamily: "Inter, sans-serif" }}>
-      <Navigation />
-
-      <main className="pl-20 md:pl-64 min-h-screen flex flex-col">
+      <main className="min-h-screen flex flex-col">
         <div className="flex-1 p-5 sm:p-8 md:p-10 max-w-2xl w-full mx-0">
 
           {/* Header */}

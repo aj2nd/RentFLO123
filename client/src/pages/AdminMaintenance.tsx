@@ -41,7 +41,7 @@ export default function AdminMaintenance() {
   const resolvedTickets = tickets?.filter(t => t.status === 'RESOLVED') || [];
 
   return (
-    <div className="min-h-screen bg-black text-white pl-20 md:pl-64">
+    <div className="min-h-screen bg-black text-white">
       <div className="p-4 sm:p-6 md:p-10">
         <header className="mb-8">
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tighter mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>{t('maint_title')}</h1>
