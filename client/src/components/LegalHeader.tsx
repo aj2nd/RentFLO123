@@ -14,9 +14,9 @@ export function LegalHeader() {
         <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
         <span className="text-sm font-medium uppercase tracking-wider" style={{ fontFamily: 'Inter, sans-serif' }}>Back to Home</span>
       </Link>
-      <Link href="/" className="flex items-center gap-2" data-testid="link-legal-logo">
-        <img src={houseLogoImg} alt="RentFLO" className="w-7 h-7 object-contain" />
-        <img src={wordmarkImg} alt="RentFLO" className="h-6 object-contain" />
+      <Link href="/" className="flex items-center gap-3" data-testid="link-legal-logo">
+        <img src={houseLogoImg} alt="RentFLO" className="w-10 h-10 object-contain" />
+        <img src={wordmarkImg} alt="RentFLO" className="h-8 object-contain" />
       </Link>
     </header>
   );
