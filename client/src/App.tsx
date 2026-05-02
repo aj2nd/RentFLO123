@@ -30,8 +30,8 @@ function SidebarContent({ children }: { children: React.ReactNode }) {
   const { collapsed } = useSidebar();
   return (
     <div
-      className="min-h-screen transition-all duration-300"
-      style={{ paddingLeft: collapsed ? '56px' : '256px' }}
+      className="min-h-screen transition-all duration-300 ease-in-out"
+      style={{ paddingLeft: collapsed ? '0px' : '256px' }}
     >
       {children}
     </div>

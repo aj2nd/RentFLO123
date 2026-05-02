@@ -28,99 +28,101 @@ export function Navigation() {
   const visibleItems = navItems.filter(item => role && item.roles.includes(role));
 
   return (
-    <nav
-      className="fixed left-0 top-0 h-full bg-black border-r border-[#6FFFE9]/15 flex flex-col justify-between py-8 z-50 transition-all duration-300 overflow-hidden"
-      style={{ width: collapsed ? '56px' : '256px' }}
-    >
-      <div className="flex flex-col gap-2 min-w-0">
-        <div className="px-3 mb-10 flex items-center justify-between min-w-0">
-          <Link href="/" className="flex items-center gap-2 cursor-pointer min-w-0 overflow-hidden">
-            <img
-              src={houseLogoImg}
-              alt="RentFLO"
-              className="w-8 h-8 object-contain flex-shrink-0"
-              data-testid="link-logo-img"
-            />
-            <img
-              src={wordmarkImg}
-              alt="RentFLO"
-              className="h-6 object-contain flex-shrink-0 transition-all duration-300"
-              style={{ opacity: collapsed ? 0 : 1, width: collapsed ? 0 : 'auto', maxWidth: collapsed ? 0 : '120px' }}
-              data-testid="link-logo"
-            />
-          </Link>
+    <>
+      {/* Sidebar panel */}
+      <nav
+        className="fixed left-0 top-0 h-full bg-black border-r border-[#6FFFE9]/15 flex flex-col justify-between py-8 z-50 overflow-hidden transition-all duration-300 ease-in-out"
+        style={{ width: collapsed ? '0px' : '256px' }}
+      >
+        <div className="flex flex-col gap-2 w-64">
+          {/* Logo */}
+          <div className="px-6 mb-10 flex items-center gap-2">
+            <Link href="/" className="flex items-center gap-2 cursor-pointer" data-testid="link-logo-img">
+              <img src={houseLogoImg} alt="RentFLO" className="w-8 h-8 object-contain flex-shrink-0" />
+              <img src={wordmarkImg} alt="RentFLO" className="h-6 object-contain flex-shrink-0" data-testid="link-logo" />
+            </Link>
+          </div>
+
+          {/* Nav items */}
+          <div className="space-y-1 px-3">
+            {isLoading ? (
+              <div className="flex items-center justify-center py-4">
+                <Loader2 className="w-5 h-5 animate-spin text-[#6FFFE9]/50" />
+              </div>
+            ) : (
+              visibleItems.map((item) => (
+                <NavItem
+                  key={item.href}
+                  href={item.href}
+                  icon={item.icon}
+                  label={item.label}
+                  active={isActive(item.href)}
+                />
+              ))
+            )}
+          </div>
         </div>
 
-        <div className="space-y-1 px-2">
-          {isLoading ? (
-            <div className="flex items-center justify-center py-4">
-              <Loader2 className="w-5 h-5 animate-spin text-[#6FFFE9]/50" />
-            </div>
-          ) : (
-            visibleItems.map((item) => (
-              <NavItem
-                key={item.href}
-                href={item.href}
-                icon={item.icon}
-                label={item.label}
-                active={isActive(item.href)}
-                collapsed={collapsed}
-              />
-            ))
-          )}
+        {/* Footer: collapse + logout */}
+        <div className="px-3 flex flex-col gap-1 w-64">
+          <button
+            onClick={toggle}
+            className="flex items-center gap-3 px-3 py-3 w-full text-[#6FFFE9]/50 hover:text-[#6FFFE9] hover:bg-[#6FFFE9]/8 transition-all duration-200 whitespace-nowrap"
+            data-testid="button-collapse-sidebar"
+          >
+            <ChevronLeft size={18} className="flex-shrink-0" />
+            <span className="text-xs font-medium uppercase tracking-wider">Collapse</span>
+          </button>
+
+          <button
+            onClick={() => logout()}
+            className="flex items-center gap-3 px-3 py-3 w-full text-[#9DEFE4]/60 hover:text-[#6FFFE9] hover:bg-[#6FFFE9]/8 transition-all duration-200 group whitespace-nowrap"
+            data-testid="button-logout"
+          >
+            <LogOut size={20} className="flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
+            <span className="font-medium">{t('nav_sign_out')}</span>
+          </button>
         </div>
-      </div>
+      </nav>
 
-      <div className="px-2 flex flex-col gap-1">
-        <button
-          onClick={toggle}
-          className="flex items-center gap-3 px-3 py-3 w-full text-[#6FFFE9]/50 hover:text-[#6FFFE9] hover:bg-[#6FFFE9]/8 transition-all duration-200"
-          data-testid="button-toggle-sidebar"
-          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-        >
-          {collapsed
-            ? <ChevronRight size={18} className="flex-shrink-0" />
-            : <ChevronLeft size={18} className="flex-shrink-0" />
-          }
-          <span
-            className="text-xs font-medium uppercase tracking-wider whitespace-nowrap transition-all duration-300 overflow-hidden"
-            style={{ opacity: collapsed ? 0 : 1, maxWidth: collapsed ? 0 : '120px' }}
-          >
-            Collapse
-          </span>
-        </button>
-
-        <button
-          onClick={() => logout()}
-          className="flex items-center gap-3 px-3 py-3 w-full text-[#9DEFE4]/60 hover:text-[#6FFFE9] hover:bg-[#6FFFE9]/8 transition-all duration-200 group"
-          data-testid="button-logout"
-          title="Sign out"
-        >
-          <LogOut size={20} className="flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
-          <span
-            className="font-medium whitespace-nowrap overflow-hidden transition-all duration-300"
-            style={{ opacity: collapsed ? 0 : 1, maxWidth: collapsed ? 0 : '120px' }}
-          >
-            {t('nav_sign_out')}
-          </span>
-        </button>
-      </div>
-    </nav>
+      {/* Floating expand tab — visible only when collapsed */}
+      <button
+        onClick={toggle}
+        className="fixed z-50 flex items-center justify-center transition-all duration-300 ease-in-out"
+        style={{
+          left: collapsed ? '0px' : '-48px',
+          top: '50%',
+          transform: 'translateY(-50%)',
+          width: '28px',
+          height: '56px',
+          background: 'linear-gradient(180deg, #0a0a0a 0%, #111 100%)',
+          borderRight: '1px solid rgba(111,255,233,0.25)',
+          borderTop: '1px solid rgba(111,255,233,0.15)',
+          borderBottom: '1px solid rgba(111,255,233,0.15)',
+          borderRadius: '0 6px 6px 0',
+          opacity: collapsed ? 1 : 0,
+          pointerEvents: collapsed ? 'auto' : 'none',
+        }}
+        data-testid="button-expand-sidebar"
+        title="Open sidebar"
+      >
+        <ChevronRight size={14} className="text-[#6FFFE9]" />
+      </button>
+    </>
   );
 }
 
-function NavItem({ href, icon, label, active, collapsed }: {
+function NavItem({ href, icon, label, active }: {
   href: string;
   icon: React.ReactNode;
   label: string;
   active: boolean;
-  collapsed: boolean;
 }) {
   return (
     <Link
       href={href}
       className={`
-        flex items-center gap-3 px-3 py-3 transition-all duration-200 whitespace-nowrap overflow-hidden
+        flex items-center gap-3 px-3 py-3 transition-all duration-200 whitespace-nowrap
         ${active
           ? "text-black"
           : "text-[#9DEFE4]/75 hover:text-[#6FFFE9] hover:bg-[#6FFFE9]/8"
@@ -131,19 +133,9 @@ function NavItem({ href, icon, label, active, collapsed }: {
         color: '#000'
       } : undefined}
       data-testid={`nav-${href.replace(/\//g, '-').slice(1) || 'home'}`}
-      title={collapsed ? label : undefined}
     >
       <span className="flex-shrink-0">{icon}</span>
-      <span
-        className="font-medium overflow-hidden transition-all duration-300"
-        style={{
-          opacity: collapsed ? 0 : 1,
-          maxWidth: collapsed ? 0 : '160px',
-          fontFamily: 'Inter, sans-serif',
-        }}
-      >
-        {label}
-      </span>
+      <span className="font-medium" style={{ fontFamily: 'Inter, sans-serif' }}>{label}</span>
     </Link>
   );
 }
