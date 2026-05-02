@@ -35,6 +35,9 @@
       }
 
       .i18n-header .logo {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
         display: flex;
         align-items: center;
         gap: 12px;
@@ -43,6 +46,11 @@
         font-size: 22px;
         letter-spacing: -0.5px;
         text-decoration: none;
+        pointer-events: auto;
+      }
+
+      .i18n-header .left-spacer {
+        flex: 1;
       }
 
       .i18n-header .logo-img {
@@ -169,6 +177,7 @@
   <body>
     <!-- Global Header: Logo + Language switcher + conditional Login -->
     <header class="i18n-header" data-testid="header-i18n">
+      <div class="left-spacer"></div>
       <a href="/" class="logo">
         <img src="/logo-icon.jpeg" alt="RentFLO" class="logo-img" data-testid="logo-img" />
         <img src="/logo-wordmark.jpeg" alt="RentFLO" class="logo-wordmark" />
