@@ -11,14 +11,14 @@ import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
+import { useI18n } from "@/hooks/use-i18n";
 import type { User } from "@shared/schema";
 
 export default function OwnerDashboard() {
   const { data: properties, isLoading: propsLoading } = useProperties();
   const { data: ledgers, isLoading: ledgersLoading } = useLedgers();
-  const { data: currentUser } = useQuery<User>({
-    queryKey: ["/api/auth/user"],
-  });
+  const { data: currentUser } = useQuery<User>({ queryKey: ["/api/auth/user"] });
+  const { t } = useI18n();
 
   const isVerified = currentUser?.isVerified;
   const hasPendingKyc = currentUser?.panNumber && !isVerified;
@@ -38,120 +38,128 @@ export default function OwnerDashboard() {
   return (
     <div className="min-h-screen bg-black text-white pl-20 md:pl-64 flex flex-col">
       <div className="p-4 sm:p-6 md:p-10 flex flex-col flex-1">
-      {/* Verification Banner */}
-      {!isVerified && (
-        <div className={`mb-6 p-4 sm:p-6 border-2 ${hasPendingKyc ? 'border-yellow-500 bg-yellow-500/10' : 'border-zinc-700 bg-zinc-900'}`}>
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-start sm:items-center gap-3">
-              {hasPendingKyc ? (
-                <Clock className="w-6 h-6 text-yellow-500 shrink-0 mt-0.5 sm:mt-0" />
-              ) : (
-                <Shield className="w-6 h-6 text-zinc-400 shrink-0 mt-0.5 sm:mt-0" />
-              )}
-              <div>
-                <h3 className={`text-base font-semibold ${hasPendingKyc ? 'text-yellow-500' : 'text-white'}`}>
-                  {hasPendingKyc ? 'Verification in Progress' : 'Complete KYC Verification'}
-                </h3>
-                <p className="text-zinc-400 text-sm">
-                  {hasPendingKyc 
-                    ? 'Your documents are being reviewed. This usually takes 1-2 business days.'
-                    : 'Verify your identity to add properties and receive rent advances.'}
-                </p>
+
+        {/* Verification Banner */}
+        {!isVerified && (
+          <div className={`mb-6 p-4 sm:p-6 border-2 ${hasPendingKyc ? 'border-yellow-500 bg-yellow-500/10' : 'border-zinc-700 bg-zinc-900'}`}>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-start sm:items-center gap-3">
+                {hasPendingKyc ? (
+                  <Clock className="w-6 h-6 text-yellow-500 shrink-0 mt-0.5 sm:mt-0" />
+                ) : (
+                  <Shield className="w-6 h-6 text-zinc-400 shrink-0 mt-0.5 sm:mt-0" />
+                )}
+                <div>
+                  <h3 className={`text-base font-semibold ${hasPendingKyc ? 'text-yellow-500' : 'text-white'}`}>
+                    {hasPendingKyc ? t('kyc_banner_in_progress') : t('kyc_banner_complete')}
+                  </h3>
+                  <p className="text-zinc-400 text-sm">
+                    {hasPendingKyc ? t('kyc_banner_reviewing') : t('kyc_banner_verify_owner')}
+                  </p>
+                </div>
               </div>
+              {!hasPendingKyc && (
+                <Link href="/verify">
+                  <Button className="bg-white text-black rounded-none w-full sm:w-auto" data-testid="button-complete-kyc">
+                    {t('kyc_banner_button')}
+                  </Button>
+                </Link>
+              )}
             </div>
-            {!hasPendingKyc && (
-              <Link href="/verify">
-                <Button className="bg-white text-black rounded-none w-full sm:w-auto" data-testid="button-complete-kyc">
-                  Complete KYC
-                </Button>
-              </Link>
-            )}
-          </div>
-        </div>
-      )}
-
-      <header className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tighter mb-1" style={{ fontFamily: 'Inter, sans-serif' }}>Owner Portal</h1>
-          <p className="text-zinc-500 text-sm">Welcome back. Your portfolio overview.</p>
-        </div>
-        <AddPropertyModal isVerified={isVerified ?? undefined} />
-      </header>
-
-      <div className="mb-10">
-        {latestPayment ? (
-          <div className="border-2 border-white p-5 sm:p-8">
-            <h2 className="text-2xl sm:text-4xl md:text-6xl font-bold tracking-tight text-white mb-3" style={{ fontFamily: 'Georgia, Times, serif' }} data-testid="text-rent-credited">
-              RENT CREDITED
-            </h2>
-            <p className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tighter text-white" style={{ fontFamily: 'Inter, sans-serif' }} data-testid="text-last-payout">
-              ₹{latestPayment.amountAdvanced.toLocaleString()}
-            </p>
-            <p className="text-zinc-400 mt-3 flex items-center gap-2 text-sm">
-              <span className="w-2 h-2 bg-white inline-block shrink-0"></span>
-              Credited to your bank account on {new Date(latestPayment.updatedAt || latestPayment.createdAt!).toLocaleDateString()}
-            </p>
-          </div>
-        ) : (
-          <div className="border-2 border-zinc-800 p-5 sm:p-8">
-             <p className="text-zinc-500 text-sm mb-2 uppercase tracking-widest font-medium">Payout Status</p>
-             <h2 className="text-3xl sm:text-4xl font-bold tracking-tighter text-zinc-700" style={{ fontFamily: 'Georgia, Times, serif' }}>AWAITING PAYOUT</h2>
           </div>
         )}
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <section>
-          <div className="flex items-center gap-3 mb-6">
-            <TrendingUp className="text-white" />
-            <h3 className="text-2xl font-semibold tracking-tight" style={{ fontFamily: 'Inter, sans-serif' }}>Active Properties</h3>
+        <header className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tighter mb-1" style={{ fontFamily: 'Inter, sans-serif' }}>
+              {t('owner_title')}
+            </h1>
+            <p className="text-zinc-500 text-sm">{t('owner_subtitle')}</p>
           </div>
-          <div className="space-y-4">
-            {properties?.map(property => (
-              <PropertyCard key={property.id} property={property} />
-            ))}
-          </div>
-        </section>
-        
-        <section>
-          <div className="flex items-center gap-3 mb-6">
-             <Calendar className="text-white" />
-             <h3 className="text-2xl font-semibold tracking-tight" style={{ fontFamily: 'Inter, sans-serif' }}>Recent Activity</h3>
-          </div>
-          <div className="space-y-3">
-             {ledgers?.slice(0, 8).map(ledger => (
-               <div 
-                 key={ledger.id} 
-                 className="flex items-center justify-between p-4 border border-zinc-800 bg-zinc-900/50"
-                 data-testid={`activity-${ledger.id}`}
-               >
-                 <div className="flex items-center gap-4">
-                   <div className={`w-2 h-2 ${ledger.amountAdvanced > 0 ? 'bg-white' : 'bg-zinc-600'}`} />
-                   <div>
-                     <p className="font-medium text-white">
-                       {ledger.amountAdvanced > 0 ? 'Rent Advanced' : 'Pending Advance'}
-                     </p>
-                     <p className="text-xs text-zinc-500">
-                       {ledger.property.address}
-                     </p>
-                   </div>
-                 </div>
-                 <div className="text-right">
-                   <span className="font-mono text-lg">₹{ledger.amountAdvanced.toLocaleString()}</span>
-                   <p className="text-xs text-zinc-500 font-mono">
-                     {new Date(ledger.createdAt!).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                   </p>
-                 </div>
-               </div>
-             ))}
-             {(!ledgers || ledgers.length === 0) && (
-               <div className="p-8 border border-zinc-800 text-center text-zinc-500">
-                 No recent activity.
-               </div>
-             )}
-          </div>
-        </section>
-      </div>
+          <AddPropertyModal isVerified={isVerified ?? undefined} />
+        </header>
+
+        <div className="mb-10">
+          {latestPayment ? (
+            <div className="border-2 border-white p-5 sm:p-8">
+              <h2 className="text-2xl sm:text-4xl md:text-6xl font-bold tracking-tight text-white mb-3"
+                style={{ fontFamily: 'Georgia, Times, serif' }} data-testid="text-rent-credited">
+                {t('owner_rent_credited')}
+              </h2>
+              <p className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tighter text-white"
+                style={{ fontFamily: 'Inter, sans-serif' }} data-testid="text-last-payout">
+                ₹{latestPayment.amountAdvanced.toLocaleString()}
+              </p>
+              <p className="text-zinc-400 mt-3 flex items-center gap-2 text-sm">
+                <span className="w-2 h-2 bg-white inline-block shrink-0"></span>
+                {t('owner_credited_on')} {new Date(latestPayment.updatedAt || latestPayment.createdAt!).toLocaleDateString()}
+              </p>
+            </div>
+          ) : (
+            <div className="border-2 border-zinc-800 p-5 sm:p-8">
+              <p className="text-zinc-500 text-sm mb-2 uppercase tracking-widest font-medium">{t('owner_payout_status')}</p>
+              <h2 className="text-3xl sm:text-4xl font-bold tracking-tighter text-zinc-700"
+                style={{ fontFamily: 'Georgia, Times, serif' }}>
+                {t('owner_awaiting_payout')}
+              </h2>
+            </div>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <section>
+            <div className="flex items-center gap-3 mb-6">
+              <TrendingUp className="text-white" />
+              <h3 className="text-2xl font-semibold tracking-tight" style={{ fontFamily: 'Inter, sans-serif' }}>
+                {t('owner_active_properties')}
+              </h3>
+            </div>
+            <div className="space-y-4">
+              {properties?.map(property => (
+                <PropertyCard key={property.id} property={property} />
+              ))}
+            </div>
+          </section>
+
+          <section>
+            <div className="flex items-center gap-3 mb-6">
+              <Calendar className="text-white" />
+              <h3 className="text-2xl font-semibold tracking-tight" style={{ fontFamily: 'Inter, sans-serif' }}>
+                {t('owner_recent_activity')}
+              </h3>
+            </div>
+            <div className="space-y-3">
+              {ledgers?.slice(0, 8).map(ledger => (
+                <div
+                  key={ledger.id}
+                  className="flex items-center justify-between p-4 border border-zinc-800 bg-zinc-900/50"
+                  data-testid={`activity-${ledger.id}`}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className={`w-2 h-2 ${ledger.amountAdvanced > 0 ? 'bg-white' : 'bg-zinc-600'}`} />
+                    <div>
+                      <p className="font-medium text-white">
+                        {ledger.amountAdvanced > 0 ? t('owner_rent_advanced') : t('owner_pending_advance')}
+                      </p>
+                      <p className="text-xs text-zinc-500">{ledger.property.address}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className="font-mono text-lg">₹{ledger.amountAdvanced.toLocaleString()}</span>
+                    <p className="text-xs text-zinc-500 font-mono">
+                      {new Date(ledger.createdAt!).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    </p>
+                  </div>
+                </div>
+              ))}
+              {(!ledgers || ledgers.length === 0) && (
+                <div className="p-8 border border-zinc-800 text-center text-zinc-500">
+                  {t('owner_no_activity')}
+                </div>
+              )}
+            </div>
+          </section>
+        </div>
       </div>
     </div>
   );
@@ -159,51 +167,45 @@ export default function OwnerDashboard() {
 
 function PropertyCard({ property }: { property: { id: string; address: string; payoutDay: number; monthlyRent: number } }) {
   const { data: ticketCounts } = useTicketCounts(property.id);
-  
+  const { t } = useI18n();
+
   return (
     <div className="p-6 border border-zinc-900 bg-zinc-950/50 group hover:border-zinc-700 transition-all" data-testid={`card-property-${property.id}`}>
       <div className="flex justify-between items-start mb-4">
         <div>
           <h4 className="font-medium text-lg">{property.address}</h4>
           <div className="flex gap-4 mt-2 text-sm text-zinc-500">
-            <span className="flex items-center gap-1"><Calendar size={14} /> Due Day: {property.payoutDay}</span>
-            <span className="flex items-center gap-1"><CreditCard size={14} /> Rent: ₹{property.monthlyRent.toLocaleString()}</span>
+            <span className="flex items-center gap-1"><Calendar size={14} /> {t('owner_due_day')} {property.payoutDay}</span>
+            <span className="flex items-center gap-1"><CreditCard size={14} /> ₹{property.monthlyRent.toLocaleString()}</span>
           </div>
         </div>
         <div className="h-2 w-2 bg-white shadow-[0_0_10px_rgba(255,255,255,0.3)]"></div>
       </div>
-      
+
       <div className="border-t border-zinc-800 pt-4 mt-4">
         <div className="flex items-center gap-2 mb-3">
           <Wrench size={14} className="text-zinc-400" />
-          <span className="text-xs uppercase tracking-wider text-zinc-400">Property Health</span>
+          <span className="text-xs uppercase tracking-wider text-zinc-400">{t('owner_property_health')}</span>
         </div>
         <div className="flex gap-6">
           <div className="flex items-center gap-2" data-testid={`stat-open-tickets-${property.id}`}>
             <AlertCircle size={16} className={ticketCounts?.open ? "text-white" : "text-zinc-600"} />
             <span className="text-sm">
               <span className="font-mono text-white">{ticketCounts?.open || 0}</span>
-              <span className="text-zinc-500 ml-1">Open</span>
+              <span className="text-zinc-500 ml-1">{t('owner_open')}</span>
             </span>
           </div>
           <div className="flex items-center gap-2" data-testid={`stat-resolved-tickets-${property.id}`}>
             <CheckCircle size={16} className="text-zinc-500" />
             <span className="text-sm">
               <span className="font-mono text-white">{ticketCounts?.resolved || 0}</span>
-              <span className="text-zinc-500 ml-1">Resolved</span>
+              <span className="text-zinc-500 ml-1">{t('owner_resolved')}</span>
             </span>
           </div>
         </div>
       </div>
     </div>
   );
-}
-
-function PayoutStatusBadge({ amountAdvanced }: { amountAdvanced: number }) {
-  if (amountAdvanced > 0) {
-    return <span className="text-xs bg-white text-black border border-white px-2 py-1 uppercase tracking-wide">Paid</span>;
-  }
-  return <span className="text-xs bg-zinc-800 text-zinc-400 border border-zinc-700 px-2 py-1 uppercase tracking-wide">Pending</span>;
 }
 
 interface AddPropertyFormData {
@@ -216,6 +218,7 @@ interface AddPropertyFormData {
 function AddPropertyModal({ isVerified }: { isVerified?: boolean }) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [isLookingUpTenant, setIsLookingUpTenant] = useState(false);
   const createProperty = useCreateProperty();
@@ -228,45 +231,31 @@ function AddPropertyModal({ isVerified }: { isVerified?: boolean }) {
         title="Complete KYC verification to add properties"
       >
         <Plus size={20} />
-        Add Property (KYC Required)
+        {t('owner_add_kyc_required')}
       </Button>
     );
   }
-  
+
   const { register, handleSubmit, reset, formState: { errors } } = useForm<AddPropertyFormData>({
-    defaultValues: {
-      address: "",
-      monthlyRent: "",
-      payoutDay: "1",
-      tenantEmail: "",
-    },
+    defaultValues: { address: "", monthlyRent: "", payoutDay: "1", tenantEmail: "" },
   });
 
   const onSubmit = async (data: AddPropertyFormData) => {
     if (!user?.id) return;
-
     let tenantId: string | undefined;
-    
+
     if (data.tenantEmail.trim()) {
       setIsLookingUpTenant(true);
       try {
-        const res = await fetch(`/api/auth/user-by-email?email=${encodeURIComponent(data.tenantEmail)}`, {
-          credentials: "include",
-        });
+        const res = await fetch(`/api/auth/user-by-email?email=${encodeURIComponent(data.tenantEmail)}`, { credentials: "include" });
         if (res.ok) {
           const tenantUser = await res.json();
           tenantId = tenantUser.id;
         } else {
-          toast({
-            title: "Tenant not found",
-            description: "No user with that email exists. Property will be created without a tenant.",
-          });
+          toast({ title: "Tenant not found", description: "No user with that email exists. Property will be created without a tenant." });
         }
       } catch {
-        toast({
-          title: "Error",
-          description: "Failed to look up tenant. Property will be created without a tenant.",
-        });
+        toast({ title: "Error", description: "Failed to look up tenant." });
       }
       setIsLookingUpTenant(false);
     }
@@ -280,43 +269,31 @@ function AddPropertyModal({ isVerified }: { isVerified?: boolean }) {
         tenantId,
         pendingTenantEmail: !tenantId && data.tenantEmail.trim() ? data.tenantEmail.toLowerCase().trim() : undefined,
       });
-      
-      toast({
-        title: "Property Added",
-        description: `${data.address} has been added to your portfolio.`,
-      });
-      
+      toast({ title: "Property Added", description: `${data.address} has been added to your portfolio.` });
       reset();
       setOpen(false);
     } catch (err: any) {
-      toast({
-        title: "Error",
-        description: err.message || "Failed to add property",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: err.message || "Failed to add property", variant: "destructive" });
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button 
-          className="bg-white text-black hover:bg-zinc-200 border-2 border-white rounded-none font-bold"
-          data-testid="button-add-property"
-        >
+        <Button className="bg-white text-black hover:bg-zinc-200 border-2 border-white rounded-none font-bold" data-testid="button-add-property">
           <Plus size={18} className="mr-2" />
-          Add New Property
+          {t('owner_add_property')}
         </Button>
       </DialogTrigger>
       <DialogContent className="bg-black border-2 border-white rounded-none max-w-md">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold tracking-tight" style={{ fontFamily: 'Inter, sans-serif' }}>
-            Add Property
+            {t('modal_add_property')}
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 mt-4">
           <div className="space-y-2">
-            <Label htmlFor="address" className="text-zinc-400 uppercase text-xs tracking-wider">Property Address</Label>
+            <Label htmlFor="address" className="text-zinc-400 uppercase text-xs tracking-wider">{t('setup_property_address')}</Label>
             <Input
               id="address"
               {...register("address", { required: "Address is required" })}
@@ -329,7 +306,7 @@ function AddPropertyModal({ isVerified }: { isVerified?: boolean }) {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="monthlyRent" className="text-zinc-400 uppercase text-xs tracking-wider">Monthly Rent (₹)</Label>
+              <Label htmlFor="monthlyRent" className="text-zinc-400 uppercase text-xs tracking-wider">{t('modal_monthly_rent')}</Label>
               <Input
                 id="monthlyRent"
                 type="number"
@@ -340,9 +317,8 @@ function AddPropertyModal({ isVerified }: { isVerified?: boolean }) {
               />
               {errors.monthlyRent && <p className="text-sm text-red-400">{errors.monthlyRent.message}</p>}
             </div>
-
             <div className="space-y-2">
-              <Label htmlFor="payoutDay" className="text-zinc-400 uppercase text-xs tracking-wider">Payout Day</Label>
+              <Label htmlFor="payoutDay" className="text-zinc-400 uppercase text-xs tracking-wider">{t('modal_payout_day')}</Label>
               <Input
                 id="payoutDay"
                 type="number"
@@ -355,7 +331,7 @@ function AddPropertyModal({ isVerified }: { isVerified?: boolean }) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="tenantEmail" className="text-zinc-400 uppercase text-xs tracking-wider">Tenant Email (Optional)</Label>
+            <Label htmlFor="tenantEmail" className="text-zinc-400 uppercase text-xs tracking-wider">{t('modal_tenant_email_optional')}</Label>
             <Input
               id="tenantEmail"
               type="email"
@@ -364,7 +340,7 @@ function AddPropertyModal({ isVerified }: { isVerified?: boolean }) {
               className="bg-zinc-900 border-2 border-zinc-700 focus:border-white rounded-none h-12"
               data-testid="input-tenant-email"
             />
-            <p className="text-xs text-zinc-500">Enter your tenant's email to link them to this property</p>
+            <p className="text-xs text-zinc-500">{t('modal_tenant_email_hint')}</p>
           </div>
 
           <Button
@@ -373,11 +349,7 @@ function AddPropertyModal({ isVerified }: { isVerified?: boolean }) {
             className="w-full h-14 bg-white text-black hover:bg-zinc-200 border-2 border-white rounded-none font-bold text-lg"
             data-testid="button-submit-property"
           >
-            {createProperty.isPending || isLookingUpTenant ? (
-              <Loader2 className="animate-spin" />
-            ) : (
-              "Add Property"
-            )}
+            {createProperty.isPending || isLookingUpTenant ? <Loader2 className="animate-spin" /> : t('modal_submit_property')}
           </Button>
         </form>
       </DialogContent>

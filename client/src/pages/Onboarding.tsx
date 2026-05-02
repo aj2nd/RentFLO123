@@ -5,10 +5,12 @@ import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useLocation } from "wouter";
+import { useI18n } from "@/hooks/use-i18n";
 
 export default function Onboarding() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const { t } = useI18n();
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
 
   const setRoleMutation = useMutation({
@@ -19,7 +21,7 @@ export default function Onboarding() {
     onSuccess: (_, role) => {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       toast({
-        title: "Welcome to RentFLO",
+        title: t('welcome_message'),
         description: role === "OWNER" ? "Let's set up your first property." : "Find your home and start paying rent.",
       });
       setLocation("/setup");
@@ -45,7 +47,7 @@ export default function Onboarding() {
           RentFLO
         </h1>
         <p className="text-zinc-400 text-lg">
-          The future of rent management. Tell us who you are.
+          {t('onboarding_subtitle')}
         </p>
       </div>
 
@@ -61,8 +63,8 @@ export default function Onboarding() {
           ) : (
             <>
               <Building2 className="w-16 h-16" strokeWidth={1.5} />
-              <span className="text-2xl font-bold tracking-tight">I AM A LANDLORD</span>
-              <span className="text-sm text-zinc-600">Receive rent advances upfront</span>
+              <span className="text-2xl font-bold tracking-tight">{t('onboarding_iam_landlord')}</span>
+              <span className="text-sm text-zinc-600">{t('onboarding_landlord_desc')}</span>
             </>
           )}
         </Button>
@@ -78,15 +80,15 @@ export default function Onboarding() {
           ) : (
             <>
               <Home className="w-16 h-16" strokeWidth={1.5} />
-              <span className="text-2xl font-bold tracking-tight">I AM A TENANT</span>
-              <span className="text-sm text-zinc-500">Pay rent in flexible installments</span>
+              <span className="text-2xl font-bold tracking-tight">{t('onboarding_iam_tenant')}</span>
+              <span className="text-sm text-zinc-500">{t('onboarding_tenant_desc')}</span>
             </>
           )}
         </Button>
       </div>
 
       <p className="text-zinc-600 text-sm mt-16">
-        You can change your role later in settings
+        {t('onboarding_role_later')}
       </p>
     </div>
   );

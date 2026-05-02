@@ -8,6 +8,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Navigation } from "@/components/Navigation";
 import { Upload, CheckCircle, Clock, ShieldCheck, FileSignature } from "lucide-react";
 import { useLocation } from "wouter";
+import { useI18n } from "@/hooks/use-i18n";
 import type { User } from "@shared/schema";
 
 type DocType = "PAN" | "AADHAAR";
@@ -15,6 +16,7 @@ type DocType = "PAN" | "AADHAAR";
 export default function Verify() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
+  const { t } = useI18n();
   const [docType, setDocType] = useState<DocType>("PAN");
   const [formData, setFormData] = useState({
     fullLegalName: "",
@@ -100,21 +102,19 @@ export default function Verify() {
     <div className="min-h-screen bg-black text-[#6FFFE9]" style={{ fontFamily: "Inter, sans-serif" }}>
       <Navigation />
 
-      {/* Sidebar offset: w-20 on mobile, w-64 on md+ */}
       <main className="pl-20 md:pl-64 min-h-screen flex flex-col">
         <div className="flex-1 p-5 sm:p-8 md:p-10 max-w-2xl w-full mx-0">
 
-          {/* Page header */}
           <div className="mb-8 pt-2">
             <div className="inline-flex items-center gap-2 px-3 py-1 border border-[#6FFFE9]/20 mb-4">
               <ShieldCheck size={13} className="text-[#6FFFE9]" />
-              <span className="text-xs font-semibold uppercase tracking-wider text-[#9DEFE4]">Identity Verification</span>
+              <span className="text-xs font-semibold uppercase tracking-wider text-[#9DEFE4]">{t('kyc_identity_badge')}</span>
             </div>
             <h1 className="text-3xl sm:text-4xl font-bold tracking-tighter mb-1 text-[#6FFFE9]">
-              KYC Verification
+              {t('kyc_page_title')}
             </h1>
             <p className="text-[#9DEFE4] text-sm sm:text-base">
-              Complete your identity check to unlock all features.
+              {t('kyc_page_subtitle')}
             </p>
           </div>
 
@@ -124,9 +124,9 @@ export default function Verify() {
               <div className="flex items-start gap-4">
                 <CheckCircle className="w-10 h-10 text-[#6FFFE9] shrink-0 mt-0.5" />
                 <div>
-                  <h2 className="text-xl font-bold text-[#6FFFE9]">KYC Verified</h2>
+                  <h2 className="text-xl font-bold text-[#6FFFE9]">{t('kyc_verified_title')}</h2>
                   <p className="text-[#9DEFE4] text-sm mt-1">
-                    Your identity has been verified. Next step: sign your tripartite agreement.
+                    {t('kyc_verified_desc')}
                   </p>
                 </div>
               </div>
@@ -136,7 +136,7 @@ export default function Verify() {
                 data-testid="button-go-to-agreement"
               >
                 <FileSignature size={16} />
-                Sign Your Agreement
+                {t('kyc_sign_agreement')}
               </Button>
             </div>
 
@@ -145,9 +145,9 @@ export default function Verify() {
             <div className="border-2 border-yellow-500/60 bg-yellow-500/5 p-6 sm:p-8 flex items-start gap-4">
               <Clock className="w-10 h-10 text-yellow-400 shrink-0 mt-0.5" />
               <div>
-                <h2 className="text-xl font-bold text-yellow-400">Under Review</h2>
+                <h2 className="text-xl font-bold text-yellow-400">{t('kyc_under_review_title')}</h2>
                 <p className="text-[#9DEFE4] text-sm mt-1">
-                  Your documents are being reviewed. This usually takes 1–2 business days.
+                  {t('kyc_under_review_desc')}
                 </p>
               </div>
             </div>
@@ -156,32 +156,29 @@ export default function Verify() {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
 
-              {/* Identity block */}
               <div className="border border-[#6FFFE9]/15 bg-black p-5 sm:p-6 space-y-5">
                 <h2 className="text-base font-semibold uppercase tracking-wider text-[#9DEFE4]">
-                  Identity Information
+                  {t('kyc_identity_info')}
                 </h2>
 
-                {/* Full name */}
                 <div className="space-y-1.5">
                   <Label htmlFor="fullLegalName" className="text-xs uppercase tracking-wider text-[#9DEFE4]">
-                    Full Legal Name
+                    {t('kyc_full_legal_name')}
                   </Label>
                   <Input
                     id="fullLegalName"
                     value={formData.fullLegalName}
                     onChange={(e) => setFormData((p) => ({ ...p, fullLegalName: e.target.value }))}
                     className="bg-black border-[#6FFFE9]/25 text-[#6FFFE9] placeholder:text-[#9DEFE4]/40 h-11 rounded-none focus:border-[#6FFFE9]"
-                    placeholder="As it appears on your ID document"
+                    placeholder={t('kyc_name_placeholder')}
                     required
                     data-testid="input-full-legal-name"
                   />
                 </div>
 
-                {/* ID type toggle */}
                 <div className="space-y-2">
                   <Label className="text-xs uppercase tracking-wider text-[#9DEFE4]">
-                    ID Type <span className="text-[#9DEFE4]/50 normal-case">(choose one)</span>
+                    {t('kyc_id_type')} <span className="text-[#9DEFE4]/50 normal-case">{t('kyc_choose_one')}</span>
                   </Label>
                   <div className="grid grid-cols-2 gap-3">
                     <button
@@ -194,7 +191,7 @@ export default function Verify() {
                       }`}
                       data-testid="toggle-pan"
                     >
-                      PAN Card
+                      {t('kyc_pan_card')}
                     </button>
                     <button
                       type="button"
@@ -206,16 +203,15 @@ export default function Verify() {
                       }`}
                       data-testid="toggle-aadhaar"
                     >
-                      Aadhaar
+                      {t('kyc_aadhaar')}
                     </button>
                   </div>
                 </div>
 
-                {/* PAN field */}
                 {docType === "PAN" && (
                   <div className="space-y-1.5">
                     <Label htmlFor="panNumber" className="text-xs uppercase tracking-wider text-[#9DEFE4]">
-                      PAN Number
+                      {t('kyc_pan_number')}
                     </Label>
                     <Input
                       id="panNumber"
@@ -230,15 +226,14 @@ export default function Verify() {
                       required={docType === "PAN"}
                       data-testid="input-pan-number"
                     />
-                    <p className="text-xs text-[#9DEFE4]/50">10-character alphanumeric (e.g. ABCDE1234F)</p>
+                    <p className="text-xs text-[#9DEFE4]/50">{t('kyc_pan_hint')}</p>
                   </div>
                 )}
 
-                {/* Aadhaar field */}
                 {docType === "AADHAAR" && (
                   <div className="space-y-1.5">
                     <Label htmlFor="aadhaarNumber" className="text-xs uppercase tracking-wider text-[#9DEFE4]">
-                      Aadhaar Number
+                      {t('kyc_aadhaar_number')}
                     </Label>
                     <Input
                       id="aadhaarNumber"
@@ -255,14 +250,13 @@ export default function Verify() {
                       required={docType === "AADHAAR"}
                       data-testid="input-aadhaar-number"
                     />
-                    <p className="text-xs text-[#9DEFE4]/50">12-digit number on your Aadhaar card</p>
+                    <p className="text-xs text-[#9DEFE4]/50">{t('kyc_aadhaar_hint')}</p>
                   </div>
                 )}
 
-                {/* Upload */}
                 <div className="space-y-1.5">
                   <Label className="text-xs uppercase tracking-wider text-[#9DEFE4]">
-                    Upload {docType === "PAN" ? "PAN Card" : "Aadhaar Card"}
+                    {docType === "PAN" ? t('kyc_upload_pan') : t('kyc_upload_aadhaar')}
                   </Label>
                   <label
                     className="flex items-center gap-3 h-11 px-4 border border-[#6FFFE9]/25 cursor-pointer hover:border-[#6FFFE9]/60 transition-colors"
@@ -270,7 +264,7 @@ export default function Verify() {
                   >
                     <Upload size={15} className="text-[#9DEFE4]" />
                     <span className="text-sm text-[#9DEFE4]">
-                      {formData.kycDocumentUrl ? "Document uploaded ✓" : "Choose file (image or PDF)"}
+                      {formData.kycDocumentUrl ? t('kyc_doc_uploaded') : t('kyc_choose_file')}
                     </span>
                     <input
                       type="file"
@@ -281,7 +275,7 @@ export default function Verify() {
                     />
                   </label>
                   {formData.kycDocumentUrl && (
-                    <p className="text-xs text-[#6FFFE9]">Document ready for upload.</p>
+                    <p className="text-xs text-[#6FFFE9]">{t('kyc_doc_ready')}</p>
                   )}
                 </div>
               </div>
@@ -290,14 +284,14 @@ export default function Verify() {
               {isOwner && (
                 <div className="border border-[#6FFFE9]/15 bg-black p-5 sm:p-6 space-y-5">
                   <h2 className="text-base font-semibold uppercase tracking-wider text-[#9DEFE4]">
-                    Bank Details
-                    <span className="ml-2 text-[#9DEFE4]/40 normal-case font-normal text-xs">(landlords only)</span>
+                    {t('kyc_bank_details')}
+                    <span className="ml-2 text-[#9DEFE4]/40 normal-case font-normal text-xs">{t('kyc_landlords_only')}</span>
                   </h2>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5 sm:col-span-2">
                       <Label htmlFor="bankAccountNumber" className="text-xs uppercase tracking-wider text-[#9DEFE4]">
-                        Account Number
+                        {t('kyc_account_number')}
                       </Label>
                       <Input
                         id="bankAccountNumber"
@@ -309,7 +303,7 @@ export default function Verify() {
                           }))
                         }
                         className="bg-black border-[#6FFFE9]/25 text-[#6FFFE9] placeholder:text-[#9DEFE4]/40 h-11 rounded-none font-mono focus:border-[#6FFFE9]"
-                        placeholder="Enter account number"
+                        placeholder={t('kyc_account_placeholder')}
                         required
                         data-testid="input-bank-account"
                       />
@@ -317,7 +311,7 @@ export default function Verify() {
 
                     <div className="space-y-1.5">
                       <Label htmlFor="ifscCode" className="text-xs uppercase tracking-wider text-[#9DEFE4]">
-                        IFSC Code
+                        {t('kyc_ifsc_code')}
                       </Label>
                       <Input
                         id="ifscCode"
@@ -336,7 +330,7 @@ export default function Verify() {
 
                     <div className="space-y-1.5">
                       <Label className="text-xs uppercase tracking-wider text-[#9DEFE4]">
-                        Cancelled Cheque
+                        {t('kyc_cancelled_cheque')}
                       </Label>
                       <label
                         className="flex items-center gap-3 h-11 px-4 border border-[#6FFFE9]/25 cursor-pointer hover:border-[#6FFFE9]/60 transition-colors"
@@ -344,7 +338,7 @@ export default function Verify() {
                       >
                         <Upload size={15} className="text-[#9DEFE4]" />
                         <span className="text-sm text-[#9DEFE4]">
-                          {formData.cancelledChequeUrl ? "Uploaded ✓" : "Upload cheque"}
+                          {formData.cancelledChequeUrl ? t('kyc_uploaded_tick') : t('kyc_upload_cheque')}
                         </span>
                         <input
                           type="file"
@@ -365,7 +359,7 @@ export default function Verify() {
                 disabled={submitKycMutation.isPending}
                 data-testid="button-submit-kyc"
               >
-                {submitKycMutation.isPending ? "Submitting…" : "Submit for Verification"}
+                {submitKycMutation.isPending ? t('kyc_submitting') : t('kyc_submit')}
               </Button>
             </form>
           )}

@@ -1,11 +1,13 @@
 import { Link, useLocation } from "wouter";
 import { LayoutDashboard, Home, LogOut, Wallet, Wrench, Receipt, Loader2, ShieldCheck, FileSignature } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
+import { useI18n } from "@/hooks/use-i18n";
 import houseLogoImg from "@assets/IMG_7091_1777311348772.png";
 
 export function Navigation() {
   const [location] = useLocation();
   const { user, logout, isLoading } = useAuth();
+  const { t } = useI18n();
 
   const isActive = (path: string) => location === path;
   const role = user?.role;
@@ -14,43 +16,43 @@ export function Navigation() {
     {
       href: "/admin",
       icon: <LayoutDashboard size={20} />,
-      label: "Admin Console",
+      label: t('nav_admin_console'),
       roles: ["ADMIN"],
     },
     {
       href: "/admin/maintenance",
       icon: <Wrench size={20} />,
-      label: "Maintenance",
+      label: t('nav_maintenance'),
       roles: ["ADMIN"],
     },
     {
       href: "/owner",
       icon: <Wallet size={20} />,
-      label: "Owner Portal",
+      label: t('nav_owner_portal'),
       roles: ["OWNER"],
     },
     {
       href: "/tenant",
       icon: <Home size={20} />,
-      label: "Tenant Dashboard",
+      label: t('nav_tenant_dashboard'),
       roles: ["TENANT"],
     },
     {
       href: "/ledger",
       icon: <Receipt size={20} />,
-      label: "Ledger",
+      label: t('nav_ledger'),
       roles: ["ADMIN", "OWNER", "TENANT"],
     },
     {
       href: "/verify",
       icon: <ShieldCheck size={20} />,
-      label: "KYC Verification",
+      label: t('nav_kyc'),
       roles: ["OWNER", "TENANT"],
     },
     {
       href: "/agreement",
       icon: <FileSignature size={20} />,
-      label: "Agreement",
+      label: t('nav_agreement'),
       roles: ["OWNER", "TENANT"],
     },
   ];
@@ -87,13 +89,13 @@ export function Navigation() {
       </div>
 
       <div className="px-3">
-        <button 
+        <button
           onClick={() => logout()}
           className="flex items-center gap-4 px-3 py-3 w-full text-[#9DEFE4] hover:text-[#6FFFE9] hover:bg-[#6FFFE9]/10 transition-all duration-200 group"
           data-testid="button-logout"
         >
           <LogOut size={20} className="group-hover:translate-x-1 transition-transform" />
-          <span className="font-medium hidden md:block">Sign Out</span>
+          <span className="font-medium hidden md:block">{t('nav_sign_out')}</span>
         </button>
       </div>
     </nav>
@@ -102,12 +104,12 @@ export function Navigation() {
 
 function NavItem({ href, icon, label, active }: { href: string; icon: React.ReactNode; label: string; active: boolean }) {
   return (
-    <Link 
+    <Link
       href={href}
       className={`
         flex items-center gap-4 px-3 py-3 transition-all duration-200
-        ${active 
-          ? "bg-[#6FFFE9] text-black shadow-[0_0_20px_rgba(111,255,233,0.18)]" 
+        ${active
+          ? "bg-[#6FFFE9] text-black shadow-[0_0_20px_rgba(111,255,233,0.18)]"
           : "text-[#9DEFE4] hover:text-[#6FFFE9] hover:bg-[#6FFFE9]/10"
         }
       `}

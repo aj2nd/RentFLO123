@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { useCreateProperty } from "@/hooks/use-properties";
 import { queryClient, apiRequest } from "@/lib/queryClient";
+import { useI18n } from "@/hooks/use-i18n";
 import type { Property } from "@shared/schema";
 import houseLogoImg from "@assets/IMG_7091_1777311348772.png";
 
@@ -15,16 +16,15 @@ export default function Setup() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const { t } = useI18n();
   const { mutate: createProperty, isPending: isCreating } = useCreateProperty();
   const role = user?.role;
 
-  // Owner form state
   const [address, setAddress] = useState("");
   const [rent, setRent] = useState("");
   const [payoutDay, setPayoutDay] = useState("1");
   const [tenantEmail, setTenantEmail] = useState("");
 
-  // Tenant search state
   const [landlordEmail, setLandlordEmail] = useState("");
   const [searchResults, setSearchResults] = useState<Property[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -117,13 +117,11 @@ export default function Setup() {
   return (
     <div className="min-h-screen bg-black text-[#6FFFE9] flex flex-col items-center justify-center p-6 md:p-12">
       <div className="w-full max-w-lg">
-        {/* Header */}
         <div className="flex items-center gap-3 mb-12">
           <img src={houseLogoImg} alt="RentFLO" className="w-9 h-9 object-contain" />
           <span className="text-2xl font-bold tracking-tighter text-[#6FFFE9]">RentFLO</span>
         </div>
 
-        {/* Title */}
         <div className="mb-10">
           <div className="inline-flex items-center gap-2 px-3 py-1 border border-[#6FFFE9]/20 mb-5">
             {role === "OWNER" ? (
@@ -132,16 +130,14 @@ export default function Setup() {
               <Home size={14} className="text-[#6FFFE9]" />
             )}
             <span className="text-xs font-semibold uppercase tracking-wider text-[#9DEFE4]">
-              {role === "OWNER" ? "Landlord Setup" : "Tenant Setup"}
+              {role === "OWNER" ? t('setup_landlord_badge') : t('setup_tenant_badge')}
             </span>
           </div>
           <h1 className="text-4xl md:text-5xl font-bold tracking-tighter leading-tight mb-3">
-            {role === "OWNER" ? "Add your property." : "Find your home."}
+            {role === "OWNER" ? t('setup_owner_heading') : t('setup_tenant_heading')}
           </h1>
           <p className="text-[#9DEFE4] text-base">
-            {role === "OWNER"
-              ? "Enter your property details to start receiving rent advances."
-              : "Search by your landlord's email to link your account to your home."}
+            {role === "OWNER" ? t('setup_owner_subtitle') : t('setup_tenant_subtitle')}
           </p>
         </div>
 
@@ -150,7 +146,7 @@ export default function Setup() {
           <form onSubmit={handleOwnerSubmit} className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="address" className="text-xs uppercase tracking-wider text-[#9DEFE4]">
-                Property Address
+                {t('setup_property_address')}
               </Label>
               <Input
                 id="address"
@@ -165,7 +161,7 @@ export default function Setup() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="rent" className="text-xs uppercase tracking-wider text-[#9DEFE4]">
-                  Monthly Rent (₹)
+                  {t('setup_monthly_rent')}
                 </Label>
                 <Input
                   id="rent"
@@ -180,7 +176,7 @@ export default function Setup() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="payoutDay" className="text-xs uppercase tracking-wider text-[#9DEFE4]">
-                  Payout Day (1–28)
+                  {t('setup_payout_day')}
                 </Label>
                 <Input
                   id="payoutDay"
@@ -198,7 +194,7 @@ export default function Setup() {
 
             <div className="space-y-2">
               <Label htmlFor="tenantEmail" className="text-xs uppercase tracking-wider text-[#9DEFE4]">
-                Tenant Email <span className="text-[#9DEFE4]/50">(optional — invite your tenant)</span>
+                {t('setup_tenant_email')} <span className="text-[#9DEFE4]/50">({t('setup_tenant_email_optional')})</span>
               </Label>
               <Input
                 id="tenantEmail"
@@ -221,7 +217,7 @@ export default function Setup() {
                 <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
                 <span className="flex items-center gap-2">
-                  Set Up Property <ArrowRight size={18} />
+                  {t('setup_submit')} <ArrowRight size={18} />
                 </span>
               )}
             </Button>
@@ -232,7 +228,7 @@ export default function Setup() {
               className="w-full text-center text-sm text-[#9DEFE4]/60 hover:text-[#9DEFE4] transition-colors py-2"
               data-testid="button-skip-setup"
             >
-              Skip for now
+              {t('setup_skip')}
             </button>
           </form>
         )}
@@ -242,7 +238,7 @@ export default function Setup() {
           <div className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="landlordEmail" className="text-xs uppercase tracking-wider text-[#9DEFE4]">
-                Landlord's Email Address
+                {t('setup_landlord_email')}
               </Label>
               <div className="flex gap-3">
                 <Input
@@ -269,7 +265,7 @@ export default function Setup() {
 
             {searchResults.length > 0 && (
               <div className="space-y-3">
-                <p className="text-xs uppercase tracking-wider text-[#9DEFE4]">Available Properties</p>
+                <p className="text-xs uppercase tracking-wider text-[#9DEFE4]">{t('setup_available_properties')}</p>
                 {searchResults.map((prop) => (
                   <div
                     key={prop.id}
@@ -281,7 +277,7 @@ export default function Setup() {
                         {prop.address}
                       </p>
                       <p className="text-sm text-[#9DEFE4]">
-                        ₹{prop.monthlyRent.toLocaleString()} / month · Payout day {prop.payoutDay}
+                        ₹{prop.monthlyRent.toLocaleString()} / {t('setup_month')} · {t('setup_payout_day_label')} {prop.payoutDay}
                       </p>
                     </div>
                     <Button
@@ -290,7 +286,7 @@ export default function Setup() {
                       className="bg-[#6FFFE9] text-black rounded-none hover:bg-[#8CFFF0] shrink-0"
                       data-testid={`button-join-${prop.id}`}
                     >
-                      {isJoining ? <Loader2 className="w-4 h-4 animate-spin" /> : "Join"}
+                      {isJoining ? <Loader2 className="w-4 h-4 animate-spin" /> : t('setup_join')}
                     </Button>
                   </div>
                 ))}
@@ -303,7 +299,7 @@ export default function Setup() {
               className="w-full text-center text-sm text-[#9DEFE4]/60 hover:text-[#9DEFE4] transition-colors py-2"
               data-testid="button-skip-setup"
             >
-              Skip for now
+              {t('setup_skip')}
             </button>
           </div>
         )}
@@ -312,8 +308,8 @@ export default function Setup() {
         {role === "TENANT" && joined && (
           <div className="flex flex-col items-center gap-4 py-8">
             <CheckCircle2 className="w-16 h-16 text-[#6FFFE9]" />
-            <p className="text-xl font-bold text-[#6FFFE9]">You're all set!</p>
-            <p className="text-[#9DEFE4] text-sm">Redirecting to your dashboard…</p>
+            <p className="text-xl font-bold text-[#6FFFE9]">{t('setup_all_set')}</p>
+            <p className="text-[#9DEFE4] text-sm">{t('setup_redirecting')}</p>
           </div>
         )}
       </div>
