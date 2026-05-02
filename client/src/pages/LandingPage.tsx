@@ -1,6 +1,7 @@
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { useI18n } from "@/hooks/use-i18n";
-import houseLogoImg from "@assets/IMG_7091_1777311348772.png";
+import houseLogoImg from "@assets/IMG_7223_1777731010120.jpeg";
+import wordmarkImg from "@assets/IMG_7224_1777731010120.jpeg";
 
 export default function LandingPage() {
   const { t } = useI18n();
@@ -10,8 +11,8 @@ export default function LandingPage() {
       {/* Nav */}
       <nav className="fixed w-full z-50 px-6 py-6 flex justify-between items-center backdrop-blur-sm border-b border-[#6FFFE9]/10">
         <div className="flex items-center gap-2">
-          <img src={houseLogoImg} alt="RentFLO" className="w-8 h-8 object-contain" data-testid="logo-landing" />
-          <span className="text-2xl font-bold tracking-tighter">RentFLO</span>
+          <img src={houseLogoImg} alt="RentFLO" className="w-8 h-8 object-contain flex-shrink-0" data-testid="logo-landing" />
+          <img src={wordmarkImg} alt="RentFLO" className="h-7 object-contain" />
         </div>
         <a href="/api/login" className="px-6 py-2 bg-[#6FFFE9] text-black font-medium text-sm hover:bg-[#8CFFF0] transition-colors rounded-none" data-testid="link-login" data-i18n="login">
           {t("login")}

@@ -10,7 +10,7 @@ import { useCreateProperty } from "@/hooks/use-properties";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useI18n } from "@/hooks/use-i18n";
 import type { Property } from "@shared/schema";
-import houseLogoImg from "@assets/IMG_7091_1777311348772.png";
+import houseLogoImg from "@assets/IMG_7223_1777731010120.jpeg";
 
 export default function Setup() {
   const { user } = useAuth();
