@@ -52,10 +52,41 @@
         object-fit: contain;
       }
 
+      .i18n-header .right-controls {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
       .i18n-header .language-switcher {
         display: flex;
         align-items: center;
         gap: 8px;
+      }
+
+      .i18n-header .login-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 40px;
+        padding: 0 20px;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        color: #000;
+        background: linear-gradient(135deg, #7A7A7A 0%, #C8C8C8 35%, #EFEFEF 50%, #B4B4B4 70%, #7A7A7A 100%);
+        border: none;
+        cursor: pointer;
+        text-decoration: none;
+        transition: filter 0.2s;
+        white-space: nowrap;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+
+      .i18n-header .login-btn:hover {
+        filter: brightness(1.12);
       }
 
       .i18n-header .language-switcher label {
@@ -144,13 +175,16 @@
         <img src="/logo-icon.jpeg" alt="RentFLO" class="logo-img" data-testid="logo-img" width="32" height="32" />
         <img src="/logo-wordmark.jpeg" alt="RentFLO" style="height:28px;object-fit:contain;" />
       </div>
-      <div class="language-switcher">
-        <label for="language-select" data-i18n="change_language">Change Language</label>
-        <select id="language-select" class="language-select" data-testid="select-language">
-          <option value="en">English</option>
-          <option value="hi">हिन्दी</option>
-          <option value="kn">ಕನ್ನಡ</option>
-        </select>
+      <div class="right-controls">
+        <div class="language-switcher">
+          <label for="language-select" data-i18n="change_language">Change Language</label>
+          <select id="language-select" class="language-select" data-testid="select-language">
+            <option value="en">English</option>
+            <option value="hi">हिन्दी</option>
+            <option value="kn">ಕನ್ನಡ</option>
+          </select>
+        </div>
+        <a href="/api/login" class="login-btn" id="header-login-btn" data-testid="button-header-login">Login</a>
       </div>
     </header>
 

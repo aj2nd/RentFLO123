@@ -1,32 +1,13 @@
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { useI18n } from "@/hooks/use-i18n";
-import houseLogoImg from "@assets/IMG_7223_1777731010120.jpeg";
-import wordmarkImg from "@assets/IMG_7224_1777731010120.jpeg";
 
 export default function LandingPage() {
   const { t } = useI18n();
 
   return (
     <div className="min-h-screen bg-black text-zinc-300 selection:bg-[#C0C0C0] selection:text-black">
-      {/* Nav */}
-      <nav className="fixed w-full z-50 px-6 py-6 flex justify-between items-center backdrop-blur-sm border-b border-[#6FFFE9]/15">
-        <div className="flex items-center gap-2">
-          <img src={houseLogoImg} alt="RentFLO" className="w-8 h-8 object-contain flex-shrink-0" data-testid="logo-landing" />
-          <img src={wordmarkImg} alt="RentFLO" className="h-7 object-contain" />
-        </div>
-        <a
-          href="/api/login"
-          className="px-6 py-2 font-medium text-sm rounded-none transition-all"
-          style={{ background: 'linear-gradient(135deg, #7A7A7A 0%, #C8C8C8 35%, #EFEFEF 50%, #B4B4B4 70%, #7A7A7A 100%)', color: '#000' }}
-          data-testid="link-login"
-          data-i18n="login"
-        >
-          {t("login")}
-        </a>
-      </nav>
-
       {/* Hero */}
-      <main className="pt-32 pb-20 px-6 md:px-12 max-w-8xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center min-h-[90vh]">
+      <main className="pt-16 pb-20 px-6 md:px-12 max-w-8xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center min-h-[90vh]">
         <div className="space-y-8">
           <h1 className="text-6xl md:text-8xl font-bold tracking-tighter leading-[0.9] silver-text glow-text">
             NEVER<br />
