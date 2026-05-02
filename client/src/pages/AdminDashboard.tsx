@@ -120,7 +120,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <div className="p-4 sm:p-6 md:p-10">
+      <div className="p-4 sm:p-6 md:p-10 pb-24">
         <header className="mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <div>

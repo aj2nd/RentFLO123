@@ -37,7 +37,7 @@ export default function OwnerDashboard() {
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col">
-      <div className="p-4 sm:p-6 md:p-10 flex flex-col flex-1">
+      <div className="p-4 sm:p-6 md:p-10 pb-24 flex flex-col flex-1">
 
         {/* Verification Banner */}
         {!isVerified && (

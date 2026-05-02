@@ -106,7 +106,7 @@ export default function LedgerPage() {
 
   return (
     <div className="min-h-screen bg-black text-white" style={{ fontFamily: 'Inter, sans-serif' }}>
-      <div className="p-4 sm:p-6 md:p-10">
+      <div className="p-4 sm:p-6 md:p-10 pb-24">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
           <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
             <div className="flex items-center gap-3">
