@@ -6,7 +6,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/use-auth";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { SidebarProvider, useSidebar } from "@/contexts/SidebarContext";
-import { Loader2 } from "lucide-react";
 
 import NotFound from "@/pages/not-found";
 import LandingPage from "@/pages/LandingPage";
@@ -25,6 +24,7 @@ import Verify from "@/pages/Verify";
 import AgreementPage from "@/pages/Agreement";
 import { Navigation } from "@/components/Navigation";
 import { LegalFooter } from "@/components/LegalFooter";
+import { LoadingScreen } from "@/components/LoadingScreen";
 
 function SidebarContent({ children }: { children: React.ReactNode }) {
   const { collapsed } = useSidebar();
@@ -41,13 +41,7 @@ function SidebarContent({ children }: { children: React.ReactNode }) {
 function PrivateRoute({ component: Component, allowedRoles }: { component: React.ComponentType, allowedRoles?: string[] }) {
   const { isAuthenticated, isLoading, user } = useAuth();
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-black text-white">
-        <Loader2 className="w-8 h-8 animate-spin" />
-      </div>
-    );
-  }
+  if (isLoading) return <LoadingScreen />;
 
   if (!isAuthenticated) {
     window.location.href = "/api/login";
@@ -80,13 +74,7 @@ function PrivateRoute({ component: Component, allowedRoles }: { component: React
 function DashboardRedirect() {
   const { user, isLoading } = useAuth();
   
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-black text-white">
-        <Loader2 className="w-8 h-8 animate-spin" />
-      </div>
-    );
-  }
+  if (isLoading) return <LoadingScreen />;
   
   if (!user) {
     return <LandingPage />;
@@ -108,13 +96,7 @@ function DashboardRedirect() {
 function OnboardingRoute() {
   const { isAuthenticated, isLoading, user } = useAuth();
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-black text-white">
-        <Loader2 className="w-8 h-8 animate-spin" />
-      </div>
-    );
-  }
+  if (isLoading) return <LoadingScreen />;
 
   if (!isAuthenticated) {
     window.location.href = "/api/login";
@@ -131,13 +113,7 @@ function OnboardingRoute() {
 function SetupRoute() {
   const { isAuthenticated, isLoading, user } = useAuth();
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-black text-[#6FFFE9]">
-        <Loader2 className="w-8 h-8 animate-spin" />
-      </div>
-    );
-  }
+  if (isLoading) return <LoadingScreen />;
 
   if (!isAuthenticated) {
     window.location.href = "/api/login";

@@ -30,17 +30,26 @@ export function Navigation() {
 
   return (
     <>
+      {/* Backdrop overlay — click to close sidebar */}
+      {!collapsed && (
+        <div
+          className="fixed inset-0 z-40"
+          onClick={toggle}
+          aria-label="Close sidebar"
+        />
+      )}
+
       {/* Sidebar panel */}
       <nav
         className="fixed left-0 top-0 h-full bg-black border-r border-[#6FFFE9]/15 flex flex-col justify-between py-8 z-50 overflow-hidden transition-all duration-300 ease-in-out"
         style={{ width: collapsed ? '0px' : '256px' }}
       >
         <div className="flex flex-col gap-2 w-64">
-          {/* Logo */}
+          {/* Logo — 10% larger */}
           <div className="px-6 mb-10 flex items-center gap-2">
             <Link href="/" className="flex items-center gap-2 cursor-pointer" data-testid="link-logo-img">
-              <img src={houseLogoImg} alt="RentFLO" className="w-8 h-8 object-contain flex-shrink-0" />
-              <img src={wordmarkImg} alt="RentFLO" className="h-6 object-contain flex-shrink-0" data-testid="link-logo" />
+              <img src={houseLogoImg} alt="RentFLO" style={{ width: '35px', height: '35px' }} className="object-contain flex-shrink-0" />
+              <img src={wordmarkImg} alt="RentFLO" style={{ height: '26px' }} className="object-contain flex-shrink-0" data-testid="link-logo" />
             </Link>
           </div>
 
@@ -58,6 +67,7 @@ export function Navigation() {
                   icon={item.icon}
                   label={item.label}
                   active={isActive(item.href)}
+                  onNavigate={() => { if (!collapsed) toggle(); }}
                 />
               ))
             )}
@@ -71,13 +81,21 @@ export function Navigation() {
             <span className="text-xs text-[#6FFFE9]/40 uppercase tracking-wider">Alerts</span>
           </div>
 
+          {/* Collapse button — liquid glass */}
           <button
             onClick={toggle}
-            className="flex items-center gap-3 px-3 py-3 w-full text-[#6FFFE9]/50 hover:text-[#6FFFE9] hover:bg-[#6FFFE9]/8 transition-all duration-200 whitespace-nowrap"
+            className="flex items-center gap-3 px-3 py-3 w-full transition-all duration-200 whitespace-nowrap group"
+            style={{
+              background: 'linear-gradient(135deg, rgba(111,255,233,0.06) 0%, rgba(255,255,255,0.04) 50%, rgba(111,255,233,0.04) 100%)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              border: '1px solid rgba(111,255,233,0.18)',
+              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08), 0 2px 8px rgba(0,0,0,0.4)',
+            }}
             data-testid="button-collapse-sidebar"
           >
-            <ChevronLeft size={18} className="flex-shrink-0" />
-            <span className="text-xs font-medium uppercase tracking-wider">Collapse</span>
+            <ChevronLeft size={18} className="flex-shrink-0 text-[#6FFFE9]/70 group-hover:text-[#6FFFE9] transition-colors" />
+            <span className="text-xs font-medium uppercase tracking-wider text-[#6FFFE9]/60 group-hover:text-[#6FFFE9] transition-colors">Collapse</span>
           </button>
 
           <button
@@ -91,42 +109,59 @@ export function Navigation() {
         </div>
       </nav>
 
-      {/* Floating expand tab — visible only when collapsed */}
+      {/* Floating expand tab — liquid glass, always visible when collapsed */}
       <button
         onClick={toggle}
-        className="fixed z-50 flex items-center justify-center transition-all duration-300 ease-in-out"
+        className="fixed z-50 flex items-center justify-center transition-all duration-300 ease-in-out group"
         style={{
           left: collapsed ? '0px' : '-48px',
           top: '50%',
           transform: 'translateY(-50%)',
-          width: '28px',
-          height: '56px',
-          background: 'linear-gradient(180deg, #0a0a0a 0%, #111 100%)',
-          borderRight: '1px solid rgba(111,255,233,0.25)',
-          borderTop: '1px solid rgba(111,255,233,0.15)',
-          borderBottom: '1px solid rgba(111,255,233,0.15)',
-          borderRadius: '0 6px 6px 0',
+          width: '32px',
+          height: '64px',
+          /* Liquid glass core */
+          background: 'linear-gradient(160deg, rgba(111,255,233,0.18) 0%, rgba(255,255,255,0.08) 40%, rgba(111,255,233,0.06) 100%)',
+          backdropFilter: 'blur(16px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(16px) saturate(180%)',
+          /* Layered borders for glass edge */
+          border: '1px solid rgba(111,255,233,0.30)',
+          borderLeft: 'none',
+          borderRadius: '0 10px 10px 0',
+          boxShadow: [
+            'inset 1px 0 0 rgba(255,255,255,0.15)',
+            'inset 0 1px 0 rgba(255,255,255,0.12)',
+            'inset 0 -1px 0 rgba(0,0,0,0.2)',
+            '2px 0 16px rgba(111,255,233,0.12)',
+            '0 4px 24px rgba(0,0,0,0.5)',
+          ].join(', '),
           opacity: collapsed ? 1 : 0,
           pointerEvents: collapsed ? 'auto' : 'none',
         }}
         data-testid="button-expand-sidebar"
         title="Open sidebar"
       >
-        <ChevronRight size={14} className="text-[#6FFFE9]" />
+        {/* Inner highlight streak */}
+        <span
+          className="absolute left-1 top-2 bottom-2 w-px rounded-full"
+          style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.05) 100%)' }}
+        />
+        <ChevronRight size={14} className="text-[#6FFFE9] group-hover:text-white transition-colors relative z-10" />
       </button>
     </>
   );
 }
 
-function NavItem({ href, icon, label, active }: {
+function NavItem({ href, icon, label, active, onNavigate }: {
   href: string;
   icon: React.ReactNode;
   label: string;
   active: boolean;
+  onNavigate?: () => void;
 }) {
   return (
     <Link
       href={href}
+      onClick={onNavigate}
       className={`
         flex items-center gap-3 px-3 py-3 transition-all duration-200 whitespace-nowrap
         ${active
