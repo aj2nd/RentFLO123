@@ -22,7 +22,7 @@ export default function LandingPage() {
 
           <div className="flex flex-col sm:flex-row gap-4 pt-8">
             <a
-              href="/api/login"
+              href="/onboarding"
               className="inline-flex items-center justify-center h-14 px-8 font-bold text-lg tracking-tight transition-all group rounded-none"
               style={{ background: 'linear-gradient(135deg, #7A7A7A 0%, #C8C8C8 35%, #EFEFEF 50%, #B4B4B4 70%, #7A7A7A 100%)', color: '#000' }}
               data-testid="button-get-started"

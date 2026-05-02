@@ -1,4 +1,4 @@
-import { Switch, Route, useLocation, Redirect } from "wouter";
+import { Switch, Route, Redirect, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -22,9 +22,9 @@ import Refund from "@/pages/Refund";
 import Support from "@/pages/Support";
 import Verify from "@/pages/Verify";
 import AgreementPage from "@/pages/Agreement";
-import { Navigation } from "@/components/Navigation";
 import { LegalFooter } from "@/components/LegalFooter";
 import { LoadingScreen } from "@/components/LoadingScreen";
+import { Navigation } from "@/components/Navigation";
 
 function SidebarContent({ children }: { children: React.ReactNode }) {
   const { collapsed } = useSidebar();
@@ -63,12 +63,18 @@ function PrivateRoute({ component: Component, allowedRoles }: { component: React
 
   return (
     <>
-      <Navigation />
+      <PrivateNavigation />
       <SidebarContent>
         <Component />
       </SidebarContent>
     </>
   );
+}
+
+function PrivateNavigation() {
+  const [location] = useLocation();
+  if (location === "/" || location === "/onboarding" || location === "/setup") return null;
+  return <Navigation />;
 }
 
 function DashboardRedirect() {
