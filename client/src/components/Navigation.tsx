@@ -1,9 +1,10 @@
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, Home, LogOut, Wallet, Wrench, Receipt, Loader2, ShieldCheck, FileSignature, ChevronLeft, ChevronRight } from "lucide-react";
+import { LayoutDashboard, Home, LogOut, Wallet, Wrench, Receipt, Loader2, ShieldCheck, FileSignature, ChevronLeft, ChevronRight, MessageSquare } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { NotificationBell } from "@/components/NotificationBell";
+import { useQuery } from "@tanstack/react-query";
 
 const HEADER_HEIGHT = 210;
 
@@ -16,7 +17,14 @@ export function Navigation() {
   const isActive = (path: string) => location === path;
   const role = user?.role;
 
-  const navItems: { href: string; icon: React.ReactNode; label: string; roles: string[] }[] = [
+  const { data: unreadData } = useQuery<{ count: number }>({
+    queryKey: ["/api/messages/unread/count"],
+    refetchInterval: 15000,
+    enabled: !!user,
+  });
+  const unreadCount = unreadData?.count ?? 0;
+
+  const navItems: { href: string; icon: React.ReactNode; label: string; roles: string[]; badge?: number }[] = [
     { href: "/admin",             icon: <LayoutDashboard size={18} />, label: t('nav_admin_console'),    roles: ["ADMIN"] },
     { href: "/admin/maintenance", icon: <Wrench size={18} />,          label: t('nav_maintenance'),      roles: ["ADMIN"] },
     { href: "/owner",             icon: <Wallet size={18} />,          label: t('nav_owner_portal'),     roles: ["OWNER"] },
@@ -24,6 +32,7 @@ export function Navigation() {
     { href: "/ledger",            icon: <Receipt size={18} />,         label: t('nav_ledger'),           roles: ["ADMIN", "OWNER", "TENANT"] },
     { href: "/verify",            icon: <ShieldCheck size={18} />,     label: t('nav_kyc'),              roles: ["OWNER", "TENANT"] },
     { href: "/agreement",         icon: <FileSignature size={18} />,   label: t('nav_agreement'),        roles: ["OWNER", "TENANT"] },
+    { href: "/messages",          icon: <MessageSquare size={18} />,   label: "Messages",                roles: ["OWNER", "TENANT", "ADMIN"], badge: unreadCount },
   ];
 
   const visibleItems = navItems.filter(item => role && item.roles.includes(role));
@@ -64,6 +73,7 @@ export function Navigation() {
                   icon={item.icon}
                   label={item.label}
                   active={isActive(item.href)}
+                  badge={item.badge}
                   onNavigate={() => { if (!collapsed) toggle(); }}
                 />
               ))
@@ -133,11 +143,12 @@ export function Navigation() {
   );
 }
 
-function NavItem({ href, icon, label, active, onNavigate }: {
+function NavItem({ href, icon, label, active, badge, onNavigate }: {
   href: string;
   icon: React.ReactNode;
   label: string;
   active: boolean;
+  badge?: number;
   onNavigate?: () => void;
 }) {
   return (
@@ -155,7 +166,13 @@ function NavItem({ href, icon, label, active, onNavigate }: {
     >
       <span className="flex-shrink-0">{icon}</span>
       <span className="text-sm font-medium">{label}</span>
-      {active && <span className="ml-auto w-1 h-1 rounded-full bg-[#6FFFE9]" />}
+      {badge && badge > 0 ? (
+        <span className="ml-auto flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[9px] font-bold bg-[#6FFFE9] text-black rounded-full">
+          {badge > 99 ? "99+" : badge}
+        </span>
+      ) : active ? (
+        <span className="ml-auto w-1 h-1 rounded-full bg-[#6FFFE9]" />
+      ) : null}
     </Link>
   );
 }

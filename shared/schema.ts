@@ -154,6 +154,43 @@ export type InsertPushSubscription = typeof pushSubscriptions.$inferInsert;
 export type Notification = typeof notifications.$inferSelect;
 export type InsertNotification = typeof notifications.$inferInsert;
 
+// === MESSAGES TABLE ===
+export const messages = pgTable("messages", {
+  id: varchar("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  propertyId: varchar("property_id").references(() => properties.id).notNull(),
+  senderId: varchar("sender_id").references(() => users.id).notNull(),
+  receiverId: varchar("receiver_id").references(() => users.id).notNull(),
+  body: text("body").notNull(),
+  read: boolean("read").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const messagesRelations = relations(messages, ({ one }) => ({
+  property: one(properties, {
+    fields: [messages.propertyId],
+    references: [properties.id],
+  }),
+  sender: one(users, {
+    fields: [messages.senderId],
+    references: [users.id],
+    relationName: "messageSender",
+  }),
+  receiver: one(users, {
+    fields: [messages.receiverId],
+    references: [users.id],
+    relationName: "messageReceiver",
+  }),
+}));
+
+export const insertMessageSchema = createInsertSchema(messages).omit({
+  id: true,
+  createdAt: true,
+  read: true,
+});
+
+export type Message = typeof messages.$inferSelect;
+export type InsertMessage = z.infer<typeof insertMessageSchema>;
+
 // === ZOD SCHEMAS ===
 export const insertPropertySchema = createInsertSchema(properties).omit({ 
   id: true, 

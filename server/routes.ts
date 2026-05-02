@@ -718,6 +718,9 @@ export async function registerRoutes(
   // Seed Data
   await seedDatabase();
 
+  // Messaging
+  registerMessagingRoutes(app);
+
   return httpServer;
 }
 
@@ -789,4 +792,73 @@ async function seedDatabase() {
     });
     
     console.log("Seeding complete.");
+}
+
+// ── Messaging Routes ──────────────────────────────────────────────────────────
+export function registerMessagingRoutes(app: Express) {
+  // GET /api/messages/:propertyId — fetch all messages for a property
+  app.get('/api/messages/:propertyId', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+
+      const { propertyId } = req.params;
+      const property = await storage.getProperty(propertyId);
+      if (!property) return res.status(404).json({ message: 'Property not found' });
+
+      // Only owner or tenant of this property may read
+      if (property.ownerId !== userId && property.tenantId !== userId) {
+        return res.status(403).json({ message: 'Forbidden' });
+      }
+
+      const msgs = await storage.getMessages(propertyId);
+      // Mark messages as read for this user
+      await storage.markMessagesRead(propertyId, userId);
+      res.json(msgs);
+    } catch (e) {
+      console.error(e);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  // POST /api/messages/:propertyId — send a message
+  app.post('/api/messages/:propertyId', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+
+      const { propertyId } = req.params;
+      const property = await storage.getProperty(propertyId);
+      if (!property) return res.status(404).json({ message: 'Property not found' });
+
+      if (property.ownerId !== userId && property.tenantId !== userId) {
+        return res.status(403).json({ message: 'Forbidden' });
+      }
+
+      const body = (req.body.body || '').trim();
+      if (!body) return res.status(400).json({ message: 'Message body is required' });
+      if (body.length > 2000) return res.status(400).json({ message: 'Message too long' });
+
+      const receiverId = property.ownerId === userId ? property.tenantId! : property.ownerId;
+      if (!receiverId) return res.status(400).json({ message: 'No counterparty on this property yet' });
+
+      const msg = await storage.sendMessage({ propertyId, senderId: userId, receiverId, body });
+      res.status(201).json(msg);
+    } catch (e) {
+      console.error(e);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  // GET /api/messages/unread/count — unread count for badge
+  app.get('/api/messages/unread/count', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+      const count = await storage.getUnreadMessageCount(userId);
+      res.json({ count });
+    } catch (e) {
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
 }

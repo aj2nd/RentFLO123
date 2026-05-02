@@ -1,0 +1,269 @@
+import { useState, useEffect, useRef } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { queryClient, apiRequest } from "@/lib/queryClient";
+import { useAuth } from "@/hooks/use-auth";
+import { MessageSquare, Send, Building2, Loader2, AlertCircle } from "lucide-react";
+import type { Property, Message } from "@shared/schema";
+
+function formatTime(ts: string | Date | null) {
+  if (!ts) return "";
+  const d = new Date(ts);
+  return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
+function formatDate(ts: string | Date | null) {
+  if (!ts) return "";
+  const d = new Date(ts);
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  if (d.toDateString() === today.toDateString()) return "Today";
+  if (d.toDateString() === yesterday.toDateString()) return "Yesterday";
+  return d.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" });
+}
+
+export default function Messages() {
+  const { user } = useAuth();
+  const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
+  const [draft, setDraft] = useState("");
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  // Load user's properties
+  const { data: properties = [], isLoading: propsLoading } = useQuery<Property[]>({
+    queryKey: ["/api/properties/mine"],
+  });
+
+  // Auto-select first property
+  useEffect(() => {
+    if (properties.length > 0 && !selectedPropertyId) {
+      setSelectedPropertyId(properties[0].id);
+    }
+  }, [properties, selectedPropertyId]);
+
+  // Load messages for selected property
+  const { data: msgs = [], isLoading: msgsLoading } = useQuery<Message[]>({
+    queryKey: ["/api/messages", selectedPropertyId],
+    enabled: !!selectedPropertyId,
+    refetchInterval: 5000, // poll every 5s for new messages
+  });
+
+  // Scroll to bottom on new messages
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [msgs]);
+
+  // Send message mutation
+  const sendMutation = useMutation({
+    mutationFn: (body: string) =>
+      apiRequest("POST", `/api/messages/${selectedPropertyId}`, { body }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/messages", selectedPropertyId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/messages/unread/count"] });
+      setDraft("");
+    },
+  });
+
+  const handleSend = () => {
+    const text = draft.trim();
+    if (!text || sendMutation.isPending || !selectedPropertyId) return;
+    sendMutation.mutate(text);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  const selectedProperty = properties.find(p => p.id === selectedPropertyId);
+
+  // Group messages by date
+  type GroupedMessages = { date: string; items: Message[] }[];
+  const grouped: GroupedMessages = msgs.reduce((acc: GroupedMessages, msg) => {
+    const label = formatDate(msg.createdAt);
+    const last = acc[acc.length - 1];
+    if (last && last.date === label) {
+      last.items.push(msg);
+    } else {
+      acc.push({ date: label, items: [msg] });
+    }
+    return acc;
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-black text-zinc-300 flex" style={{ height: "calc(100vh - 210px)" }}>
+
+      {/* ── Property list sidebar ───────────────────────────────────── */}
+      <aside className="w-72 flex-shrink-0 border-r border-white/[0.06] flex flex-col bg-zinc-950">
+        <div className="px-5 py-5 border-b border-white/[0.06]">
+          <h1 className="text-xs font-bold uppercase tracking-[2px] text-white/40">Messages</h1>
+        </div>
+
+        <div className="flex-1 overflow-y-auto">
+          {propsLoading ? (
+            <div className="flex items-center justify-center py-16">
+              <Loader2 size={18} className="animate-spin text-white/20" />
+            </div>
+          ) : properties.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 px-6 text-center gap-3">
+              <Building2 size={28} className="text-white/10" />
+              <p className="text-xs text-white/25 leading-relaxed">No properties linked to your account yet.</p>
+            </div>
+          ) : (
+            properties.map(p => (
+              <button
+                key={p.id}
+                onClick={() => setSelectedPropertyId(p.id)}
+                data-testid={`property-thread-${p.id}`}
+                className={`w-full text-left px-5 py-4 border-b border-white/[0.04] transition-colors duration-150 ${
+                  selectedPropertyId === p.id
+                    ? "bg-white/[0.06] border-l-2 border-l-[#6FFFE9]/50"
+                    : "hover:bg-white/[0.03] border-l-2 border-l-transparent"
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  <div className="mt-0.5 w-8 h-8 flex-shrink-0 border border-white/10 flex items-center justify-center bg-black/40">
+                    <Building2 size={14} className="text-white/30" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold text-white/70 truncate leading-tight">{p.address}</p>
+                    <p className="text-[10px] text-white/25 mt-0.5 font-medium tracking-wide uppercase">
+                      {user?.role === "OWNER" ? "Tenant thread" : "Landlord thread"}
+                    </p>
+                  </div>
+                </div>
+              </button>
+            ))
+          )}
+        </div>
+      </aside>
+
+      {/* ── Chat pane ──────────────────────────────────────────────── */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {!selectedProperty ? (
+          <div className="flex-1 flex flex-col items-center justify-center gap-4 text-center px-8">
+            <div className="w-14 h-14 border border-white/[0.06] flex items-center justify-center">
+              <MessageSquare size={24} className="text-white/10" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-white/30">Select a property to start messaging</p>
+              <p className="text-xs text-white/15 mt-1">Direct communication with your {user?.role === "OWNER" ? "tenant" : "landlord"}</p>
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Chat header */}
+            <div className="px-6 py-4 border-b border-white/[0.06] flex items-center gap-4 bg-zinc-950/60">
+              <div className="w-8 h-8 border border-white/10 flex items-center justify-center bg-black/40">
+                <Building2 size={14} className="text-white/30" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-white/80 leading-tight">{selectedProperty.address}</p>
+                <p className="text-[10px] text-white/25 uppercase tracking-[1.5px] font-medium mt-0.5">
+                  {user?.role === "OWNER" ? "Tenant" : "Landlord"} · Private thread
+                </p>
+              </div>
+            </div>
+
+            {/* Messages area */}
+            <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6" data-testid="messages-area">
+              {msgsLoading ? (
+                <div className="flex items-center justify-center py-16">
+                  <Loader2 size={18} className="animate-spin text-white/20" />
+                </div>
+              ) : msgs.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
+                  <MessageSquare size={28} className="text-white/10" />
+                  <p className="text-xs text-white/25 leading-relaxed">
+                    No messages yet.<br />Say hello to your {user?.role === "OWNER" ? "tenant" : "landlord"}.
+                  </p>
+                </div>
+              ) : (
+                grouped.map(group => (
+                  <div key={group.date} className="space-y-3">
+                    {/* Date divider */}
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1 h-px bg-white/[0.05]" />
+                      <span className="text-[9px] font-bold uppercase tracking-[2px] text-white/20 px-2">{group.date}</span>
+                      <div className="flex-1 h-px bg-white/[0.05]" />
+                    </div>
+
+                    {group.items.map(msg => {
+                      const isMine = msg.senderId === user?.id;
+                      return (
+                        <div
+                          key={msg.id}
+                          data-testid={`message-${msg.id}`}
+                          className={`flex ${isMine ? "justify-end" : "justify-start"}`}
+                        >
+                          <div className={`max-w-[72%] space-y-1`}>
+                            <div
+                              className={`px-4 py-3 text-sm leading-relaxed ${
+                                isMine
+                                  ? "bg-[#6FFFE9]/10 border border-[#6FFFE9]/20 text-white/80"
+                                  : "bg-white/[0.05] border border-white/[0.08] text-white/65"
+                              }`}
+                            >
+                              {msg.body}
+                            </div>
+                            <p className={`text-[9px] text-white/20 font-medium tracking-wide ${isMine ? "text-right" : "text-left"}`}>
+                              {formatTime(msg.createdAt)}
+                              {!isMine && !msg.read && (
+                                <span className="ml-2 inline-block w-1.5 h-1.5 rounded-full bg-[#6FFFE9] align-middle" />
+                              )}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ))
+              )}
+              <div ref={bottomRef} />
+            </div>
+
+            {/* Compose bar */}
+            <div className="border-t border-white/[0.06] px-5 py-4 bg-zinc-950/60">
+              {sendMutation.isError && (
+                <div className="flex items-center gap-2 text-red-400/70 text-xs mb-3">
+                  <AlertCircle size={12} />
+                  <span>Failed to send. Please try again.</span>
+                </div>
+              )}
+              <div className="flex items-end gap-3">
+                <textarea
+                  value={draft}
+                  onChange={e => setDraft(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder={`Message your ${user?.role === "OWNER" ? "tenant" : "landlord"}…`}
+                  rows={1}
+                  maxLength={2000}
+                  data-testid="input-message"
+                  className="flex-1 resize-none bg-white/[0.04] border border-white/[0.08] focus:border-[#6FFFE9]/30 focus:outline-none px-4 py-3 text-sm text-white/75 placeholder:text-white/20 transition-colors duration-200 leading-relaxed"
+                  style={{ minHeight: "44px", maxHeight: "120px" }}
+                  onInput={(e) => {
+                    const el = e.currentTarget;
+                    el.style.height = "auto";
+                    el.style.height = Math.min(el.scrollHeight, 120) + "px";
+                  }}
+                />
+                <button
+                  onClick={handleSend}
+                  disabled={!draft.trim() || sendMutation.isPending}
+                  data-testid="button-send-message"
+                  className="flex-shrink-0 w-11 h-11 flex items-center justify-center border border-white/10 text-white/30 hover:text-[#6FFFE9]/80 hover:border-[#6FFFE9]/30 hover:bg-[#6FFFE9]/[0.05] disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
+                >
+                  {sendMutation.isPending
+                    ? <Loader2 size={16} className="animate-spin" />
+                    : <Send size={16} />}
+                </button>
+              </div>
+              <p className="text-[9px] text-white/15 mt-2 text-right font-medium tracking-wide">Enter to send · Shift+Enter for new line</p>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}

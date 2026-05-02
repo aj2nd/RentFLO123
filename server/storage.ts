@@ -1,8 +1,8 @@
 import { db } from "./db";
-import { eq, desc, sql } from "drizzle-orm";
+import { eq, desc, sql, or, and } from "drizzle-orm";
 import {
   properties, ledgers, payments, maintenanceTickets, agreements,
-  pushSubscriptions, notifications,
+  pushSubscriptions, notifications, messages,
   type Property, type InsertProperty,
   type Ledger, type InsertLedger,
   type Payment, type InsertPayment,
@@ -10,6 +10,7 @@ import {
   type Agreement,
   type PushSubscription, type InsertPushSubscription,
   type Notification, type InsertNotification,
+  type Message, type InsertMessage,
   type CreatePropertyRequest,
   type CreateLedgerRequest,
   type CreatePaymentRequest,
@@ -58,6 +59,12 @@ export interface IStorage {
   getNotifications(userId: string): Promise<Notification[]>;
   getUnreadCount(userId: string): Promise<number>;
   markNotificationsRead(userId: string): Promise<void>;
+
+  // Messages
+  getMessages(propertyId: string): Promise<Message[]>;
+  sendMessage(msg: InsertMessage): Promise<Message>;
+  markMessagesRead(propertyId: string, userId: string): Promise<void>;
+  getUnreadMessageCount(userId: string): Promise<number>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -308,6 +315,35 @@ export class DatabaseStorage implements IStorage {
       .update(notifications)
       .set({ read: true })
       .where(eq(notifications.userId, userId));
+  }
+
+  // Messages
+  async getMessages(propertyId: string): Promise<Message[]> {
+    return db
+      .select()
+      .from(messages)
+      .where(eq(messages.propertyId, propertyId))
+      .orderBy(messages.createdAt);
+  }
+
+  async sendMessage(msg: InsertMessage): Promise<Message> {
+    const [created] = await db.insert(messages).values(msg).returning();
+    return created;
+  }
+
+  async markMessagesRead(propertyId: string, userId: string): Promise<void> {
+    await db
+      .update(messages)
+      .set({ read: true })
+      .where(and(eq(messages.propertyId, propertyId), eq(messages.receiverId, userId)));
+  }
+
+  async getUnreadMessageCount(userId: string): Promise<number> {
+    const rows = await db
+      .select()
+      .from(messages)
+      .where(and(eq(messages.receiverId, userId), eq(messages.read, false)));
+    return rows.length;
   }
 }
 
