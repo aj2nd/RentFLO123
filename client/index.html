@@ -27,11 +27,9 @@
         left: 0;
         right: 0;
         z-index: 9999;
-        background: rgba(0, 0, 0, 0.96);
-        backdrop-filter: blur(24px) saturate(180%);
-        -webkit-backdrop-filter: blur(24px) saturate(180%);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-        box-shadow: 0 1px 0 rgba(111, 255, 233, 0.08), 0 8px 32px rgba(0, 0, 0, 0.6);
+        background: #000000;
+        border-bottom: none;
+        box-shadow: none;
         padding: 0 36px;
         padding-top: env(safe-area-inset-top);
         display: flex;
@@ -60,13 +58,15 @@
         width: 133px;
         height: 133px;
         object-fit: contain;
-        filter: drop-shadow(0 0 18px rgba(111, 255, 233, 0.18));
+        filter: contrast(2.2) brightness(0.88) drop-shadow(0 0 16px rgba(111, 255, 233, 0.22));
+        -webkit-mask-image: radial-gradient(circle at 50% 50%, black 60%, transparent 78%);
+        mask-image: radial-gradient(circle at 50% 50%, black 60%, transparent 78%);
       }
 
       .i18n-header .logo-wordmark {
         height: 94px;
         object-fit: contain;
-        filter: drop-shadow(0 0 12px rgba(192, 192, 192, 0.14));
+        filter: drop-shadow(0 0 12px rgba(192, 192, 192, 0.12));
       }
 
       .i18n-header .right-controls {
@@ -84,10 +84,8 @@
         left: 0;
         right: 0;
         z-index: 9998;
-        background: rgba(0, 0, 0, 0.94);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        background: #000000;
+        border-bottom: none;
         padding: 12px 36px;
         display: flex;
         align-items: center;
@@ -226,7 +224,7 @@
         <img src="/logo-icon.jpeg" alt="RentFLO" class="logo-img" data-testid="logo-img" />
       </a>
       <a href="/" class="logo-center">
-        <img src="/logo-wordmark.jpeg" alt="RentFLO" class="logo-wordmark" />
+        <img src="/logo-wordmark-transparent.png" alt="RentFLO" class="logo-wordmark" />
       </a>
       <div class="right-controls">
         <div class="language-switcher">
