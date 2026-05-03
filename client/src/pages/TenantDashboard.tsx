@@ -332,24 +332,24 @@ export default function TenantDashboard() {
           <>
             {/* ── Stats Bar ── */}
             <div className="grid grid-cols-3 gap-3 mb-6">
-              <div className="bg-zinc-900/80 rounded-2xl border border-zinc-800/50 p-3 sm:p-4 flex flex-col items-center text-center shadow-lg shadow-black/40" data-testid="stat-rent-due">
+              <div className="liquid-glass rounded-2xl p-3 sm:p-4 flex flex-col items-center text-center" data-testid="stat-rent-due">
                 <span className="px-2 py-0.5 rounded-full bg-zinc-800/80 text-[10px] text-zinc-400 font-medium mb-2">Monthly Rent</span>
                 <span className="text-sm sm:text-base font-bold font-mono text-white">₹{totalDue.toLocaleString()}</span>
               </div>
-              <div className="bg-zinc-900/80 rounded-2xl border border-zinc-800/50 p-3 sm:p-4 flex flex-col items-center text-center shadow-lg shadow-black/40" data-testid="stat-days-due">
+              <div className="liquid-glass rounded-2xl p-3 sm:p-4 flex flex-col items-center text-center" data-testid="stat-days-due">
                 <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium mb-2 border ${daysUntilDue <= 5 ? "bg-amber-950/50 text-amber-400 border-amber-900/30" : "bg-zinc-800/80 text-zinc-400 border-transparent"}`}>Due In</span>
                 <span className={`text-sm sm:text-base font-bold font-mono ${daysUntilDue <= 5 ? "text-amber-100" : "text-white"}`}>
                   {daysUntilDue}d
                 </span>
               </div>
-              <div className="bg-zinc-900/80 rounded-2xl border border-zinc-800/50 p-3 sm:p-4 flex flex-col items-center text-center shadow-lg shadow-black/40" data-testid="stat-paid-ytd">
+              <div className="liquid-glass rounded-2xl p-3 sm:p-4 flex flex-col items-center text-center" data-testid="stat-paid-ytd">
                 <span className="px-2 py-0.5 rounded-full bg-zinc-800/80 text-[10px] text-zinc-400 font-medium mb-2">Paid YTD</span>
                 <span className="text-sm sm:text-base font-bold font-mono text-[#6FFFE9]">₹{totalPaidYTD.toLocaleString()}</span>
               </div>
             </div>
 
             {/* ── Tabs ── */}
-            <div className="flex p-1 bg-zinc-900/60 rounded-full border border-zinc-800/50 mb-6">
+            <div className="flex p-1 liquid-glass rounded-full mb-6">
               {tabs.map(tab => (
                 <button
                   key={tab.id}
@@ -372,7 +372,7 @@ export default function TenantDashboard() {
 
                 {/* Onboarding Checklist — hide once all done */}
                 {!allOnboardingDone && (
-                  <div className="bg-zinc-900/80 rounded-3xl border border-zinc-800/50 p-5 shadow-lg shadow-black/40">
+                  <div className="liquid-glass rounded-3xl p-5">
                     <div className="flex justify-between items-end mb-4">
                       <div>
                         <h3 className="font-semibold text-white text-lg">Getting Started</h3>
@@ -404,7 +404,7 @@ export default function TenantDashboard() {
                 )}
 
                 {/* Current Month Settlement */}
-                <div className="bg-zinc-900/80 rounded-3xl border border-zinc-800/50 p-5 sm:p-6 shadow-lg shadow-black/40">
+                <div className="liquid-glass-teal rounded-3xl p-5 sm:p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div>
                       <div className="inline-block px-2.5 py-1 rounded-full bg-zinc-800 text-[10px] font-bold text-zinc-300 uppercase tracking-wider mb-2">Current Month</div>
@@ -478,7 +478,7 @@ export default function TenantDashboard() {
                     </div>
                     <div className="space-y-2">
                       {paymentsData.filter(p => p.status === "SUCCESS").slice(0, 3).map((pmt) => (
-                        <div key={pmt.id} className="flex items-center justify-between p-3 rounded-xl border border-zinc-800/50 bg-zinc-900/60" data-testid={`recent-payment-${pmt.id}`}>
+                        <div key={pmt.id} className="liquid-glass rounded-xl flex items-center justify-between p-3" data-testid={`recent-payment-${pmt.id}`}>
                           <div className="flex items-center gap-3">
                             <div className="w-1.5 h-1.5 rounded-full bg-[#6FFFE9]" />
                             <span className="text-xs text-zinc-400 font-mono">
@@ -500,7 +500,7 @@ export default function TenantDashboard() {
 
                 {/* Pay Now Panel */}
                 {remaining > 0 && (
-                  <div className="bg-zinc-900/80 rounded-3xl border border-zinc-800/50 p-5 sm:p-6 space-y-5 shadow-lg shadow-black/40">
+                  <div className="liquid-glass rounded-3xl p-5 sm:p-6 space-y-5">
                     <div className="flex items-center justify-between">
                       <div>
                         <h3 className="text-lg font-bold">{t("tenant_payment_heading")}</h3>
@@ -547,7 +547,7 @@ export default function TenantDashboard() {
                         </div>
                       </div>
                     ) : (
-                      <div className="p-4 rounded-2xl border border-[#6FFFE9]/15 bg-[#6FFFE9]/5 text-center">
+                      <div className="liquid-glass-teal rounded-2xl p-4 text-center">
                         <p className="text-zinc-400 text-xs mb-1">{t("tenant_full_payment_amount")}</p>
                         <p className="text-3xl font-bold font-mono" data-testid="text-full-amount">
                           ₹{remaining.toLocaleString()}
@@ -574,7 +574,7 @@ export default function TenantDashboard() {
                           <div className="grid grid-cols-2 gap-2">
                             <a
                               href={`gpay://upi/pay?pa=${upiVpa}&pn=${upiPayee}&am=${upiAmount}&cu=INR&tn=${upiNote}`}
-                              className="flex items-center justify-center gap-2 p-2.5 border border-white/[0.07] bg-zinc-950 hover:border-white/20 transition-colors text-xs text-zinc-300 font-medium"
+                              className="liquid-glass rounded-xl flex items-center justify-center gap-2 p-2.5 hover:border-white/20 transition-colors text-xs text-zinc-300 font-medium"
                               data-testid="button-upi-gpay"
                             >
                               <span className="text-base">G</span>
@@ -582,7 +582,7 @@ export default function TenantDashboard() {
                             </a>
                             <a
                               href={`phonepe://pay?pa=${upiVpa}&pn=${upiPayee}&am=${upiAmount}&cu=INR&tn=${upiNote}`}
-                              className="flex items-center justify-center gap-2 p-2.5 border border-white/[0.07] bg-zinc-950 hover:border-white/20 transition-colors text-xs text-zinc-300 font-medium"
+                              className="liquid-glass rounded-xl flex items-center justify-center gap-2 p-2.5 hover:border-white/20 transition-colors text-xs text-zinc-300 font-medium"
                               data-testid="button-upi-phonepe"
                             >
                               <span className="text-base">₱</span>
@@ -591,7 +591,7 @@ export default function TenantDashboard() {
                           </div>
                           <a
                             href={upiLink}
-                            className="flex items-center justify-center gap-2 p-2.5 border border-white/[0.07] bg-zinc-950 hover:border-white/20 transition-colors text-xs text-zinc-300 w-full"
+                            className="liquid-glass rounded-xl flex items-center justify-center gap-2 p-2.5 hover:border-white/20 transition-colors text-xs text-zinc-300 w-full"
                             data-testid="button-upi-any"
                           >
                             Any UPI App →
@@ -613,7 +613,7 @@ export default function TenantDashboard() {
                     <p className="text-[10px] uppercase tracking-widest text-zinc-500 mb-3">{t("tenant_payment_history")}</p>
                     <div className="space-y-2">
                       {paymentsData.map((pmt, idx) => (
-                        <div key={pmt.id} className="flex items-center justify-between p-4 rounded-xl border border-zinc-800/50 bg-zinc-900/60" data-testid={`payment-entry-${idx}`}>
+                        <div key={pmt.id} className="liquid-glass rounded-xl flex items-center justify-between p-4" data-testid={`payment-entry-${idx}`}>
                           <div className="flex items-center gap-3">
                             <div className={`w-1.5 h-1.5 rounded-full ${pmt.status === "SUCCESS" ? "bg-[#6FFFE9]" : pmt.status === "PENDING" ? "bg-yellow-400" : "bg-red-500"}`} />
                             <div>
@@ -652,7 +652,7 @@ export default function TenantDashboard() {
                         ? Math.min(100, Math.round((ledger.amountCollected / ledger.property.monthlyRent) * 100))
                         : 0;
                       return (
-                        <div key={ledger.id} className="p-4 rounded-xl border border-zinc-800/50 bg-zinc-900/60 space-y-2" data-testid={`ledger-row-${ledger.id}`}>
+                        <div key={ledger.id} className="liquid-glass rounded-xl p-4 space-y-2" data-testid={`ledger-row-${ledger.id}`}>
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <CircleDot size={12} className="text-zinc-600" />
@@ -682,7 +682,7 @@ export default function TenantDashboard() {
               <div className="space-y-4">
 
                 {/* Property Card */}
-                <div className="bg-zinc-900/80 rounded-3xl border border-zinc-800/50 p-5 sm:p-6 space-y-4 shadow-lg shadow-black/40" data-testid="card-property-details">
+                <div className="liquid-glass rounded-3xl p-5 sm:p-6 space-y-4" data-testid="card-property-details">
                   <p className="text-[10px] uppercase tracking-widest text-zinc-500">Property Details</p>
                   <div className="space-y-3">
                     <div className="flex items-start gap-3">
@@ -712,7 +712,7 @@ export default function TenantDashboard() {
                 </div>
 
                 {/* Agreement Status */}
-                <div className="bg-zinc-900/80 rounded-3xl border border-zinc-800/50 p-5 sm:p-6 shadow-lg shadow-black/40" data-testid="card-agreement-status">
+                <div className="liquid-glass rounded-3xl p-5 sm:p-6" data-testid="card-agreement-status">
                   <div className="flex items-center justify-between mb-4">
                     <p className="text-[10px] uppercase tracking-widest text-zinc-500">Agreement Status</p>
                     {agreementStatus && <StatusBadge status={
@@ -744,7 +744,7 @@ export default function TenantDashboard() {
                 </div>
 
                 {/* KYC Status */}
-                <div className="bg-zinc-900/80 rounded-3xl border border-zinc-800/50 p-5 sm:p-6 shadow-lg shadow-black/40" data-testid="card-kyc-status">
+                <div className="liquid-glass rounded-3xl p-5 sm:p-6" data-testid="card-kyc-status">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-[10px] uppercase tracking-widest text-zinc-500 mb-1">KYC Verification</p>
@@ -771,7 +771,7 @@ export default function TenantDashboard() {
 
                 {/* Maintenance Summary */}
                 <Link href="/maintenance" className="block">
-                  <div className="flex items-center justify-between p-4 sm:p-5 bg-zinc-900/80 rounded-2xl border border-zinc-800/50 hover:border-[#6FFFE9]/20 transition-colors shadow-lg shadow-black/40" data-testid="card-maintenance-summary">
+                  <div className="liquid-glass rounded-2xl flex items-center justify-between p-4 sm:p-5 hover:border-[#6FFFE9]/30 transition-colors" data-testid="card-maintenance-summary">
                     <div className="flex items-center gap-3">
                       <Wrench size={16} className="text-zinc-600" />
                       <div>
@@ -792,7 +792,7 @@ export default function TenantDashboard() {
         ) : (
           /* ── No Property: Join Flow ── */
           <div className="space-y-6">
-            <div className="rounded-3xl border-2 border-[#6FFFE9]/40 p-5 sm:p-8 bg-zinc-900/80 shadow-lg shadow-black/40">
+            <div className="liquid-glass-teal rounded-3xl p-5 sm:p-8">
               <div className="flex items-start gap-3 mb-5">
                 <Building2 size={22} className="text-[#6FFFE9] mt-0.5" />
                 <div>
@@ -826,7 +826,7 @@ export default function TenantDashboard() {
                   <div className="space-y-3 pt-2">
                     <p className="text-[10px] uppercase tracking-wider text-zinc-400">{t("tenant_available_properties")}</p>
                     {availableProperties.map(prop => (
-                      <div key={prop.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl border border-[#6FFFE9]/25 bg-zinc-900/60" data-testid={`available-property-${prop.id}`}>
+                      <div key={prop.id} className="liquid-glass rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 border border-[#6FFFE9]/20" data-testid={`available-property-${prop.id}`}>
                         <div>
                           <p className="font-medium text-white text-sm">{prop.address}</p>
                           <p className="text-zinc-500 text-xs font-mono">₹{prop.monthlyRent.toLocaleString()} / month</p>

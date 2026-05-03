@@ -92,6 +92,68 @@
     text-wrap: balance;
   }
 
+  /* ── Liquid Glass ──────────────────────────────────────────────── */
+  .liquid-glass {
+    position: relative;
+    background: linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.075) 0%,
+      rgba(255, 255, 255, 0.025) 50%,
+      rgba(255, 255, 255, 0.045) 100%
+    );
+    backdrop-filter: blur(28px) saturate(180%);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.50),
+      inset 0 1px 0 rgba(255, 255, 255, 0.14),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.10),
+      inset 1px 0 0 rgba(255, 255, 255, 0.05);
+    overflow: hidden;
+  }
+  .liquid-glass::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 45%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0) 100%);
+    pointer-events: none;
+    border-radius: inherit;
+  }
+
+  .liquid-glass-teal {
+    position: relative;
+    background: linear-gradient(
+      145deg,
+      rgba(111, 255, 233, 0.10) 0%,
+      rgba(111, 255, 233, 0.03) 50%,
+      rgba(111, 255, 233, 0.07) 100%
+    );
+    backdrop-filter: blur(28px) saturate(180%);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    border: 1px solid rgba(111, 255, 233, 0.20);
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.50),
+      inset 0 1px 0 rgba(111, 255, 233, 0.18),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.10),
+      0 0 0 1px rgba(111, 255, 233, 0.06);
+    overflow: hidden;
+  }
+  .liquid-glass-teal::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 45%;
+    background: linear-gradient(180deg, rgba(111,255,233,0.10) 0%, rgba(111,255,233,0) 100%);
+    pointer-events: none;
+    border-radius: inherit;
+  }
+  /* ────────────────────────────────────────────────────────────── */
+
   /* Silver liquid metal gradient text — use on headings / key numbers */
   .silver-text {
     background: linear-gradient(
