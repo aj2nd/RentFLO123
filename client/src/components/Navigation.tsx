@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { useEffect, useState } from "react";
-import { LayoutDashboard, Home, LogOut, Wallet, Wrench, Receipt, Loader2, ShieldCheck, FileSignature, ChevronLeft, ChevronRight, MessageSquare } from "lucide-react";
+import { LayoutDashboard, Home, LogOut, Wallet, Wrench, Receipt, Loader2, ShieldCheck, FileSignature, ChevronRight, MessageSquare } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
 import { useSidebar } from "@/contexts/SidebarContext";
@@ -73,15 +73,15 @@ export function Navigation() {
 
       {/* Sidebar panel — starts flush with the bottom of the actual header */}
       <nav
-        className="fixed left-0 bg-black border-r border-white/[0.06] flex flex-col justify-between z-50 overflow-hidden transition-all duration-300 ease-in-out"
+        className="fixed left-0 bg-black border-r border-white/[0.06] flex flex-col z-50 overflow-hidden transition-all duration-300 ease-in-out"
         style={{
           top: headerH,
           height: `calc(100vh - ${headerH}px)`,
           width: collapsed ? '0px' : '256px',
         }}
       >
-        <div className="flex flex-col gap-1 w-64 pt-4">
-          {/* Nav items */}
+        {/* Nav items — scrollable, takes all available space */}
+        <div className="flex-1 min-h-0 overflow-y-auto w-64 pt-4">
           <div className="space-y-0.5 px-3">
             {isLoading ? (
               <div className="flex items-center justify-center py-8">
@@ -103,26 +103,12 @@ export function Navigation() {
           </div>
         </div>
 
-        {/* Footer: alerts + collapse + logout */}
-        <div className="px-3 flex flex-col gap-1 w-64 pb-4">
+        {/* Footer: alerts + sign out */}
+        <div className="px-3 flex flex-col gap-1 w-64 pb-4 pt-2 border-t border-white/[0.06]">
           <div className="flex items-center gap-2 px-3 py-2 mb-1">
             <NotificationBell />
             <span className="text-[10px] font-medium text-white/25 uppercase tracking-widest">Alerts</span>
           </div>
-
-          {/* Collapse */}
-          <button
-            onClick={toggle}
-            className="flex items-center gap-3 px-3 py-2.5 w-full rounded-lg transition-all duration-200 whitespace-nowrap group"
-            style={{
-              background: 'rgba(255,255,255,0.03)',
-              border: '1px solid rgba(255,255,255,0.06)',
-            }}
-            data-testid="button-collapse-sidebar"
-          >
-            <ChevronLeft size={15} className="flex-shrink-0 text-white/30 group-hover:text-[#6FFFE9]/70 transition-colors" />
-            <span className="text-[11px] font-medium uppercase tracking-widest text-white/25 group-hover:text-[#6FFFE9]/60 transition-colors">Collapse</span>
-          </button>
 
           {/* Sign out */}
           <button
