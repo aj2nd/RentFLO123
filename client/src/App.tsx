@@ -110,7 +110,12 @@ function OnboardingRoute() {
   }
 
   if (user?.role) {
-    return <Redirect to="/setup" />;
+    const roleRedirects: Record<string, string> = {
+      'ADMIN': '/admin',
+      'OWNER': '/owner',
+      'TENANT': '/tenant',
+    };
+    return <Redirect to={roleRedirects[user.role] || '/'} />;
   }
 
   return <Onboarding />;

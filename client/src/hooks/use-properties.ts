@@ -3,9 +3,9 @@ import { api, buildUrl, type CreatePropertyRequest } from "@shared/routes";
 
 export function useProperties() {
   return useQuery({
-    queryKey: [api.properties.list.path],
+    queryKey: ["/api/properties/mine"],
     queryFn: async () => {
-      const res = await fetch(api.properties.list.path, { credentials: "include" });
+      const res = await fetch("/api/properties/mine", { credentials: "include" });
       if (!res.ok) throw new Error("Failed to fetch properties");
       return api.properties.list.responses[200].parse(await res.json());
     },
@@ -42,7 +42,7 @@ export function useCreateProperty() {
       return api.properties.create.responses[201].parse(await res.json());
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [api.properties.list.path] });
+      queryClient.invalidateQueries({ queryKey: ["/api/properties/mine"] });
     },
   });
 }

@@ -222,7 +222,7 @@ export default function TenantDashboard() {
       const res = await apiRequest("POST", `/api/properties/${propertyId}/join`);
       if (res.ok) {
         toast({ title: "Success!", description: "You've been linked to this property." });
-        queryClient.invalidateQueries({ queryKey: ["/api/properties"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/properties/mine"] });
         queryClient.invalidateQueries({ queryKey: ["/api/ledgers"] });
         setAvailableProperties([]); setLandlordEmail("");
       } else {

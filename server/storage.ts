@@ -132,7 +132,7 @@ export class DatabaseStorage implements IStorage {
     .innerJoin(properties, eq(ledgers.propertyId, properties.id));
 
     if (propertyId) {
-      query.where(eq(ledgers.propertyId, propertyId));
+      query = query.where(eq(ledgers.propertyId, propertyId));
     }
     
     // Simple client-side filtering for status if needed, or add .where() dynamically

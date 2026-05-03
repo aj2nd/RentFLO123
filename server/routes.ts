@@ -563,7 +563,7 @@ export async function registerRoutes(
   // === KYC ROUTES ===
   
   // Submit KYC documents
-  app.post("/api/kyc/submit", async (req: any, res) => {
+  app.post("/api/kyc/submit", isAuthenticated, async (req: any, res) => {
     const userId = req.user?.claims?.sub;
     if (!userId) {
       return res.status(401).json({ message: 'Unauthorized' });

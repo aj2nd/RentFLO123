@@ -47,7 +47,7 @@ export default function Setup() {
       { address: address.trim(), monthlyRent: rentNum, payoutDay: payoutDayNum, ownerId: user?.id || "", pendingTenantEmail: tenantEmail.trim() || undefined },
       {
         onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: ["/api/properties"] });
+          queryClient.invalidateQueries({ queryKey: ["/api/properties/mine"] });
           queryClient.invalidateQueries({ queryKey: ["/api/ledgers"] });
           toast({ title: "Property added!", description: "Your property and rent cycle are set up." });
           setLocation("/owner");
@@ -79,7 +79,7 @@ export default function Setup() {
     try {
       const res = await apiRequest("POST", `/api/properties/${propertyId}/join`);
       if (!res.ok) { const err = await res.json(); throw new Error(err.message || "Failed to join"); }
-      queryClient.invalidateQueries({ queryKey: ["/api/properties"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/properties/mine"] });
       queryClient.invalidateQueries({ queryKey: ["/api/ledgers"] });
       setJoined(true);
       toast({ title: "Joined!", description: "You're now linked to this property." });
