@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { LayoutDashboard, Home, LogOut, Wallet, Wrench, Receipt, Loader2, ShieldCheck, FileSignature, ChevronLeft, ChevronRight, MessageSquare } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
@@ -7,13 +7,23 @@ import { useSidebar } from "@/contexts/SidebarContext";
 import { NotificationBell } from "@/components/NotificationBell";
 import { useQuery } from "@tanstack/react-query";
 
-const HEADER_HEIGHT = 210;
-
 export function Navigation() {
   const [location] = useLocation();
   const { user, logout, isLoading } = useAuth();
   const { t } = useI18n();
   const { collapsed, toggle } = useSidebar();
+
+  // Track the real rendered header height (handles glass/compact transitions)
+  const [headerH, setHeaderH] = useState(210);
+  useEffect(() => {
+    const el = document.querySelector('.i18n-header') as HTMLElement | null;
+    if (!el) return;
+    const update = () => setHeaderH(el.offsetHeight);
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   useEffect(() => {
     const isMobile = window.innerWidth < 768;
@@ -54,16 +64,19 @@ export function Navigation() {
       {/* Backdrop overlay — mobile drawer only, click to close */}
       {!collapsed && (
         <div
-          className="fixed inset-x-0 bottom-0 top-[138px] md:top-[210px] z-40 md:hidden"
+          className="fixed inset-x-0 bottom-0 z-40 md:hidden"
+          style={{ top: headerH }}
           onClick={toggle}
           aria-label="Close sidebar"
         />
       )}
 
-      {/* Sidebar panel — starts below the global header */}
+      {/* Sidebar panel — starts flush with the bottom of the actual header */}
       <nav
-        className="fixed left-0 top-[138px] md:top-[210px] h-[calc(100vh-138px)] md:h-[calc(100vh-210px)] bg-black border-r border-white/[0.06] flex flex-col justify-between z-50 overflow-hidden transition-all duration-300 ease-in-out"
+        className="fixed left-0 bg-black border-r border-white/[0.06] flex flex-col justify-between z-50 overflow-hidden transition-all duration-300 ease-in-out"
         style={{
+          top: headerH,
+          height: `calc(100vh - ${headerH}px)`,
           width: collapsed ? '0px' : '256px',
         }}
       >
@@ -126,8 +139,9 @@ export function Navigation() {
       {/* Floating expand tab — shown when sidebar is collapsed */}
       <button
         onClick={toggle}
-        className="fixed z-50 flex items-center justify-center transition-all duration-300 ease-in-out group top-[calc(138px+50%)] md:top-[calc(210px+50%)]"
+        className="fixed z-50 flex items-center justify-center transition-all duration-300 ease-in-out group"
         style={{
+          top: `calc(${headerH}px + 50%)`,
           left: collapsed ? '0px' : '-28px',
           transform: 'translateY(-50%)',
           width: '28px',
