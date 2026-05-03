@@ -1,8 +1,25 @@
+import { useEffect } from "react";
+import { useLocation } from "wouter";
 import { ArrowRight, ShieldCheck, Zap, Building2, Clock } from "lucide-react";
 import { useI18n } from "@/hooks/use-i18n";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function LandingPage() {
   const { t } = useI18n();
+  const { isAuthenticated, isLoading, user } = useAuth();
+  const [, navigate] = useLocation();
+
+  useEffect(() => {
+    if (isLoading) return;
+    if (isAuthenticated) {
+      if (!user?.role) {
+        navigate("/onboarding");
+      } else {
+        const dest: Record<string, string> = { TENANT: "/tenant", OWNER: "/owner", ADMIN: "/admin" };
+        navigate(dest[user.role] ?? "/onboarding");
+      }
+    }
+  }, [isAuthenticated, isLoading, user?.role]);
 
   return (
     <div className="min-h-screen bg-black text-zinc-300">
