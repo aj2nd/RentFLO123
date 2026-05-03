@@ -95,20 +95,18 @@
   /* ── Liquid Glass ──────────────────────────────────────────────── */
   .liquid-glass {
     position: relative;
-    background: linear-gradient(
-      145deg,
-      rgba(255, 255, 255, 0.075) 0%,
-      rgba(255, 255, 255, 0.025) 50%,
-      rgba(255, 255, 255, 0.045) 100%
-    );
-    backdrop-filter: blur(28px) saturate(180%);
-    -webkit-backdrop-filter: blur(28px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.10);
+    background: rgba(255, 255, 255, 0.018);
+    backdrop-filter: blur(40px) saturate(220%) brightness(1.04);
+    -webkit-backdrop-filter: blur(40px) saturate(220%) brightness(1.04);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+    border-right-color: rgba(255, 255, 255, 0.08);
     box-shadow:
-      0 8px 32px rgba(0, 0, 0, 0.50),
-      inset 0 1px 0 rgba(255, 255, 255, 0.14),
-      inset 0 -1px 0 rgba(0, 0, 0, 0.10),
-      inset 1px 0 0 rgba(255, 255, 255, 0.05);
+      0 12px 40px rgba(0, 0, 0, 0.55),
+      0 2px 8px rgba(0, 0, 0, 0.30),
+      inset 0 1.5px 0 rgba(255, 255, 255, 0.22),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.08),
+      inset 1.5px 0 0 rgba(255, 255, 255, 0.10);
     overflow: hidden;
   }
   .liquid-glass::before {
@@ -117,28 +115,31 @@
     top: 0;
     left: 0;
     right: 0;
-    height: 45%;
-    background: linear-gradient(180deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0) 100%);
+    height: 50%;
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.10) 0%,
+      rgba(255, 255, 255, 0.03) 60%,
+      rgba(255, 255, 255, 0) 100%
+    );
     pointer-events: none;
     border-radius: inherit;
   }
 
   .liquid-glass-teal {
     position: relative;
-    background: linear-gradient(
-      145deg,
-      rgba(111, 255, 233, 0.10) 0%,
-      rgba(111, 255, 233, 0.03) 50%,
-      rgba(111, 255, 233, 0.07) 100%
-    );
-    backdrop-filter: blur(28px) saturate(180%);
-    -webkit-backdrop-filter: blur(28px) saturate(180%);
-    border: 1px solid rgba(111, 255, 233, 0.20);
+    background: rgba(111, 255, 233, 0.025);
+    backdrop-filter: blur(40px) saturate(220%) brightness(1.04);
+    -webkit-backdrop-filter: blur(40px) saturate(220%) brightness(1.04);
+    border: 1px solid rgba(111, 255, 233, 0.35);
+    border-bottom-color: rgba(111, 255, 233, 0.10);
+    border-right-color: rgba(111, 255, 233, 0.10);
     box-shadow:
-      0 8px 32px rgba(0, 0, 0, 0.50),
-      inset 0 1px 0 rgba(111, 255, 233, 0.18),
-      inset 0 -1px 0 rgba(0, 0, 0, 0.10),
-      0 0 0 1px rgba(111, 255, 233, 0.06);
+      0 12px 40px rgba(0, 0, 0, 0.55),
+      0 2px 8px rgba(0, 0, 0, 0.30),
+      inset 0 1.5px 0 rgba(111, 255, 233, 0.28),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.08),
+      0 0 24px rgba(111, 255, 233, 0.06);
     overflow: hidden;
   }
   .liquid-glass-teal::before {
@@ -147,8 +148,13 @@
     top: 0;
     left: 0;
     right: 0;
-    height: 45%;
-    background: linear-gradient(180deg, rgba(111,255,233,0.10) 0%, rgba(111,255,233,0) 100%);
+    height: 50%;
+    background: linear-gradient(
+      180deg,
+      rgba(111, 255, 233, 0.12) 0%,
+      rgba(111, 255, 233, 0.03) 60%,
+      rgba(111, 255, 233, 0) 100%
+    );
     pointer-events: none;
     border-radius: inherit;
   }
