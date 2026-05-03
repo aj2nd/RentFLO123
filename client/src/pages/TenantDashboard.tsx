@@ -296,9 +296,11 @@ export default function TenantDashboard() {
 
       {/* ── Ambient colour blobs — give liquid glass something to refract ── */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10" aria-hidden>
-        <div className="absolute top-[10%] left-[15%] w-[420px] h-[420px] rounded-full bg-[#6FFFE9]/[0.055] blur-[140px]" />
-        <div className="absolute top-[50%] right-[10%] w-[320px] h-[320px] rounded-full bg-[#6FFFE9]/[0.035] blur-[120px]" />
-        <div className="absolute bottom-[15%] left-[40%] w-[260px] h-[260px] rounded-full bg-white/[0.018] blur-[100px]" />
+        <div className="absolute top-[10%] left-[15%] w-[420px] h-[420px] rounded-full bg-[#6FFFE9]/[0.07] blur-[140px]" />
+        <div className="absolute top-[50%] right-[10%] w-[320px] h-[320px] rounded-full bg-[#6FFFE9]/[0.045] blur-[120px]" />
+        <div className="absolute bottom-[15%] left-[40%] w-[260px] h-[260px] rounded-full bg-white/[0.025] blur-[100px]" />
+        <div className="absolute top-[30%] left-[55%] w-[280px] h-[280px] rounded-full bg-[#C0C0C0]/[0.025] blur-[110px]" />
+        <div className="absolute bottom-[35%] left-[5%] w-[200px] h-[200px] rounded-full bg-[#C0C0C0]/[0.018] blur-[90px]" />
       </div>
 
       <div className="p-4 sm:p-6 md:p-10 pb-24 flex flex-col flex-1 max-w-4xl w-full mx-auto">
@@ -318,12 +320,12 @@ export default function TenantDashboard() {
               {t("tenant_secure_pay")}
             </span>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tighter mb-1">
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tighter mb-1 silver-text glow-text">
             {t("tenant_title")}
           </h1>
           {property && (
-            <p className="text-zinc-500 text-sm flex items-center gap-1.5">
-              <MapPin size={12} className="text-zinc-600" />
+            <p className="text-[#9DEFE4]/70 text-sm flex items-center gap-1.5">
+              <MapPin size={12} className="text-[#6FFFE9]/60" />
               {property.address}
             </p>
           )}
@@ -334,22 +336,22 @@ export default function TenantDashboard() {
             {/* ── Stats Bar ── */}
             <div className="grid grid-cols-3 gap-3 mb-6">
               <div className="liquid-glass rounded-2xl p-3 sm:p-4 flex flex-col items-center text-center" data-testid="stat-rent-due">
-                <span className="liquid-glass-chip px-2 py-0.5 rounded-full text-[10px] text-zinc-300 font-medium mb-2">Monthly Rent</span>
-                <span className="text-sm sm:text-base font-bold font-mono text-white">₹{totalDue.toLocaleString()}</span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-medium mb-2 border border-[#C0C0C0]/20 bg-[#C0C0C0]/[0.06] text-[#C0C0C0]">Monthly Rent</span>
+                <span className="text-sm sm:text-base font-bold font-mono text-[#C0C0C0]">₹{totalDue.toLocaleString()}</span>
               </div>
               <div className="liquid-glass rounded-2xl p-3 sm:p-4 flex flex-col items-center text-center" data-testid="stat-days-due">
                 <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium mb-2 border backdrop-blur-sm ${
                   daysUntilDue <= 5
                     ? "bg-amber-500/10 text-amber-300 border-amber-400/25"
-                    : "liquid-glass-chip text-zinc-300"
+                    : "border-[#C0C0C0]/20 bg-[#C0C0C0]/[0.06] text-[#C0C0C0]"
                 }`}>Due In</span>
-                <span className={`text-sm sm:text-base font-bold font-mono ${daysUntilDue <= 5 ? "text-amber-200" : "text-white"}`}>
+                <span className={`text-sm sm:text-base font-bold font-mono ${daysUntilDue <= 5 ? "text-amber-200" : "text-[#E8E8E8]"}`}>
                   {daysUntilDue}d
                 </span>
               </div>
               <div className="liquid-glass rounded-2xl p-3 sm:p-4 flex flex-col items-center text-center" data-testid="stat-paid-ytd">
-                <span className="liquid-glass-chip px-2 py-0.5 rounded-full text-[10px] text-zinc-300 font-medium mb-2">Paid YTD</span>
-                <span className="text-sm sm:text-base font-bold font-mono text-[#6FFFE9]">₹{totalPaidYTD.toLocaleString()}</span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-medium mb-2 border border-[#6FFFE9]/25 bg-[#6FFFE9]/[0.07] text-[#9DEFE4]">Paid YTD</span>
+                <span className="text-sm sm:text-base font-bold font-mono text-[#6FFFE9] glow-tiffany">₹{totalPaidYTD.toLocaleString()}</span>
               </div>
             </div>
 
@@ -362,8 +364,8 @@ export default function TenantDashboard() {
                   data-testid={`tab-${tab.id}`}
                   className={`flex-1 py-2 px-4 rounded-full text-sm font-semibold transition-all duration-200
                     ${activeTab === tab.id
-                      ? "bg-white/[0.12] text-white shadow-sm border border-white/[0.14]"
-                      : "text-zinc-400 hover:text-white hover:bg-white/[0.05]"
+                      ? "bg-[#6FFFE9]/[0.13] text-[#6FFFE9] shadow-sm border border-[#6FFFE9]/[0.28]"
+                      : "text-[#C0C0C0]/60 hover:text-[#C0C0C0] hover:bg-white/[0.05]"
                     }`}
                 >
                   {tab.label}
@@ -380,8 +382,8 @@ export default function TenantDashboard() {
                   <div className="liquid-glass rounded-3xl p-5">
                     <div className="flex justify-between items-end mb-4">
                       <div>
-                        <h3 className="font-semibold text-white text-lg">Getting Started</h3>
-                        <p className="text-xs text-zinc-400 mt-1">{onboardingSteps.filter(s => s.done).length} of {onboardingSteps.length} completed</p>
+                        <h3 className="font-semibold text-lg silver-text">Getting Started</h3>
+                        <p className="text-xs text-[#C0C0C0]/50 mt-1">{onboardingSteps.filter(s => s.done).length} of {onboardingSteps.length} completed</p>
                       </div>
                       <div className="text-2xl font-bold text-[#6FFFE9]">
                         {Math.round((onboardingSteps.filter(s => s.done).length / onboardingSteps.length) * 100)}%
@@ -416,8 +418,8 @@ export default function TenantDashboard() {
                 <div className="liquid-glass-teal rounded-3xl p-5 sm:p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div>
-                      <div className="inline-block px-2.5 py-1 rounded-full bg-black/40 text-[10px] font-bold text-zinc-300 uppercase tracking-wider mb-2 border border-white/[0.08]">Current Month</div>
-                      <h2 className="text-4xl sm:text-5xl font-bold tracking-tighter text-white font-mono leading-none">
+                      <div className="inline-block px-2.5 py-1 rounded-full bg-black/40 text-[10px] font-bold text-[#C0C0C0] uppercase tracking-wider mb-2 border border-[#C0C0C0]/[0.18]">Current Month</div>
+                      <h2 className="text-4xl sm:text-5xl font-bold tracking-tighter font-mono leading-none silver-text glow-text">
                         ₹{totalDue.toLocaleString()}
                       </h2>
                     </div>
@@ -426,8 +428,8 @@ export default function TenantDashboard() {
 
                   <div className="space-y-1.5 mb-5">
                     <div className="flex justify-between text-xs font-medium">
-                      <span className="text-zinc-400">Settlement Progress</span>
-                      <span className="text-zinc-400" data-testid="text-progress-percent">{progressPercent}% Settled</span>
+                      <span className="text-[#C0C0C0]/70">Settlement Progress</span>
+                      <span className="text-[#6FFFE9]/80" data-testid="text-progress-percent">{progressPercent}% Settled</span>
                     </div>
                     <div className="w-full h-2 bg-white/[0.08] rounded-full overflow-hidden">
                       <div
@@ -436,9 +438,9 @@ export default function TenantDashboard() {
                         data-testid="progress-bar-settlement"
                       />
                     </div>
-                    <div className="flex justify-between text-xs text-zinc-500">
-                      <span>Paid <span className="text-white font-mono" data-testid="text-amount-paid">₹{amountPaid.toLocaleString()}</span></span>
-                      <span>Remaining <span className="text-white font-mono" data-testid="text-amount-remaining">₹{remaining.toLocaleString()}</span></span>
+                    <div className="flex justify-between text-xs text-[#C0C0C0]/50">
+                      <span>Paid <span className="text-[#6FFFE9] font-mono" data-testid="text-amount-paid">₹{amountPaid.toLocaleString()}</span></span>
+                      <span>Remaining <span className="text-[#C0C0C0] font-mono" data-testid="text-amount-remaining">₹{remaining.toLocaleString()}</span></span>
                     </div>
                   </div>
 
@@ -481,7 +483,7 @@ export default function TenantDashboard() {
                 {paymentsData && paymentsData.filter(p => p.status === "SUCCESS").length > 0 && (
                   <div>
                     <div className="flex items-center justify-between mb-3">
-                      <p className="text-[10px] uppercase tracking-widest text-zinc-500">Recent Payments</p>
+                      <p className="text-[10px] uppercase tracking-widest text-[#C0C0C0]/50">Recent Payments</p>
                       <button onClick={() => setActiveTab("payments")} className="text-[10px] text-[#6FFFE9]/70 uppercase tracking-wider hover:text-[#6FFFE9] transition-colors">
                         View All
                       </button>
@@ -620,7 +622,7 @@ export default function TenantDashboard() {
                 {/* Payment History — per transaction */}
                 {paymentsData && paymentsData.length > 0 && (
                   <div>
-                    <p className="text-[10px] uppercase tracking-widest text-zinc-500 mb-3">{t("tenant_payment_history")}</p>
+                    <p className="text-[10px] uppercase tracking-widest text-[#C0C0C0]/50 mb-3">{t("tenant_payment_history")}</p>
                     <div className="space-y-2">
                       {paymentsData.map((pmt, idx) => (
                         <div key={pmt.id} className="liquid-glass rounded-xl flex items-center justify-between p-4" data-testid={`payment-entry-${idx}`}>
@@ -651,8 +653,8 @@ export default function TenantDashboard() {
                 <div>
                   <div className="flex items-center gap-2 mb-3">
                     <TrendingUp size={14} className="text-[#6FFFE9]/60" />
-                    <p className="text-[10px] uppercase tracking-widest text-zinc-500">All Months</p>
-                    <span className="ml-auto text-[10px] text-zinc-600 font-mono">{settledMonths} settled</span>
+                    <p className="text-[10px] uppercase tracking-widest text-[#C0C0C0]/50">All Months</p>
+                    <span className="ml-auto text-[10px] text-[#6FFFE9]/60 font-mono">{settledMonths} settled</span>
                   </div>
                   <div className="space-y-2">
                     {allLedgers.map(ledger => {
@@ -699,27 +701,27 @@ export default function TenantDashboard() {
 
                 {/* Property Card */}
                 <div className="liquid-glass rounded-3xl p-5 sm:p-6 space-y-4" data-testid="card-property-details">
-                  <p className="text-[10px] uppercase tracking-widest text-zinc-500">Property Details</p>
+                  <p className="text-[10px] uppercase tracking-widest text-[#C0C0C0]/50">Property Details</p>
                   <div className="space-y-3">
                     <div className="flex items-start gap-3">
-                      <MapPin size={16} className="text-zinc-500 mt-0.5 shrink-0" />
+                      <MapPin size={16} className="text-[#6FFFE9]/50 mt-0.5 shrink-0" />
                       <div>
-                        <p className="text-[10px] uppercase tracking-wider text-zinc-500 mb-0.5">Address</p>
-                        <p className="text-sm text-white font-medium" data-testid="text-property-address">{property.address}</p>
+                        <p className="text-[10px] uppercase tracking-wider text-[#C0C0C0]/45 mb-0.5">Address</p>
+                        <p className="text-sm text-[#E8E8E8] font-medium" data-testid="text-property-address">{property.address}</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
-                      <Banknote size={16} className="text-zinc-500 mt-0.5 shrink-0" />
+                      <Banknote size={16} className="text-[#C0C0C0]/50 mt-0.5 shrink-0" />
                       <div>
-                        <p className="text-[10px] uppercase tracking-wider text-zinc-500 mb-0.5">Monthly Rent</p>
-                        <p className="text-sm text-white font-mono" data-testid="text-monthly-rent">₹{property.monthlyRent.toLocaleString()}</p>
+                        <p className="text-[10px] uppercase tracking-wider text-[#C0C0C0]/45 mb-0.5">Monthly Rent</p>
+                        <p className="text-sm text-[#C0C0C0] font-mono" data-testid="text-monthly-rent">₹{property.monthlyRent.toLocaleString()}</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
-                      <CalendarDays size={16} className="text-zinc-500 mt-0.5 shrink-0" />
+                      <CalendarDays size={16} className="text-[#C0C0C0]/50 mt-0.5 shrink-0" />
                       <div>
-                        <p className="text-[10px] uppercase tracking-wider text-zinc-500 mb-0.5">Payment Due</p>
-                        <p className="text-sm text-white" data-testid="text-payout-day">
+                        <p className="text-[10px] uppercase tracking-wider text-[#C0C0C0]/45 mb-0.5">Payment Due</p>
+                        <p className="text-sm text-[#E8E8E8]" data-testid="text-payout-day">
                           {payoutDay === 1 ? "1st" : payoutDay === 2 ? "2nd" : payoutDay === 3 ? "3rd" : `${payoutDay}th`} of every month
                         </p>
                       </div>
@@ -730,7 +732,7 @@ export default function TenantDashboard() {
                 {/* Agreement Status */}
                 <div className="liquid-glass rounded-3xl p-5 sm:p-6" data-testid="card-agreement-status">
                   <div className="flex items-center justify-between mb-4">
-                    <p className="text-[10px] uppercase tracking-widest text-zinc-500">Agreement Status</p>
+                    <p className="text-[10px] uppercase tracking-widest text-[#C0C0C0]/50">Agreement Status</p>
                     {agreementStatus && <StatusBadge status={
                       agreementStatus === "FULLY_SIGNED" ? "SETTLED" :
                       agreementStatus === "PENDING" ? "ARREARS" : "EXPOSED"
@@ -766,7 +768,7 @@ export default function TenantDashboard() {
                 <div className="liquid-glass rounded-3xl p-5 sm:p-6" data-testid="card-kyc-status">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-[10px] uppercase tracking-widest text-zinc-500 mb-1">KYC Verification</p>
+                      <p className="text-[10px] uppercase tracking-widest text-[#C0C0C0]/50 mb-1">KYC Verification</p>
                       <p className="text-sm text-white">
                         {isVerified ? "Identity Verified" : hasPendingKyc ? "Under Review" : "Not Submitted"}
                       </p>
