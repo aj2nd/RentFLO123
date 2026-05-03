@@ -8,11 +8,11 @@ export default function LandingPage() {
     <div className="min-h-screen bg-black text-zinc-300">
 
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
-      <main className="px-8 md:px-16 max-w-screen-xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center min-h-[82vh] pt-20 pb-24">
+      <main className="px-8 md:px-16 max-w-screen-xl mx-auto grid grid-cols-1 lg:grid-cols-[1.3fr_0.85fr] gap-14 items-center min-h-[82vh] pt-20 pb-24">
 
         <div className="space-y-10">
           {/* Eyebrow label */}
-          <div className="inline-flex items-center gap-2.5 px-4 py-2 border border-[#6FFFE9]/20 bg-[#6FFFE9]/[0.04]">
+          <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full border border-[#6FFFE9]/20 bg-[#6FFFE9]/[0.04]">
             <span className="w-1.5 h-1.5 rounded-full bg-[#6FFFE9] animate-pulse" />
             <span className="text-[10px] font-semibold uppercase tracking-[2px] text-[#6FFFE9]/70">
               Rent Payment Platform
@@ -43,7 +43,7 @@ export default function LandingPage() {
           <div className="flex flex-col sm:flex-row gap-3 pt-2">
             <a
               href="/onboarding"
-              className="inline-flex items-center justify-center h-13 px-9 font-bold text-sm tracking-[0.06em] uppercase transition-all duration-200 group"
+              className="inline-flex items-center justify-center px-8 rounded-xl font-bold text-sm tracking-[0.06em] uppercase transition-all duration-200 group"
               style={{
                 background: 'linear-gradient(135deg, #8A8A8A 0%, #D4D4D4 28%, #F2F2F2 48%, #E0E0E0 58%, #C0C0C0 72%, #8A8A8A 100%)',
                 color: '#000',
@@ -55,14 +55,14 @@ export default function LandingPage() {
               <span data-i18n="get_started">{t("get_started")}</span>
               <ArrowRight size={16} className="ml-2 group-hover:translate-x-1 transition-transform duration-200" />
             </a>
-            <button
-              onClick={() => document.getElementById('features-section')?.scrollIntoView({ behavior: 'smooth' })}
-              className="inline-flex items-center justify-center h-13 px-9 border border-white/10 text-white/40 hover:text-white/70 hover:border-white/25 hover:bg-white/[0.03] transition-all duration-200 font-medium text-sm tracking-[0.04em] uppercase"
+            <a
+              href="/api/login"
+              className="inline-flex items-center justify-center px-8 rounded-xl border border-white/10 text-white/40 hover:text-white/70 hover:border-white/25 hover:bg-white/[0.03] transition-all duration-200 font-medium text-sm tracking-[0.04em] uppercase"
               style={{ height: '52px' }}
-              data-testid="button-view-demo"
+              data-testid="button-login"
             >
-              <span data-i18n="view_demo">{t("view_demo")}</span>
-            </button>
+              Log In <ArrowRight size={14} className="ml-2" />
+            </a>
           </div>
 
           {/* Trust indicators */}
@@ -80,7 +80,7 @@ export default function LandingPage() {
         </div>
 
         {/* ── Dashboard preview card ─────────────────────── */}
-        <div className="relative hidden lg:flex flex-col gap-4 p-8 bg-zinc-950 border border-white/[0.06] overflow-hidden" style={{ minHeight: '540px' }}>
+        <div className="relative hidden lg:flex flex-col gap-4 p-8 bg-zinc-950 border border-white/[0.06] rounded-2xl overflow-hidden" style={{ minHeight: '540px' }}>
           {/* Subtle gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-br from-[#6FFFE9]/[0.03] via-transparent to-transparent pointer-events-none" />
           <div className="absolute top-0 right-0 w-64 h-64 bg-[#6FFFE9]/[0.025] rounded-full blur-3xl pointer-events-none" />
@@ -104,7 +104,7 @@ export default function LandingPage() {
               { label: 'Guaranteed Payout', value: '1st of Month', accent: false },
               { label: 'Settlement', value: '0% → 100%', accent: false },
             ].map((row, i) => (
-              <div key={i} className="flex items-center justify-between px-5 py-4 border border-white/[0.05] bg-black/40">
+              <div key={i} className="flex items-center justify-between px-5 py-4 rounded-xl border border-white/[0.05] bg-black/40">
                 <span className="text-[11px] font-semibold uppercase tracking-[1.5px] text-white/30">{row.label}</span>
                 <span className={`text-sm font-bold tracking-tight ${row.accent ? 'text-white' : 'text-white/55'}`}>{row.value}</span>
               </div>
@@ -125,7 +125,7 @@ export default function LandingPage() {
           {/* Stamp */}
           <div className="absolute bottom-7 right-7 z-10">
             <div
-              className="px-4 py-2 text-[10px] font-black uppercase tracking-[2px] text-black"
+              className="px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-[2px] text-black"
               style={{ background: 'linear-gradient(135deg, #888 0%, #D0D0D0 40%, #F0F0F0 55%, #B8B8B8 70%, #888 100%)' }}
             >
               Rent Guaranteed
@@ -208,7 +208,7 @@ function FeatureCard({ icon, title, desc, titleKey, descKey }: {
 }) {
   return (
     <div className="bg-black p-8 md:p-10 group hover:bg-zinc-950 transition-colors duration-300">
-      <div className="mb-5 inline-flex items-center justify-center w-10 h-10 border border-[#6FFFE9]/15 bg-[#6FFFE9]/[0.04] group-hover:border-[#6FFFE9]/30 transition-colors duration-300">
+      <div className="mb-5 inline-flex items-center justify-center w-10 h-10 rounded-xl border border-[#6FFFE9]/15 bg-[#6FFFE9]/[0.04] group-hover:border-[#6FFFE9]/30 transition-colors duration-300">
         {icon}
       </div>
       <h3

@@ -68,13 +68,10 @@ export function TiltCards() {
         @keyframes floorShimmer { 0%{opacity:0.4} 50%{opacity:0.7} 100%{opacity:0.4} }
       `}</style>
 
-      {/* Floor grid — 3D perspective */}
+      {/* Floor grid */}
       <div style={{
         position: 'absolute', bottom: 0, left: 0, right: 0, height: '45%', pointerEvents: 'none', zIndex: 0,
-        background: `
-          linear-gradient(rgba(${TRGB},0.06) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(${TRGB},0.06) 1px, transparent 1px)
-        `,
+        background: `linear-gradient(rgba(${TRGB},0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(${TRGB},0.06) 1px, transparent 1px)`,
         backgroundSize: '60px 60px',
         transform: 'perspective(400px) rotateX(70deg)',
         transformOrigin: 'bottom center',
@@ -97,12 +94,9 @@ export function TiltCards() {
           {CARDS.map((card, i) => {
             const angle = (360 / N) * i + display;
             const rad = (angle * Math.PI) / 180;
-            // Determine how "front-facing" this card is (cos of angle = how direct it faces viewer)
             const facing = Math.cos(rad);
             const isFront = facing > 0.5;
             const isFocusTarget = focused === i;
-
-            // Z-translate to pop focused card
             const extraZ = isFocusTarget ? 80 : 0;
 
             return (
@@ -114,6 +108,7 @@ export function TiltCards() {
                   top: '50%', left: '50%',
                   width: 260, height: 180,
                   marginLeft: -130, marginTop: -90,
+                  borderRadius: 18,
                   transform: `perspective(1400px) rotateY(${angle}deg) translateZ(${RADIUS + extraZ}px)`,
                   transition: 'box-shadow 0.3s',
                   cursor: isFront ? 'pointer' : 'default',
@@ -134,10 +129,11 @@ export function TiltCards() {
                   position: 'absolute', top: 0, left: 0, right: 0, height: 2,
                   background: `linear-gradient(90deg, transparent, rgba(${TRGB},${0.3 + facing * 0.5}), transparent)`,
                   opacity: isFocusTarget ? 1 : facing,
+                  borderRadius: '18px 18px 0 0',
                 }} />
 
-                {/* Depth layers — simulated inner depth */}
-                <div style={{ position: 'absolute', inset: 8, border: '1px solid rgba(255,255,255,0.025)', pointerEvents: 'none' }} />
+                {/* Inner depth frame */}
+                <div style={{ position: 'absolute', inset: 8, border: '1px solid rgba(255,255,255,0.025)', borderRadius: 12, pointerEvents: 'none' }} />
 
                 <div>
                   <div style={{ fontSize: 8, letterSpacing: '0.22em', color: 'rgba(255,255,255,0.25)', fontWeight: 700, marginBottom: 12 }}>{card.label}</div>
@@ -156,14 +152,12 @@ export function TiltCards() {
                   </div>
                 </div>
 
-                {/* Card index badge */}
                 <div style={{
                   position: 'absolute', bottom: 16, right: 16,
                   fontFamily: 'monospace', fontSize: 9, color: `rgba(${TRGB},0.3)`,
                   letterSpacing: '0.1em',
                 }}>0{i + 1} / 0{N}</div>
 
-                {/* Bottom shadow cast */}
                 <div style={{
                   position: 'absolute', bottom: -24, left: '10%', right: '10%', height: 24,
                   background: `rgba(0,0,0,${0.6 * facing})`,
@@ -185,7 +179,7 @@ export function TiltCards() {
           const isFront = norm < 50 || norm > 310;
           return (
             <div key={i} onClick={() => { vel.current = 0; rot.current = -(360 / N) * i; }} style={{
-              width: isFront ? 20 : 6, height: 6, borderRadius: 3,
+              width: isFront ? 20 : 6, height: 6, borderRadius: 100,
               background: isFront ? T : 'rgba(255,255,255,0.2)',
               cursor: 'pointer', transition: 'all 0.3s ease',
               boxShadow: isFront ? `0 0 8px ${T}` : 'none',
@@ -194,7 +188,6 @@ export function TiltCards() {
         })}
       </div>
 
-      {/* Hint */}
       <div style={{ position: 'absolute', bottom: 28, left: '50%', transform: 'translateX(-50%)', fontSize: 9, letterSpacing: '0.2em', color: 'rgba(255,255,255,0.15)', fontWeight: 600, zIndex: 10 }}>
         ← DRAG TO ROTATE →
       </div>
