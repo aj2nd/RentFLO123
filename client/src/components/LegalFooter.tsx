@@ -9,12 +9,11 @@ export function LegalFooter() {
   const { collapsed } = useSidebar();
   const hasSidebar = !!user?.role;
 
-  const leftOffset = hasSidebar && !collapsed ? '256px' : '0px';
+  if (hasSidebar) return null;
 
   return (
     <footer
-      className="fixed bottom-0 right-0 bg-black border-t border-white/[0.05] z-40 transition-all duration-300 ease-in-out"
-      style={{ left: leftOffset }}
+      className="fixed bottom-0 left-0 right-0 bg-black border-t border-white/[0.05] z-40"
     >
       <div className="overflow-x-auto scrollbar-none" style={{ WebkitOverflowScrolling: 'touch' }}>
         <div className="flex items-center gap-5 text-[11px] text-white/20 py-3 px-6 whitespace-nowrap min-w-max font-medium tracking-wide">

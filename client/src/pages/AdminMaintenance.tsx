@@ -42,7 +42,7 @@ export default function AdminMaintenance() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <div className="p-4 sm:p-6 md:p-10">
+      <div className="p-4 sm:p-6 md:p-10 pb-28">
         <header className="mb-8">
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tighter mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>{t('maint_title')}</h1>
           <p className="text-zinc-500 text-sm">{t('maint_subtitle')}</p>

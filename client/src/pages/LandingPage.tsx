@@ -21,13 +21,13 @@ export default function LandingPage() {
 
           {/* Hero headline */}
           <div className="space-y-1">
-            <h1 className="text-[72px] md:text-[96px] font-bold tracking-[-4px] leading-[0.88] silver-text glow-text select-none">
+            <h1 className="text-[40px] sm:text-[60px] md:text-[72px] lg:text-[96px] font-bold tracking-[-2px] sm:tracking-[-3px] md:tracking-[-4px] leading-[0.88] silver-text glow-text select-none">
               NEVER
             </h1>
-            <h1 className="text-[72px] md:text-[96px] font-bold tracking-[-4px] leading-[0.88] silver-text glow-text select-none">
+            <h1 className="text-[40px] sm:text-[60px] md:text-[72px] lg:text-[96px] font-bold tracking-[-2px] sm:tracking-[-3px] md:tracking-[-4px] leading-[0.88] silver-text glow-text select-none">
               CHASE
             </h1>
-            <h1 className="text-[72px] md:text-[96px] font-bold tracking-[-4px] leading-[0.88] silver-text glow-text select-none">
+            <h1 className="text-[40px] sm:text-[60px] md:text-[72px] lg:text-[96px] font-bold tracking-[-2px] sm:tracking-[-3px] md:tracking-[-4px] leading-[0.88] silver-text glow-text select-none">
               RENT.
             </h1>
           </div>

@@ -21,9 +21,9 @@ app.use(
       directives: {
         defaultSrc:     ["'self'"],
         scriptSrc:      ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://checkout.razorpay.com"],
-        styleSrc:       ["'self'", "'unsafe-inline'"],
+        styleSrc:       ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         imgSrc:         ["'self'", "data:", "blob:", "https:"],
-        fontSrc:        ["'self'", "data:"],
+        fontSrc:        ["'self'", "data:", "https://fonts.gstatic.com"],
         connectSrc:     ["'self'", "https://api.razorpay.com", "wss:", "ws:"],
         frameSrc:       ["https://api.razorpay.com", "https://checkout.razorpay.com"],
         objectSrc:      ["'none'"],
