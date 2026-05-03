@@ -10,6 +10,7 @@ export const modules: ModuleMap = {
   "./components/mockups/tenant-dashboard-variants/LivePreview.tsx": () => import("../components/mockups/tenant-dashboard-variants/LivePreview.tsx"),
   "./components/mockups/tenant-dashboard-variants/Minimal.tsx": () => import("../components/mockups/tenant-dashboard-variants/Minimal.tsx"),
   "./components/mockups/tenant-dashboard-variants/Rounded.tsx": () => import("../components/mockups/tenant-dashboard-variants/Rounded.tsx"),
+  "./components/mockups/tenant-dashboard-variants/SidebarPreview.tsx": () => import("../components/mockups/tenant-dashboard-variants/SidebarPreview.tsx"),
   "./components/mockups/tenant-dashboard-variants/SilverEditorial.tsx": () => import("../components/mockups/tenant-dashboard-variants/SilverEditorial.tsx"),
   "./components/mockups/tenant-dashboard-variants/SilverElevated.tsx": () => import("../components/mockups/tenant-dashboard-variants/SilverElevated.tsx"),
   "./components/mockups/tenant-dashboard-variants/SilverTealBold.tsx": () => import("../components/mockups/tenant-dashboard-variants/SilverTealBold.tsx")

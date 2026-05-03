@@ -1,6 +1,9 @@
 import { Link, useLocation } from "wouter";
-import { useEffect, useState } from "react";
-import { LayoutDashboard, Home, LogOut, Wallet, Wrench, Receipt, Loader2, ShieldCheck, FileSignature, ChevronRight, MessageSquare } from "lucide-react";
+import { useEffect } from "react";
+import {
+  LayoutDashboard, Home, LogOut, Wallet, Wrench, Receipt,
+  Loader2, ShieldCheck, FileSignature, ChevronRight, MessageSquare,
+} from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
 import { useSidebar } from "@/contexts/SidebarContext";
@@ -13,23 +16,11 @@ export function Navigation() {
   const { t } = useI18n();
   const { collapsed, toggle } = useSidebar();
 
-  // Track the real rendered header height (handles glass/compact transitions)
-  const [headerH, setHeaderH] = useState(210);
-  useEffect(() => {
-    const el = document.querySelector('.i18n-header') as HTMLElement | null;
-    if (!el) return;
-    const update = () => setHeaderH(el.offsetHeight);
-    update();
-    const ro = new ResizeObserver(update);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
-
   useEffect(() => {
     const isMobile = window.innerWidth < 768;
     if (!collapsed && isMobile) {
       const prev = document.body.style.overflow;
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
       return () => { document.body.style.overflow = prev; };
     }
   }, [collapsed]);
@@ -45,13 +36,13 @@ export function Navigation() {
   const unreadCount = unreadData?.count ?? 0;
 
   const navItems: { href: string; icon: React.ReactNode; label: string; roles: string[]; badge?: number }[] = [
-    { href: "/admin",             icon: <LayoutDashboard size={18} />, label: t('nav_admin_console'),    roles: ["ADMIN"] },
-    { href: "/admin/maintenance", icon: <Wrench size={18} />,          label: t('nav_maintenance'),      roles: ["ADMIN"] },
-    { href: "/owner",             icon: <Wallet size={18} />,          label: t('nav_owner_portal'),     roles: ["OWNER"] },
-    { href: "/tenant",            icon: <Home size={18} />,            label: t('nav_tenant_dashboard'), roles: ["TENANT"] },
-    { href: "/ledger",            icon: <Receipt size={18} />,         label: t('nav_ledger'),           roles: ["ADMIN", "OWNER", "TENANT"] },
-    { href: "/verify",            icon: <ShieldCheck size={18} />,     label: t('nav_kyc'),              roles: ["OWNER", "TENANT"] },
-    { href: "/agreement",         icon: <FileSignature size={18} />,   label: t('nav_agreement'),        roles: ["OWNER", "TENANT"] },
+    { href: "/admin",             icon: <LayoutDashboard size={18} />, label: t("nav_admin_console"),    roles: ["ADMIN"] },
+    { href: "/admin/maintenance", icon: <Wrench size={18} />,          label: t("nav_maintenance"),      roles: ["ADMIN"] },
+    { href: "/owner",             icon: <Wallet size={18} />,          label: t("nav_owner_portal"),     roles: ["OWNER"] },
+    { href: "/tenant",            icon: <Home size={18} />,            label: t("nav_tenant_dashboard"), roles: ["TENANT"] },
+    { href: "/ledger",            icon: <Receipt size={18} />,         label: t("nav_ledger"),           roles: ["ADMIN", "OWNER", "TENANT"] },
+    { href: "/verify",            icon: <ShieldCheck size={18} />,     label: t("nav_kyc"),              roles: ["OWNER", "TENANT"] },
+    { href: "/agreement",         icon: <FileSignature size={18} />,   label: t("nav_agreement"),        roles: ["OWNER", "TENANT"] },
     { href: "/maintenance",       icon: <Wrench size={18} />,          label: "Maintenance",             roles: ["OWNER", "TENANT", "ADMIN"] },
     { href: "/admin/messages",    icon: <MessageSquare size={18} />,   label: "Messages",                roles: ["ADMIN"] },
     { href: "/messages",          icon: <MessageSquare size={18} />,   label: "Messages",                roles: ["OWNER", "TENANT"], badge: unreadCount },
@@ -61,31 +52,72 @@ export function Navigation() {
 
   return (
     <>
-      {/* Backdrop overlay — mobile drawer only, click to close */}
+      {/* Backdrop overlay — mobile only, tap to close */}
       {!collapsed && (
         <div
-          className="fixed inset-x-0 bottom-0 z-40 md:hidden"
-          style={{ top: headerH }}
+          className="fixed inset-0 z-40 md:hidden"
+          style={{ background: "rgba(0,0,0,0.45)", backdropFilter: "blur(4px)" }}
           onClick={toggle}
           aria-label="Close sidebar"
         />
       )}
 
-      {/* Sidebar panel — starts flush with the bottom of the actual header */}
+      {/* ── Sidebar panel ── */}
       <nav
-        className="fixed left-0 bg-black border-r border-white/[0.06] flex flex-col z-50 overflow-hidden transition-all duration-300 ease-in-out"
+        className="fixed left-0 top-0 flex flex-col z-50 overflow-hidden transition-all duration-300 ease-in-out"
         style={{
-          top: headerH,
-          height: `calc(100vh - ${headerH}px - 64px - env(safe-area-inset-bottom, 0px))`,
-          width: collapsed ? '0px' : '256px',
+          paddingTop: "env(safe-area-inset-top, 0px)",
+          height: "calc(100dvh - 64px - env(safe-area-inset-bottom, 0px))",
+          width: collapsed ? "0px" : "256px",
+          background: "rgba(0,0,0,0.92)",
+          backdropFilter: "blur(40px) saturate(200%)",
+          WebkitBackdropFilter: "blur(40px) saturate(200%)",
+          borderRight: "1px solid rgba(192,192,192,0.08)",
+          boxShadow: "inset -1px 0 0 rgba(111,255,233,0.04), 4px 0 32px rgba(0,0,0,0.5)",
         }}
       >
-        {/* Nav items — scrollable, takes all available space */}
-        <div className="flex-1 min-h-0 overflow-y-auto w-64 pt-4">
+        {/* ── Brand header ── */}
+        <div
+          className="w-64 px-4 py-4 flex items-center gap-2.5 flex-shrink-0"
+          style={{ borderBottom: "1px solid rgba(192,192,192,0.07)" }}
+        >
+          <div
+            className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+            style={{ background: "rgba(111,255,233,0.12)", border: "1px solid rgba(111,255,233,0.25)" }}
+          >
+            <Home size={14} style={{ color: "#6FFFE9" }} />
+          </div>
+          <div>
+            <span
+              className="text-sm font-bold tracking-tight"
+              style={{
+                background: "linear-gradient(135deg, #C0C0C0 0%, #F0F0F0 50%, #C0C0C0 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+              }}
+            >
+              RentFLO
+            </span>
+            {user?.role && (
+              <p className="text-[9px] uppercase tracking-widest leading-none mt-0.5" style={{ color: "rgba(157,239,228,0.55)" }}>
+                {user.role.charAt(0) + user.role.slice(1).toLowerCase()}
+              </p>
+            )}
+          </div>
+          {/* Tiffany accent dot */}
+          <div
+            className="ml-auto w-1.5 h-1.5 rounded-full flex-shrink-0"
+            style={{ background: "#6FFFE9", boxShadow: "0 0 6px rgba(111,255,233,0.7)" }}
+          />
+        </div>
+
+        {/* ── Nav items — scrollable ── */}
+        <div className="flex-1 min-h-0 overflow-y-auto w-64 py-3">
           <div className="space-y-0.5 px-3">
             {isLoading ? (
               <div className="flex items-center justify-center py-8">
-                <Loader2 className="w-4 h-4 animate-spin text-[#6FFFE9]/40" />
+                <Loader2 className="w-4 h-4 animate-spin" style={{ color: "rgba(111,255,233,0.40)" }} />
               </div>
             ) : (
               visibleItems.map((item) => (
@@ -103,49 +135,73 @@ export function Navigation() {
           </div>
         </div>
 
-        {/* Footer: alerts + sign out */}
-        <div className="px-3 flex flex-col gap-1 w-64 pb-4 pt-2 border-t border-white/[0.06]">
-          <div className="flex items-center gap-2 px-3 py-2 mb-1">
+        {/* ── Footer: alerts + sign out ── */}
+        <div
+          className="px-3 flex flex-col gap-1 w-64 pb-4 pt-3 flex-shrink-0"
+          style={{ borderTop: "1px solid rgba(192,192,192,0.07)" }}
+        >
+          {/* Alerts row */}
+          <div className="flex items-center gap-2 px-3 py-2">
             <NotificationBell />
-            <span className="text-[10px] font-medium text-white/25 uppercase tracking-widest">Alerts</span>
+            <span
+              className="text-[9px] font-medium uppercase tracking-widest"
+              style={{ color: "rgba(192,192,192,0.30)" }}
+            >
+              Alerts
+            </span>
           </div>
 
           {/* Sign out */}
           <button
             onClick={() => logout()}
-            className="flex items-center gap-3 px-3 py-2.5 w-full rounded-lg text-white/35 hover:text-white/80 hover:bg-white/[0.04] transition-all duration-200 group whitespace-nowrap"
+            className="flex items-center gap-3 px-3 py-2.5 w-full rounded-xl transition-all duration-200 group"
+            style={{
+              color: "rgba(192,192,192,0.45)",
+              background: "transparent",
+              border: "1px solid transparent",
+            }}
+            onMouseEnter={e => {
+              (e.currentTarget as HTMLButtonElement).style.color = "rgba(192,192,192,0.85)";
+              (e.currentTarget as HTMLButtonElement).style.background = "rgba(192,192,192,0.05)";
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(192,192,192,0.10)";
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLButtonElement).style.color = "rgba(192,192,192,0.45)";
+              (e.currentTarget as HTMLButtonElement).style.background = "transparent";
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "transparent";
+            }}
             data-testid="button-logout"
           >
             <LogOut size={15} className="flex-shrink-0" />
-            <span className="text-sm font-medium">{t('nav_sign_out')}</span>
+            <span className="text-sm font-medium whitespace-nowrap">{t("nav_sign_out")}</span>
           </button>
         </div>
       </nav>
 
-      {/* Floating expand tab — shown when sidebar is collapsed */}
+      {/* ── Floating expand tab — shown when collapsed ── */}
       <button
         onClick={toggle}
-        className="fixed z-50 flex items-center justify-center transition-all duration-300 ease-in-out group"
+        className="fixed z-50 flex items-center justify-center transition-all duration-300 ease-in-out"
         style={{
-          top: `calc(${headerH}px + 50%)`,
-          left: collapsed ? '0px' : '-28px',
-          transform: 'translateY(-50%)',
-          width: '28px',
-          height: '64px',
-          background: 'rgba(255,255,255,0.04)',
-          backdropFilter: 'blur(20px) saturate(180%)',
-          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-          border: '1px solid rgba(255,255,255,0.08)',
-          borderLeft: 'none',
-          borderRadius: '0 8px 8px 0',
-          boxShadow: 'inset 1px 0 0 rgba(255,255,255,0.12), 0 4px 20px rgba(0,0,0,0.3)',
+          top: "50%",
+          left: collapsed ? "0px" : "-28px",
+          transform: "translateY(-50%)",
+          width: "28px",
+          height: "64px",
+          background: "rgba(111,255,233,0.06)",
+          backdropFilter: "blur(20px) saturate(180%)",
+          WebkitBackdropFilter: "blur(20px) saturate(180%)",
+          border: "1px solid rgba(111,255,233,0.15)",
+          borderLeft: "none",
+          borderRadius: "0 8px 8px 0",
+          boxShadow: "inset 1px 0 0 rgba(111,255,233,0.10), 0 4px 20px rgba(0,0,0,0.3)",
           opacity: collapsed ? 1 : 0,
-          pointerEvents: collapsed ? 'auto' : 'none',
+          pointerEvents: collapsed ? "auto" : "none",
         }}
         data-testid="button-expand-sidebar"
         title="Open sidebar"
       >
-        <ChevronRight size={13} className="text-white/50 group-hover:text-white/90 transition-colors relative z-10" />
+        <ChevronRight size={13} style={{ color: "rgba(111,255,233,0.60)" }} />
       </button>
     </>
   );
@@ -163,23 +219,34 @@ function NavItem({ href, icon, label, active, badge, onNavigate }: {
     <Link
       href={href}
       onClick={onNavigate}
-      className={`
-        flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 whitespace-nowrap
-        ${active
-          ? "bg-white/[0.08] text-white"
-          : "text-white/45 hover:text-white/80 hover:bg-white/[0.04]"
-        }
-      `}
-      data-testid={`nav-${href.replace(/\//g, '-').slice(1) || 'home'}`}
+      className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 whitespace-nowrap"
+      style={active ? {
+        background: "rgba(111,255,233,0.10)",
+        color: "#6FFFE9",
+        border: "1px solid rgba(111,255,233,0.22)",
+        boxShadow: "inset 0 1px 0 rgba(111,255,233,0.12)",
+      } : {
+        color: "rgba(192,192,192,0.50)",
+        border: "1px solid transparent",
+      }}
+      data-testid={`nav-${href.replace(/\//g, "-").slice(1) || "home"}`}
     >
-      <span className="flex-shrink-0">{icon}</span>
+      <span className="flex-shrink-0" style={{ color: active ? "#6FFFE9" : "rgba(192,192,192,0.45)" }}>
+        {icon}
+      </span>
       <span className="text-sm font-medium">{label}</span>
       {badge && badge > 0 ? (
-        <span className="ml-auto flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[9px] font-bold bg-[#6FFFE9] text-black rounded-full">
+        <span
+          className="ml-auto flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[9px] font-bold rounded-full"
+          style={{ background: "#6FFFE9", color: "#000" }}
+        >
           {badge > 99 ? "99+" : badge}
         </span>
       ) : active ? (
-        <span className="ml-auto w-1 h-1 rounded-full bg-[#6FFFE9]" />
+        <span
+          className="ml-auto w-1.5 h-1.5 rounded-full"
+          style={{ background: "#6FFFE9", boxShadow: "0 0 6px rgba(111,255,233,0.7)" }}
+        />
       ) : null}
     </Link>
   );
