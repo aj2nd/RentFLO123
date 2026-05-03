@@ -27,6 +27,7 @@ import Maintenance from "@/pages/Maintenance";
 import { LegalFooter } from "@/components/LegalFooter";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { Navigation } from "@/components/Navigation";
+import { BottomNav } from "@/components/BottomNav";
 
 function SidebarContent({ children }: { children: React.ReactNode }) {
   const { collapsed } = useSidebar();
@@ -69,6 +70,7 @@ function PrivateRoute({ component: Component, allowedRoles }: { component: React
       <SidebarContent>
         <Component />
       </SidebarContent>
+      <BottomNav />
     </>
   );
 }

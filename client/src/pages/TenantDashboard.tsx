@@ -1,10 +1,10 @@
 import { useProperties } from "@/hooks/use-properties";
 import { useLedgers, useCreatePartialPayment, usePaymentsByLedger, useTickets } from "@/hooks/use-ledgers";
 import {
-  Loader2, Home, ArrowRight, ShieldCheck, Wrench, Upload, X,
+  Loader2, Home, ShieldCheck, Wrench, Upload,
   ToggleLeft, ToggleRight, Search, Building2, Shield, Clock,
-  FileSignature, MessageSquare, CalendarDays, CheckCircle2,
-  AlertCircle, TrendingUp, ChevronRight, CreditCard, MapPin,
+  CalendarDays, CheckCircle2,
+  AlertCircle, TrendingUp, ChevronRight, MapPin,
   Banknote, CircleDot,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -43,21 +43,6 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
-function QuickAction({ icon, label, href, onClick }: { icon: React.ReactNode; label: string; href?: string; onClick?: () => void }) {
-  const cls = "flex flex-col items-center gap-2 p-4 border border-white/[0.07] bg-zinc-950 hover:border-[#6FFFE9]/30 hover:bg-[#6FFFE9]/5 transition-all cursor-pointer flex-1 min-w-[72px]";
-  if (href) return (
-    <Link href={href} className={cls}>
-      <span className="text-[#6FFFE9]/70">{icon}</span>
-      <span className="text-[10px] uppercase tracking-widest text-zinc-400 text-center leading-tight">{label}</span>
-    </Link>
-  );
-  return (
-    <button className={cls} onClick={onClick}>
-      <span className="text-[#6FFFE9]/70">{icon}</span>
-      <span className="text-[10px] uppercase tracking-widest text-zinc-400 text-center leading-tight">{label}</span>
-    </button>
-  );
-}
 
 export default function TenantDashboard() {
   const { data: properties, isLoading: propsLoading } = useProperties();
@@ -405,18 +390,6 @@ export default function TenantDashboard() {
                       This month is fully settled
                     </div>
                   )}
-                </div>
-
-                {/* Quick Actions */}
-                <div>
-                  <p className="text-[10px] uppercase tracking-widest text-zinc-500 mb-3">Quick Actions</p>
-                  <div className="flex gap-2 sm:gap-3">
-                    <QuickAction icon={<CreditCard size={20} />} label="Pay Rent" onClick={() => setActiveTab("payments")} />
-                    <QuickAction icon={<MessageSquare size={20} />} label="Message" href="/messages" />
-                    <QuickAction icon={<Wrench size={20} />} label="Repair" href="/maintenance" />
-                    <QuickAction icon={<FileSignature size={20} />} label="Agreement" href="/agreement" />
-                    <QuickAction icon={<ShieldCheck size={20} />} label="KYC" href="/verify" />
-                  </div>
                 </div>
 
                 {/* Open Tickets Summary */}
