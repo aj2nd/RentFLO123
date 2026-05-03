@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/use-auth";
-import { CheckCircle, FileText, PenLine, RotateCcw } from "lucide-react";
+import { CheckCircle, FileText, PenLine, RotateCcw, Download } from "lucide-react";
 import type { Property, Agreement } from "@shared/schema";
 
 type AgreementData = { property: Property | null; agreement: Agreement | null };
@@ -323,13 +323,71 @@ export default function AgreementPage() {
                   </p>
                 </div>
               </div>
-              <Button
-                className="w-full h-12 bg-[#6FFFE9] text-black hover:bg-[#8CFFF0] font-bold rounded-none"
-                onClick={() => setLocation(dashboardPath)}
-                data-testid="button-go-to-dashboard"
-              >
-                Go to Dashboard
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button
+                  className="flex-1 h-12 bg-[#6FFFE9] text-black hover:bg-[#8CFFF0] font-bold rounded-none"
+                  onClick={() => setLocation(dashboardPath)}
+                  data-testid="button-go-to-dashboard"
+                >
+                  Go to Dashboard
+                </Button>
+                <Button
+                  variant="outline"
+                  className="flex-1 h-12 border-[#6FFFE9]/30 text-[#6FFFE9] hover:bg-[#6FFFE9]/10 rounded-none bg-transparent font-semibold"
+                  onClick={() => {
+                    const win = window.open("", "_blank", "width=700,height=900");
+                    if (!win) return;
+                    const signedDate = data.agreement?.tenantSignedAt
+                      ? new Date(data.agreement.tenantSignedAt).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })
+                      : new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
+                    win.document.write(`<!DOCTYPE html><html><head><title>RentFLO Agreement — ${data.property!.address}</title>
+                      <style>*{margin:0;padding:0;box-sizing:border-box}body{background:#000;color:#e4e4e7;font-family:Inter,sans-serif;padding:48px 40px;font-size:14px;line-height:1.7}
+                      .brand{font-size:32px;font-weight:900;letter-spacing:-1px;margin-bottom:2px}.brand span{color:#6FFFE9}
+                      .badge{display:inline-block;border:1px solid rgba(111,255,233,0.35);color:#6FFFE9;font-size:11px;text-transform:uppercase;letter-spacing:3px;padding:4px 12px;margin-bottom:32px}
+                      h1{font-size:24px;font-weight:700;color:#6FFFE9;margin-bottom:8px}
+                      h2{font-size:16px;font-weight:600;margin:24px 0 8px;color:#fff}
+                      p,li{color:#a1a1aa;font-size:13px;margin-bottom:8px}ul{padding-left:20px;margin-bottom:8px}
+                      .meta{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:24px 0;padding:20px;border:1px solid rgba(111,255,233,0.2)}
+                      .meta-item .label{font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#52525b;margin-bottom:2px}
+                      .meta-item .value{font-size:14px;font-weight:600;color:#fff}
+                      .sig-box{border:1px solid rgba(111,255,233,0.3);padding:20px;margin-top:32px}
+                      .sig-label{font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#52525b;margin-bottom:8px}
+                      hr{border:none;border-top:1px solid rgba(111,255,233,0.15);margin:24px 0}
+                      .footer{margin-top:48px;font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#3f3f46;text-align:center}
+                      </style></head><body>
+                      <div class="brand">Rent<span>FLO</span></div>
+                      <div class="badge">Tripartite Rent Advance Agreement</div>
+                      <h1>Rental Agreement</h1>
+                      <p>This agreement is entered into between the Owner, RentFLO Technologies Pvt. Ltd. (Platform), and the Tenant.</p>
+                      <div class="meta">
+                        <div class="meta-item"><div class="label">Property</div><div class="value">${data.property!.address}</div></div>
+                        <div class="meta-item"><div class="label">Monthly Rent</div><div class="value">₹${data.property!.monthlyRent.toLocaleString()}</div></div>
+                        <div class="meta-item"><div class="label">Payout Day</div><div class="value">${data.property!.payoutDay}${["st","nd","rd"][data.property!.payoutDay-1]||"th"} of Month</div></div>
+                        <div class="meta-item"><div class="label">Signed On</div><div class="value">${signedDate}</div></div>
+                        <div class="meta-item"><div class="label">Agreement Status</div><div class="value">${data.agreement?.status ?? "SIGNED"}</div></div>
+                        <div class="meta-item"><div class="label">Tenant</div><div class="value">${userName}</div></div>
+                      </div>
+                      <hr/>
+                      <h2>1. Rent Advance</h2><p>RentFLO advances the monthly rent to the Owner on the agreed payout day regardless of whether the Tenant has paid. The Tenant is then obligated to reimburse RentFLO by the same date each month.</p>
+                      <h2>2. Tenant Obligations</h2><ul><li>Pay the monthly rent to RentFLO on or before the payout day.</li><li>Maintain the property in good condition.</li><li>Report maintenance issues promptly via the RentFLO platform.</li></ul>
+                      <h2>3. Owner Obligations</h2><ul><li>Ensure the property is habitable and meets legal standards.</li><li>Respond to maintenance requests within a reasonable time.</li></ul>
+                      <h2>4. Governing Law</h2><p>This Agreement is governed by the laws of India. Disputes shall be subject to the exclusive jurisdiction of courts in Mumbai, Maharashtra.</p>
+                      <div class="sig-box">
+                        <div class="sig-label">Digital Signature — ${userName}</div>
+                        <p style="color:#6FFFE9;font-size:13px;">✓ Digitally signed on ${signedDate} via RentFLO Platform</p>
+                      </div>
+                      <div class="footer">rentflo.com · This is a legally binding digital agreement · Keep for your records</div>
+                      </body></html>`);
+                    win.document.close();
+                    win.focus();
+                    setTimeout(() => win.print(), 400);
+                  }}
+                  data-testid="button-download-agreement"
+                >
+                  <Download size={15} className="mr-2" />
+                  Download PDF
+                </Button>
+              </div>
             </div>
           )}
 

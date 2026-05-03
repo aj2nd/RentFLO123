@@ -59,6 +59,7 @@ export interface IStorage {
   getNotifications(userId: string): Promise<Notification[]>;
   getUnreadCount(userId: string): Promise<number>;
   markNotificationsRead(userId: string): Promise<void>;
+  createNotification(notif: InsertNotification): Promise<Notification>;
 
   // Messages
   getMessages(propertyId: string): Promise<Message[]>;
@@ -315,6 +316,11 @@ export class DatabaseStorage implements IStorage {
       .update(notifications)
       .set({ read: true })
       .where(eq(notifications.userId, userId));
+  }
+
+  async createNotification(notif: InsertNotification): Promise<Notification> {
+    const [created] = await db.insert(notifications).values(notif).returning();
+    return created;
   }
 
   // Messages

@@ -24,6 +24,8 @@ import Verify from "@/pages/Verify";
 import AgreementPage from "@/pages/Agreement";
 import Messages from "@/pages/Messages";
 import Maintenance from "@/pages/Maintenance";
+import ProfilePage from "@/pages/Profile";
+import NotificationsPage from "@/pages/Notifications";
 import { LegalFooter } from "@/components/LegalFooter";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { Navigation } from "@/components/Navigation";
@@ -169,7 +171,13 @@ function Router() {
       <Route path="/maintenance">
         <PrivateRoute component={Maintenance} allowedRoles={['TENANT', 'OWNER', 'ADMIN']} />
       </Route>
-      
+      <Route path="/profile">
+        <PrivateRoute component={ProfilePage} allowedRoles={['TENANT', 'OWNER', 'ADMIN']} />
+      </Route>
+      <Route path="/notifications">
+        <PrivateRoute component={NotificationsPage} allowedRoles={['TENANT', 'OWNER', 'ADMIN']} />
+      </Route>
+
       <Route path="/terms" component={Terms} />
       <Route path="/privacy" component={Privacy} />
       <Route path="/refund" component={Refund} />

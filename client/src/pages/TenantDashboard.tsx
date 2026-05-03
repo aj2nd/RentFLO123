@@ -5,9 +5,11 @@ import {
   ToggleLeft, ToggleRight, Search, Building2, Shield, Clock,
   CalendarDays, CheckCircle2,
   AlertCircle, TrendingUp, ChevronRight, MapPin,
-  Banknote, CircleDot,
+  Banknote, CircleDot, CheckCircle, Circle,
 } from "lucide-react";
+import { ReceiptModal } from "@/components/ReceiptModal";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { PayRentButton } from "@/components/PayRentButton";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -76,6 +78,11 @@ export default function TenantDashboard() {
   const [isSearching, setIsSearching] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
 
+  const [receiptData, setReceiptData] = useState<{
+    amount: number; paymentId: string; orderId: string;
+    date: Date; property: string; tenantName: string; monthYear?: string;
+  } | null>(null);
+
   // Find the current (unpaid/active) ledger
   const unpaidLedger = ledgers?.find(l => l.amountCollected < l.property.monthlyRent);
   const property = unpaidLedger?.property ?? ledgers?.[0]?.property ?? null;
@@ -121,6 +128,12 @@ export default function TenantDashboard() {
     return () => { try { document.body.removeChild(script); } catch {} };
   }, []);
 
+  // Rent due reminder — fires once per session
+  useEffect(() => {
+    if (!property) return;
+    apiRequest("POST", "/api/notifications/rent-due-check", {}).catch(() => {});
+  }, [property?.id]);
+
   const handlePartialPayment = () => {
     if (!unpaidLedger) return;
     if (!isVerified) {
@@ -145,9 +158,19 @@ export default function TenantDashboard() {
             key: orderData.keyId, amount: orderData.amount, currency: orderData.currency,
             name: "RentFLO", description: `Rent payment for ${property?.address}`,
             order_id: orderData.orderId,
-            handler: () => {
+            handler: (response: { razorpay_payment_id: string; razorpay_order_id: string }) => {
               setShowSuccess(true); setPaymentAmount("");
               queryClient.invalidateQueries({ queryKey: ["/api/ledgers"] });
+              queryClient.invalidateQueries({ queryKey: ["/api/payments"] });
+              setReceiptData({
+                amount: parseInt(amountToUse, 10),
+                paymentId: response?.razorpay_payment_id ?? orderData.orderId,
+                orderId: orderData.orderId,
+                date: new Date(),
+                property: property?.address ?? "Your Property",
+                tenantName: currentUser?.fullLegalName ?? currentUser?.email ?? "Tenant",
+                monthYear: unpaidLedger?.monthYear,
+              });
               setTimeout(() => setShowSuccess(false), 3000);
             },
             prefill: { name: currentUser?.fullLegalName ?? "Tenant", email: currentUser?.email ?? "" },
@@ -235,8 +258,18 @@ export default function TenantDashboard() {
 
   if (propsLoading || ledgersLoading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-black text-white">
-        <Loader2 className="w-8 h-8 animate-spin text-[#6FFFE9]/40" data-testid="loader-tenant" />
+      <div className="min-h-screen bg-black p-4 sm:p-6 md:p-10 pb-24 max-w-4xl mx-auto" data-testid="loader-tenant">
+        <div className="grid grid-cols-3 gap-3 mb-8">
+          {[1,2,3].map(i => <div key={i} className="h-20 bg-zinc-900 animate-pulse border border-white/[0.04]" />)}
+        </div>
+        <div className="flex gap-6 mb-6 border-b border-white/[0.06] pb-3">
+          {[1,2,3].map(i => <div key={i} className="h-4 w-20 bg-zinc-900 animate-pulse" />)}
+        </div>
+        <div className="space-y-4">
+          <div className="h-40 bg-zinc-900 animate-pulse border border-white/[0.04]" />
+          <div className="h-24 bg-zinc-900 animate-pulse border border-white/[0.04]" />
+          <div className="h-24 bg-zinc-900 animate-pulse border border-white/[0.04]" />
+        </div>
       </div>
     );
   }
@@ -249,9 +282,22 @@ export default function TenantDashboard() {
     { id: "lease", label: "Lease" },
   ];
 
+  // Onboarding checklist steps
+  const hasFirstPayment = (ledgers ?? []).some(l => l.amountCollected > 0);
+  const onboardingSteps = [
+    { label: "Join a property", done: !!property },
+    { label: "Complete KYC verification", done: !!isVerified },
+    { label: "Sign the rental agreement", done: agreementStatus === "FULLY_SIGNED" || agreementStatus === "TENANT_SIGNED" },
+    { label: "Make your first payment", done: hasFirstPayment },
+  ];
+  const allOnboardingDone = onboardingSteps.every(s => s.done);
+
   return (
     <div className="min-h-screen bg-black text-white flex flex-col">
       <SuccessAnimation show={showSuccess} message="Payment Successful" />
+      {receiptData && (
+        <ReceiptModal data={receiptData} onClose={() => setReceiptData(null)} />
+      )}
 
       <div className="p-4 sm:p-6 md:p-10 pb-24 flex flex-col flex-1 max-w-4xl w-full mx-auto">
 
@@ -343,6 +389,34 @@ export default function TenantDashboard() {
             {/* ══ OVERVIEW TAB ══ */}
             {activeTab === "overview" && (
               <div className="space-y-6">
+
+                {/* Onboarding Checklist — hide once all done */}
+                {!allOnboardingDone && (
+                  <div className="border border-[#6FFFE9]/20 bg-[#6FFFE9]/[0.03] p-4 sm:p-5">
+                    <p className="text-[10px] uppercase tracking-widest text-zinc-500 mb-3">Getting Started</p>
+                    <div className="space-y-2.5">
+                      {onboardingSteps.map((step, i) => (
+                        <div key={i} className="flex items-center gap-3">
+                          {step.done
+                            ? <CheckCircle size={15} className="text-[#6FFFE9] shrink-0" />
+                            : <Circle size={15} className="text-zinc-700 shrink-0" />}
+                          <span className={`text-sm ${step.done ? "line-through text-zinc-600" : "text-zinc-300"}`}>
+                            {step.label}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-4 h-1 bg-zinc-900">
+                      <div
+                        className="h-full bg-[#6FFFE9] transition-all duration-700"
+                        style={{ width: `${(onboardingSteps.filter(s => s.done).length / onboardingSteps.length) * 100}%` }}
+                      />
+                    </div>
+                    <p className="text-[10px] text-zinc-600 mt-1.5">
+                      {onboardingSteps.filter(s => s.done).length} of {onboardingSteps.length} complete
+                    </p>
+                  </div>
+                )}
 
                 {/* Current Month Settlement */}
                 <div className="bg-zinc-950 border border-white/[0.06] p-5 sm:p-6">
@@ -500,6 +574,47 @@ export default function TenantDashboard() {
                       amount={flexiblePaymentEnabled ? Number(paymentAmount || 0) : remaining}
                       vpa="YOUR_VPA@bank"
                     />
+
+                    {/* UPI Deep Links */}
+                    {(() => {
+                      const upiAmount = flexiblePaymentEnabled ? Number(paymentAmount || 0) : remaining;
+                      const upiNote = encodeURIComponent(`Rent for ${property?.address ?? ""}`);
+                      const upiPayee = encodeURIComponent("RentFLO");
+                      const upiVpa = encodeURIComponent("rentflo@ybl");
+                      const upiLink = `upi://pay?pa=${upiVpa}&pn=${upiPayee}&am=${upiAmount}&cu=INR&tn=${upiNote}`;
+                      if (upiAmount <= 0) return null;
+                      return (
+                        <div className="space-y-2">
+                          <p className="text-[9px] uppercase tracking-widest text-zinc-600 text-center">Or pay directly via</p>
+                          <div className="grid grid-cols-2 gap-2">
+                            <a
+                              href={`gpay://upi/pay?pa=${upiVpa}&pn=${upiPayee}&am=${upiAmount}&cu=INR&tn=${upiNote}`}
+                              className="flex items-center justify-center gap-2 p-2.5 border border-white/[0.07] bg-zinc-950 hover:border-white/20 transition-colors text-xs text-zinc-300 font-medium"
+                              data-testid="button-upi-gpay"
+                            >
+                              <span className="text-base">G</span>
+                              <span>Pay via GPay</span>
+                            </a>
+                            <a
+                              href={`phonepe://pay?pa=${upiVpa}&pn=${upiPayee}&am=${upiAmount}&cu=INR&tn=${upiNote}`}
+                              className="flex items-center justify-center gap-2 p-2.5 border border-white/[0.07] bg-zinc-950 hover:border-white/20 transition-colors text-xs text-zinc-300 font-medium"
+                              data-testid="button-upi-phonepe"
+                            >
+                              <span className="text-base">₱</span>
+                              <span>Pay via PhonePe</span>
+                            </a>
+                          </div>
+                          <a
+                            href={upiLink}
+                            className="flex items-center justify-center gap-2 p-2.5 border border-white/[0.07] bg-zinc-950 hover:border-white/20 transition-colors text-xs text-zinc-300 w-full"
+                            data-testid="button-upi-any"
+                          >
+                            Any UPI App →
+                          </a>
+                        </div>
+                      );
+                    })()}
+
                     <div className="flex items-center justify-center gap-2 text-zinc-600 text-[10px] uppercase tracking-wider">
                       <ShieldCheck size={12} />
                       <span>{t("tenant_bank_security")}</span>

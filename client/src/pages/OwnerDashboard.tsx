@@ -1,7 +1,8 @@
 import { useProperties, useCreateProperty } from "@/hooks/use-properties";
 import { useLedgers, useTicketCounts } from "@/hooks/use-ledgers";
 import { useAuth } from "@/hooks/use-auth";
-import { Loader2, TrendingUp, Calendar, CreditCard, Wrench, CheckCircle, AlertCircle, Plus, Shield, Clock } from "lucide-react";
+import { Loader2, TrendingUp, Calendar, CreditCard, Wrench, CheckCircle, AlertCircle, Plus, Shield, Clock, BarChart2 } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,8 +26,13 @@ export default function OwnerDashboard() {
 
   if (propsLoading || ledgersLoading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-black text-white">
-        <Loader2 className="w-8 h-8 animate-spin" data-testid="loader-owner" />
+      <div className="min-h-screen bg-black p-4 sm:p-6 md:p-10 pb-24" data-testid="loader-owner">
+        <div className="h-8 w-48 bg-zinc-900 animate-pulse mb-2" />
+        <div className="h-4 w-32 bg-zinc-900/70 animate-pulse mb-8" />
+        <div className="h-32 w-full bg-zinc-900 animate-pulse border border-[#6FFFE9]/10 mb-8" />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {[1,2,3,4].map(i => <div key={i} className="h-20 bg-zinc-900 animate-pulse border border-white/[0.04]" />)}
+        </div>
       </div>
     );
   }
@@ -105,6 +111,76 @@ export default function OwnerDashboard() {
             </div>
           )}
         </div>
+
+        {/* ── Analytics ── */}
+        {ledgers && ledgers.length > 0 && (() => {
+          const chartData = ledgers
+            .filter(l => l.amountAdvanced > 0 || l.amountCollected > 0)
+            .slice(0, 8)
+            .reverse()
+            .map(l => {
+              const [yr, mo] = l.monthYear.split("-");
+              const label = new Date(Number(yr), Number(mo) - 1).toLocaleDateString("en-IN", { month: "short", year: "2-digit" });
+              return {
+                month: label,
+                advanced: l.amountAdvanced,
+                collected: l.amountCollected,
+                settled: l.status === "SETTLED",
+              };
+            });
+          if (chartData.length < 2) return null;
+          const totalAdvanced = ledgers.reduce((s, l) => s + l.amountAdvanced, 0);
+          const totalCollected = ledgers.reduce((s, l) => s + l.amountCollected, 0);
+          const collectionRate = totalAdvanced > 0 ? Math.round((totalCollected / totalAdvanced) * 100) : 0;
+          const settledMonths = ledgers.filter(l => l.status === "SETTLED").length;
+          return (
+            <div className="mb-10">
+              <div className="flex items-center gap-3 mb-5">
+                <BarChart2 className="text-[#6FFFE9]" size={20} />
+                <h3 className="text-xl font-semibold tracking-tight">Analytics</h3>
+              </div>
+              <div className="grid grid-cols-3 gap-3 mb-5">
+                <div className="border border-white/[0.06] bg-zinc-950 p-4" data-testid="stat-total-advanced">
+                  <p className="text-[10px] uppercase tracking-widest text-zinc-500 mb-1">Total Advanced</p>
+                  <p className="text-xl font-bold font-mono">₹{totalAdvanced.toLocaleString()}</p>
+                </div>
+                <div className="border border-white/[0.06] bg-zinc-950 p-4" data-testid="stat-total-collected">
+                  <p className="text-[10px] uppercase tracking-widest text-zinc-500 mb-1">Collected</p>
+                  <p className="text-xl font-bold font-mono text-[#6FFFE9]">₹{totalCollected.toLocaleString()}</p>
+                </div>
+                <div className="border border-white/[0.06] bg-zinc-950 p-4" data-testid="stat-collection-rate">
+                  <p className="text-[10px] uppercase tracking-widest text-zinc-500 mb-1">On-Time Rate</p>
+                  <p className={`text-xl font-bold font-mono ${collectionRate >= 90 ? "text-[#6FFFE9]" : collectionRate >= 70 ? "text-yellow-400" : "text-red-400"}`}>
+                    {collectionRate}%
+                  </p>
+                </div>
+              </div>
+              <div className="border border-[#6FFFE9]/15 p-4 bg-zinc-950">
+                <p className="text-[10px] uppercase tracking-widest text-zinc-500 mb-4">Monthly Collection History</p>
+                <ResponsiveContainer width="100%" height={160}>
+                  <BarChart data={chartData} barGap={2} barCategoryGap="25%">
+                    <XAxis dataKey="month" tick={{ fill: "#52525b", fontSize: 10 }} axisLine={false} tickLine={false} />
+                    <YAxis hide />
+                    <Tooltip
+                      contentStyle={{ background: "#09090b", border: "1px solid rgba(111,255,233,0.2)", borderRadius: 0, fontSize: 11 }}
+                      labelStyle={{ color: "#a1a1aa" }}
+                      formatter={(val: number) => [`₹${val.toLocaleString()}`, ""]}
+                    />
+                    <Bar dataKey="advanced" name="Advanced" fill="#3f3f46" radius={0}>
+                      {chartData.map((_, i) => <Cell key={i} fill="#27272a" />)}
+                    </Bar>
+                    <Bar dataKey="collected" name="Collected" radius={0}>
+                      {chartData.map((entry, i) => (
+                        <Cell key={i} fill={entry.settled ? "#6FFFE9" : "rgba(111,255,233,0.4)"} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+                <p className="text-[10px] text-zinc-600 mt-2 text-right">{settledMonths} month{settledMonths !== 1 ? "s" : ""} fully settled</p>
+              </div>
+            </div>
+          );
+        })()}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <section>

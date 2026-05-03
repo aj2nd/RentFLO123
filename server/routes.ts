@@ -707,12 +707,65 @@ export async function registerRoutes(
     res.json(notifs);
   });
 
+  // Unread notification count
+  app.get("/api/notifications/unread-count", isAuthenticated, async (req: any, res) => {
+    const userId = req.user?.claims?.sub;
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
+    const count = await storage.getUnreadCount(userId);
+    res.json({ count });
+  });
+
   // Mark all notifications as read
   app.post("/api/notifications/read", isAuthenticated, async (req: any, res) => {
     const userId = req.user?.claims?.sub;
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
     await storage.markNotificationsRead(userId);
     res.json({ ok: true });
+  });
+
+  // Rent due reminder check — creates an in-app notification if rent is due within 3 days
+  app.post("/api/notifications/rent-due-check", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      if (!userId) return res.status(401).json({ message: "Unauthorized" });
+
+      const userProperties = await storage.getPropertiesByTenantId(userId);
+      if (!userProperties.length) return res.json({ created: false });
+
+      const property = userProperties[0];
+      const now = new Date();
+      const payoutDay = property.payoutDay;
+
+      // Calculate next due date
+      let dueDate = new Date(now.getFullYear(), now.getMonth(), payoutDay);
+      if (dueDate <= now) {
+        dueDate = new Date(now.getFullYear(), now.getMonth() + 1, payoutDay);
+      }
+      const daysUntilDue = Math.ceil((dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+
+      if (daysUntilDue > 3) return res.json({ created: false, daysUntilDue });
+
+      // Check if we already sent a reminder this month
+      const existingNotifs = await storage.getNotifications(userId);
+      const thisMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+      const alreadySent = existingNotifs.some(
+        n => n.type === "RENT_DUE" && n.createdAt && new Date(n.createdAt).toISOString().startsWith(thisMonthKey.replace("-", "-").slice(0, 7))
+      );
+      if (alreadySent) return res.json({ created: false, reason: "already_sent" });
+
+      await storage.createNotification({
+        userId,
+        title: daysUntilDue <= 0 ? "Rent Due Today!" : `Rent Due in ${daysUntilDue} Day${daysUntilDue === 1 ? "" : "s"}`,
+        body: `Your rent of ₹${property.monthlyRent.toLocaleString()} for ${property.address} is due on ${dueDate.toLocaleDateString("en-IN", { day: "numeric", month: "short" })}.`,
+        type: "RENT_DUE",
+        url: "/tenant",
+      });
+
+      res.json({ created: true, daysUntilDue });
+    } catch (e) {
+      console.error(e);
+      res.status(500).json({ message: "Internal server error" });
+    }
   });
 
   // Seed Data

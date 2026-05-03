@@ -95,6 +95,18 @@ Preferred communication style: Simple, everyday language.
   - LegalFooter component on all pages with links to legal pages and support email
   - PWA Readiness: manifest.json with black theme (#000000) and icon placeholders
   - Tenant Auto-Match: `pendingTenantEmail` field on properties enables automatic tenant binding at registration
+- **Product Improvements (May 2026)**:
+  - T01 Payment Receipts: `ReceiptModal.tsx` — tiffany-themed modal with Razorpay payment ID after success
+  - T02 CSV Export: Ledger header "Export CSV" button via `downloadCSV()` utility
+  - T03 Rent Due Reminders: `POST /api/notifications/rent-due-check` creates in-app notification when rent is due
+  - T04 Onboarding Checklist: 4-step progress card in TenantDashboard (Join → KYC → Agreement → First payment), auto-hides when complete
+  - T05 Owner Analytics: BarChart (Recharts) with monthly collection history, total advanced/collected stats, on-time rate %
+  - T06 Maintenance Status Notifications: Existing webhook at `PUT /api/maintenance/:id` fires notifications on status change
+  - T07 UPI Deep Links: GPay / PhonePe / Any UPI buttons on TenantDashboard payments tab
+  - T08 Agreement PDF Download: Download button on signed agreement state
+  - T09 Profile Page: `/profile` — edit first/last name, view email/role/KYC status; `PATCH /api/auth/profile`
+  - T10 Notification Center: `/notifications` — full notification inbox with mark-all-read; `GET /api/notifications/unread-count`; Bell icon in BottomNav with unread badge
+  - T11 Skeleton Loaders: Context-aware shimmer skeletons replace spinners on TenantDashboard, OwnerDashboard, and Ledger pages
 
 ### API Endpoints
 - **POST /api/auth/set-role**: Set user role (TENANT/OWNER/ADMIN)

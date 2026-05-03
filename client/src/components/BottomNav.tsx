@@ -3,7 +3,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
 import {
   LayoutDashboard, Wallet, Home, Receipt, Wrench,
-  MessageSquare, ShieldCheck, FileSignature,
+  MessageSquare, ShieldCheck, FileSignature, Bell, UserCircle,
 } from "lucide-react";
 
 interface NavItem {
@@ -46,24 +46,31 @@ export function BottomNav() {
   });
   const unreadCount = unreadData?.count ?? 0;
 
+  const { data: unreadNotifsData } = useQuery<{ count: number }>({
+    queryKey: ["/api/notifications/unread-count"],
+    refetchInterval: 30000,
+    enabled: !!user,
+  });
+  const unreadNotifCount = unreadNotifsData?.count ?? 0;
+
   if (!user?.role) return null;
 
   const role = user.role;
 
   const itemsByRole: Record<string, NavItem[]> = {
     TENANT: [
-      { href: "/tenant",       icon: <Home size={22} />,         label: "Home" },
-      { href: "/ledger",       icon: <Receipt size={22} />,      label: "Ledger" },
-      { href: "/maintenance",  icon: <Wrench size={22} />,       label: "Repairs" },
-      { href: "/messages",     icon: <MessageSquare size={22} />, label: "Messages" },
-      { href: "/agreement",    icon: <FileSignature size={22} />, label: "Lease" },
+      { href: "/tenant",         icon: <Home size={22} />,          label: "Home" },
+      { href: "/ledger",         icon: <Receipt size={22} />,       label: "Ledger" },
+      { href: "/maintenance",    icon: <Wrench size={22} />,        label: "Repairs" },
+      { href: "/messages",       icon: <MessageSquare size={22} />, label: "Messages" },
+      { href: "/notifications",  icon: <Bell size={22} />,          label: "Inbox" },
     ],
     OWNER: [
-      { href: "/owner",        icon: <Wallet size={22} />,        label: "Home" },
-      { href: "/ledger",       icon: <Receipt size={22} />,       label: "Ledger" },
-      { href: "/maintenance",  icon: <Wrench size={22} />,        label: "Repairs" },
-      { href: "/messages",     icon: <MessageSquare size={22} />, label: "Messages" },
-      { href: "/agreement",    icon: <FileSignature size={22} />, label: "Lease" },
+      { href: "/owner",          icon: <Wallet size={22} />,        label: "Home" },
+      { href: "/ledger",         icon: <Receipt size={22} />,       label: "Ledger" },
+      { href: "/messages",       icon: <MessageSquare size={22} />, label: "Messages" },
+      { href: "/notifications",  icon: <Bell size={22} />,          label: "Inbox" },
+      { href: "/profile",        icon: <UserCircle size={22} />,    label: "Profile" },
     ],
     ADMIN: [
       { href: "/admin",              icon: <LayoutDashboard size={22} />, label: "Admin" },
@@ -98,7 +105,11 @@ export function BottomNav() {
             icon={item.icon}
             label={item.label}
             active={location === item.href || (item.href !== "/" && location.startsWith(item.href))}
-            badge={item.href === "/messages" ? unreadCount : undefined}
+            badge={
+              item.href === "/messages" ? unreadCount :
+              item.href === "/notifications" ? unreadNotifCount :
+              undefined
+            }
           />
         ))}
       </div>

@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
-import { Receipt, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { Receipt, TrendingUp, TrendingDown, Minus, Download } from "lucide-react";
 import { motion } from "framer-motion";
 import { useI18n } from "@/hooks/use-i18n";
 
@@ -64,6 +64,27 @@ function ActionBadge({ action }: { action: TransactionType }) {
   );
 }
 
+function downloadCSV(transactions: Transaction[], user: { firstName?: string; lastName?: string; email?: string } | undefined | null) {
+  const headers = ["Date", "Reference", "Property", "Action", "Amount (INR)", "Balance (INR)"];
+  const rows = transactions.map(txn => [
+    new Date(txn.date).toLocaleDateString("en-IN"),
+    txn.reference,
+    `"${txn.property.replace(/"/g, '""')}"`,
+    getActionLabel(txn.action),
+    txn.amount,
+    txn.balance,
+  ]);
+  const csv = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  const name = [user?.firstName, user?.lastName].filter(Boolean).join("_") || user?.email || "tenant";
+  a.download = `RentFLO_Statement_${name}_${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 export default function LedgerPage() {
   const { user, isLoading: authLoading } = useAuth();
   const { t } = useI18n();
@@ -73,8 +94,22 @@ export default function LedgerPage() {
 
   if (authLoading || ledgersLoading || paymentsLoading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-[#6FFFE9] border-t-transparent animate-spin" />
+      <div className="min-h-screen bg-black p-4 sm:p-6 md:p-10 pb-24">
+        <div className="flex items-center justify-between mb-8">
+          <div className="h-9 w-36 bg-zinc-900 animate-pulse" />
+          <div className="h-9 w-32 bg-zinc-900 animate-pulse" />
+        </div>
+        <div className="space-y-px border border-[#6FFFE9]/10">
+          {[1,2,3,4,5,6].map(i => (
+            <div key={i} className="flex items-center gap-4 px-4 py-4 border-b border-white/[0.04]">
+              <div className="h-3 w-20 bg-zinc-900 animate-pulse" />
+              <div className="h-3 w-24 bg-zinc-900 animate-pulse" />
+              <div className="h-3 flex-1 bg-zinc-900 animate-pulse" />
+              <div className="h-5 w-20 bg-zinc-900 animate-pulse" />
+              <div className="h-3 w-16 bg-zinc-900 animate-pulse" />
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -115,11 +150,23 @@ export default function LedgerPage() {
                 {t('ledger_title')}
               </h1>
             </div>
-            <div className="sm:text-right">
-              <p className="text-xs text-[#9DEFE4]/60 uppercase tracking-widest mb-1">{t('ledger_current_exposure')}</p>
-              <p className="text-2xl sm:text-3xl font-bold font-mono" style={{ fontFamily: 'Playfair Display, Georgia, serif' }} data-testid="text-ledger-exposure">
-                ₹{totalExposure.toLocaleString()}
-              </p>
+            <div className="flex items-center gap-4">
+              <div className="sm:text-right">
+                <p className="text-xs text-[#9DEFE4]/60 uppercase tracking-widest mb-1">{t('ledger_current_exposure')}</p>
+                <p className="text-2xl sm:text-3xl font-bold font-mono" style={{ fontFamily: 'Playfair Display, Georgia, serif' }} data-testid="text-ledger-exposure">
+                  ₹{totalExposure.toLocaleString()}
+                </p>
+              </div>
+              {transactions.length > 0 && (
+                <button
+                  onClick={() => downloadCSV(transactions, user)}
+                  className="flex items-center gap-2 px-3 py-2 border border-[#6FFFE9]/25 text-[#6FFFE9]/70 hover:border-[#6FFFE9]/60 hover:text-[#6FFFE9] transition-colors text-xs uppercase tracking-widest shrink-0"
+                  data-testid="button-export-csv"
+                >
+                  <Download size={14} />
+                  Export
+                </button>
+              )}
             </div>
           </header>
 

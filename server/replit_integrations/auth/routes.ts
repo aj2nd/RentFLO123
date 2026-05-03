@@ -58,6 +58,23 @@ export function registerAuthRoutes(app: Express): void {
     }
   });
 
+  // Update profile (name only — email managed by auth provider)
+  app.patch("/api/auth/profile", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { firstName, lastName } = req.body;
+      const updated = await authStorage.updateUser(userId, {
+        ...(firstName !== undefined ? { firstName } : {}),
+        ...(lastName !== undefined ? { lastName } : {}),
+      });
+      if (!updated) return res.status(404).json({ message: "User not found" });
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      res.status(500).json({ message: "Failed to update profile" });
+    }
+  });
+
   // Look up user by email (for property tenant assignment)
   app.get("/api/auth/user-by-email", isAuthenticated, async (req: any, res) => {
     try {
