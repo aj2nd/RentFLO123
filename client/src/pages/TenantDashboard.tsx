@@ -40,7 +40,7 @@ function StatusBadge({ status }: { status: string }) {
   };
   const s = map[status] ?? { label: status, classes: "bg-zinc-800 text-zinc-400 border-zinc-700" };
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest border ${s.classes}`}>
+    <span className={`inline-flex items-center px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-widest border rounded-full ${s.classes}`}>
       {s.label}
     </span>
   );
@@ -261,15 +261,15 @@ export default function TenantDashboard() {
     return (
       <div className="min-h-screen bg-black p-4 sm:p-6 md:p-10 pb-24 max-w-4xl mx-auto" data-testid="loader-tenant">
         <div className="grid grid-cols-3 gap-3 mb-8">
-          {[1,2,3].map(i => <div key={i} className="h-20 bg-zinc-900 animate-pulse border border-white/[0.04]" />)}
+          {[1,2,3].map(i => <div key={i} className="h-20 bg-zinc-900 animate-pulse rounded-2xl" />)}
         </div>
-        <div className="flex gap-6 mb-6 border-b border-white/[0.06] pb-3">
-          {[1,2,3].map(i => <div key={i} className="h-4 w-20 bg-zinc-900 animate-pulse" />)}
+        <div className="flex gap-2 mb-6 p-1 bg-zinc-900 rounded-full">
+          {[1,2,3].map(i => <div key={i} className="h-8 flex-1 bg-zinc-800 animate-pulse rounded-full" />)}
         </div>
         <div className="space-y-4">
-          <div className="h-40 bg-zinc-900 animate-pulse border border-white/[0.04]" />
-          <div className="h-24 bg-zinc-900 animate-pulse border border-white/[0.04]" />
-          <div className="h-24 bg-zinc-900 animate-pulse border border-white/[0.04]" />
+          <div className="h-40 bg-zinc-900 animate-pulse rounded-3xl" />
+          <div className="h-24 bg-zinc-900 animate-pulse rounded-3xl" />
+          <div className="h-24 bg-zinc-900 animate-pulse rounded-3xl" />
         </div>
       </div>
     );
@@ -311,8 +311,8 @@ export default function TenantDashboard() {
 
         {/* ── Page Header ── */}
         <header className="mb-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1 border border-[#6FFFE9]/30 bg-[#6FFFE9]/5 mb-4">
-            <span className="w-2 h-2 bg-[#6FFFE9] animate-pulse rounded-full" />
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#6FFFE9]/30 bg-[#6FFFE9]/5 mb-4">
+            <span className="w-1.5 h-1.5 bg-[#6FFFE9] animate-pulse rounded-full" />
             <span className="text-[10px] font-medium uppercase tracking-wider text-[#9DEFE4]">
               {t("tenant_secure_pay")}
             </span>
@@ -332,33 +332,33 @@ export default function TenantDashboard() {
           <>
             {/* ── Stats Bar ── */}
             <div className="grid grid-cols-3 gap-3 mb-6">
-              <div className="bg-zinc-950 border border-white/[0.06] p-3 sm:p-4 flex flex-col gap-1" data-testid="stat-rent-due">
-                <span className="text-[10px] uppercase tracking-widest text-zinc-500">Monthly Rent</span>
-                <span className="text-lg sm:text-2xl font-bold font-mono text-white">₹{totalDue.toLocaleString()}</span>
+              <div className="bg-zinc-900/80 rounded-2xl border border-zinc-800/50 p-3 sm:p-4 flex flex-col items-center text-center shadow-lg shadow-black/40" data-testid="stat-rent-due">
+                <span className="px-2 py-0.5 rounded-full bg-zinc-800/80 text-[10px] text-zinc-400 font-medium mb-2">Monthly Rent</span>
+                <span className="text-sm sm:text-base font-bold font-mono text-white">₹{totalDue.toLocaleString()}</span>
               </div>
-              <div className="bg-zinc-950 border border-white/[0.06] p-3 sm:p-4 flex flex-col gap-1" data-testid="stat-days-due">
-                <span className="text-[10px] uppercase tracking-widest text-zinc-500">Due In</span>
-                <span className={`text-lg sm:text-2xl font-bold font-mono ${daysUntilDue <= 5 ? "text-yellow-400" : "text-white"}`}>
+              <div className="bg-zinc-900/80 rounded-2xl border border-zinc-800/50 p-3 sm:p-4 flex flex-col items-center text-center shadow-lg shadow-black/40" data-testid="stat-days-due">
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium mb-2 border ${daysUntilDue <= 5 ? "bg-amber-950/50 text-amber-400 border-amber-900/30" : "bg-zinc-800/80 text-zinc-400 border-transparent"}`}>Due In</span>
+                <span className={`text-sm sm:text-base font-bold font-mono ${daysUntilDue <= 5 ? "text-amber-100" : "text-white"}`}>
                   {daysUntilDue}d
                 </span>
               </div>
-              <div className="bg-zinc-950 border border-white/[0.06] p-3 sm:p-4 flex flex-col gap-1" data-testid="stat-paid-ytd">
-                <span className="text-[10px] uppercase tracking-widest text-zinc-500">Paid YTD</span>
-                <span className="text-lg sm:text-2xl font-bold font-mono text-[#6FFFE9]">₹{totalPaidYTD.toLocaleString()}</span>
+              <div className="bg-zinc-900/80 rounded-2xl border border-zinc-800/50 p-3 sm:p-4 flex flex-col items-center text-center shadow-lg shadow-black/40" data-testid="stat-paid-ytd">
+                <span className="px-2 py-0.5 rounded-full bg-zinc-800/80 text-[10px] text-zinc-400 font-medium mb-2">Paid YTD</span>
+                <span className="text-sm sm:text-base font-bold font-mono text-[#6FFFE9]">₹{totalPaidYTD.toLocaleString()}</span>
               </div>
             </div>
 
             {/* ── Tabs ── */}
-            <div className="flex border-b border-white/[0.08] mb-6 gap-0">
+            <div className="flex p-1 bg-zinc-900/60 rounded-full border border-zinc-800/50 mb-6">
               {tabs.map(tab => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   data-testid={`tab-${tab.id}`}
-                  className={`px-5 py-2.5 text-xs uppercase tracking-widest font-semibold transition-colors border-b-2 -mb-px
+                  className={`flex-1 py-2 px-4 rounded-full text-sm font-semibold transition-colors
                     ${activeTab === tab.id
-                      ? "text-[#6FFFE9] border-[#6FFFE9]"
-                      : "text-zinc-500 border-transparent hover:text-zinc-300"
+                      ? "bg-zinc-800 text-white shadow-sm"
+                      : "text-zinc-400 hover:text-white"
                     }`}
                 >
                   {tab.label}
@@ -372,37 +372,42 @@ export default function TenantDashboard() {
 
                 {/* Onboarding Checklist — hide once all done */}
                 {!allOnboardingDone && (
-                  <div className="border border-[#6FFFE9]/20 bg-[#6FFFE9]/[0.03] p-4 sm:p-5">
-                    <p className="text-[10px] uppercase tracking-widest text-zinc-500 mb-3">Getting Started</p>
+                  <div className="bg-zinc-900/80 rounded-3xl border border-zinc-800/50 p-5 shadow-lg shadow-black/40">
+                    <div className="flex justify-between items-end mb-4">
+                      <div>
+                        <h3 className="font-semibold text-white text-lg">Getting Started</h3>
+                        <p className="text-xs text-zinc-400 mt-1">{onboardingSteps.filter(s => s.done).length} of {onboardingSteps.length} completed</p>
+                      </div>
+                      <div className="text-2xl font-bold text-[#6FFFE9]">
+                        {Math.round((onboardingSteps.filter(s => s.done).length / onboardingSteps.length) * 100)}%
+                      </div>
+                    </div>
+                    <div className="w-full h-2.5 bg-zinc-800 rounded-full mb-5 overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-[#6FFFE9] to-[#5DEEDB] rounded-full transition-all duration-700"
+                        style={{ width: `${(onboardingSteps.filter(s => s.done).length / onboardingSteps.length) * 100}%` }}
+                      />
+                    </div>
                     <div className="space-y-2.5">
                       {onboardingSteps.map((step, i) => (
-                        <div key={i} className="flex items-center gap-3">
+                        <div key={i} className={`flex items-center gap-3 p-3 rounded-2xl border ${step.done ? "bg-zinc-800/40 border-zinc-700/50 opacity-60" : "bg-[#6FFFE9]/[0.03] border-[#6FFFE9]/15"}`}>
                           {step.done
-                            ? <CheckCircle size={15} className="text-[#6FFFE9] shrink-0" />
-                            : <Circle size={15} className="text-zinc-700 shrink-0" />}
-                          <span className={`text-sm ${step.done ? "line-through text-zinc-600" : "text-zinc-300"}`}>
+                            ? <CheckCircle size={16} className="text-[#6FFFE9] shrink-0" />
+                            : <Circle size={16} className="text-zinc-600 shrink-0" />}
+                          <span className={`text-sm ${step.done ? "line-through text-zinc-500" : "text-zinc-200"}`}>
                             {step.label}
                           </span>
                         </div>
                       ))}
                     </div>
-                    <div className="mt-4 h-1 bg-zinc-900">
-                      <div
-                        className="h-full bg-[#6FFFE9] transition-all duration-700"
-                        style={{ width: `${(onboardingSteps.filter(s => s.done).length / onboardingSteps.length) * 100}%` }}
-                      />
-                    </div>
-                    <p className="text-[10px] text-zinc-600 mt-1.5">
-                      {onboardingSteps.filter(s => s.done).length} of {onboardingSteps.length} complete
-                    </p>
                   </div>
                 )}
 
                 {/* Current Month Settlement */}
-                <div className="bg-zinc-950 border border-white/[0.06] p-5 sm:p-6">
+                <div className="bg-zinc-900/80 rounded-3xl border border-zinc-800/50 p-5 sm:p-6 shadow-lg shadow-black/40">
                   <div className="flex items-center justify-between mb-4">
                     <div>
-                      <p className="text-[10px] uppercase tracking-widest text-zinc-500 mb-1">Current Month</p>
+                      <div className="inline-block px-2.5 py-1 rounded-full bg-zinc-800 text-[10px] font-bold text-zinc-300 uppercase tracking-wider mb-2">Current Month</div>
                       <h2 className="text-4xl sm:text-5xl font-bold tracking-tighter text-white font-mono leading-none">
                         ₹{totalDue.toLocaleString()}
                       </h2>
@@ -410,14 +415,14 @@ export default function TenantDashboard() {
                     {unpaidLedger && <StatusBadge status={unpaidLedger.status} />}
                   </div>
 
-                  <div className="space-y-2 mb-4">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-zinc-500 uppercase tracking-wider text-xs">Settlement Progress</span>
-                      <span className="font-mono text-white text-xs" data-testid="text-progress-percent">{progressPercent}% Settled</span>
+                  <div className="space-y-1.5 mb-5">
+                    <div className="flex justify-between text-xs font-medium">
+                      <span className="text-zinc-400">Settlement Progress</span>
+                      <span className="text-zinc-400" data-testid="text-progress-percent">{progressPercent}% Settled</span>
                     </div>
-                    <div className="w-full h-2 bg-zinc-900 border border-[#6FFFE9]/15 overflow-hidden">
+                    <div className="w-full h-2 bg-zinc-800 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-[#6FFFE9] transition-all duration-700"
+                        className="h-full bg-gradient-to-r from-[#6FFFE9] to-[#5DEEDB] rounded-full transition-all duration-700"
                         style={{ width: `${progressPercent}%` }}
                         data-testid="progress-bar-settlement"
                       />
@@ -431,11 +436,11 @@ export default function TenantDashboard() {
                   {remaining > 0 && (
                     <Button
                       onClick={() => setActiveTab("payments")}
-                      className="w-full bg-[#6FFFE9] text-black hover:bg-[#5DEEDB] font-semibold text-sm h-11"
+                      className="w-full bg-[#6FFFE9] text-black hover:bg-[#5DEEDB] font-bold text-sm h-12 rounded-full shadow-[0_4px_20px_rgba(111,255,233,0.25)]"
                       data-testid="button-pay-now-overview"
                     >
                       Pay Now — ₹{remaining.toLocaleString()}
-                      <ChevronRight size={16} className="ml-1" />
+                      <ChevronRight size={16} className="ml-1" strokeWidth={3} />
                     </Button>
                   )}
                   {remaining === 0 && (
@@ -449,7 +454,7 @@ export default function TenantDashboard() {
                 {/* Open Tickets Summary */}
                 {openTickets > 0 && (
                   <Link href="/maintenance" className="block">
-                    <div className="flex items-center justify-between p-4 border border-yellow-500/25 bg-yellow-500/5 hover:bg-yellow-500/10 transition-colors cursor-pointer" data-testid="banner-open-tickets">
+                    <div className="flex items-center justify-between p-4 rounded-2xl border border-yellow-500/25 bg-yellow-500/5 hover:bg-yellow-500/10 transition-colors cursor-pointer" data-testid="banner-open-tickets">
                       <div className="flex items-center gap-3">
                         <AlertCircle size={18} className="text-yellow-400" />
                         <div>
@@ -473,7 +478,7 @@ export default function TenantDashboard() {
                     </div>
                     <div className="space-y-2">
                       {paymentsData.filter(p => p.status === "SUCCESS").slice(0, 3).map((pmt) => (
-                        <div key={pmt.id} className="flex items-center justify-between p-3 border border-white/[0.06] bg-zinc-950" data-testid={`recent-payment-${pmt.id}`}>
+                        <div key={pmt.id} className="flex items-center justify-between p-3 rounded-xl border border-zinc-800/50 bg-zinc-900/60" data-testid={`recent-payment-${pmt.id}`}>
                           <div className="flex items-center gap-3">
                             <div className="w-1.5 h-1.5 rounded-full bg-[#6FFFE9]" />
                             <span className="text-xs text-zinc-400 font-mono">
@@ -495,7 +500,7 @@ export default function TenantDashboard() {
 
                 {/* Pay Now Panel */}
                 {remaining > 0 && (
-                  <div className="bg-zinc-950 border border-[#6FFFE9]/20 p-5 sm:p-6 space-y-5">
+                  <div className="bg-zinc-900/80 rounded-3xl border border-zinc-800/50 p-5 sm:p-6 space-y-5 shadow-lg shadow-black/40">
                     <div className="flex items-center justify-between">
                       <div>
                         <h3 className="text-lg font-bold">{t("tenant_payment_heading")}</h3>
@@ -542,7 +547,7 @@ export default function TenantDashboard() {
                         </div>
                       </div>
                     ) : (
-                      <div className="p-4 border border-[#6FFFE9]/15 bg-[#6FFFE9]/3 text-center">
+                      <div className="p-4 rounded-2xl border border-[#6FFFE9]/15 bg-[#6FFFE9]/5 text-center">
                         <p className="text-zinc-400 text-xs mb-1">{t("tenant_full_payment_amount")}</p>
                         <p className="text-3xl font-bold font-mono" data-testid="text-full-amount">
                           ₹{remaining.toLocaleString()}
@@ -608,7 +613,7 @@ export default function TenantDashboard() {
                     <p className="text-[10px] uppercase tracking-widest text-zinc-500 mb-3">{t("tenant_payment_history")}</p>
                     <div className="space-y-2">
                       {paymentsData.map((pmt, idx) => (
-                        <div key={pmt.id} className="flex items-center justify-between p-4 border border-white/[0.06] bg-zinc-950" data-testid={`payment-entry-${idx}`}>
+                        <div key={pmt.id} className="flex items-center justify-between p-4 rounded-xl border border-zinc-800/50 bg-zinc-900/60" data-testid={`payment-entry-${idx}`}>
                           <div className="flex items-center gap-3">
                             <div className={`w-1.5 h-1.5 rounded-full ${pmt.status === "SUCCESS" ? "bg-[#6FFFE9]" : pmt.status === "PENDING" ? "bg-yellow-400" : "bg-red-500"}`} />
                             <div>
@@ -647,7 +652,7 @@ export default function TenantDashboard() {
                         ? Math.min(100, Math.round((ledger.amountCollected / ledger.property.monthlyRent) * 100))
                         : 0;
                       return (
-                        <div key={ledger.id} className="p-4 border border-white/[0.06] bg-zinc-950 space-y-2" data-testid={`ledger-row-${ledger.id}`}>
+                        <div key={ledger.id} className="p-4 rounded-xl border border-zinc-800/50 bg-zinc-900/60 space-y-2" data-testid={`ledger-row-${ledger.id}`}>
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <CircleDot size={12} className="text-zinc-600" />
@@ -658,8 +663,8 @@ export default function TenantDashboard() {
                               <StatusBadge status={ledger.status} />
                             </div>
                           </div>
-                          <div className="w-full h-1 bg-zinc-900">
-                            <div className="h-full bg-[#6FFFE9]/60 transition-all" style={{ width: `${pct}%` }} />
+                          <div className="w-full h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+                            <div className="h-full bg-[#6FFFE9]/60 rounded-full transition-all" style={{ width: `${pct}%` }} />
                           </div>
                         </div>
                       );
@@ -677,7 +682,7 @@ export default function TenantDashboard() {
               <div className="space-y-4">
 
                 {/* Property Card */}
-                <div className="bg-zinc-950 border border-white/[0.06] p-5 sm:p-6 space-y-4" data-testid="card-property-details">
+                <div className="bg-zinc-900/80 rounded-3xl border border-zinc-800/50 p-5 sm:p-6 space-y-4 shadow-lg shadow-black/40" data-testid="card-property-details">
                   <p className="text-[10px] uppercase tracking-widest text-zinc-500">Property Details</p>
                   <div className="space-y-3">
                     <div className="flex items-start gap-3">
@@ -707,7 +712,7 @@ export default function TenantDashboard() {
                 </div>
 
                 {/* Agreement Status */}
-                <div className="bg-zinc-950 border border-white/[0.06] p-5 sm:p-6" data-testid="card-agreement-status">
+                <div className="bg-zinc-900/80 rounded-3xl border border-zinc-800/50 p-5 sm:p-6 shadow-lg shadow-black/40" data-testid="card-agreement-status">
                   <div className="flex items-center justify-between mb-4">
                     <p className="text-[10px] uppercase tracking-widest text-zinc-500">Agreement Status</p>
                     {agreementStatus && <StatusBadge status={
@@ -739,7 +744,7 @@ export default function TenantDashboard() {
                 </div>
 
                 {/* KYC Status */}
-                <div className="bg-zinc-950 border border-white/[0.06] p-5 sm:p-6" data-testid="card-kyc-status">
+                <div className="bg-zinc-900/80 rounded-3xl border border-zinc-800/50 p-5 sm:p-6 shadow-lg shadow-black/40" data-testid="card-kyc-status">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-[10px] uppercase tracking-widest text-zinc-500 mb-1">KYC Verification</p>
@@ -750,7 +755,7 @@ export default function TenantDashboard() {
                         {isVerified ? "You're cleared to make payments." : "Required to process rent payments."}
                       </p>
                     </div>
-                    <div className={`w-10 h-10 flex items-center justify-center border ${isVerified ? "border-[#6FFFE9]/40 bg-[#6FFFE9]/10" : hasPendingKyc ? "border-yellow-500/40 bg-yellow-500/10" : "border-zinc-700"}`}>
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center border ${isVerified ? "border-[#6FFFE9]/40 bg-[#6FFFE9]/10" : hasPendingKyc ? "border-yellow-500/40 bg-yellow-500/10" : "border-zinc-700"}`}>
                       <ShieldCheck size={18} className={isVerified ? "text-[#6FFFE9]" : hasPendingKyc ? "text-yellow-400" : "text-zinc-600"} />
                     </div>
                   </div>
@@ -766,7 +771,7 @@ export default function TenantDashboard() {
 
                 {/* Maintenance Summary */}
                 <Link href="/maintenance" className="block">
-                  <div className="flex items-center justify-between p-4 sm:p-5 bg-zinc-950 border border-white/[0.06] hover:border-[#6FFFE9]/20 transition-colors" data-testid="card-maintenance-summary">
+                  <div className="flex items-center justify-between p-4 sm:p-5 bg-zinc-900/80 rounded-2xl border border-zinc-800/50 hover:border-[#6FFFE9]/20 transition-colors shadow-lg shadow-black/40" data-testid="card-maintenance-summary">
                     <div className="flex items-center gap-3">
                       <Wrench size={16} className="text-zinc-600" />
                       <div>
@@ -787,7 +792,7 @@ export default function TenantDashboard() {
         ) : (
           /* ── No Property: Join Flow ── */
           <div className="space-y-6">
-            <div className="border-2 border-[#6FFFE9]/40 p-5 sm:p-8 bg-zinc-950">
+            <div className="rounded-3xl border-2 border-[#6FFFE9]/40 p-5 sm:p-8 bg-zinc-900/80 shadow-lg shadow-black/40">
               <div className="flex items-start gap-3 mb-5">
                 <Building2 size={22} className="text-[#6FFFE9] mt-0.5" />
                 <div>
@@ -821,7 +826,7 @@ export default function TenantDashboard() {
                   <div className="space-y-3 pt-2">
                     <p className="text-[10px] uppercase tracking-wider text-zinc-400">{t("tenant_available_properties")}</p>
                     {availableProperties.map(prop => (
-                      <div key={prop.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 border border-[#6FFFE9]/25" data-testid={`available-property-${prop.id}`}>
+                      <div key={prop.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl border border-[#6FFFE9]/25 bg-zinc-900/60" data-testid={`available-property-${prop.id}`}>
                         <div>
                           <p className="font-medium text-white text-sm">{prop.address}</p>
                           <p className="text-zinc-500 text-xs font-mono">₹{prop.monthlyRent.toLocaleString()} / month</p>
