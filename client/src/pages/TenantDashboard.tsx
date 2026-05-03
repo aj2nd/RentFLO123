@@ -34,13 +34,13 @@ type Tab = "overview" | "payments" | "lease";
 
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { label: string; classes: string }> = {
-    SETTLED:  { label: "Settled",   classes: "bg-[#6FFFE9]/10 text-[#6FFFE9] border-[#6FFFE9]/30" },
-    EXPOSED:  { label: "Exposed",   classes: "bg-yellow-500/10 text-yellow-400 border-yellow-500/30" },
-    ARREARS:  { label: "Arrears",   classes: "bg-red-500/10 text-red-400 border-red-500/30" },
+    SETTLED:  { label: "Settled",   classes: "bg-[#6FFFE9]/10 text-[#6FFFE9] border-[#6FFFE9]/25" },
+    EXPOSED:  { label: "Exposed",   classes: "bg-amber-500/10 text-amber-400 border-amber-500/25" },
+    ARREARS:  { label: "Arrears",   classes: "bg-red-500/10 text-red-400 border-red-500/25" },
   };
-  const s = map[status] ?? { label: status, classes: "bg-zinc-800 text-zinc-400 border-zinc-700" };
+  const s = map[status] ?? { label: status, classes: "bg-white/[0.06] text-zinc-400 border-white/[0.10]" };
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-widest border rounded-full ${s.classes}`}>
+    <span className={`inline-flex items-center px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-widest border rounded-full backdrop-blur-sm ${s.classes}`}>
       {s.label}
     </span>
   );
@@ -84,7 +84,6 @@ export default function TenantDashboard() {
     date: Date; property: string; tenantName: string; monthYear?: string;
   } | null>(null);
 
-  // Find the current (unpaid/active) ledger
   const unpaidLedger = ledgers?.find(l => l.amountCollected < l.property.monthlyRent);
   const property = unpaidLedger?.property ?? ledgers?.[0]?.property ?? null;
 
@@ -92,12 +91,10 @@ export default function TenantDashboard() {
 
   const openTickets = tickets?.filter(t => t.status === "OPEN" || t.status === "IN_PROGRESS").length ?? 0;
 
-  // All ledger history sorted newest first
   const allLedgers = [...(ledgers ?? [])].sort((a, b) =>
     b.monthYear.localeCompare(a.monthYear)
   );
 
-  // Year-to-date total paid
   const thisYear = new Date().getFullYear().toString();
   const totalPaidYTD = (ledgers ?? [])
     .filter(l => l.monthYear.startsWith(thisYear))
@@ -105,7 +102,6 @@ export default function TenantDashboard() {
 
   const settledMonths = (ledgers ?? []).filter(l => l.status === "SETTLED").length;
 
-  // Next due date
   const payoutDay = property?.payoutDay ?? 1;
   const now = new Date();
   let nextDue = new Date(now.getFullYear(), now.getMonth(), payoutDay);
@@ -129,7 +125,6 @@ export default function TenantDashboard() {
     return () => { try { document.body.removeChild(script); } catch {} };
   }, []);
 
-  // Rent due reminder — fires once per session
   useEffect(() => {
     if (!property) return;
     apiRequest("POST", "/api/notifications/rent-due-check", {}).catch(() => {});
@@ -261,15 +256,15 @@ export default function TenantDashboard() {
     return (
       <div className="min-h-screen bg-black p-4 sm:p-6 md:p-10 pb-24 max-w-4xl mx-auto" data-testid="loader-tenant">
         <div className="grid grid-cols-3 gap-3 mb-8">
-          {[1,2,3].map(i => <div key={i} className="h-20 bg-zinc-900 animate-pulse rounded-2xl" />)}
+          {[1,2,3].map(i => <div key={i} className="h-20 bg-white/[0.04] animate-pulse rounded-2xl" />)}
         </div>
-        <div className="flex gap-2 mb-6 p-1 bg-zinc-900 rounded-full">
-          {[1,2,3].map(i => <div key={i} className="h-8 flex-1 bg-zinc-800 animate-pulse rounded-full" />)}
+        <div className="flex gap-2 mb-6 p-1 bg-white/[0.04] rounded-full">
+          {[1,2,3].map(i => <div key={i} className="h-8 flex-1 bg-white/[0.06] animate-pulse rounded-full" />)}
         </div>
         <div className="space-y-4">
-          <div className="h-40 bg-zinc-900 animate-pulse rounded-3xl" />
-          <div className="h-24 bg-zinc-900 animate-pulse rounded-3xl" />
-          <div className="h-24 bg-zinc-900 animate-pulse rounded-3xl" />
+          <div className="h-40 bg-white/[0.04] animate-pulse rounded-3xl" />
+          <div className="h-24 bg-white/[0.04] animate-pulse rounded-3xl" />
+          <div className="h-24 bg-white/[0.04] animate-pulse rounded-3xl" />
         </div>
       </div>
     );
@@ -283,7 +278,6 @@ export default function TenantDashboard() {
     { id: "lease", label: "Lease" },
   ];
 
-  // Onboarding checklist steps
   const hasFirstPayment = (ledgers ?? []).some(l => l.amountCollected > 0);
   const onboardingSteps = [
     { label: "Join a property", done: !!property },
@@ -300,6 +294,13 @@ export default function TenantDashboard() {
         <ReceiptModal data={receiptData} onClose={() => setReceiptData(null)} />
       )}
 
+      {/* ── Ambient colour blobs — give liquid glass something to refract ── */}
+      <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10" aria-hidden>
+        <div className="absolute top-[10%] left-[15%] w-[420px] h-[420px] rounded-full bg-[#6FFFE9]/[0.055] blur-[140px]" />
+        <div className="absolute top-[50%] right-[10%] w-[320px] h-[320px] rounded-full bg-[#6FFFE9]/[0.035] blur-[120px]" />
+        <div className="absolute bottom-[15%] left-[40%] w-[260px] h-[260px] rounded-full bg-white/[0.018] blur-[100px]" />
+      </div>
+
       <div className="p-4 sm:p-6 md:p-10 pb-24 flex flex-col flex-1 max-w-4xl w-full mx-auto">
 
         {/* ── 3-Step Progress Tracker ── */}
@@ -311,7 +312,7 @@ export default function TenantDashboard() {
 
         {/* ── Page Header ── */}
         <header className="mb-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#6FFFE9]/30 bg-[#6FFFE9]/5 mb-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#6FFFE9]/25 bg-[#6FFFE9]/[0.06] backdrop-blur-sm mb-4">
             <span className="w-1.5 h-1.5 bg-[#6FFFE9] animate-pulse rounded-full" />
             <span className="text-[10px] font-medium uppercase tracking-wider text-[#9DEFE4]">
               {t("tenant_secure_pay")}
@@ -333,17 +334,21 @@ export default function TenantDashboard() {
             {/* ── Stats Bar ── */}
             <div className="grid grid-cols-3 gap-3 mb-6">
               <div className="liquid-glass rounded-2xl p-3 sm:p-4 flex flex-col items-center text-center" data-testid="stat-rent-due">
-                <span className="px-2 py-0.5 rounded-full bg-zinc-800/80 text-[10px] text-zinc-400 font-medium mb-2">Monthly Rent</span>
+                <span className="liquid-glass-chip px-2 py-0.5 rounded-full text-[10px] text-zinc-300 font-medium mb-2">Monthly Rent</span>
                 <span className="text-sm sm:text-base font-bold font-mono text-white">₹{totalDue.toLocaleString()}</span>
               </div>
               <div className="liquid-glass rounded-2xl p-3 sm:p-4 flex flex-col items-center text-center" data-testid="stat-days-due">
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium mb-2 border ${daysUntilDue <= 5 ? "bg-amber-950/50 text-amber-400 border-amber-900/30" : "bg-zinc-800/80 text-zinc-400 border-transparent"}`}>Due In</span>
-                <span className={`text-sm sm:text-base font-bold font-mono ${daysUntilDue <= 5 ? "text-amber-100" : "text-white"}`}>
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium mb-2 border backdrop-blur-sm ${
+                  daysUntilDue <= 5
+                    ? "bg-amber-500/10 text-amber-300 border-amber-400/25"
+                    : "liquid-glass-chip text-zinc-300"
+                }`}>Due In</span>
+                <span className={`text-sm sm:text-base font-bold font-mono ${daysUntilDue <= 5 ? "text-amber-200" : "text-white"}`}>
                   {daysUntilDue}d
                 </span>
               </div>
               <div className="liquid-glass rounded-2xl p-3 sm:p-4 flex flex-col items-center text-center" data-testid="stat-paid-ytd">
-                <span className="px-2 py-0.5 rounded-full bg-zinc-800/80 text-[10px] text-zinc-400 font-medium mb-2">Paid YTD</span>
+                <span className="liquid-glass-chip px-2 py-0.5 rounded-full text-[10px] text-zinc-300 font-medium mb-2">Paid YTD</span>
                 <span className="text-sm sm:text-base font-bold font-mono text-[#6FFFE9]">₹{totalPaidYTD.toLocaleString()}</span>
               </div>
             </div>
@@ -355,10 +360,10 @@ export default function TenantDashboard() {
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   data-testid={`tab-${tab.id}`}
-                  className={`flex-1 py-2 px-4 rounded-full text-sm font-semibold transition-colors
+                  className={`flex-1 py-2 px-4 rounded-full text-sm font-semibold transition-all duration-200
                     ${activeTab === tab.id
-                      ? "bg-zinc-800 text-white shadow-sm"
-                      : "text-zinc-400 hover:text-white"
+                      ? "bg-white/[0.12] text-white shadow-sm border border-white/[0.14]"
+                      : "text-zinc-400 hover:text-white hover:bg-white/[0.05]"
                     }`}
                 >
                   {tab.label}
@@ -370,7 +375,7 @@ export default function TenantDashboard() {
             {activeTab === "overview" && (
               <div className="space-y-6">
 
-                {/* Onboarding Checklist — hide once all done */}
+                {/* Onboarding Checklist */}
                 {!allOnboardingDone && (
                   <div className="liquid-glass rounded-3xl p-5">
                     <div className="flex justify-between items-end mb-4">
@@ -382,7 +387,7 @@ export default function TenantDashboard() {
                         {Math.round((onboardingSteps.filter(s => s.done).length / onboardingSteps.length) * 100)}%
                       </div>
                     </div>
-                    <div className="w-full h-2.5 bg-zinc-800 rounded-full mb-5 overflow-hidden">
+                    <div className="w-full h-2.5 bg-white/[0.07] rounded-full mb-5 overflow-hidden">
                       <div
                         className="h-full bg-gradient-to-r from-[#6FFFE9] to-[#5DEEDB] rounded-full transition-all duration-700"
                         style={{ width: `${(onboardingSteps.filter(s => s.done).length / onboardingSteps.length) * 100}%` }}
@@ -390,7 +395,11 @@ export default function TenantDashboard() {
                     </div>
                     <div className="space-y-2.5">
                       {onboardingSteps.map((step, i) => (
-                        <div key={i} className={`flex items-center gap-3 p-3 rounded-2xl border ${step.done ? "bg-zinc-800/40 border-zinc-700/50 opacity-60" : "bg-[#6FFFE9]/[0.03] border-[#6FFFE9]/15"}`}>
+                        <div key={i} className={`flex items-center gap-3 p-3 rounded-2xl border ${
+                          step.done
+                            ? "bg-white/[0.03] border-white/[0.06] opacity-55"
+                            : "bg-[#6FFFE9]/[0.04] border-[#6FFFE9]/20"
+                        }`}>
                           {step.done
                             ? <CheckCircle size={16} className="text-[#6FFFE9] shrink-0" />
                             : <Circle size={16} className="text-zinc-600 shrink-0" />}
@@ -407,7 +416,7 @@ export default function TenantDashboard() {
                 <div className="liquid-glass-teal rounded-3xl p-5 sm:p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div>
-                      <div className="inline-block px-2.5 py-1 rounded-full bg-zinc-800 text-[10px] font-bold text-zinc-300 uppercase tracking-wider mb-2">Current Month</div>
+                      <div className="inline-block px-2.5 py-1 rounded-full bg-black/40 text-[10px] font-bold text-zinc-300 uppercase tracking-wider mb-2 border border-white/[0.08]">Current Month</div>
                       <h2 className="text-4xl sm:text-5xl font-bold tracking-tighter text-white font-mono leading-none">
                         ₹{totalDue.toLocaleString()}
                       </h2>
@@ -420,7 +429,7 @@ export default function TenantDashboard() {
                       <span className="text-zinc-400">Settlement Progress</span>
                       <span className="text-zinc-400" data-testid="text-progress-percent">{progressPercent}% Settled</span>
                     </div>
-                    <div className="w-full h-2 bg-zinc-800 rounded-full overflow-hidden">
+                    <div className="w-full h-2 bg-white/[0.08] rounded-full overflow-hidden">
                       <div
                         className="h-full bg-gradient-to-r from-[#6FFFE9] to-[#5DEEDB] rounded-full transition-all duration-700"
                         style={{ width: `${progressPercent}%` }}
@@ -436,7 +445,7 @@ export default function TenantDashboard() {
                   {remaining > 0 && (
                     <Button
                       onClick={() => setActiveTab("payments")}
-                      className="w-full bg-[#6FFFE9] text-black hover:bg-[#5DEEDB] font-bold text-sm h-12 rounded-full shadow-[0_4px_20px_rgba(111,255,233,0.25)]"
+                      className="w-full bg-[#6FFFE9] text-black hover:bg-[#5DEEDB] font-bold text-sm h-12 rounded-full shadow-[0_4px_24px_rgba(111,255,233,0.30)]"
                       data-testid="button-pay-now-overview"
                     >
                       Pay Now — ₹{remaining.toLocaleString()}
@@ -451,18 +460,19 @@ export default function TenantDashboard() {
                   )}
                 </div>
 
-                {/* Open Tickets Summary */}
+                {/* Open Tickets Banner */}
                 {openTickets > 0 && (
                   <Link href="/maintenance" className="block">
-                    <div className="flex items-center justify-between p-4 rounded-2xl border border-yellow-500/25 bg-yellow-500/5 hover:bg-yellow-500/10 transition-colors cursor-pointer" data-testid="banner-open-tickets">
+                    <div className="liquid-glass rounded-2xl flex items-center justify-between p-4 border-amber-400/20 hover:border-amber-400/35 transition-colors cursor-pointer" data-testid="banner-open-tickets"
+                      style={{ borderTopColor: "rgba(251,191,36,0.30)", borderLeftColor: "rgba(251,191,36,0.16)" }}>
                       <div className="flex items-center gap-3">
-                        <AlertCircle size={18} className="text-yellow-400" />
+                        <AlertCircle size={18} className="text-amber-400" />
                         <div>
                           <p className="text-sm font-medium text-white">{openTickets} open maintenance {openTickets === 1 ? "request" : "requests"}</p>
                           <p className="text-xs text-zinc-500">Tap to view status</p>
                         </div>
                       </div>
-                      <ChevronRight size={16} className="text-zinc-600" />
+                      <ChevronRight size={16} className="text-zinc-500" />
                     </div>
                   </Link>
                 )}
@@ -472,7 +482,7 @@ export default function TenantDashboard() {
                   <div>
                     <div className="flex items-center justify-between mb-3">
                       <p className="text-[10px] uppercase tracking-widest text-zinc-500">Recent Payments</p>
-                      <button onClick={() => setActiveTab("payments")} className="text-[10px] text-[#6FFFE9]/70 uppercase tracking-wider hover:text-[#6FFFE9]">
+                      <button onClick={() => setActiveTab("payments")} className="text-[10px] text-[#6FFFE9]/70 uppercase tracking-wider hover:text-[#6FFFE9] transition-colors">
                         View All
                       </button>
                     </div>
@@ -508,13 +518,13 @@ export default function TenantDashboard() {
                       </div>
                       <button
                         onClick={() => setFlexiblePaymentEnabled(!flexiblePaymentEnabled)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 border border-[#6FFFE9]/25 hover:bg-zinc-800 transition-colors text-xs"
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full liquid-glass-chip hover:bg-white/[0.10] transition-colors text-xs"
                         data-testid="toggle-flexible-payment"
                       >
                         {flexiblePaymentEnabled
                           ? <ToggleRight className="text-[#6FFFE9]" size={18} />
-                          : <ToggleLeft className="text-zinc-500" size={18} />}
-                        <span className="uppercase tracking-wider">{flexiblePaymentEnabled ? t("tenant_flexible") : t("tenant_full_only")}</span>
+                          : <ToggleLeft className="text-zinc-400" size={18} />}
+                        <span className="uppercase tracking-wider text-zinc-300">{flexiblePaymentEnabled ? t("tenant_flexible") : t("tenant_full_only")}</span>
                       </button>
                     </div>
 
@@ -526,21 +536,21 @@ export default function TenantDashboard() {
                           value={paymentAmount}
                           onChange={(e) => setPaymentAmount(e.target.value)}
                           placeholder={`Max ₹${remaining.toLocaleString()}`}
-                          className="bg-zinc-900 border-zinc-700 text-white h-12 text-base font-mono"
+                          className="bg-white/[0.05] border-white/[0.12] text-white h-12 text-base font-mono placeholder:text-zinc-600 focus:border-[#6FFFE9]/40"
                           data-testid="input-payment-amount"
                         />
                         <div className="flex gap-2 flex-wrap">
                           {[1000, 5000, 10000].map(preset => (
                             <Button key={preset} variant="outline" size="sm"
                               onClick={() => setPaymentAmount(String(Math.min(preset, remaining)))}
-                              className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 text-xs"
+                              className="liquid-glass-chip border-white/[0.12] text-zinc-300 hover:bg-white/[0.08] hover:text-white text-xs rounded-full"
                               data-testid={`button-preset-${preset}`}>
                               ₹{preset.toLocaleString()}
                             </Button>
                           ))}
                           <Button variant="outline" size="sm"
                             onClick={() => setPaymentAmount(String(remaining))}
-                            className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 text-xs"
+                            className="liquid-glass-chip border-[#6FFFE9]/25 text-[#6FFFE9] hover:bg-[#6FFFE9]/10 text-xs rounded-full"
                             data-testid="button-preset-full">
                             Full ₹{remaining.toLocaleString()}
                           </Button>
@@ -574,7 +584,7 @@ export default function TenantDashboard() {
                           <div className="grid grid-cols-2 gap-2">
                             <a
                               href={`gpay://upi/pay?pa=${upiVpa}&pn=${upiPayee}&am=${upiAmount}&cu=INR&tn=${upiNote}`}
-                              className="liquid-glass rounded-xl flex items-center justify-center gap-2 p-2.5 hover:border-white/20 transition-colors text-xs text-zinc-300 font-medium"
+                              className="liquid-glass rounded-xl flex items-center justify-center gap-2 p-2.5 hover:bg-white/[0.06] transition-colors text-xs text-zinc-300 font-medium"
                               data-testid="button-upi-gpay"
                             >
                               <span className="text-base">G</span>
@@ -582,7 +592,7 @@ export default function TenantDashboard() {
                             </a>
                             <a
                               href={`phonepe://pay?pa=${upiVpa}&pn=${upiPayee}&am=${upiAmount}&cu=INR&tn=${upiNote}`}
-                              className="liquid-glass rounded-xl flex items-center justify-center gap-2 p-2.5 hover:border-white/20 transition-colors text-xs text-zinc-300 font-medium"
+                              className="liquid-glass rounded-xl flex items-center justify-center gap-2 p-2.5 hover:bg-white/[0.06] transition-colors text-xs text-zinc-300 font-medium"
                               data-testid="button-upi-phonepe"
                             >
                               <span className="text-base">₱</span>
@@ -591,7 +601,7 @@ export default function TenantDashboard() {
                           </div>
                           <a
                             href={upiLink}
-                            className="liquid-glass rounded-xl flex items-center justify-center gap-2 p-2.5 hover:border-white/20 transition-colors text-xs text-zinc-300 w-full"
+                            className="liquid-glass rounded-xl flex items-center justify-center gap-2 p-2.5 hover:bg-white/[0.06] transition-colors text-xs text-zinc-300 w-full"
                             data-testid="button-upi-any"
                           >
                             Any UPI App →
@@ -615,7 +625,7 @@ export default function TenantDashboard() {
                       {paymentsData.map((pmt, idx) => (
                         <div key={pmt.id} className="liquid-glass rounded-xl flex items-center justify-between p-4" data-testid={`payment-entry-${idx}`}>
                           <div className="flex items-center gap-3">
-                            <div className={`w-1.5 h-1.5 rounded-full ${pmt.status === "SUCCESS" ? "bg-[#6FFFE9]" : pmt.status === "PENDING" ? "bg-yellow-400" : "bg-red-500"}`} />
+                            <div className={`w-2 h-2 rounded-full ${pmt.status === "SUCCESS" ? "bg-[#6FFFE9]" : pmt.status === "PENDING" ? "bg-amber-400" : "bg-red-500"}`} />
                             <div>
                               <p className="text-sm text-white">
                                 {pmt.status === "SUCCESS" ? "Payment Received" : pmt.status === "PENDING" ? "Pending" : "Failed"}
@@ -627,7 +637,7 @@ export default function TenantDashboard() {
                           </div>
                           <div className="text-right">
                             <span className="font-mono text-base text-white">₹{pmt.amount.toLocaleString()}</span>
-                            <p className={`text-[10px] ${pmt.status === "SUCCESS" ? "text-[#6FFFE9]" : pmt.status === "PENDING" ? "text-yellow-400" : "text-red-400"}`}>
+                            <p className={`text-[10px] ${pmt.status === "SUCCESS" ? "text-[#6FFFE9]" : pmt.status === "PENDING" ? "text-amber-400" : "text-red-400"}`}>
                               {pmt.status}
                             </p>
                           </div>
@@ -659,12 +669,18 @@ export default function TenantDashboard() {
                               <span className="text-sm text-white">{label}</span>
                             </div>
                             <div className="flex items-center gap-3">
-                              <span className="font-mono text-sm text-zinc-300">₹{ledger.amountCollected.toLocaleString()}<span className="text-zinc-600"> / ₹{ledger.property.monthlyRent.toLocaleString()}</span></span>
+                              <span className="font-mono text-sm text-zinc-300">
+                                ₹{ledger.amountCollected.toLocaleString()}
+                                <span className="text-zinc-600"> / ₹{ledger.property.monthlyRent.toLocaleString()}</span>
+                              </span>
                               <StatusBadge status={ledger.status} />
                             </div>
                           </div>
-                          <div className="w-full h-1.5 bg-zinc-800 rounded-full overflow-hidden">
-                            <div className="h-full bg-[#6FFFE9]/60 rounded-full transition-all" style={{ width: `${pct}%` }} />
+                          <div className="w-full h-1.5 bg-white/[0.07] rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-gradient-to-r from-[#6FFFE9]/70 to-[#5DEEDB]/50 rounded-full transition-all"
+                              style={{ width: `${pct}%` }}
+                            />
                           </div>
                         </div>
                       );
@@ -686,21 +702,21 @@ export default function TenantDashboard() {
                   <p className="text-[10px] uppercase tracking-widest text-zinc-500">Property Details</p>
                   <div className="space-y-3">
                     <div className="flex items-start gap-3">
-                      <MapPin size={16} className="text-zinc-600 mt-0.5 shrink-0" />
+                      <MapPin size={16} className="text-zinc-500 mt-0.5 shrink-0" />
                       <div>
                         <p className="text-[10px] uppercase tracking-wider text-zinc-500 mb-0.5">Address</p>
                         <p className="text-sm text-white font-medium" data-testid="text-property-address">{property.address}</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
-                      <Banknote size={16} className="text-zinc-600 mt-0.5 shrink-0" />
+                      <Banknote size={16} className="text-zinc-500 mt-0.5 shrink-0" />
                       <div>
                         <p className="text-[10px] uppercase tracking-wider text-zinc-500 mb-0.5">Monthly Rent</p>
                         <p className="text-sm text-white font-mono" data-testid="text-monthly-rent">₹{property.monthlyRent.toLocaleString()}</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
-                      <CalendarDays size={16} className="text-zinc-600 mt-0.5 shrink-0" />
+                      <CalendarDays size={16} className="text-zinc-500 mt-0.5 shrink-0" />
                       <div>
                         <p className="text-[10px] uppercase tracking-wider text-zinc-500 mb-0.5">Payment Due</p>
                         <p className="text-sm text-white" data-testid="text-payout-day">
@@ -728,16 +744,19 @@ export default function TenantDashboard() {
                       { label: "Fully Executed", done: agreementStatus === "FULLY_SIGNED" },
                     ].map(step => (
                       <div key={step.label} className="flex items-center gap-3">
-                        <div className={`w-4 h-4 flex items-center justify-center border ${step.done ? "border-[#6FFFE9] bg-[#6FFFE9]/10" : "border-zinc-700"}`}>
+                        <div className={`w-4 h-4 rounded-full flex items-center justify-center border ${
+                          step.done ? "border-[#6FFFE9]/50 bg-[#6FFFE9]/10" : "border-white/[0.12] bg-white/[0.03]"
+                        }`}>
                           {step.done && <CheckCircle2 size={10} className="text-[#6FFFE9]" />}
                         </div>
-                        <span className={`text-sm ${step.done ? "text-white" : "text-zinc-600"}`}>{step.label}</span>
+                        <span className={`text-sm ${step.done ? "text-white" : "text-zinc-500"}`}>{step.label}</span>
                       </div>
                     ))}
                   </div>
                   <Link href="/agreement" className="block mt-4">
-                    <Button variant="outline" className="w-full border-zinc-700 text-white hover:bg-zinc-800 text-xs h-9" data-testid="button-view-agreement">
-                      <FileSignature size={14} className="mr-2" />
+                    <Button variant="outline"
+                      className="w-full liquid-glass-chip border-white/[0.12] text-white hover:bg-white/[0.08] text-xs h-9 rounded-xl"
+                      data-testid="button-view-agreement">
                       View / Sign Agreement
                     </Button>
                   </Link>
@@ -755,13 +774,23 @@ export default function TenantDashboard() {
                         {isVerified ? "You're cleared to make payments." : "Required to process rent payments."}
                       </p>
                     </div>
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center border ${isVerified ? "border-[#6FFFE9]/40 bg-[#6FFFE9]/10" : hasPendingKyc ? "border-yellow-500/40 bg-yellow-500/10" : "border-zinc-700"}`}>
-                      <ShieldCheck size={18} className={isVerified ? "text-[#6FFFE9]" : hasPendingKyc ? "text-yellow-400" : "text-zinc-600"} />
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center border ${
+                      isVerified
+                        ? "border-[#6FFFE9]/35 bg-[#6FFFE9]/08"
+                        : hasPendingKyc
+                        ? "border-amber-400/35 bg-amber-400/08"
+                        : "border-white/[0.10] bg-white/[0.03]"
+                    }`}>
+                      <ShieldCheck size={18} className={
+                        isVerified ? "text-[#6FFFE9]" : hasPendingKyc ? "text-amber-400" : "text-zinc-600"
+                      } />
                     </div>
                   </div>
                   {!isVerified && (
                     <Link href="/verify" className="block mt-4">
-                      <Button variant="outline" className="w-full border-zinc-700 text-white hover:bg-zinc-800 text-xs h-9" data-testid="button-kyc-lease">
+                      <Button variant="outline"
+                        className="w-full liquid-glass-chip border-white/[0.12] text-white hover:bg-white/[0.08] text-xs h-9 rounded-xl"
+                        data-testid="button-kyc-lease">
                         <ShieldCheck size={14} className="mr-2" />
                         {hasPendingKyc ? "Check KYC Status" : "Complete KYC Now"}
                       </Button>
@@ -771,9 +800,9 @@ export default function TenantDashboard() {
 
                 {/* Maintenance Summary */}
                 <Link href="/maintenance" className="block">
-                  <div className="liquid-glass rounded-2xl flex items-center justify-between p-4 sm:p-5 hover:border-[#6FFFE9]/30 transition-colors" data-testid="card-maintenance-summary">
+                  <div className="liquid-glass rounded-2xl flex items-center justify-between p-4 sm:p-5 hover:bg-white/[0.03] transition-colors" data-testid="card-maintenance-summary">
                     <div className="flex items-center gap-3">
-                      <Wrench size={16} className="text-zinc-600" />
+                      <Wrench size={16} className="text-zinc-500" />
                       <div>
                         <p className="text-sm text-white">Maintenance Requests</p>
                         <p className="text-xs text-zinc-500">
@@ -783,7 +812,7 @@ export default function TenantDashboard() {
                         </p>
                       </div>
                     </div>
-                    <ChevronRight size={16} className="text-zinc-600" />
+                    <ChevronRight size={16} className="text-zinc-500" />
                   </div>
                 </Link>
               </div>
@@ -811,11 +840,11 @@ export default function TenantDashboard() {
                       value={landlordEmail} onChange={e => setLandlordEmail(e.target.value)}
                       onKeyDown={e => e.key === "Enter" && handleSearchProperties()}
                       placeholder="landlord@example.com"
-                      className="flex-1 bg-zinc-900 border-zinc-700 text-white"
+                      className="flex-1 bg-white/[0.05] border-white/[0.12] text-white placeholder:text-zinc-600 focus:border-[#6FFFE9]/40"
                       data-testid="input-landlord-email"
                     />
                     <Button onClick={handleSearchProperties} disabled={isSearching}
-                      className="bg-white text-black hover:bg-zinc-200 rounded-none"
+                      className="bg-[#6FFFE9] text-black hover:bg-[#5DEEDB] rounded-full font-semibold"
                       data-testid="button-search-landlord">
                       {isSearching ? <Loader2 className="animate-spin" size={16} /> : <Search size={16} />}
                       <span className="ml-2">{t("tenant_search")}</span>
@@ -826,13 +855,13 @@ export default function TenantDashboard() {
                   <div className="space-y-3 pt-2">
                     <p className="text-[10px] uppercase tracking-wider text-zinc-400">{t("tenant_available_properties")}</p>
                     {availableProperties.map(prop => (
-                      <div key={prop.id} className="liquid-glass rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 border border-[#6FFFE9]/20" data-testid={`available-property-${prop.id}`}>
+                      <div key={prop.id} className="liquid-glass rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4" data-testid={`available-property-${prop.id}`}>
                         <div>
                           <p className="font-medium text-white text-sm">{prop.address}</p>
                           <p className="text-zinc-500 text-xs font-mono">₹{prop.monthlyRent.toLocaleString()} / month</p>
                         </div>
                         <Button onClick={() => handleJoinProperty(prop.id)} disabled={isJoining}
-                          className="bg-[#6FFFE9] text-black hover:bg-[#5DEEDB] text-xs h-8 px-4"
+                          className="bg-[#6FFFE9] text-black hover:bg-[#5DEEDB] text-xs h-8 px-4 rounded-full font-semibold"
                           data-testid={`button-join-${prop.id}`}>
                           {isJoining ? <Loader2 size={14} className="animate-spin" /> : null}
                           Join Property
