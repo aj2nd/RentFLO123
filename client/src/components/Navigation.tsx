@@ -54,8 +54,7 @@ export function Navigation() {
       {/* Backdrop overlay — mobile drawer only, click to close */}
       {!collapsed && (
         <div
-          className="fixed inset-0 z-40 md:hidden"
-          style={{ top: HEADER_HEIGHT }}
+          className="fixed inset-x-0 bottom-0 top-[138px] md:top-[210px] z-40 md:hidden"
           onClick={toggle}
           aria-label="Close sidebar"
         />
@@ -63,10 +62,8 @@ export function Navigation() {
 
       {/* Sidebar panel — starts below the global header */}
       <nav
-        className="fixed left-0 bg-black border-r border-white/[0.06] flex flex-col justify-between z-50 overflow-hidden transition-all duration-300 ease-in-out"
+        className="fixed left-0 top-[138px] md:top-[210px] h-[calc(100vh-138px)] md:h-[calc(100vh-210px)] bg-black border-r border-white/[0.06] flex flex-col justify-between z-50 overflow-hidden transition-all duration-300 ease-in-out"
         style={{
-          top: HEADER_HEIGHT,
-          height: `calc(100vh - ${HEADER_HEIGHT}px)`,
           width: collapsed ? '0px' : '256px',
         }}
       >
@@ -129,10 +126,9 @@ export function Navigation() {
       {/* Floating expand tab — shown when sidebar is collapsed */}
       <button
         onClick={toggle}
-        className="fixed z-50 flex items-center justify-center transition-all duration-300 ease-in-out group"
+        className="fixed z-50 flex items-center justify-center transition-all duration-300 ease-in-out group top-[calc(138px+50%)] md:top-[calc(210px+50%)]"
         style={{
           left: collapsed ? '0px' : '-28px',
-          top: `calc(${HEADER_HEIGHT}px + 50%)`,
           transform: 'translateY(-50%)',
           width: '28px',
           height: '64px',
