@@ -13,6 +13,7 @@ import Onboarding from "@/pages/Onboarding";
 import Setup from "@/pages/Setup";
 import AdminDashboard from "@/pages/AdminDashboard";
 import AdminMaintenance from "@/pages/AdminMaintenance";
+import AdminMessages from "@/pages/AdminMessages";
 import OwnerDashboard from "@/pages/OwnerDashboard";
 import TenantDashboard from "@/pages/TenantDashboard";
 import Ledger from "@/pages/Ledger";
@@ -150,6 +151,9 @@ function Router() {
 
       <Route path="/admin/maintenance">
         <PrivateRoute component={AdminMaintenance} allowedRoles={['ADMIN']} />
+      </Route>
+      <Route path="/admin/messages">
+        <PrivateRoute component={AdminMessages} allowedRoles={['ADMIN']} />
       </Route>
       <Route path="/admin">
         <PrivateRoute component={AdminDashboard} allowedRoles={['ADMIN']} />

@@ -143,7 +143,7 @@ export const notifications = pgTable("notifications", {
   userId: varchar("user_id").references(() => users.id).notNull(),
   title: text("title").notNull(),
   body: text("body").notNull(),
-  type: text("type", { enum: ['RENT_ADVANCED', 'RENT_COLLECTED', 'MAINTENANCE_CREATED', 'MAINTENANCE_RESOLVED', 'RENT_DUE'] }).notNull(),
+  type: text("type", { enum: ['RENT_ADVANCED', 'RENT_COLLECTED', 'MAINTENANCE_CREATED', 'MAINTENANCE_RESOLVED', 'RENT_DUE', 'MESSAGE_RECEIVED'] }).notNull(),
   read: boolean("read").default(false).notNull(),
   url: text("url"),
   createdAt: timestamp("created_at").defaultNow(),

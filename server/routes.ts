@@ -896,6 +896,18 @@ export function registerMessagingRoutes(app: Express) {
       if (!receiverId) return res.status(400).json({ message: 'No counterparty on this property yet' });
 
       const msg = await storage.sendMessage({ propertyId, senderId: userId, receiverId, body });
+
+      // Notify receiver (fire-and-forget — does not block response)
+      const senderRole = property.ownerId === userId ? 'owner' : 'tenant';
+      const preview = body.length > 80 ? body.slice(0, 80) + '…' : body;
+      createNotification(
+        receiverId,
+        "New Message",
+        `Message from your ${senderRole}: ${preview}`,
+        "MESSAGE_RECEIVED",
+        "/messages"
+      ).catch(() => {});
+
       res.status(201).json(msg);
     } catch (e) {
       console.error(e);
@@ -911,6 +923,42 @@ export function registerMessagingRoutes(app: Express) {
       const count = await storage.getUnreadMessageCount(userId);
       res.json({ count });
     } catch (e) {
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  // GET /api/admin/messages — all properties with active conversations (admin only)
+  app.get('/api/admin/messages', isAuthenticated, requireRole('ADMIN'), async (_req, res) => {
+    try {
+      const allProperties = await storage.getProperties();
+      const conversations = await Promise.all(
+        allProperties.map(async (p) => {
+          const msgs = await storage.getMessages(p.id);
+          if (!msgs.length) return null;
+          return {
+            property: p,
+            messageCount: msgs.length,
+            lastMessage: msgs[msgs.length - 1] ?? null,
+            unreadCount: msgs.filter(m => !m.read).length,
+          };
+        })
+      );
+      res.json(conversations.filter(Boolean));
+    } catch (e) {
+      console.error(e);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  // GET /api/admin/messages/:propertyId — full thread for one property (admin only)
+  app.get('/api/admin/messages/:propertyId', isAuthenticated, requireRole('ADMIN'), async (req, res) => {
+    try {
+      const property = await storage.getProperty(req.params.propertyId);
+      if (!property) return res.status(404).json({ message: 'Property not found' });
+      const msgs = await storage.getMessages(req.params.propertyId);
+      res.json({ property, messages: msgs });
+    } catch (e) {
+      console.error(e);
       res.status(500).json({ message: 'Internal server error' });
     }
   });

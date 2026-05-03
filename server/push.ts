@@ -74,7 +74,7 @@ export async function createNotification(
   userId: string,
   title: string,
   body: string,
-  type: "RENT_ADVANCED" | "RENT_COLLECTED" | "MAINTENANCE_CREATED" | "MAINTENANCE_RESOLVED" | "RENT_DUE",
+  type: "RENT_ADVANCED" | "RENT_COLLECTED" | "MAINTENANCE_CREATED" | "MAINTENANCE_RESOLVED" | "RENT_DUE" | "MESSAGE_RECEIVED",
   url: string = "/"
 ) {
   await db.insert(notifications).values({ userId, title, body, type, url });

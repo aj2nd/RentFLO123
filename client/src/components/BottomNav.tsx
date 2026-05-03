@@ -76,7 +76,7 @@ export function BottomNav() {
       { href: "/admin",              icon: <LayoutDashboard size={22} />, label: "Admin" },
       { href: "/ledger",             icon: <Receipt size={22} />,         label: "Ledger" },
       { href: "/admin/maintenance",  icon: <Wrench size={22} />,          label: "Repairs" },
-      { href: "/messages",           icon: <MessageSquare size={22} />,   label: "Messages" },
+      { href: "/admin/messages",     icon: <MessageSquare size={22} />,   label: "Messages" },
       { href: "/verify",             icon: <ShieldCheck size={22} />,     label: "KYC" },
     ],
   };

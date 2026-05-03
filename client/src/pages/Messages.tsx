@@ -42,7 +42,7 @@ export default function Messages() {
   const { data: msgs = [], isLoading: msgsLoading } = useQuery<Message[]>({
     queryKey: ["/api/messages", selectedPropertyId],
     enabled: !!selectedPropertyId,
-    refetchInterval: 5000,
+    refetchInterval: 3000,
   });
 
   useEffect(() => {
