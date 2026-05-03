@@ -92,71 +92,73 @@
     text-wrap: balance;
   }
 
-  /* ── Liquid Glass ──────────────────────────────────────────────── */
+  /* ── Liquid Glass (water droplet) ─────────────────────────────── */
   .liquid-glass {
     position: relative;
-    background: rgba(255, 255, 255, 0.018);
-    backdrop-filter: blur(40px) saturate(220%) brightness(1.04);
-    -webkit-backdrop-filter: blur(40px) saturate(220%) brightness(1.04);
-    border: 1px solid rgba(255, 255, 255, 0.22);
-    border-bottom-color: rgba(255, 255, 255, 0.08);
-    border-right-color: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.004);
+    backdrop-filter: blur(64px) saturate(280%) brightness(1.08);
+    -webkit-backdrop-filter: blur(64px) saturate(280%) brightness(1.08);
+    border: 0.5px solid rgba(255, 255, 255, 0.32);
+    border-bottom-color: rgba(255, 255, 255, 0.05);
+    border-right-color: rgba(255, 255, 255, 0.05);
     box-shadow:
-      0 12px 40px rgba(0, 0, 0, 0.55),
-      0 2px 8px rgba(0, 0, 0, 0.30),
-      inset 0 1.5px 0 rgba(255, 255, 255, 0.22),
-      inset 0 -1px 0 rgba(0, 0, 0, 0.08),
-      inset 1.5px 0 0 rgba(255, 255, 255, 0.10);
+      0 24px 64px rgba(0, 0, 0, 0.65),
+      0 4px 16px rgba(0, 0, 0, 0.30),
+      inset 0 2px 0 rgba(255, 255, 255, 0.38),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.03),
+      inset 2px 0 0 rgba(255, 255, 255, 0.08);
     overflow: hidden;
   }
+  /* water-drop specular glint — bright focal spot upper-left */
   .liquid-glass::before {
     content: '';
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 50%;
-    background: linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.10) 0%,
-      rgba(255, 255, 255, 0.03) 60%,
-      rgba(255, 255, 255, 0) 100%
+    top: 5px;
+    left: 10px;
+    width: 50%;
+    height: 40%;
+    background: radial-gradient(
+      ellipse at 20% 20%,
+      rgba(255, 255, 255, 0.55) 0%,
+      rgba(255, 255, 255, 0.18) 30%,
+      rgba(255, 255, 255, 0) 70%
     );
     pointer-events: none;
-    border-radius: inherit;
+    border-radius: 50% 50% 60% 40% / 40% 40% 60% 60%;
   }
 
   .liquid-glass-teal {
     position: relative;
-    background: rgba(111, 255, 233, 0.025);
-    backdrop-filter: blur(40px) saturate(220%) brightness(1.04);
-    -webkit-backdrop-filter: blur(40px) saturate(220%) brightness(1.04);
-    border: 1px solid rgba(111, 255, 233, 0.35);
-    border-bottom-color: rgba(111, 255, 233, 0.10);
-    border-right-color: rgba(111, 255, 233, 0.10);
+    background: rgba(111, 255, 233, 0.006);
+    backdrop-filter: blur(64px) saturate(280%) brightness(1.08);
+    -webkit-backdrop-filter: blur(64px) saturate(280%) brightness(1.08);
+    border: 0.5px solid rgba(111, 255, 233, 0.50);
+    border-bottom-color: rgba(111, 255, 233, 0.07);
+    border-right-color: rgba(111, 255, 233, 0.07);
     box-shadow:
-      0 12px 40px rgba(0, 0, 0, 0.55),
-      0 2px 8px rgba(0, 0, 0, 0.30),
-      inset 0 1.5px 0 rgba(111, 255, 233, 0.28),
-      inset 0 -1px 0 rgba(0, 0, 0, 0.08),
-      0 0 24px rgba(111, 255, 233, 0.06);
+      0 24px 64px rgba(0, 0, 0, 0.65),
+      0 4px 16px rgba(0, 0, 0, 0.30),
+      inset 0 2px 0 rgba(111, 255, 233, 0.45),
+      inset 0 -1px 0 rgba(111, 255, 233, 0.04),
+      0 0 32px rgba(111, 255, 233, 0.08);
     overflow: hidden;
   }
+  /* teal water-drop specular glint */
   .liquid-glass-teal::before {
     content: '';
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 50%;
-    background: linear-gradient(
-      180deg,
-      rgba(111, 255, 233, 0.12) 0%,
-      rgba(111, 255, 233, 0.03) 60%,
-      rgba(111, 255, 233, 0) 100%
+    top: 5px;
+    left: 10px;
+    width: 50%;
+    height: 40%;
+    background: radial-gradient(
+      ellipse at 20% 20%,
+      rgba(200, 255, 248, 0.55) 0%,
+      rgba(111, 255, 233, 0.18) 30%,
+      rgba(111, 255, 233, 0) 70%
     );
     pointer-events: none;
-    border-radius: inherit;
+    border-radius: 50% 50% 60% 40% / 40% 40% 60% 60%;
   }
   /* ────────────────────────────────────────────────────────────── */
 
