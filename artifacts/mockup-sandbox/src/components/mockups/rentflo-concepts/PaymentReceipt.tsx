@@ -1,216 +1,291 @@
-import React, { useEffect, useState } from 'react';
-import { Check, Download, ArrowLeft, Home } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { useEffect, useState, useRef } from 'react';
 
-// Custom styles for animations that are hard to do with just Tailwind arbitrary values
-const customStyles = `
-  @keyframes drawCircle {
-    to { stroke-dashoffset: 0; }
-  }
-  @keyframes drawCheck {
-    to { stroke-dashoffset: 0; }
-  }
-  @keyframes glowPulse {
-    0% { box-shadow: 0 0 20px 0px rgba(111, 255, 233, 0.2); }
-    50% { box-shadow: 0 0 40px 10px rgba(111, 255, 233, 0.4); }
-    100% { box-shadow: 0 0 20px 0px rgba(111, 255, 233, 0.2); }
-  }
-  @keyframes burst {
-    0% { transform: translate(0, 0) scale(1); opacity: 1; }
-    100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
-  }
-  @keyframes slideUpFade {
-    0% { opacity: 0; transform: translateY(20px); }
-    100% { opacity: 1; transform: translateY(0); }
-  }
-  .animate-slide-up-fade {
-    animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  }
-`;
+const T = '#6FFFE9';
 
-const Particles = () => {
-  const particles = Array.from({ length: 40 }).map((_, i) => {
-    const angle = (i * 360) / 40;
-    const distance = 100 + Math.random() * 150;
-    const tx = Math.cos((angle * Math.PI) / 180) * distance;
-    const ty = Math.sin((angle * Math.PI) / 180) * distance;
-    const size = 3 + Math.random() * 5;
-    const colors = ['#6FFFE9', '#FFFFFF', '#45A29E', '#C5C6C7'];
-    const color = colors[Math.floor(Math.random() * colors.length)];
-    const delay = Math.random() * 0.2;
-    const duration = 0.8 + Math.random() * 0.5;
+type Phase = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
-    return (
-      <div
-        key={i}
-        className="absolute top-1/2 left-1/2 rounded-full"
-        style={{
-          width: size,
-          height: size,
-          backgroundColor: color,
-          marginLeft: -size / 2,
-          marginTop: -size / 2,
-          '--tx': \`\${tx}px\`,
-          '--ty': \`\${ty}px\`,
-          animation: \`burst \${duration}s ease-out \${delay}s forwards\`,
-          opacity: 0,
-        } as React.CSSProperties}
-      />
-    );
-  });
+const RAIN_CHARS = '0123456789₹$%#@!&';
+const rnd = (n: number) => Math.floor(Math.random() * n);
 
-  return <div className="absolute inset-0 pointer-events-none z-10 overflow-hidden">{particles}</div>;
-};
-
-const AnimatedCounter = ({ value, duration = 2000 }: { value: number; duration?: number }) => {
-  const [count, setCount] = useState(0);
-
+function usePhase(active: boolean) {
+  const [phase, setPhase] = useState<Phase>(0);
   useEffect(() => {
-    let startTime: number | null = null;
-    const animate = (currentTime: number) => {
-      if (!startTime) startTime = currentTime;
-      const progress = Math.min((currentTime - startTime) / duration, 1);
-      
-      // Easing function: easeOutQuart
-      const easeProgress = 1 - Math.pow(1 - progress, 4);
-      setCount(Math.floor(easeProgress * value));
-      
-      if (progress < 1) {
-        requestAnimationFrame(animate);
-      } else {
-        setCount(value);
-      }
-    };
-    
-    requestAnimationFrame(animate);
-  }, [value, duration]);
+    if (!active) { setPhase(0); return; }
+    const times: [Phase, number][] = [
+      [1, 0], [2, 700], [3, 1600], [4, 2500], [5, 3400], [6, 4000], [7, 4700],
+    ];
+    const ids = times.map(([p, t]) => setTimeout(() => setPhase(p), t));
+    return () => ids.forEach(clearTimeout);
+  }, [active]);
+  return phase;
+}
 
-  return (
-    <span className="font-playfair font-semibold">
-      ₹{count.toLocaleString('en-IN')}
-    </span>
-  );
-};
-
-export function PaymentReceipt() {
-  const [showDetails, setShowDetails] = useState(false);
-
+function NumberRain({ phase }: { phase: Phase }) {
+  const [cols, setCols] = useState<{ char: string; delay: number; dur: number }[][]>([]);
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowDetails(true);
-    }, 1500); // Wait for the main animations to finish before showing details
-    return () => clearTimeout(timer);
+    const N = 22, rows = 8;
+    setCols(Array.from({ length: N }, () =>
+      Array.from({ length: rows }, () => ({
+        char: RAIN_CHARS[rnd(RAIN_CHARS.length)],
+        delay: rnd(400),
+        dur: 200 + rnd(300),
+      }))
+    ));
   }, []);
 
+  if (phase < 1 || phase > 2) return null;
+
   return (
-    <div className="min-h-screen bg-black text-white font-inter flex flex-col relative overflow-hidden items-center justify-center p-6">
-      <style>{customStyles}</style>
-      
-      {/* Background ambient glow */}
-      <div className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-20">
-        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-[#6FFFE9] rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-[#6FFFE9] rounded-full blur-[120px]" />
-      </div>
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 1,
+      display: 'flex', gap: 12, justifyContent: 'center', alignItems: 'center',
+      opacity: phase === 2 ? 0 : 1,
+      transition: phase === 2 ? 'opacity 0.8s ease-out' : 'opacity 0.3s',
+      pointerEvents: 'none',
+      fontFamily: 'monospace',
+    }}>
+      <style>{`
+        @keyframes colFall { 0%{opacity:0;transform:translateY(-20px)} 30%{opacity:1} 100%{opacity:0.15;transform:translateY(20px)} }
+      `}</style>
+      {cols.map((col, ci) => (
+        <div key={ci} style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {col.map((cell, ri) => (
+            <span key={ri} style={{
+              fontSize: 11, color: `rgba(111,255,233,${0.2 + Math.random() * 0.5})`,
+              animation: `colFall ${cell.dur}ms ${cell.delay}ms ease-in-out infinite alternate`,
+              display: 'block',
+            }}>{cell.char}</span>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
 
-      <div className="w-full max-w-md z-20 flex flex-col items-center">
-        
-        {/* Success Icon & Particles Container */}
-        <div className="relative w-40 h-40 flex items-center justify-center mb-8">
-          <Particles />
-          
-          <div 
-            className="w-24 h-24 rounded-full flex items-center justify-center relative bg-black/50 backdrop-blur-sm z-20"
-            style={{ animation: 'glowPulse 3s infinite ease-in-out' }}
-          >
-            <svg className="w-24 h-24 absolute inset-0" viewBox="0 0 100 100">
-              <circle
-                cx="50"
-                cy="50"
-                r="46"
-                fill="none"
-                stroke="#6FFFE9"
-                strokeWidth="4"
-                strokeDasharray="289"
-                strokeDashoffset="289"
-                className="drop-shadow-[0_0_8px_rgba(111,255,233,0.5)]"
-                style={{ animation: 'drawCircle 1s cubic-bezier(0.65, 0, 0.45, 1) forwards' }}
-                strokeLinecap="round"
-              />
-              <path
-                d="M30 50 L45 65 L70 35"
-                fill="none"
-                stroke="#6FFFE9"
-                strokeWidth="6"
-                strokeDasharray="100"
-                strokeDashoffset="100"
-                className="drop-shadow-[0_0_8px_rgba(111,255,233,0.5)]"
-                style={{ animation: 'drawCheck 0.6s cubic-bezier(0.65, 0, 0.45, 1) 0.6s forwards' }}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+function ScanLine({ active }: { active: boolean }) {
+  if (!active) return null;
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 2, pointerEvents: 'none', overflow: 'hidden' }}>
+      <style>{`@keyframes scanDown { 0%{top:-2px} 100%{top:100vh} }`}</style>
+      <div style={{
+        position: 'absolute', left: 0, right: 0, height: 2,
+        background: `linear-gradient(90deg, transparent 0%, ${T} 30%, #fff 50%, ${T} 70%, transparent 100%)`,
+        boxShadow: `0 0 20px 4px ${T}`,
+        animation: 'scanDown 0.7s cubic-bezier(0.4,0,0.6,1) forwards',
+      }} />
+    </div>
+  );
+}
+
+function Ring({ phase }: { phase: Phase }) {
+  const r = 70, c = 88, stroke = 5;
+  const circ = 2 * Math.PI * r;
+  const segments = 16;
+  const segAngle = 360 / segments;
+
+  return (
+    <svg width={c * 2} height={c * 2} style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%) rotate(-90deg)' }}>
+      <style>{`@keyframes segIn { from{stroke-dashoffset:${circ / segments}} to{stroke-dashoffset:0} }`}</style>
+      {Array.from({ length: segments }).map((_, i) => {
+        const dash = circ / segments - 3;
+        const offset = (circ / segments) * i;
+        const delay = phase >= 3 ? i * 60 : 9999;
+        return (
+          <circle key={i} cx={c} cy={c} r={r} fill="none"
+            stroke={i % 2 === 0 ? T : `rgba(111,255,233,0.3)`}
+            strokeWidth={stroke}
+            strokeDasharray={`${dash} ${circ - dash}`}
+            strokeDashoffset={circ / segments - offset}
+            style={{
+              transformOrigin: `${c}px ${c}px`,
+              transform: `rotate(${i * segAngle}deg)`,
+              animation: phase >= 3 ? `segIn 0.15s ${delay}ms cubic-bezier(0,0,0.2,1) both` : 'none',
+              opacity: phase >= 3 ? 1 : 0,
+            }}
+          />
+        );
+      })}
+    </svg>
+  );
+}
+
+function Check({ phase }: { phase: Phase }) {
+  const len = 85;
+  return (
+    <svg width={48} height={48} viewBox="0 0 48 48" fill="none" style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)' }}>
+      <style>{`@keyframes drawPath { to { stroke-dashoffset: 0 } }`}</style>
+      <polyline points="10,26 20,36 38,14" stroke={T} strokeWidth={3.5} strokeLinecap="round" strokeLinejoin="round"
+        style={{
+          strokeDasharray: len, strokeDashoffset: phase >= 4 ? 0 : len,
+          transition: phase >= 4 ? 'stroke-dashoffset 0.5s cubic-bezier(0.22,1,0.36,1) 0ms' : 'none',
+        }}
+      />
+    </svg>
+  );
+}
+
+function Stamp({ phase }: { phase: Phase }) {
+  return (
+    <div style={{
+      position: 'absolute', top: '14%', right: '8%',
+      transform: phase >= 5 ? 'rotate(-12deg) scale(1)' : 'rotate(-12deg) scale(0)',
+      opacity: phase >= 5 ? 1 : 0,
+      transition: 'transform 0.35s cubic-bezier(0.34,1.56,0.64,1), opacity 0.2s',
+      transitionDelay: '0s',
+      border: `3px solid ${T}`,
+      padding: '4px 12px',
+      fontFamily: 'Inter,sans-serif',
+      fontSize: 11,
+      fontWeight: 800,
+      letterSpacing: '0.3em',
+      color: T,
+      boxShadow: `inset 0 0 0 1px rgba(111,255,233,0.2), 0 0 20px rgba(111,255,233,0.15)`,
+    }}>
+      SETTLED
+    </div>
+  );
+}
+
+const ROWS = [
+  { label: 'PAYMENT ID', value: 'pay_Q3rKxF9mNjL2' },
+  { label: 'DATE', value: '03 May 2026, 09:41 AM' },
+  { label: 'PROPERTY', value: 'Koramangala 4B — Unit 204' },
+  { label: 'TENANT', value: 'Ravi Krishnamurthy' },
+  { label: 'METHOD', value: 'UPI · RAZORPAY' },
+  { label: 'STATUS', value: 'SETTLED ✓' },
+];
+
+function Counter({ target, active }: { target: number; active: boolean }) {
+  const [val, setVal] = useState(0);
+  const start = useRef<number | null>(null);
+  useEffect(() => {
+    if (!active) return;
+    start.current = null;
+    const dur = 1400;
+    const go = (ts: number) => {
+      if (!start.current) start.current = ts;
+      const p = Math.min((ts - start.current) / dur, 1);
+      const ease = 1 - Math.pow(1 - p, 4);
+      setVal(Math.round(ease * target));
+      if (p < 1) requestAnimationFrame(go);
+    };
+    requestAnimationFrame(go);
+  }, [active, target]);
+  return <span>{val.toLocaleString('en-IN')}</span>;
+}
+
+export function PaymentReceipt() {
+  const [go, setGo] = useState(false);
+  const phase = usePhase(go);
+
+  useEffect(() => {
+    const t = setTimeout(() => setGo(true), 400);
+    return () => clearTimeout(t);
+  }, []);
+
+  const replay = () => { setGo(false); setTimeout(() => setGo(true), 50); };
+
+  return (
+    <div style={{ minHeight: '100vh', background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter,sans-serif', position: 'relative', overflow: 'hidden' }}>
+      <style>{`
+        @keyframes glow { 0%,100%{box-shadow:0 0 30px rgba(111,255,233,0.25)} 50%{box-shadow:0 0 60px rgba(111,255,233,0.5)} }
+        @keyframes rowIn { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+      `}</style>
+
+      <ScanLine active={phase === 1} />
+      <NumberRain phase={phase} />
+
+      {/* Radial glow behind */}
+      <div style={{
+        position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0,
+        background: `radial-gradient(ellipse 60% 60% at 50% 50%, rgba(111,255,233,${phase >= 3 ? 0.07 : 0}), transparent 70%)`,
+        transition: 'background 1s',
+      }} />
+
+      {/* Main card */}
+      <div style={{
+        position: 'relative', zIndex: 3, width: 420,
+        opacity: phase >= 2 ? 1 : 0,
+        transform: phase >= 2 ? 'translateY(0)' : 'translateY(30px)',
+        transition: 'opacity 0.6s, transform 0.7s cubic-bezier(0.22,1,0.36,1)',
+      }}>
+        {/* Ring + Check — centered above card */}
+        <div style={{ position: 'relative', width: 176, height: 176, margin: '0 auto 32px' }}>
+          <Ring phase={phase} />
+          <Check phase={phase} />
+          {phase >= 3 && (
+            <div style={{
+              position: 'absolute', inset: 0, borderRadius: '50%',
+              animation: 'glow 2.5s ease-in-out infinite',
+              pointerEvents: 'none',
+            }} />
+          )}
+        </div>
+
+        {/* Amount — huge */}
+        <div style={{ textAlign: 'center', marginBottom: 6 }}>
+          <div style={{ fontSize: 9, letterSpacing: '0.25em', color: 'rgba(255,255,255,0.3)', marginBottom: 12, fontWeight: 600 }}>
+            AMOUNT SETTLED
+          </div>
+          <div style={{
+            fontFamily: '"Playfair Display",serif', fontSize: 62, fontWeight: 700,
+            color: '#fff', letterSpacing: '-0.02em', lineHeight: 1,
+            opacity: phase >= 5 ? 1 : 0,
+            transform: phase >= 5 ? 'scale(1)' : 'scale(0.85)',
+            transition: 'opacity 0.4s, transform 0.5s cubic-bezier(0.34,1.56,0.64,1)',
+          }}>
+            ₹{phase >= 5 ? <Counter target={50000} active={phase >= 5} /> : '0'}
           </div>
         </div>
 
-        {/* Amount */}
-        <div className="text-center mb-10 opacity-0 animate-slide-up-fade" style={{ animationDelay: '1.2s' }}>
-          <h2 className="text-[#6FFFE9] font-medium tracking-widest text-sm uppercase mb-2">Payment Successful</h2>
-          <div className="text-6xl text-white tracking-tight">
-            <AnimatedCounter value={50000} duration={2500} />
-          </div>
+        {/* Stamp */}
+        <div style={{ position: 'relative', height: 0 }}>
+          <Stamp phase={phase} />
         </div>
 
-        {/* Receipt Details Card */}
-        <div className={\`w-full transition-all duration-700 ease-out \${showDetails ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}\`}>
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-md shadow-2xl relative overflow-hidden">
-            {/* Inner subtle glow */}
-            <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#6FFFE9] rounded-full blur-[80px] opacity-20 pointer-events-none" />
-            
-            <div className="space-y-5">
-              <div className="flex justify-between items-center opacity-0 animate-slide-up-fade" style={{ animationDelay: '1.6s' }}>
-                <span className="text-white/50 text-sm">Status</span>
-                <span className="bg-[#6FFFE9]/10 text-[#6FFFE9] px-3 py-1 rounded-full text-xs font-semibold tracking-wide border border-[#6FFFE9]/20">SETTLED</span>
-              </div>
-              
-              <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-              
-              <div className="flex justify-between items-center opacity-0 animate-slide-up-fade" style={{ animationDelay: '1.7s' }}>
-                <span className="text-white/50 text-sm">Property</span>
-                <span className="text-white text-sm font-medium">The Alturas, #402</span>
-              </div>
-              
-              <div className="flex justify-between items-center opacity-0 animate-slide-up-fade" style={{ animationDelay: '1.8s' }}>
-                <span className="text-white/50 text-sm">Date</span>
-                <span className="text-white text-sm font-medium">Oct 24, 2023 at 10:45 AM</span>
-              </div>
-              
-              <div className="flex justify-between items-center opacity-0 animate-slide-up-fade" style={{ animationDelay: '1.9s' }}>
-                <span className="text-white/50 text-sm">Payment ID</span>
-                <span className="text-white text-sm font-mono bg-white/5 px-2 py-0.5 rounded">TXN-8924719A</span>
-              </div>
+        {/* Divider */}
+        <div style={{
+          borderTop: '1px solid rgba(255,255,255,0.08)', margin: '28px 0',
+          opacity: phase >= 6 ? 1 : 0, transition: 'opacity 0.4s 0.1s',
+        }} />
+
+        {/* Receipt rows */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {ROWS.map((row, i) => (
+            <div key={i} style={{
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              opacity: phase >= 7 ? 1 : 0,
+              animation: phase >= 7 ? `rowIn 0.4s ${i * 70}ms cubic-bezier(0.22,1,0.36,1) both` : 'none',
+            }}>
+              <span style={{ fontSize: 9, letterSpacing: '0.18em', color: 'rgba(255,255,255,0.3)', fontWeight: 600 }}>{row.label}</span>
+              <span style={{ fontSize: 11, color: row.label === 'STATUS' ? T : 'rgba(255,255,255,0.75)', fontFamily: row.label === 'PAYMENT ID' ? 'monospace' : 'inherit', fontWeight: row.label === 'STATUS' ? 700 : 400 }}>{row.value}</span>
             </div>
-          </div>
+          ))}
         </div>
 
-        {/* Bottom Actions */}
-        <div className={\`w-full mt-10 space-y-4 transition-all duration-700 delay-300 ease-out \${showDetails ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}\`}>
-          <Button 
-            className="w-full bg-[#6FFFE9] text-black hover:bg-[#5CE0CC] hover:scale-[1.02] transition-all h-14 rounded-xl font-medium text-lg shadow-[0_0_20px_rgba(111,255,233,0.3)] hover:shadow-[0_0_30px_rgba(111,255,233,0.5)]"
-          >
-            <Download className="w-5 h-5 mr-2" />
-            Download Receipt
-          </Button>
-          
-          <Button 
-            variant="ghost" 
-            className="w-full text-white/70 hover:text-white hover:bg-white/5 h-14 rounded-xl font-medium"
-          >
-            <Home className="w-5 h-5 mr-2" />
-            Back to Home
-          </Button>
+        {/* Actions */}
+        <div style={{
+          display: 'flex', gap: 10, marginTop: 32,
+          opacity: phase >= 7 ? 1 : 0,
+          transform: phase >= 7 ? 'translateY(0)' : 'translateY(16px)',
+          transition: 'opacity 0.4s 0.5s, transform 0.5s 0.5s',
+        }}>
+          <button onClick={replay} style={{
+            flex: 1, padding: '12px', background: T, color: '#000', border: 'none',
+            fontSize: 11, fontWeight: 700, letterSpacing: '0.15em', cursor: 'pointer',
+            fontFamily: 'Inter,sans-serif',
+          }}>
+            DOWNLOAD RECEIPT
+          </button>
+          <button onClick={replay} style={{
+            flex: 1, padding: '12px', background: 'transparent', color: 'rgba(255,255,255,0.5)',
+            border: '1px solid rgba(255,255,255,0.12)', fontSize: 11, fontWeight: 500,
+            letterSpacing: '0.12em', cursor: 'pointer', fontFamily: 'Inter,sans-serif',
+          }}>
+            REPLAY ↺
+          </button>
         </div>
-
       </div>
     </div>
   );

@@ -1,292 +1,287 @@
-import React from 'react';
-import { ArrowUpRight, ArrowDownRight, Activity, Wallet, CreditCard, Bell, Menu, TrendingUp } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+
+const T = '#6FFFE9';
+
+function useCounter(target: number, active: boolean, duration = 1600) {
+  const [val, setVal] = useState(0);
+  const ref = useRef<number | null>(null);
+  useEffect(() => {
+    if (!active) return;
+    ref.current = null;
+    const go = (ts: number) => {
+      if (!ref.current) ref.current = ts;
+      const p = Math.min((ts - ref.current) / duration, 1);
+      const ease = 1 - Math.pow(1 - p, 3);
+      setVal(Math.round(ease * target));
+      if (p < 1) requestAnimationFrame(go);
+    };
+    requestAnimationFrame(go);
+  }, [active, target, duration]);
+  return val;
+}
+
+function Waveform({ active }: { active: boolean }) {
+  const bars = 42;
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height: 36 }}>
+      {Array.from({ length: bars }).map((_, i) => {
+        const h = 4 + Math.abs(Math.sin(i * 0.8 + 1.2)) * 28 + Math.abs(Math.cos(i * 0.4)) * 8;
+        return (
+          <div key={i} style={{
+            width: 2, height: `${h}px`,
+            background: `rgba(111,255,233,${0.15 + (h / 36) * 0.55})`,
+            animation: active ? `barPulse ${0.8 + (i % 5) * 0.15}s ${(i % 7) * 0.08}s ease-in-out infinite alternate` : 'none',
+            flexShrink: 0,
+          }} />
+        );
+      })}
+    </div>
+  );
+}
+
+function GlassPanel({ children, style = {}, blur = 18, opacity = 0.06 }: {
+  children: React.ReactNode; style?: React.CSSProperties; blur?: number; opacity?: number;
+}) {
+  return (
+    <div style={{
+      background: `rgba(255,255,255,${opacity})`,
+      backdropFilter: `blur(${blur}px) saturate(180%)`,
+      WebkitBackdropFilter: `blur(${blur}px) saturate(180%)`,
+      border: '1px solid rgba(255,255,255,0.1)',
+      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.12), 0 8px 32px rgba(0,0,0,0.4)',
+      position: 'relative',
+      overflow: 'hidden',
+      ...style,
+    }}>
+      {/* Glass sheen line */}
+      <div style={{
+        position: 'absolute', top: 0, left: '-100%', right: '-100%', height: 1,
+        background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent)',
+        pointerEvents: 'none',
+      }} />
+      {children}
+    </div>
+  );
+}
+
+const ACTIVITIES = [
+  { name: 'Ravi K.',    prop: 'Koramangala 4B', amt: '₹32,000', s: 'SETTLED',  t: '09:41' },
+  { name: 'Meera S.',   prop: 'HSR Sector 2',   amt: '₹18,500', s: 'PARTIAL',  t: '09:22' },
+  { name: 'Arjun T.',   prop: 'Whitefield B3',  amt: '₹27,000', s: 'SETTLED',  t: '08:55' },
+  { name: 'Priya N.',   prop: 'JP Nagar 7',     amt: '₹29,000', s: 'SETTLED',  t: '08:31' },
+  { name: 'Suresh M.',  prop: 'Indiranagar 12A',amt: '₹44,000', s: 'PENDING',  t: '08:10' },
+];
+
+const STATUS_COLOR: Record<string, string> = {
+  SETTLED: T, PARTIAL: '#facc15', PENDING: 'rgba(255,255,255,0.35)',
+};
 
 export function GlassDashboard() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { const t = setTimeout(() => setMounted(true), 100); return () => clearTimeout(t); }, []);
+
+  const advanced = useCounter(240000, mounted);
+  const collected = useCounter(85000, mounted, 1400);
+  const properties = useCounter(12, mounted, 1200);
+  const rate = useCounter(98, mounted, 1800);
+
   return (
-    <div className="min-h-screen text-white font-sans bg-black relative overflow-x-hidden selection:bg-[#6FFFE9] selection:text-black">
+    <div style={{
+      minHeight: '100vh', fontFamily: 'Inter,sans-serif',
+      background: '#020508',
+      position: 'relative', overflow: 'hidden',
+    }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        
-        .font-inter {
-          font-family: 'Inter', sans-serif;
+        @keyframes auroraShift {
+          0%   { transform: translate(0%, 0%) scale(1); }
+          33%  { transform: translate(8%, -12%) scale(1.15); }
+          66%  { transform: translate(-6%, 8%) scale(0.9); }
+          100% { transform: translate(0%, 0%) scale(1); }
         }
-        
-        .glass-aurora-bg {
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100vw;
-          height: 100vh;
-          background: #000;
-          z-index: 0;
-          overflow: hidden;
+        @keyframes auroraShift2 {
+          0%   { transform: translate(0%, 0%) scale(1); }
+          40%  { transform: translate(-10%, 10%) scale(1.2); }
+          80%  { transform: translate(6%, -6%) scale(0.95); }
+          100% { transform: translate(0%, 0%) scale(1); }
         }
-        
-        .blob {
-          position: absolute;
-          border-radius: 50%;
-          filter: blur(100px);
-          opacity: 0.5;
-          animation: float 25s infinite ease-in-out alternate;
+        @keyframes auroraShift3 {
+          0%   { transform: translate(0%, 0%) scale(1.1); }
+          50%  { transform: translate(12%, 6%) scale(0.85); }
+          100% { transform: translate(0%, 0%) scale(1.1); }
         }
-
-        .blob-1 {
-          top: -20%;
-          left: -10%;
-          width: 60vw;
-          height: 60vw;
-          background: radial-gradient(circle, rgba(15, 76, 92, 0.8), transparent 70%);
+        @keyframes barPulse {
+          from { transform: scaleY(0.6); }
+          to   { transform: scaleY(1.1); }
         }
-
-        .blob-2 {
-          bottom: -20%;
-          right: -10%;
-          width: 70vw;
-          height: 70vw;
-          background: radial-gradient(circle, rgba(111, 255, 233, 0.25), transparent 70%);
-          animation-direction: alternate-reverse;
-          animation-duration: 30s;
+        @keyframes lightSweep {
+          0%   { left: -60%; opacity: 0; }
+          10%  { opacity: 1; }
+          90%  { opacity: 1; }
+          100% { left: 160%; opacity: 0; }
         }
-
-        .blob-3 {
-          top: 40%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          width: 50vw;
-          height: 50vw;
-          background: radial-gradient(circle, rgba(0, 34, 40, 0.9), transparent 70%);
-          animation-duration: 35s;
-        }
-
-        @keyframes float {
-          0% { transform: translate(0, 0) scale(1); }
-          50% { transform: translate(8%, 12%) scale(1.05); }
-          100% { transform: translate(-5%, 8%) scale(0.95); }
-        }
-
-        .glass-panel {
-          background: rgba(255, 255, 255, 0.02);
-          backdrop-filter: blur(40px) saturate(180%);
-          -webkit-backdrop-filter: blur(40px) saturate(180%);
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          box-shadow: 
-            0 8px 32px 0 rgba(0, 0, 0, 0.3),
-            inset 0 1px 0 rgba(255, 255, 255, 0.1);
-          border-radius: 0;
-        }
-        
-        .glass-panel-deep {
-          background: rgba(0, 0, 0, 0.4);
-          backdrop-filter: blur(60px) saturate(200%);
-          -webkit-backdrop-filter: blur(60px) saturate(200%);
-          border: 1px solid rgba(111, 255, 233, 0.15);
-          box-shadow: 
-            0 8px 32px 0 rgba(0, 0, 0, 0.5),
-            inset 0 0 30px rgba(111, 255, 233, 0.03);
-          border-radius: 0;
-        }
-        
-        .glass-panel-light {
-          background: rgba(255, 255, 255, 0.05);
-          backdrop-filter: blur(20px) saturate(150%);
-          -webkit-backdrop-filter: blur(20px) saturate(150%);
-          border: 1px solid rgba(255, 255, 255, 0.12);
-          border-radius: 0;
-        }
-
-        .tiffany-text {
-          color: #6FFFE9;
-        }
-        
-        .tiffany-glow {
-          text-shadow: 0 0 20px rgba(111, 255, 233, 0.4);
-        }
-
-        .tiffany-bg {
-          background-color: #6FFFE9;
-        }
-        
-        /* Chart grid lines */
-        .glass-grid {
-          background-image: 
-            linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-          background-size: 20px 20px;
-        }
+        @keyframes fadein { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes pulseGlow { 0%,100%{opacity:0.6} 50%{opacity:1} }
       `}</style>
 
-      {/* Background */}
-      <div className="glass-aurora-bg">
-        <div className="blob blob-1"></div>
-        <div className="blob blob-2"></div>
-        <div className="blob blob-3"></div>
+      {/* === AURORA BACKGROUND === */}
+      <div style={{ position: 'fixed', inset: 0, zIndex: 0, overflow: 'hidden', background: '#020508' }}>
+        {/* Blob 1 — deep teal left */}
+        <div style={{
+          position: 'absolute', top: '-20%', left: '-15%',
+          width: '65vw', height: '65vw', borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(6,78,92,0.9) 0%, rgba(6,78,92,0.4) 40%, transparent 70%)',
+          filter: 'blur(80px)',
+          animation: 'auroraShift 28s ease-in-out infinite',
+        }} />
+        {/* Blob 2 — tiffany tint bottom-right */}
+        <div style={{
+          position: 'absolute', bottom: '-25%', right: '-20%',
+          width: '75vw', height: '75vw', borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(111,255,233,0.18) 0%, rgba(20,120,100,0.3) 35%, transparent 65%)',
+          filter: 'blur(100px)',
+          animation: 'auroraShift2 34s ease-in-out infinite',
+        }} />
+        {/* Blob 3 — indigo/violet hint for depth */}
+        <div style={{
+          position: 'absolute', top: '40%', left: '30%',
+          width: '50vw', height: '50vw', borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(30,20,80,0.7) 0%, transparent 60%)',
+          filter: 'blur(90px)',
+          animation: 'auroraShift3 22s ease-in-out infinite',
+        }} />
+        {/* Noise texture overlay */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\' opacity=\'0.04\'/%3E%3C/svg%3E")',
+          opacity: 0.6,
+        }} />
       </div>
 
-      {/* Content */}
-      <div className="relative z-10 flex flex-col min-h-screen font-inter p-4 md:p-8 max-w-7xl mx-auto space-y-8">
-        
-        {/* Header */}
-        <header className="flex justify-between items-center glass-panel px-6 py-4">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 tiffany-bg flex items-center justify-center">
-              <span className="text-black font-bold text-lg leading-none">R</span>
-            </div>
-            <span className="font-bold tracking-wider text-xl">RENTFLO</span>
-          </div>
-          
-          <div className="flex items-center gap-6">
-            <button className="text-white/70 hover:text-white transition-colors">
-              <Bell size={20} />
-            </button>
-            <div className="w-10 h-10 bg-white/10 flex items-center justify-center border border-white/20">
-              <span className="font-medium">JD</span>
-            </div>
-            <button className="md:hidden text-white/70 hover:text-white transition-colors">
-              <Menu size={24} />
-            </button>
-          </div>
-        </header>
+      {/* === CONTENT === */}
+      <div style={{ position: 'relative', zIndex: 1, display: 'grid', gridTemplateColumns: '220px 1fr', minHeight: '100vh' }}>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
-          {/* Main Hero Card */}
-          <div className="lg:col-span-2 glass-panel-deep p-8 md:p-12 relative overflow-hidden group">
-            {/* Inner glow effect on hover */}
-            <div className="absolute inset-0 bg-gradient-to-tr from-[#6FFFE9]/0 via-[#6FFFE9]/0 to-[#6FFFE9]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
-            
-            <p className="text-white/60 text-sm md:text-base font-medium uppercase tracking-widest mb-4">
-              Total Rent Advanced
-            </p>
-            
-            <div className="flex items-baseline gap-2 mb-8">
-              <h1 className="text-5xl md:text-7xl font-bold tracking-tight tiffany-text tiffany-glow">
-                ₹2,40,000
+        {/* ── SIDEBAR ── */}
+        <GlassPanel blur={32} opacity={0.04} style={{ borderRight: '1px solid rgba(255,255,255,0.07)', padding: '32px 0', display: 'flex', flexDirection: 'column' }}>
+          {/* Logo */}
+          <div style={{ padding: '0 24px 28px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+            <div style={{ fontSize: 9, letterSpacing: '0.3em', color: 'rgba(255,255,255,0.3)', marginBottom: 6, fontWeight: 700 }}>RENTFLO</div>
+            <div style={{ fontSize: 18, fontWeight: 300, color: '#fff', letterSpacing: '-0.02em' }}>Owner<span style={{ color: T, fontWeight: 600 }}>Suite</span></div>
+          </div>
+
+          {/* Nav items */}
+          <div style={{ padding: '20px 0', flex: 1 }}>
+            {[
+              { label: 'Dashboard', active: true, dot: T },
+              { label: 'Ledger', active: false },
+              { label: 'Properties', active: false },
+              { label: 'Tenants', active: false },
+              { label: 'Messages', active: false },
+              { label: 'Agreements', active: false },
+            ].map((item) => (
+              <div key={item.label} style={{
+                display: 'flex', alignItems: 'center', gap: 12,
+                padding: '10px 24px', cursor: 'pointer',
+                background: item.active ? 'rgba(111,255,233,0.08)' : 'transparent',
+                borderLeft: item.active ? `2px solid ${T}` : '2px solid transparent',
+                marginBottom: 2,
+              }}>
+                {item.active && <div style={{ width: 4, height: 4, borderRadius: '50%', background: T, boxShadow: `0 0 8px ${T}`, animation: 'pulseGlow 2s infinite' }} />}
+                <span style={{ fontSize: 12, color: item.active ? '#fff' : 'rgba(255,255,255,0.35)', fontWeight: item.active ? 500 : 400, letterSpacing: '0.02em' }}>{item.label}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* User */}
+          <div style={{ padding: '16px 24px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ width: 30, height: 30, borderRadius: '50%', background: `linear-gradient(135deg, ${T}40, #fff1)`, border: `1px solid ${T}50`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: T, fontWeight: 700 }}>RK</div>
+            <div>
+              <div style={{ fontSize: 11, color: '#fff', fontWeight: 500 }}>Rahul K.</div>
+              <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.1em' }}>OWNER</div>
+            </div>
+          </div>
+        </GlassPanel>
+
+        {/* ── MAIN CONTENT ── */}
+        <div style={{ padding: '32px 32px 40px', display: 'flex', flexDirection: 'column', gap: 20, overflowY: 'auto' }}>
+
+          {/* Header row */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div>
+              <div style={{ fontSize: 9, letterSpacing: '0.25em', color: 'rgba(255,255,255,0.25)', marginBottom: 6, fontWeight: 700 }}>OVERVIEW — MAY 2026</div>
+              <h1 style={{ margin: 0, fontSize: 28, fontWeight: 200, color: '#fff', letterSpacing: '-0.02em' }}>
+                Good morning, <span style={{ fontWeight: 600, color: T }}>Rahul</span>
               </h1>
-              <span className="text-xl text-white/50">.00</span>
             </div>
-            
-            <div className="flex flex-wrap gap-4">
-              <button className="tiffany-bg text-black px-8 py-3 font-semibold hover:bg-white transition-colors">
-                Withdraw Funds
-              </button>
-              <button className="glass-panel-light px-8 py-3 font-semibold hover:bg-white/10 transition-colors">
-                View Ledger
-              </button>
-            </div>
-            
-            {/* Floating decorative elements */}
-            <div className="absolute -bottom-10 -right-10 w-64 h-64 border border-[#6FFFE9]/20 rounded-full opacity-50"></div>
-            <div className="absolute -bottom-20 -right-20 w-96 h-96 border border-[#6FFFE9]/10 rounded-full opacity-50"></div>
+            <GlassPanel blur={14} opacity={0.05} style={{ padding: '10px 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ width: 5, height: 5, borderRadius: '50%', background: T, animation: 'pulseGlow 1.8s infinite' }} />
+              <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.1em' }}>ALL SYSTEMS LIVE</span>
+            </GlassPanel>
           </div>
 
-          {/* Side stats */}
-          <div className="flex flex-col gap-6">
-            <div className="glass-panel p-6 flex flex-col justify-center h-full">
-              <div className="flex justify-between items-start mb-4">
-                <div className="p-3 bg-white/5 inline-flex border border-white/10">
-                  <Activity size={20} className="tiffany-text" />
+          {/* HERO METRIC */}
+          <GlassPanel blur={24} opacity={0.06} style={{ padding: '36px 40px', position: 'relative', overflow: 'hidden' }}>
+            {/* Light sweep animation */}
+            <div style={{
+              position: 'absolute', top: 0, bottom: 0, width: '40%',
+              background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent)',
+              animation: 'lightSweep 5s 1s ease-in-out infinite',
+              pointerEvents: 'none',
+            }} />
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+              <div>
+                <div style={{ fontSize: 9, letterSpacing: '0.25em', color: 'rgba(255,255,255,0.3)', marginBottom: 10, fontWeight: 700 }}>TOTAL RENT ADVANCED — FY 2025–26</div>
+                <div style={{ fontFamily: '"Playfair Display",Georgia,serif', fontSize: 64, fontWeight: 700, color: '#fff', letterSpacing: '-0.03em', lineHeight: 1, marginBottom: 12 }}>
+                  ₹{advanced.toLocaleString('en-IN')}
                 </div>
-                <span className="flex items-center text-[#6FFFE9] text-sm font-medium">
-                  <ArrowUpRight size={16} className="mr-1" />
-                  +12.5%
-                </span>
-              </div>
-              <p className="text-white/60 text-sm mb-1">Monthly Yield</p>
-              <p className="text-3xl font-semibold">8.4%</p>
-            </div>
-            
-            <div className="glass-panel p-6 flex flex-col justify-center h-full">
-              <div className="flex justify-between items-start mb-4">
-                <div className="p-3 bg-white/5 inline-flex border border-white/10">
-                  <Wallet size={20} className="tiffany-text" />
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 11, color: T, fontWeight: 600, letterSpacing: '0.1em' }}>+18.4% YoY</span>
+                  <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.1em' }}>vs ₹2,02,720 last FY</span>
                 </div>
               </div>
-              <p className="text-white/60 text-sm mb-1">Next Payout</p>
-              <p className="text-3xl font-semibold">₹40,000</p>
-              <p className="text-xs text-white/40 mt-2">Due in 4 days (Oct 1)</p>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: 9, letterSpacing: '0.2em', color: 'rgba(255,255,255,0.2)', marginBottom: 8 }}>FREQUENCY</div>
+                <Waveform active={mounted} />
+              </div>
             </div>
-          </div>
-        </div>
+          </GlassPanel>
 
-        {/* Bottom Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
-          {/* Chart Area */}
-          <div className="lg:col-span-2 glass-panel p-6 flex flex-col">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-lg font-medium">Cash Flow</h3>
-              <div className="flex gap-2">
-                <button className="px-3 py-1 text-xs glass-panel-light">1M</button>
-                <button className="px-3 py-1 text-xs tiffany-bg text-black font-medium">3M</button>
-                <button className="px-3 py-1 text-xs glass-panel-light text-white/60">1Y</button>
-              </div>
-            </div>
-            
-            {/* Mock Chart */}
-            <div className="flex-1 glass-grid relative min-h-[200px] mt-4 flex items-end">
-              {/* Fake bars */}
-              <div className="w-full flex justify-between items-end px-2 gap-2 h-full pb-6">
-                {[40, 60, 45, 80, 55, 90, 75, 100].map((h, i) => (
-                  <div key={i} className="w-full flex flex-col justify-end h-full relative group cursor-pointer">
-                    <div 
-                      className="w-full tiffany-bg opacity-70 group-hover:opacity-100 transition-all duration-300 relative z-10"
-                      style={{ height: \`\${h}%\` }}
-                    >
-                      <div className="absolute top-0 left-0 w-full h-1 bg-white"></div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              {/* Axis labels */}
-              <div className="absolute bottom-0 left-0 w-full flex justify-between text-[10px] text-white/40 font-medium px-2 pb-1">
-                <span>FEB</span>
-                <span>MAR</span>
-                <span>APR</span>
-                <span>MAY</span>
-                <span>JUN</span>
-                <span>JUL</span>
-                <span>AUG</span>
-                <span>SEP</span>
-              </div>
-            </div>
+          {/* STAT TILES */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }}>
+            {[
+              { label: 'COLLECTED THIS MONTH', value: `₹${collected.toLocaleString('en-IN')}`, sub: '12 of 12 tenants', accent: T },
+              { label: 'ACTIVE PROPERTIES', value: properties.toString(), sub: 'Zero vacancy', accent: '#fff' },
+              { label: 'COLLECTION RATE', value: `${rate}%`, sub: 'All on time', accent: T },
+            ].map((s, i) => (
+              <GlassPanel key={i} blur={20} opacity={0.05} style={{ padding: '22px 24px', animation: `fadein 0.5s ${0.2 + i * 0.1}s both` }}>
+                <div style={{ fontSize: 8, letterSpacing: '0.22em', color: 'rgba(255,255,255,0.25)', marginBottom: 10, fontWeight: 700 }}>{s.label}</div>
+                <div style={{ fontSize: 32, fontWeight: 300, color: s.accent, letterSpacing: '-0.02em', marginBottom: 6 }}>{s.value}</div>
+                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)' }}>{s.sub}</div>
+              </GlassPanel>
+            ))}
           </div>
 
-          {/* Recent Activity */}
-          <div className="glass-panel p-6">
-            <h3 className="text-lg font-medium mb-6">Recent Activity</h3>
-            <div className="space-y-6">
-              {[
-                { title: "Rent Received", desc: "Unit 402 - Orion Heights", amount: "+₹40,000", type: 'in' },
-                { title: "Advance Fee", desc: "Monthly platform fee", amount: "-₹1,200", type: 'out' },
-                { title: "Rent Received", desc: "Unit 105 - Sea View", amount: "+₹35,000", type: 'in' },
-                { title: "Payout Processed", desc: "Bank ending in •••492", amount: "-₹73,800", type: 'out' }
-              ].map((item, i) => (
-                <div key={i} className="flex justify-between items-center group">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 glass-panel-light flex items-center justify-center">
-                      {item.type === 'in' ? 
-                        <ArrowDownRight size={16} className="tiffany-text" /> : 
-                        <ArrowUpRight size={16} className="text-white/60" />
-                      }
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium group-hover:text-[#6FFFE9] transition-colors">{item.title}</p>
-                      <p className="text-xs text-white/50">{item.desc}</p>
-                    </div>
-                  </div>
-                  <span className={\`text-sm font-medium \${item.type === 'in' ? 'tiffany-text' : 'text-white'}\`}>
-                    {item.amount}
-                  </span>
+          {/* ACTIVITY */}
+          <GlassPanel blur={16} opacity={0.04} style={{ padding: '20px 24px' }}>
+            <div style={{ fontSize: 9, letterSpacing: '0.22em', color: 'rgba(255,255,255,0.25)', fontWeight: 700, marginBottom: 16 }}>RECENT ACTIVITY</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+              {ACTIVITIES.map((a, i) => (
+                <div key={i} style={{
+                  display: 'grid', gridTemplateColumns: '36px 1fr 1fr 80px 60px',
+                  alignItems: 'center', gap: 12,
+                  padding: '11px 0',
+                  borderBottom: i < ACTIVITIES.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
+                  animation: `fadein 0.4s ${0.3 + i * 0.06}s both`,
+                }}>
+                  <span style={{ fontFamily: 'monospace', fontSize: 9, color: 'rgba(255,255,255,0.25)' }}>{a.t}</span>
+                  <span style={{ fontSize: 11, color: '#fff', fontWeight: 500 }}>{a.name}</span>
+                  <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)' }}>{a.prop}</span>
+                  <span style={{ fontFamily: 'monospace', fontSize: 11, color: '#fff', textAlign: 'right' }}>{a.amt}</span>
+                  <span style={{ fontSize: 8, letterSpacing: '0.15em', color: STATUS_COLOR[a.s], textAlign: 'right', fontWeight: 700 }}>{a.s}</span>
                 </div>
               ))}
             </div>
-            
-            <button className="w-full mt-6 py-3 border border-white/10 text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors">
-              View All Transactions
-            </button>
-          </div>
+          </GlassPanel>
         </div>
-
       </div>
     </div>
   );
