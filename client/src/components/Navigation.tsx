@@ -76,7 +76,7 @@ export function Navigation() {
         className="fixed left-0 bg-black border-r border-white/[0.06] flex flex-col z-50 overflow-hidden transition-all duration-300 ease-in-out"
         style={{
           top: headerH,
-          height: `calc(100vh - ${headerH}px)`,
+          height: `calc(100vh - ${headerH}px - 64px - env(safe-area-inset-bottom, 0px))`,
           width: collapsed ? '0px' : '256px',
         }}
       >
