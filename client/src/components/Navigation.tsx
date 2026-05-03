@@ -125,10 +125,10 @@ export function Navigation() {
         </div>
       </nav>
 
-      {/* Floating expand tab — shown when sidebar is collapsed, desktop only */}
+      {/* Floating expand tab — shown when sidebar is collapsed */}
       <button
         onClick={toggle}
-        className="fixed z-50 hidden md:flex items-center justify-center transition-all duration-300 ease-in-out group"
+        className="fixed z-50 flex items-center justify-center transition-all duration-300 ease-in-out group"
         style={{
           left: collapsed ? '0px' : '-28px',
           top: `calc(${HEADER_HEIGHT}px + 50%)`,
