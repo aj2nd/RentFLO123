@@ -16,6 +16,15 @@ interface ReceiptModalProps {
   onClose: () => void;
 }
 
+function escapeHtml(s: string): string {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 export function ReceiptModal({ data, onClose }: ReceiptModalProps) {
   const refNo = `RFL-${data.paymentId?.slice(-8)?.toUpperCase() ?? data.orderId?.slice(-8)?.toUpperCase() ?? "N/A"}`;
   const dateStr = data.date.toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
@@ -53,12 +62,12 @@ export function ReceiptModal({ data, onClose }: ReceiptModalProps) {
         <div class="amount">₹${data.amount.toLocaleString()}</div>
         <div class="status">✓ Payment Successful</div>
         <hr class="divider">
-        <div class="row"><span class="label">Reference</span><span class="value">${refNo}</span></div>
-        <div class="row"><span class="label">Date</span><span class="value">${dateStr}, ${timeStr}</span></div>
-        <div class="row"><span class="label">Property</span><span class="value">${data.property}</span></div>
-        <div class="row"><span class="label">Tenant</span><span class="value">${data.tenantName}</span></div>
-        ${data.monthYear ? `<div class="row"><span class="label">Period</span><span class="value">${data.monthYear}</span></div>` : ""}
-        <div class="row"><span class="label">Razorpay ID</span><span class="value" style="font-family:monospace;font-size:11px">${data.paymentId}</span></div>
+        <div class="row"><span class="label">Reference</span><span class="value">${escapeHtml(refNo)}</span></div>
+        <div class="row"><span class="label">Date</span><span class="value">${escapeHtml(dateStr)}, ${escapeHtml(timeStr)}</span></div>
+        <div class="row"><span class="label">Property</span><span class="value">${escapeHtml(data.property)}</span></div>
+        <div class="row"><span class="label">Tenant</span><span class="value">${escapeHtml(data.tenantName)}</span></div>
+        ${data.monthYear ? `<div class="row"><span class="label">Period</span><span class="value">${escapeHtml(data.monthYear)}</span></div>` : ""}
+        <div class="row"><span class="label">Razorpay ID</span><span class="value" style="font-family:monospace;font-size:11px">${escapeHtml(data.paymentId)}</span></div>
         <hr class="divider">
         <div class="footer">rentflo.com &nbsp;·&nbsp; Secured by Razorpay &nbsp;·&nbsp; Keep for your records</div>
       </body>

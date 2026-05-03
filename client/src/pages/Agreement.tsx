@@ -10,6 +10,15 @@ import type { Property, Agreement } from "@shared/schema";
 
 type AgreementData = { property: Property | null; agreement: Agreement | null };
 
+function escapeHtml(s: string): string {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 // ─── Canvas Signature Pad ───────────────────────────────────────────────────
 function SignaturePad({ onSave }: { onSave: (dataUrl: string) => void }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -340,7 +349,7 @@ export default function AgreementPage() {
                     const signedDate = data.agreement?.tenantSignedAt
                       ? new Date(data.agreement.tenantSignedAt).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })
                       : new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
-                    win.document.write(`<!DOCTYPE html><html><head><title>RentFLO Agreement — ${data.property!.address}</title>
+                    win.document.write(`<!DOCTYPE html><html><head><title>RentFLO Agreement — ${escapeHtml(data.property!.address)}</title>
                       <style>*{margin:0;padding:0;box-sizing:border-box}body{background:#000;color:#e4e4e7;font-family:Inter,sans-serif;padding:48px 40px;font-size:14px;line-height:1.7}
                       .brand{font-size:32px;font-weight:900;letter-spacing:-1px;margin-bottom:2px}.brand span{color:#6FFFE9}
                       .badge{display:inline-block;border:1px solid rgba(111,255,233,0.35);color:#6FFFE9;font-size:11px;text-transform:uppercase;letter-spacing:3px;padding:4px 12px;margin-bottom:32px}
@@ -360,12 +369,12 @@ export default function AgreementPage() {
                       <h1>Rental Agreement</h1>
                       <p>This agreement is entered into between the Owner, RentFLO Technologies Pvt. Ltd. (Platform), and the Tenant.</p>
                       <div class="meta">
-                        <div class="meta-item"><div class="label">Property</div><div class="value">${data.property!.address}</div></div>
-                        <div class="meta-item"><div class="label">Monthly Rent</div><div class="value">₹${data.property!.monthlyRent.toLocaleString()}</div></div>
-                        <div class="meta-item"><div class="label">Payout Day</div><div class="value">${data.property!.payoutDay}${["st","nd","rd"][data.property!.payoutDay-1]||"th"} of Month</div></div>
-                        <div class="meta-item"><div class="label">Signed On</div><div class="value">${signedDate}</div></div>
-                        <div class="meta-item"><div class="label">Agreement Status</div><div class="value">${data.agreement?.status ?? "SIGNED"}</div></div>
-                        <div class="meta-item"><div class="label">Tenant</div><div class="value">${userName}</div></div>
+                        <div class="meta-item"><div class="label">Property</div><div class="value">${escapeHtml(data.property!.address)}</div></div>
+                        <div class="meta-item"><div class="label">Monthly Rent</div><div class="value">₹${escapeHtml(data.property!.monthlyRent.toLocaleString())}</div></div>
+                        <div class="meta-item"><div class="label">Payout Day</div><div class="value">${escapeHtml(String(data.property!.payoutDay))}${["st","nd","rd"][data.property!.payoutDay-1]||"th"} of Month</div></div>
+                        <div class="meta-item"><div class="label">Signed On</div><div class="value">${escapeHtml(signedDate)}</div></div>
+                        <div class="meta-item"><div class="label">Agreement Status</div><div class="value">${escapeHtml(data.agreement?.status ?? "SIGNED")}</div></div>
+                        <div class="meta-item"><div class="label">Tenant</div><div class="value">${escapeHtml(userName)}</div></div>
                       </div>
                       <hr/>
                       <h2>1. Rent Advance</h2><p>RentFLO advances the monthly rent to the Owner on the agreed payout day regardless of whether the Tenant has paid. The Tenant is then obligated to reimburse RentFLO by the same date each month.</p>
@@ -373,8 +382,8 @@ export default function AgreementPage() {
                       <h2>3. Owner Obligations</h2><ul><li>Ensure the property is habitable and meets legal standards.</li><li>Respond to maintenance requests within a reasonable time.</li></ul>
                       <h2>4. Governing Law</h2><p>This Agreement is governed by the laws of India. Disputes shall be subject to the exclusive jurisdiction of courts in Mumbai, Maharashtra.</p>
                       <div class="sig-box">
-                        <div class="sig-label">Digital Signature — ${userName}</div>
-                        <p style="color:#6FFFE9;font-size:13px;">✓ Digitally signed on ${signedDate} via RentFLO Platform</p>
+                        <div class="sig-label">Digital Signature — ${escapeHtml(userName)}</div>
+                        <p style="color:#6FFFE9;font-size:13px;">✓ Digitally signed on ${escapeHtml(signedDate)} via RentFLO Platform</p>
                       </div>
                       <div class="footer">rentflo.com · This is a legally binding digital agreement · Keep for your records</div>
                       </body></html>`);

@@ -3,6 +3,7 @@ import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
 import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 
 const app = express();
 const httpServer = createServer(app);
@@ -13,23 +14,80 @@ declare module "http" {
   }
 }
 
+// ── Security Headers ────────────────────────────────────────────────────────
 app.use(
   helmet({
-    contentSecurityPolicy: false,
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc:     ["'self'"],
+        scriptSrc:      ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://checkout.razorpay.com"],
+        styleSrc:       ["'self'", "'unsafe-inline'"],
+        imgSrc:         ["'self'", "data:", "blob:", "https:"],
+        fontSrc:        ["'self'", "data:"],
+        connectSrc:     ["'self'", "https://api.razorpay.com", "wss:", "ws:"],
+        frameSrc:       ["https://api.razorpay.com", "https://checkout.razorpay.com"],
+        objectSrc:      ["'none'"],
+        baseUri:        ["'self'"],
+        formAction:     ["'self'"],
+        frameAncestors: ["'none'"],
+      },
+    },
     crossOriginEmbedderPolicy: false,
+    referrerPolicy: { policy: "strict-origin-when-cross-origin" },
   })
 );
 
+// ── Rate Limiters ───────────────────────────────────────────────────────────
+
+// Global API limiter: 300 requests per 15 minutes per IP
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "Too many requests. Please try again later." },
+  skip: (req) => !req.path.startsWith("/api"),
+});
+
+// Auth/login limiter: 30 attempts per 15 minutes per IP
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "Too many authentication attempts. Please try again later." },
+});
+
+// Sensitive action limiter (KYC, payments): 20 per 15 minutes per IP
+const sensitiveLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "Too many requests for this action. Please try again later." },
+});
+
+app.use(globalLimiter);
+app.use("/api/login", authLimiter);
+app.use("/api/callback", authLimiter);
+app.use("/api/auth/set-role", authLimiter);
+app.use("/api/kyc", sensitiveLimiter);
+app.use("/api/payments", sensitiveLimiter);
+app.use("/api/advances", sensitiveLimiter);
+
+// ── Body Parsing (with size limits) ─────────────────────────────────────────
 app.use(
   express.json({
+    limit: "2mb",
     verify: (req, _res, buf) => {
       req.rawBody = buf;
     },
   }),
 );
 
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: false, limit: "2mb" }));
 
+// ── Request Logging (no sensitive response bodies) ───────────────────────────
 export function log(message: string, source = "express") {
   const formattedTime = new Date().toLocaleTimeString("en-US", {
     hour: "numeric",
@@ -41,25 +99,17 @@ export function log(message: string, source = "express") {
   console.log(`${formattedTime} [${source}] ${message}`);
 }
 
+const SENSITIVE_PATHS = ["/api/auth/user", "/api/kyc", "/api/payments", "/api/advances"];
+
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
-  let capturedJsonResponse: Record<string, any> | undefined = undefined;
-
-  const originalResJson = res.json;
-  res.json = function (bodyJson, ...args) {
-    capturedJsonResponse = bodyJson;
-    return originalResJson.apply(res, [bodyJson, ...args]);
-  };
 
   res.on("finish", () => {
     const duration = Date.now() - start;
     if (path.startsWith("/api")) {
-      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
-      }
-
+      const isSensitive = SENSITIVE_PATHS.some((p) => path.startsWith(p));
+      const logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms${isSensitive ? "" : ""}`;
       log(logLine);
     }
   });
@@ -72,9 +122,16 @@ app.use((req, res, next) => {
 
   app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
 
-    console.error("Internal Server Error:", err);
+    // Never leak internal error details to clients
+    const message =
+      status < 500
+        ? err.message || "Bad Request"
+        : "Internal Server Error";
+
+    if (status >= 500) {
+      console.error("Server error:", err.message, err.stack?.split("\n")[1] || "");
+    }
 
     if (res.headersSent) {
       return next(err);
@@ -83,9 +140,6 @@ app.use((req, res, next) => {
     return res.status(status).json({ message });
   });
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
   if (process.env.NODE_ENV === "production") {
     serveStatic(app);
   } else {
@@ -93,10 +147,6 @@ app.use((req, res, next) => {
     await setupVite(httpServer, app);
   }
 
-  // ALWAYS serve the app on the port specified in the environment variable PORT
-  // Other ports are firewalled. Default to 5000 if not specified.
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
   const port = parseInt(process.env.PORT || "5000", 10);
   httpServer.listen(
     {

@@ -44,8 +44,13 @@ Preferred communication style: Simple, everyday language.
 - **User Roles**: Role field (TENANT/OWNER/ADMIN) determines dashboard access and permissions
 - **API Protection**: All `/api/*` routes require `isAuthenticated` middleware (except Razorpay webhook which uses HMAC signature verification)
 - **Admin Authorization**: Admin-only routes additionally require `requireRole('ADMIN')` middleware
-- **Security Headers**: Helmet middleware provides X-Content-Type-Options, X-Frame-Options, HSTS, X-XSS-Protection
-- **XSS Sanitization**: Global `sanitizeBody` middleware strips HTML from all text inputs in request bodies via `xss` library
+- **Security Headers**: Helmet with full Content Security Policy (allowlist: self + Razorpay), `frameAncestors: 'none'` (clickjacking prevention), Referrer-Policy strict-origin, HSTS, X-Content-Type-Options, X-Frame-Options
+- **Rate Limiting**: `express-rate-limit` applied at three tiers — global (300/15min), auth routes (30/15min), sensitive actions like KYC/payments/advances (20/15min)
+- **Session Cookie**: `httpOnly: true`, `secure: true`, `sameSite: 'lax'` — prevents CSRF and cookie theft
+- **XSS Sanitization**: Global `sanitizeBody` middleware strips HTML from all text inputs in request bodies via `xss` library; `escapeHtml()` applied to all user-controlled values injected into `document.write()` print windows (ReceiptModal, Agreement)
+- **Request Body Limits**: JSON and urlencoded bodies capped at 2 MB
+- **Error Hardening**: 5xx errors return generic "Internal Server Error" message — no stack traces or internal details leaked to clients
+- **Response Logging**: Sensitive API paths (`/api/auth/user`, `/api/kyc`, `/api/payments`, `/api/advances`) excluded from response-body logging
 - **PWA**: Splash screen with RENTFLO logo, icons at 192x192/512x512/maskable with cache-busted asset versions
 - **Mobile UX**: Safe-area-insets, 44px min touch targets, tap-highlight disabled, user-select:none on interactive elements
 
