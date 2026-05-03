@@ -16,7 +16,8 @@ export function Navigation() {
   const { collapsed, toggle } = useSidebar();
 
   useEffect(() => {
-    if (!collapsed) {
+    const isMobile = window.innerWidth < 768;
+    if (!collapsed && isMobile) {
       const prev = document.body.style.overflow;
       document.body.style.overflow = 'hidden';
       return () => { document.body.style.overflow = prev; };
@@ -49,10 +50,10 @@ export function Navigation() {
 
   return (
     <>
-      {/* Backdrop overlay — click to close sidebar */}
+      {/* Backdrop overlay — mobile drawer only, click to close */}
       {!collapsed && (
         <div
-          className="fixed inset-0 z-40"
+          className="fixed inset-0 z-40 md:hidden"
           style={{ top: HEADER_HEIGHT }}
           onClick={toggle}
           aria-label="Close sidebar"
