@@ -1,7 +1,7 @@
 import { useProperties, useCreateProperty } from "@/hooks/use-properties";
 import { useLedgers, useTicketCounts } from "@/hooks/use-ledgers";
 import { useAuth } from "@/hooks/use-auth";
-import { Loader2, TrendingUp, Calendar, CreditCard, Wrench, CheckCircle, AlertCircle, Plus, Shield, Clock, BarChart2 } from "lucide-react";
+import { Loader2, TrendingUp, Calendar, CreditCard, Wrench, CheckCircle, AlertCircle, Plus, BarChart2 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -13,16 +13,19 @@ import { useState } from "react";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { useI18n } from "@/hooks/use-i18n";
-import type { User } from "@shared/schema";
+import type { User, Property, Agreement } from "@shared/schema";
+import { SetupProgress } from "@/components/SetupProgress";
 
 export default function OwnerDashboard() {
   const { data: properties, isLoading: propsLoading } = useProperties();
   const { data: ledgers, isLoading: ledgersLoading } = useLedgers();
   const { data: currentUser } = useQuery<User>({ queryKey: ["/api/auth/user"] });
+  const { data: agreementData } = useQuery<{ property: Property | null; agreement: Agreement | null }>({
+    queryKey: ["/api/agreements/mine"],
+  });
   const { t } = useI18n();
 
   const isVerified = currentUser?.isVerified;
-  const hasPendingKyc = currentUser?.panNumber && !isVerified;
 
   if (propsLoading || ledgersLoading) {
     return (
@@ -41,39 +44,18 @@ export default function OwnerDashboard() {
     ?.filter(l => l.amountAdvanced > 0)
     .sort((a, b) => new Date(b.updatedAt || '').getTime() - new Date(a.updatedAt || '').getTime())[0];
 
+  const agreementStatus = agreementData?.agreement?.status ?? null;
+  const ownerSteps = [
+    { label: "Verify Identity",  done: !!isVerified,                                                                href: "/verify"    },
+    { label: "Sign Agreement",   done: agreementStatus === "FULLY_SIGNED" || agreementStatus === "OWNER_SIGNED",   href: "/agreement" },
+    { label: "Collect Rent",     done: !!latestPayment                                                                                 },
+  ];
+
   return (
     <div className="min-h-screen bg-black text-white flex flex-col">
       <div className="p-4 sm:p-6 md:p-10 pb-24 flex flex-col flex-1">
 
-        {/* Verification Banner */}
-        {!isVerified && (
-          <div className={`mb-6 p-4 sm:p-6 border-2 ${hasPendingKyc ? 'border-yellow-500 bg-yellow-500/10' : 'border-[#6FFFE9]/25 bg-[#6FFFE9]/5'}`}>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="flex items-start sm:items-center gap-3">
-                {hasPendingKyc ? (
-                  <Clock className="w-6 h-6 text-yellow-500 shrink-0 mt-0.5 sm:mt-0" />
-                ) : (
-                  <Shield className="w-6 h-6 text-[#6FFFE9] shrink-0 mt-0.5 sm:mt-0" />
-                )}
-                <div>
-                  <h3 className={`text-base font-semibold ${hasPendingKyc ? 'text-yellow-500' : 'text-white'}`}>
-                    {hasPendingKyc ? t('kyc_banner_in_progress') : t('kyc_banner_complete')}
-                  </h3>
-                  <p className="text-zinc-400 text-sm">
-                    {hasPendingKyc ? t('kyc_banner_reviewing') : t('kyc_banner_verify_owner')}
-                  </p>
-                </div>
-              </div>
-              {!hasPendingKyc && (
-                <Link href="/verify">
-                  <Button className="bg-white text-black rounded-none w-full sm:w-auto" data-testid="button-complete-kyc">
-                    {t('kyc_banner_button')}
-                  </Button>
-                </Link>
-              )}
-            </div>
-          </div>
-        )}
+        <SetupProgress steps={ownerSteps} />
 
         <header className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>

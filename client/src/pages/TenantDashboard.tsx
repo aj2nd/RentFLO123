@@ -2,11 +2,12 @@ import { useProperties } from "@/hooks/use-properties";
 import { useLedgers, useCreatePartialPayment, usePaymentsByLedger, useTickets } from "@/hooks/use-ledgers";
 import {
   Loader2, Home, ShieldCheck, Wrench, Upload,
-  ToggleLeft, ToggleRight, Search, Building2, Shield, Clock,
+  ToggleLeft, ToggleRight, Search, Building2,
   CalendarDays, CheckCircle2,
   AlertCircle, TrendingUp, ChevronRight, MapPin,
   Banknote, CircleDot, CheckCircle, Circle,
 } from "lucide-react";
+import { SetupProgress } from "@/components/SetupProgress";
 import { ReceiptModal } from "@/components/ReceiptModal";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -301,33 +302,12 @@ export default function TenantDashboard() {
 
       <div className="p-4 sm:p-6 md:p-10 pb-24 flex flex-col flex-1 max-w-4xl w-full mx-auto">
 
-        {/* ── KYC Banner ── */}
-        {!isVerified && (
-          <div className={`mb-6 p-4 sm:p-5 border-2 ${hasPendingKyc ? "border-yellow-500 bg-yellow-500/10" : "border-[#6FFFE9]/25 bg-[#6FFFE9]/5"}`}>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="flex items-start gap-3">
-                {hasPendingKyc
-                  ? <Clock className="w-5 h-5 text-yellow-500 shrink-0 mt-0.5" />
-                  : <Shield className="w-5 h-5 text-[#6FFFE9] shrink-0 mt-0.5" />}
-                <div>
-                  <h3 className={`text-sm font-semibold ${hasPendingKyc ? "text-yellow-500" : "text-white"}`}>
-                    {hasPendingKyc ? t("kyc_banner_in_progress") : t("kyc_banner_complete")}
-                  </h3>
-                  <p className="text-zinc-400 text-xs mt-0.5">
-                    {hasPendingKyc ? t("kyc_banner_reviewing") : t("kyc_banner_verify_tenant")}
-                  </p>
-                </div>
-              </div>
-              {!hasPendingKyc && (
-                <Link href="/verify">
-                  <Button className="bg-white text-black rounded-none text-xs h-8 px-4 w-full sm:w-auto" data-testid="button-complete-kyc">
-                    {t("kyc_banner_button")}
-                  </Button>
-                </Link>
-              )}
-            </div>
-          </div>
-        )}
+        {/* ── 3-Step Progress Tracker ── */}
+        <SetupProgress steps={[
+          { label: "Verify Identity", done: !!isVerified,                                                                          href: "/verify"    },
+          { label: "Sign Agreement",  done: agreementStatus === "FULLY_SIGNED" || agreementStatus === "TENANT_SIGNED",             href: "/agreement" },
+          { label: "Pay Rent",        done: hasFirstPayment                                                                                           },
+        ]} />
 
         {/* ── Page Header ── */}
         <header className="mb-6">
