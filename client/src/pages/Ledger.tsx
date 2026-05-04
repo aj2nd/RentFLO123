@@ -103,7 +103,7 @@ export default function LedgerPage() {
 
   if (authLoading || ledgersLoading || paymentsLoading) {
     return (
-      <div className="min-h-screen bg-black p-4 sm:p-6 md:p-10 pb-24">
+      <div className="min-h-screen bg-background p-4 sm:p-6 md:p-10 pb-24">
         <div className="flex items-center justify-between mb-8">
           <div className="h-9 w-36 bg-zinc-900 animate-pulse" />
           <div className="h-9 w-32 bg-zinc-900 animate-pulse" />
@@ -149,7 +149,7 @@ export default function LedgerPage() {
   const totalExposure = Math.abs(runningBalance);
 
   return (
-    <div className="min-h-screen bg-black text-white" style={{ fontFamily: 'Inter, sans-serif' }}>
+    <div className="min-h-screen bg-background text-foreground" style={{ fontFamily: 'Inter, sans-serif' }}>
       <div className="p-4 sm:p-6 md:p-10 pb-24">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
           <header
@@ -157,9 +157,9 @@ export default function LedgerPage() {
             style={{
               backdropFilter: scrolled ? "blur(20px) saturate(180%)" : "blur(0px)",
               WebkitBackdropFilter: scrolled ? "blur(20px) saturate(180%)" : "blur(0px)",
-              background: scrolled ? "rgba(0,0,0,0.65)" : "transparent",
-              borderBottom: scrolled ? "1px solid rgba(111,255,233,0.14)" : "1px solid transparent",
-              boxShadow: scrolled ? "0 8px 32px rgba(0,0,0,0.22)" : "none",
+              background: scrolled ? "var(--nav-bg)" : "transparent",
+              borderBottom: scrolled ? "1px solid var(--border-accent-dim)" : "1px solid transparent",
+              boxShadow: scrolled ? "0 8px 32px rgba(0,0,0,0.12)" : "none",
               transition: "background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease",
             }}
           >

@@ -17,7 +17,9 @@ Preferred communication style: Simple, everyday language.
 - **Styling**: Tailwind CSS with shadcn/ui component library (New York style variant)
 - **Animations**: Framer Motion for success animations and transitions
 - **Charts**: Recharts for admin dashboard visualizations
-- **Design System**: High-contrast black (#000000) and white (#FFFFFF) theme with Inter font family, sharp corners (0px border-radius), and 2px solid white borders for buttons
+- **Design System**: Dark/light mode theming via `next-themes` (attribute="class", defaultTheme="dark"). `:root` CSS vars = dark defaults; `.light` class overrides = light mode. CSS vars: `--nav-bg`, `--nav-border`, `--nav-text`, `--nav-text-dim`, `--border-accent-dim`, `--surface-card`, `--tiffany`, `--silver`.
+- **Theme Toggle**: Vanilla JS Moon/Sun button in `client/index.html` header (syncs with next-themes via `localStorage["theme"]`); React `ThemeToggle` component in authenticated sidebar (`Navigation.tsx`). Early-init `<script>` in `<head>` prevents flash of wrong theme.
+- **Landing Page Header**: Fully vanilla HTML/JS in `client/index.html` — logo, wordmark, language selector, theme toggle. Route-aware login bar shows only on `/`. Scroll-triggered glass effect (`.glass` class).
 
 ### Backend Architecture
 - **Runtime**: Node.js with Express.js server

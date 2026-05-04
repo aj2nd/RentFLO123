@@ -43,7 +43,7 @@ export default function ProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-[#6FFFE9]/40" />
       </div>
     );
@@ -54,7 +54,7 @@ export default function ProfilePage() {
   const roleBadge: Record<string, string> = { TENANT: "Tenant", OWNER: "Property Owner", ADMIN: "Administrator" };
 
   return (
-    <div className="min-h-screen bg-black text-white" style={{ fontFamily: "Inter, sans-serif" }}>
+    <div className="min-h-screen bg-background text-foreground" style={{ fontFamily: "Inter, sans-serif" }}>
       <div className="p-4 sm:p-6 md:p-10 pb-24 max-w-lg">
 
         <header className="mb-8">

@@ -120,23 +120,23 @@ export default function AdminDashboard() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-black text-white">
+      <div className="flex items-center justify-center h-screen bg-background text-foreground">
         <Loader2 className="w-8 h-8 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-background text-foreground">
       <div className="p-4 sm:p-6 md:p-10 pb-24">
         <header
           className="mb-6 sticky top-0 z-20 -mx-4 sm:-mx-6 md:-mx-10 px-4 sm:px-6 md:px-10"
           style={{
             backdropFilter: scrolled ? "blur(20px) saturate(180%)" : "blur(8px) saturate(120%)",
             WebkitBackdropFilter: scrolled ? "blur(20px) saturate(180%)" : "blur(8px) saturate(120%)",
-            background: scrolled ? "rgba(0,0,0,0.82)" : "rgba(0,0,0,0.35)",
-            borderBottom: scrolled ? "1px solid rgba(111,255,233,0.14)" : "1px solid rgba(255,255,255,0.04)",
-            boxShadow: scrolled ? "0 8px 32px rgba(0,0,0,0.32)" : "none",
+            background: scrolled ? "var(--nav-bg)" : "transparent",
+            borderBottom: scrolled ? "1px solid var(--border-accent-dim)" : "1px solid transparent",
+            boxShadow: scrolled ? "0 8px 32px rgba(0,0,0,0.14)" : "none",
             transition: "background 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease, backdrop-filter 0.35s ease, -webkit-backdrop-filter 0.35s ease",
             willChange: "backdrop-filter, background",
             paddingTop: scrolled ? "10px" : "12px",

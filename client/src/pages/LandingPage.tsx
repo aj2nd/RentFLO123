@@ -3,7 +3,6 @@ import { useLocation } from "wouter";
 import { ArrowRight, ShieldCheck, Zap, Building2, Clock } from "lucide-react";
 import { useI18n } from "@/hooks/use-i18n";
 import { useAuth } from "@/hooks/use-auth";
-
 export default function LandingPage() {
   const { t } = useI18n();
   const { isAuthenticated, isLoading, user } = useAuth();
@@ -22,16 +21,16 @@ export default function LandingPage() {
   }, [isAuthenticated, isLoading, user?.role]);
 
   return (
-    <div className="min-h-screen bg-black text-zinc-300">
+    <div className="min-h-screen bg-background text-foreground">
 
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
-      <main className="px-8 md:px-16 max-w-screen-xl mx-auto grid grid-cols-1 lg:grid-cols-[1.3fr_0.85fr] gap-14 items-center min-h-[82vh] pt-20 pb-24">
+      <main className="px-8 md:px-16 max-w-screen-xl mx-auto grid grid-cols-1 lg:grid-cols-[1.3fr_0.85fr] gap-14 items-center min-h-[82vh] pt-16 pb-24">
 
         <div className="space-y-10">
           {/* Eyebrow label */}
           <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full border border-[#6FFFE9]/20 bg-[#6FFFE9]/[0.04]">
             <span className="w-1.5 h-1.5 rounded-full bg-[#6FFFE9] animate-pulse" />
-            <span className="text-[10px] font-semibold uppercase tracking-[2px] text-[#6FFFE9]/70">
+            <span className="text-[10px] font-semibold uppercase tracking-[2px]" style={{ color: "var(--tiffany)", opacity: 0.7 }}>
               Rent Payment Platform
             </span>
           </div>
@@ -50,10 +49,10 @@ export default function LandingPage() {
           </div>
 
           {/* Subheadline */}
-          <p className="text-lg md:text-xl text-white/40 font-light leading-relaxed max-w-sm border-l border-[#6FFFE9]/30 pl-5" style={{ borderLeftWidth: '2px' }}>
+          <p className="text-lg md:text-xl font-light leading-relaxed max-w-sm pl-5 tiffany-accent" style={{ color: "var(--nav-text)", borderLeftWidth: '2px' }}>
             <span data-i18n="we_pay_your_rent">{t("we_pay_your_rent")}</span><br />
             <span data-i18n="your_tenant_pays_later">{t("your_tenant_pays_later")}</span><br />
-            <span className="text-[#6FFFE9]/60" data-i18n="zero_friction">{t("zero_friction")}</span>
+            <span style={{ color: "var(--tiffany)", opacity: 0.7 }} data-i18n="zero_friction">{t("zero_friction")}</span>
           </p>
 
           {/* CTAs */}
@@ -74,8 +73,13 @@ export default function LandingPage() {
             </a>
             <a
               href="/api/login"
-              className="inline-flex items-center justify-center px-8 rounded-xl border border-white/10 text-white/40 hover:text-white/70 hover:border-white/25 hover:bg-white/[0.03] transition-all duration-200 font-medium text-sm tracking-[0.04em] uppercase"
-              style={{ height: '52px' }}
+              className="inline-flex items-center justify-center px-8 rounded-xl transition-all duration-200 font-medium text-sm tracking-[0.04em] uppercase"
+              style={{
+                height: '52px',
+                border: "1px solid var(--nav-border)",
+                color: "var(--nav-text)",
+                background: "transparent",
+              }}
               data-testid="button-login"
             >
               Log In <ArrowRight size={14} className="ml-2" />
@@ -84,12 +88,12 @@ export default function LandingPage() {
 
           {/* Trust indicators */}
           <div className="flex items-center gap-6 pt-2">
-            <div className="flex items-center gap-2 text-white/25">
+            <div className="flex items-center gap-2" style={{ color: "var(--nav-text-dim)" }}>
               <ShieldCheck size={13} />
               <span className="text-[11px] font-medium tracking-wide uppercase">Bank-Grade Security</span>
             </div>
-            <div className="w-px h-4 bg-white/10" />
-            <div className="flex items-center gap-2 text-white/25">
+            <div className="w-px h-4 bg-border" />
+            <div className="flex items-center gap-2" style={{ color: "var(--nav-text-dim)" }}>
               <Zap size={13} />
               <span className="text-[11px] font-medium tracking-wide uppercase">Instant Payout</span>
             </div>
@@ -97,20 +101,27 @@ export default function LandingPage() {
         </div>
 
         {/* ── Dashboard preview card ─────────────────────── */}
-        <div className="relative hidden lg:flex flex-col gap-4 p-8 bg-zinc-950 border border-white/[0.06] rounded-2xl overflow-hidden" style={{ minHeight: '540px' }}>
+        <div
+          className="relative hidden lg:flex flex-col gap-4 p-8 rounded-2xl overflow-hidden"
+          style={{
+            minHeight: '540px',
+            background: "var(--surface-card)",
+            border: "1px solid var(--border-subtle)",
+          }}
+        >
           {/* Subtle gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-br from-[#6FFFE9]/[0.03] via-transparent to-transparent pointer-events-none" />
           <div className="absolute top-0 right-0 w-64 h-64 bg-[#6FFFE9]/[0.025] rounded-full blur-3xl pointer-events-none" />
 
           {/* Card header */}
-          <div className="relative z-10 flex items-center justify-between pb-4 border-b border-white/[0.06]">
+          <div className="relative z-10 flex items-center justify-between pb-4" style={{ borderBottom: "1px solid var(--border-subtle)" }}>
             <div>
-              <div className="h-2 w-24 bg-white/10 mb-2" />
-              <div className="h-1.5 w-16 bg-white/[0.06]" />
+              <div className="h-2 w-24 rounded-full bg-foreground/10 mb-2" />
+              <div className="h-1.5 w-16 rounded-full bg-foreground/[0.06]" />
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-[#6FFFE9] animate-pulse" />
-              <span className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#6FFFE9]/60">Live</span>
+              <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: "var(--tiffany)" }} />
+              <span className="text-[10px] font-semibold uppercase tracking-[1.5px]" style={{ color: "var(--tiffany)", opacity: 0.6 }}>Live</span>
             </div>
           </div>
 
@@ -121,21 +132,25 @@ export default function LandingPage() {
               { label: 'Guaranteed Payout', value: '1st of Month', accent: false },
               { label: 'Settlement', value: '0% → 100%', accent: false },
             ].map((row, i) => (
-              <div key={i} className="flex items-center justify-between px-5 py-4 rounded-xl border border-white/[0.05] bg-black/40">
-                <span className="text-[11px] font-semibold uppercase tracking-[1.5px] text-white/30">{row.label}</span>
-                <span className={`text-sm font-bold tracking-tight ${row.accent ? 'text-white' : 'text-white/55'}`}>{row.value}</span>
+              <div
+                key={i}
+                className="flex items-center justify-between px-5 py-4 rounded-xl"
+                style={{ border: "1px solid var(--border-subtle)", background: "rgba(128,128,128,0.04)" }}
+              >
+                <span className="text-[11px] font-semibold uppercase tracking-[1.5px] text-muted-foreground">{row.label}</span>
+                <span className={`text-sm font-bold tracking-tight ${row.accent ? 'text-foreground' : 'text-muted-foreground'}`}>{row.value}</span>
               </div>
             ))}
           </div>
 
           {/* Progress bar */}
           <div className="relative z-10 space-y-2 pt-2">
-            <div className="flex justify-between text-[10px] font-semibold uppercase tracking-[1px] text-white/25">
+            <div className="flex justify-between text-[10px] font-semibold uppercase tracking-[1px] text-muted-foreground">
               <span>Settlement Progress</span>
               <span>0% Settled</span>
             </div>
-            <div className="w-full h-1 bg-white/[0.06]">
-              <div className="h-full w-0 bg-gradient-to-r from-[#6FFFE9]/40 to-[#6FFFE9]" />
+            <div className="w-full h-1 rounded-full bg-foreground/[0.06]">
+              <div className="h-full w-0 bg-gradient-to-r from-[#6FFFE9]/40 to-[#6FFFE9] rounded-full" />
             </div>
           </div>
 
@@ -153,43 +168,43 @@ export default function LandingPage() {
 
       {/* ── Divider ───────────────────────────────────────────────────────── */}
       <div className="px-8 md:px-16">
-        <div className="max-w-screen-xl mx-auto h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
+        <div className="max-w-screen-xl mx-auto h-px bg-gradient-to-r from-transparent via-border to-transparent" />
       </div>
 
       {/* ── Features ──────────────────────────────────────────────────────── */}
       <section id="features-section" className="py-28 px-8 md:px-16">
         <div className="max-w-screen-xl mx-auto">
           <div className="mb-16">
-            <p className="text-[10px] font-semibold uppercase tracking-[2.5px] text-[#6FFFE9]/50 mb-4">Why RentFLO</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[2.5px] mb-4" style={{ color: "var(--tiffany)", opacity: 0.55 }}>Why RentFLO</p>
             <h2 className="text-4xl md:text-5xl font-bold tracking-[-2px] silver-text max-w-lg leading-tight">
               Built for landlords who demand certainty.
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-white/[0.05]">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-border">
             <FeatureCard
-              icon={<Zap size={18} className="text-[#6FFFE9]/70" />}
+              icon={<Zap size={18} style={{ color: "var(--tiffany)" }} />}
               title={t("usp_1_title")}
               desc={t("usp_1_desc")}
               titleKey="usp_1_title"
               descKey="usp_1_desc"
             />
             <FeatureCard
-              icon={<ShieldCheck size={18} className="text-[#6FFFE9]/70" />}
+              icon={<ShieldCheck size={18} style={{ color: "var(--tiffany)" }} />}
               title={t("usp_2_title")}
               desc={t("usp_2_desc")}
               titleKey="usp_2_title"
               descKey="usp_2_desc"
             />
             <FeatureCard
-              icon={<Building2 size={18} className="text-[#6FFFE9]/70" />}
+              icon={<Building2 size={18} style={{ color: "var(--tiffany)" }} />}
               title={t("usp_3_title")}
               desc={t("usp_3_desc")}
               titleKey="usp_3_title"
               descKey="usp_3_desc"
             />
             <FeatureCard
-              icon={<Clock size={18} className="text-[#6FFFE9]/70" />}
+              icon={<Clock size={18} style={{ color: "var(--tiffany)" }} />}
               title={t("usp_4_title")}
               desc={t("usp_4_desc")}
               titleKey="usp_4_title"
@@ -201,12 +216,12 @@ export default function LandingPage() {
 
       {/* ── Footer ────────────────────────────────────────────────────────── */}
       <div className="px-8 md:px-16 pb-24">
-        <div className="max-w-screen-xl mx-auto h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent mb-12" />
+        <div className="max-w-screen-xl mx-auto h-px bg-gradient-to-r from-transparent via-border to-transparent mb-12" />
         <div className="max-w-screen-xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-[11px] text-white/20 font-medium tracking-wide">
+          <p className="text-[11px] font-medium tracking-wide text-muted-foreground">
             © {new Date().getFullYear()} RentFLO Technologies Pvt. Ltd.
           </p>
-          <div className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[1.5px] text-white/15">
+          <div className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[1.5px] text-muted-foreground">
             <ShieldCheck size={11} />
             <span>Bank-Grade Encryption</span>
           </div>
@@ -224,8 +239,11 @@ function FeatureCard({ icon, title, desc, titleKey, descKey }: {
   descKey: string;
 }) {
   return (
-    <div className="bg-black p-8 md:p-10 group hover:bg-zinc-950 transition-colors duration-300">
-      <div className="mb-5 inline-flex items-center justify-center w-10 h-10 rounded-xl border border-[#6FFFE9]/15 bg-[#6FFFE9]/[0.04] group-hover:border-[#6FFFE9]/30 transition-colors duration-300">
+    <div className="bg-background p-8 md:p-10 group hover:bg-card transition-colors duration-300">
+      <div
+        className="mb-5 inline-flex items-center justify-center w-10 h-10 rounded-xl transition-colors duration-300"
+        style={{ border: "1px solid var(--border-accent-dim)", background: "rgba(111,255,233,0.04)" }}
+      >
         {icon}
       </div>
       <h3
@@ -234,7 +252,7 @@ function FeatureCard({ icon, title, desc, titleKey, descKey }: {
       >
         {title}
       </h3>
-      <p className="text-sm leading-relaxed text-white/30 font-light" data-i18n={descKey}>
+      <p className="text-sm leading-relaxed text-muted-foreground font-light" data-i18n={descKey}>
         {desc}
       </p>
     </div>

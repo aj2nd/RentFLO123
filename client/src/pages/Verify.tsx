@@ -71,7 +71,7 @@ export default function Verify() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-zinc-600 border-t-zinc-200 animate-spin" />
       </div>
     );
@@ -82,7 +82,7 @@ export default function Verify() {
   const hasPendingKyc = (currentUser?.panNumber || currentUser?.aadhaarNumber) && !isVerified;
 
   return (
-    <div className="min-h-screen bg-black text-zinc-200" style={{ fontFamily: "Inter, sans-serif" }}>
+    <div className="min-h-screen bg-background text-foreground" style={{ fontFamily: "Inter, sans-serif" }}>
       <main className="min-h-screen flex flex-col">
         <div className="flex-1 p-5 sm:p-8 md:p-10 max-w-2xl w-full mx-0">
 

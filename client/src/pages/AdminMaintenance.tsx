@@ -31,7 +31,7 @@ export default function AdminMaintenance() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-black text-white">
+      <div className="flex items-center justify-center h-screen bg-background text-foreground">
         <Loader2 className="w-8 h-8 animate-spin" data-testid="loader-maintenance" />
       </div>
     );
@@ -41,7 +41,7 @@ export default function AdminMaintenance() {
   const resolvedTickets = tickets?.filter(t => t.status === 'RESOLVED') || [];
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-background text-foreground">
       <div className="p-4 sm:p-6 md:p-10 pb-28">
         <header className="mb-8">
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tighter mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>{t('maint_title')}</h1>

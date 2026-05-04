@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { NotificationBell } from "@/components/NotificationBell";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { useQuery } from "@tanstack/react-query";
 
 export function Navigation() {
@@ -69,17 +70,17 @@ export function Navigation() {
           paddingTop: "env(safe-area-inset-top, 0px)",
           height: "calc(100dvh - 64px - env(safe-area-inset-bottom, 0px))",
           width: collapsed ? "0px" : "256px",
-          background: "rgba(0,0,0,0.92)",
+          background: "var(--nav-bg)",
           backdropFilter: "blur(40px) saturate(200%)",
           WebkitBackdropFilter: "blur(40px) saturate(200%)",
-          borderRight: "1px solid rgba(192,192,192,0.08)",
-          boxShadow: "inset -1px 0 0 rgba(111,255,233,0.04), 4px 0 32px rgba(0,0,0,0.5)",
+          borderRight: "1px solid var(--nav-border)",
+          boxShadow: "inset -1px 0 0 var(--border-accent-dim), 4px 0 32px rgba(0,0,0,0.18)",
         }}
       >
         {/* ── Brand header ── */}
         <div
           className="w-64 px-4 py-4 flex items-center gap-2.5 flex-shrink-0"
-          style={{ borderBottom: "1px solid rgba(192,192,192,0.07)" }}
+          style={{ borderBottom: "1px solid var(--nav-border)" }}
         >
           <div
             className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
@@ -100,7 +101,7 @@ export function Navigation() {
               RentFLO
             </span>
             {user?.role && (
-              <p className="text-[9px] uppercase tracking-widest leading-none mt-0.5" style={{ color: "rgba(157,239,228,0.55)" }}>
+              <p className="text-[9px] uppercase tracking-widest leading-none mt-0.5" style={{ color: "var(--tiffany-dim)", opacity: 0.7 }}>
                 {user.role.charAt(0) + user.role.slice(1).toLowerCase()}
               </p>
             )}
@@ -138,17 +139,18 @@ export function Navigation() {
         {/* ── Footer: alerts + sign out ── */}
         <div
           className="px-3 flex flex-col gap-1 w-64 pb-4 pt-3 flex-shrink-0"
-          style={{ borderTop: "1px solid rgba(192,192,192,0.07)" }}
+          style={{ borderTop: "1px solid var(--nav-border)" }}
         >
-          {/* Alerts row */}
+          {/* Alerts + Theme toggle row */}
           <div className="flex items-center gap-2 px-3 py-2">
             <NotificationBell />
             <span
-              className="text-[9px] font-medium uppercase tracking-widest"
-              style={{ color: "rgba(192,192,192,0.30)" }}
+              className="text-[9px] font-medium uppercase tracking-widest flex-1"
+              style={{ color: "var(--nav-text-dim)" }}
             >
               Alerts
             </span>
+            <ThemeToggle />
           </div>
 
           {/* Sign out */}
@@ -156,17 +158,15 @@ export function Navigation() {
             onClick={() => logout()}
             className="flex items-center gap-3 px-3 py-2.5 w-full rounded-xl transition-all duration-200 group"
             style={{
-              color: "rgba(192,192,192,0.45)",
+              color: "var(--nav-text)",
               background: "transparent",
               border: "1px solid transparent",
             }}
             onMouseEnter={e => {
-              (e.currentTarget as HTMLButtonElement).style.color = "rgba(192,192,192,0.85)";
-              (e.currentTarget as HTMLButtonElement).style.background = "rgba(192,192,192,0.05)";
-              (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(192,192,192,0.10)";
+              (e.currentTarget as HTMLButtonElement).style.background = "rgba(128,128,128,0.08)";
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(128,128,128,0.12)";
             }}
             onMouseLeave={e => {
-              (e.currentTarget as HTMLButtonElement).style.color = "rgba(192,192,192,0.45)";
               (e.currentTarget as HTMLButtonElement).style.background = "transparent";
               (e.currentTarget as HTMLButtonElement).style.borderColor = "transparent";
             }}

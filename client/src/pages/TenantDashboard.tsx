@@ -262,7 +262,7 @@ export default function TenantDashboard() {
 
   if (propsLoading || ledgersLoading) {
     return (
-      <div className="min-h-screen bg-black p-4 sm:p-6 md:p-10 pb-24 max-w-4xl mx-auto" data-testid="loader-tenant">
+      <div className="min-h-screen bg-background p-4 sm:p-6 md:p-10 pb-24 max-w-4xl mx-auto" data-testid="loader-tenant">
         <div className="grid grid-cols-3 gap-3 mb-8">
           {[1,2,3].map(i => <div key={i} className="h-20 bg-white/[0.04] animate-pulse rounded-2xl" />)}
         </div>
@@ -296,7 +296,7 @@ export default function TenantDashboard() {
   const allOnboardingDone = onboardingSteps.every(s => s.done);
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col">
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SuccessAnimation show={showSuccess} message="Payment Successful" />
       {receiptData && (
         <ReceiptModal data={receiptData} onClose={() => setReceiptData(null)} />
@@ -326,9 +326,9 @@ export default function TenantDashboard() {
           style={{
             backdropFilter: scrolled ? "blur(20px) saturate(180%)" : "blur(8px) saturate(120%)",
             WebkitBackdropFilter: scrolled ? "blur(20px) saturate(180%)" : "blur(8px) saturate(120%)",
-            background: scrolled ? "rgba(0,0,0,0.82)" : "rgba(0,0,0,0.35)",
-            borderBottom: scrolled ? "1px solid rgba(111,255,233,0.14)" : "1px solid rgba(255,255,255,0.04)",
-            boxShadow: scrolled ? "0 8px 32px rgba(0,0,0,0.32)" : "none",
+            background: scrolled ? "var(--nav-bg)" : "transparent",
+            borderBottom: scrolled ? "1px solid var(--border-accent-dim)" : "1px solid transparent",
+            boxShadow: scrolled ? "0 8px 32px rgba(0,0,0,0.14)" : "none",
             transition: "background 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease, backdrop-filter 0.35s ease, -webkit-backdrop-filter 0.35s ease",
             willChange: "backdrop-filter, background",
             paddingTop: scrolled ? "10px" : "12px",

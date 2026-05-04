@@ -12,30 +12,28 @@ export function LegalFooter() {
   if (hasSidebar) return null;
 
   return (
-    <footer
-      className="fixed bottom-0 left-0 right-0 bg-black border-t border-white/[0.05] z-40"
-    >
+    <footer className="fixed bottom-0 left-0 right-0 bg-background border-t border-border z-40">
       <div className="overflow-x-auto scrollbar-none" style={{ WebkitOverflowScrolling: 'touch' }}>
-        <div className="flex items-center gap-5 text-[11px] text-white/20 py-3 px-6 whitespace-nowrap min-w-max font-medium tracking-wide">
+        <div className="flex items-center gap-5 text-[11px] text-muted-foreground py-3 px-6 whitespace-nowrap min-w-max font-medium tracking-wide">
           <span>&copy; {new Date().getFullYear()} RentFLO Technologies Pvt. Ltd.</span>
-          <span className="text-white/10">|</span>
-          <Link href="/terms" className="hover:text-white/50 transition-colors" data-testid="link-terms">
+          <span className="opacity-30">|</span>
+          <Link href="/terms" className="hover:text-foreground transition-colors" data-testid="link-terms">
             {t('terms')}
           </Link>
-          <span className="text-white/10">|</span>
-          <Link href="/privacy" className="hover:text-white/50 transition-colors" data-testid="link-privacy">
+          <span className="opacity-30">|</span>
+          <Link href="/privacy" className="hover:text-foreground transition-colors" data-testid="link-privacy">
             {t('privacy')}
           </Link>
-          <span className="text-white/10">|</span>
-          <Link href="/refund" className="hover:text-white/50 transition-colors" data-testid="link-refund">
+          <span className="opacity-30">|</span>
+          <Link href="/refund" className="hover:text-foreground transition-colors" data-testid="link-refund">
             {t('footer_refund')}
           </Link>
-          <span className="text-white/10">|</span>
-          <Link href="/support" className="hover:text-white/50 transition-colors" data-testid="link-contact-support">
+          <span className="opacity-30">|</span>
+          <Link href="/support" className="hover:text-foreground transition-colors" data-testid="link-contact-support">
             {t('contact_support')}
           </Link>
-          <span className="text-white/10">|</span>
-          <a href="mailto:help@rentflo.com" className="hover:text-white/50 transition-colors" data-testid="link-support">
+          <span className="opacity-30">|</span>
+          <a href="mailto:help@rentflo.com" className="hover:text-foreground transition-colors" data-testid="link-support">
             help@rentflo.com
           </a>
         </div>

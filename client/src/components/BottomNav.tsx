@@ -90,12 +90,12 @@ export function BottomNav() {
     >
       {/* Glass background */}
       <div
-        className="w-full flex border-t border-white/[0.07]"
+        className="w-full flex border-t border-border"
         style={{
-          background: "rgba(0, 0, 0, 0.82)",
+          background: "var(--nav-bg)",
           backdropFilter: "blur(28px) saturate(180%)",
           WebkitBackdropFilter: "blur(28px) saturate(180%)",
-          boxShadow: "0 -1px 0 rgba(255,255,255,0.04), 0 -8px 32px rgba(0,0,0,0.6)",
+          boxShadow: "0 -1px 0 var(--border-subtle), 0 -8px 32px rgba(0,0,0,0.18)",
         }}
       >
         {items.map(item => (

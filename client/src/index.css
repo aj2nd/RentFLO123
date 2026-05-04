@@ -4,6 +4,7 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Dark mode (default) ─────────────────────────────────────────────── */
 :root {
   --background: 0 0% 0%;            /* OLED Black */
   --foreground: 0 0% 78%;           /* Silver — body text */
@@ -41,6 +42,66 @@
   --silver-dim: #888888;
   --tiffany: #6FFFE9;
   --tiffany-dim: #9DEFE4;
+
+  /* Surface tokens used in inline styles */
+  --nav-bg: rgba(0, 0, 0, 0.92);
+  --nav-border: rgba(192, 192, 192, 0.08);
+  --nav-text: rgba(192, 192, 192, 0.50);
+  --nav-text-dim: rgba(192, 192, 192, 0.30);
+  --surface-overlay: rgba(0, 0, 0, 0.45);
+  --surface-modal: rgba(0, 0, 0, 0.92);
+  --surface-card: rgba(9, 9, 9, 0.95);
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-accent-dim: rgba(111, 255, 233, 0.20);
+}
+
+/* ── Light mode overrides ────────────────────────────────────────────── */
+.light {
+  --background: 0 0% 95%;           /* #F2F2F2 — soft warm white */
+  --foreground: 0 0% 9%;            /* #171717 — near black */
+
+  --card: 0 0% 100%;                /* pure white cards */
+  --card-foreground: 0 0% 9%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 9%;
+
+  --primary: 0 0% 12%;              /* dark charcoal */
+  --primary-foreground: 0 0% 95%;
+
+  --secondary: 0 0% 91%;
+  --secondary-foreground: 0 0% 12%;
+
+  --muted: 0 0% 91%;
+  --muted-foreground: 0 0% 42%;
+
+  --accent: 175 90% 32%;            /* darker teal for light bg */
+  --accent-foreground: 0 0% 100%;
+
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+
+  --border: 0 0% 86%;
+  --input: 0 0% 86%;
+  --ring: 175 90% 32%;
+
+  /* Named tokens — light overrides */
+  --silver: #3a3a3a;
+  --silver-light: #1a1a1a;
+  --silver-dim: #777777;
+  --tiffany: #009688;
+  --tiffany-dim: #00796B;
+
+  /* Surface tokens */
+  --nav-bg: rgba(255, 255, 255, 0.96);
+  --nav-border: rgba(0, 0, 0, 0.09);
+  --nav-text: rgba(40, 40, 40, 0.60);
+  --nav-text-dim: rgba(40, 40, 40, 0.38);
+  --surface-overlay: rgba(0, 0, 0, 0.30);
+  --surface-modal: rgba(255, 255, 255, 0.97);
+  --surface-card: rgba(255, 255, 255, 0.98);
+  --border-subtle: rgba(0, 0, 0, 0.07);
+  --border-accent-dim: rgba(0, 150, 136, 0.22);
 }
 
 @layer base {
@@ -92,18 +153,6 @@
   }
 
   /* ── Liquid Glass (water-drop physics) ─────────────────────────── */
-
-  /*
-   * Architecture:
-   *  - isolation: isolate creates a stacking context so ::before (the specular
-   *    glint) always paints beneath children regardless of their z-index.
-   *  - overflow: hidden clips the glint to the card's border-radius.
-   *  - backdrop-filter provides the lensing / refraction illusion.
-   *  - The background is near-zero: the blur IS the fill.
-   *  - Border is asymmetric: bright top-left (lit meniscus), dim bottom-right.
-   *  - box-shadow inner line at top = the water-surface tension highlight.
-   */
-
   .liquid-glass {
     position: relative;
     isolation: isolate;
@@ -115,40 +164,40 @@
     border-right: 1px solid rgba(255, 255, 255, 0.06);
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     box-shadow:
-      /* deep shadow to lift card off the page */
       0 20px 56px rgba(0, 0, 0, 0.70),
       0 4px 16px rgba(0, 0, 0, 0.40),
-      /* inner top-edge — surface tension bright line */
       inset 0 1.5px 0 rgba(255, 255, 255, 0.32),
-      /* inner left — secondary rim light */
       inset 1.5px 0 0 rgba(255, 255, 255, 0.10),
-      /* very faint inner bottom */
       inset 0 -1px 0 rgba(255, 255, 255, 0.03);
     overflow: hidden;
   }
 
-  /* Specular glint — upper-left focal spot, like a water droplet in sunlight */
   .liquid-glass::before {
     content: '';
     position: absolute;
     z-index: -1;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    top: 0; left: 0; right: 0; bottom: 0;
     background:
-      radial-gradient(
-        ellipse 55% 35% at 22% 18%,
-        rgba(255, 255, 255, 0.18) 0%,
-        rgba(255, 255, 255, 0.06) 45%,
-        transparent 70%
-      ),
-      radial-gradient(
-        ellipse 40% 25% at 78% 85%,
-        rgba(255, 255, 255, 0.05) 0%,
-        transparent 65%
-      );
+      radial-gradient(ellipse 55% 35% at 22% 18%, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.06) 45%, transparent 70%),
+      radial-gradient(ellipse 40% 25% at 78% 85%, rgba(255,255,255,0.05) 0%, transparent 65%);
     pointer-events: none;
+  }
+
+  /* Light mode liquid glass */
+  .light .liquid-glass {
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(40px) saturate(180%) brightness(1.02);
+    -webkit-backdrop-filter: blur(40px) saturate(180%) brightness(1.02);
+    border-top: 1px solid rgba(255, 255, 255, 0.95);
+    border-left: 1px solid rgba(255, 255, 255, 0.80);
+    border-right: 1px solid rgba(0, 0, 0, 0.04);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.10),
+      0 2px 8px rgba(0, 0, 0, 0.06),
+      inset 0 1.5px 0 rgba(255, 255, 255, 0.95),
+      inset 1.5px 0 0 rgba(255, 255, 255, 0.60),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.03);
   }
 
   /* ── Teal / Tiffany tint variant ── */
@@ -168,7 +217,6 @@
       inset 0 1.5px 0 rgba(111, 255, 233, 0.38),
       inset 1.5px 0 0 rgba(111, 255, 233, 0.12),
       inset 0 -1px 0 rgba(111, 255, 233, 0.03),
-      /* teal ambient glow beneath card */
       0 0 48px rgba(111, 255, 233, 0.07);
     overflow: hidden;
   }
@@ -177,23 +225,24 @@
     content: '';
     position: absolute;
     z-index: -1;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    top: 0; left: 0; right: 0; bottom: 0;
     background:
-      radial-gradient(
-        ellipse 55% 35% at 22% 18%,
-        rgba(200, 255, 248, 0.20) 0%,
-        rgba(111, 255, 233, 0.07) 45%,
-        transparent 70%
-      ),
-      radial-gradient(
-        ellipse 40% 25% at 78% 85%,
-        rgba(111, 255, 233, 0.06) 0%,
-        transparent 65%
-      );
+      radial-gradient(ellipse 55% 35% at 22% 18%, rgba(200,255,248,0.20) 0%, rgba(111,255,233,0.07) 45%, transparent 70%),
+      radial-gradient(ellipse 40% 25% at 78% 85%, rgba(111,255,233,0.06) 0%, transparent 65%);
     pointer-events: none;
+  }
+
+  .light .liquid-glass-teal {
+    background: rgba(0, 150, 136, 0.04);
+    border-top: 1px solid rgba(0, 150, 136, 0.35);
+    border-left: 1px solid rgba(0, 150, 136, 0.18);
+    border-right: 1px solid rgba(0, 150, 136, 0.06);
+    border-bottom: 1px solid rgba(0, 150, 136, 0.06);
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.08),
+      0 2px 8px rgba(0, 0, 0, 0.05),
+      inset 0 1.5px 0 rgba(0, 150, 136, 0.28),
+      0 0 32px rgba(0, 150, 136, 0.06);
   }
 
   /* ── Micro glass — for small inline chips/pills ── */
@@ -205,17 +254,27 @@
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
   }
 
-  /* ────────────────────────────────────────────────────────────── */
+  .light .liquid-glass-chip {
+    background: rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(0, 0, 0, 0.10);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.80);
+  }
 
-  /* Silver liquid metal gradient text — use on headings / key numbers */
+  /* ── Silver liquid metal gradient text ── */
   .silver-text {
     background: linear-gradient(
       135deg,
-      #7A7A7A 0%,
-      #D0D0D0 30%,
-      #F5F5F5 50%,
-      #C8C8C8 65%,
-      #888888 100%
+      #7A7A7A 0%, #D0D0D0 30%, #F5F5F5 50%, #C8C8C8 65%, #888888 100%
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .light .silver-text {
+    background: linear-gradient(
+      135deg,
+      #2a2a2a 0%, #555555 30%, #1a1a1a 50%, #444444 65%, #333333 100%
     );
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -236,24 +295,92 @@
   .glass-panel {
     @apply bg-black/80 backdrop-blur-xl border border-[#6FFFE9]/25;
   }
+  .light .glass-panel {
+    background: rgba(255, 255, 255, 0.85);
+    border-color: rgba(0, 150, 136, 0.22);
+    backdrop-filter: blur(20px);
+  }
 
   .high-contrast-border {
     @apply border border-[#6FFFE9]/30 hover:border-[#6FFFE9]/65 transition-colors duration-300;
+  }
+  .light .high-contrast-border {
+    border-color: rgba(0, 150, 136, 0.28);
+  }
+  .light .high-contrast-border:hover {
+    border-color: rgba(0, 150, 136, 0.55);
   }
 
   /* Tiffany glow */
   .glow-tiffany {
     text-shadow: 0 0 24px rgba(111, 255, 233, 0.55);
   }
+  .light .glow-tiffany {
+    text-shadow: 0 0 16px rgba(0, 150, 136, 0.40);
+  }
 
   /* Silver glow on hero text */
   .glow-text {
     text-shadow: 0 0 30px rgba(192, 192, 192, 0.45), 0 0 60px rgba(111, 255, 233, 0.12);
   }
+  .light .glow-text {
+    text-shadow: 0 0 24px rgba(40, 40, 40, 0.18), 0 0 48px rgba(0, 150, 136, 0.08);
+  }
 
-  /* Tiffany accent line — thin left border highlight */
+  /* Tiffany accent line */
   .tiffany-accent {
     border-left: 2px solid #6FFFE9;
     padding-left: 0.75rem;
+  }
+  .light .tiffany-accent {
+    border-left-color: #009688;
+  }
+
+  /* ── Light mode global surface overrides ─────────────────────────
+     These handle hardcoded bg-black / bg-zinc-950 / text-white
+     classes scattered across pages, giving them theme-aware values
+     without requiring changes to every component.
+  ─────────────────────────────────────────────────────────────────── */
+  .light .bg-black {
+    background-color: hsl(var(--background)) !important;
+  }
+  .light .bg-zinc-950 {
+    background-color: hsl(var(--card)) !important;
+  }
+  .light .bg-zinc-900 {
+    background-color: hsl(var(--secondary)) !important;
+  }
+  .light .text-white {
+    color: hsl(var(--foreground)) !important;
+  }
+  .light .text-zinc-300 {
+    color: hsl(var(--foreground) / 0.82) !important;
+  }
+  .light .text-zinc-200 {
+    color: hsl(var(--foreground) / 0.88) !important;
+  }
+
+  /* Border subtle overrides */
+  .light .border-white\/\[0\.06\] {
+    border-color: rgba(0, 0, 0, 0.08) !important;
+  }
+  .light .border-white\/\[0\.05\] {
+    border-color: rgba(0, 0, 0, 0.07) !important;
+  }
+  .light .border-white\/\[0\.08\] {
+    border-color: rgba(0, 0, 0, 0.09) !important;
+  }
+  .light .border-white\/10 {
+    border-color: rgba(0, 0, 0, 0.10) !important;
+  }
+
+  /* Input field overrides in light mode */
+  .light input, .light textarea, .light select {
+    background-color: hsl(var(--card)) !important;
+    color: hsl(var(--foreground)) !important;
+    border-color: hsl(var(--border)) !important;
+  }
+  .light input::placeholder, .light textarea::placeholder {
+    color: hsl(var(--muted-foreground)) !important;
   }
 }

@@ -37,7 +37,7 @@ export default function OwnerDashboard() {
 
   if (propsLoading || ledgersLoading) {
     return (
-      <div className="min-h-screen bg-black p-4 sm:p-6 md:p-10 pb-24" data-testid="loader-owner">
+      <div className="min-h-screen bg-background p-4 sm:p-6 md:p-10 pb-24" data-testid="loader-owner">
         <div className="h-8 w-48 bg-zinc-900 animate-pulse mb-2" />
         <div className="h-4 w-32 bg-zinc-900/70 animate-pulse mb-8" />
         <div className="h-32 w-full bg-zinc-900 animate-pulse border border-[#6FFFE9]/10 mb-8" />
@@ -60,7 +60,7 @@ export default function OwnerDashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col">
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
       <div className="p-4 sm:p-6 md:p-10 pb-24 flex flex-col flex-1">
 
         <SetupProgress steps={ownerSteps} />
@@ -70,9 +70,9 @@ export default function OwnerDashboard() {
           style={{
             backdropFilter: scrolled ? "blur(20px) saturate(180%)" : "blur(8px) saturate(120%)",
             WebkitBackdropFilter: scrolled ? "blur(20px) saturate(180%)" : "blur(8px) saturate(120%)",
-            background: scrolled ? "rgba(0,0,0,0.82)" : "rgba(0,0,0,0.35)",
-            borderBottom: scrolled ? "1px solid rgba(111,255,233,0.14)" : "1px solid rgba(255,255,255,0.04)",
-            boxShadow: scrolled ? "0 8px 32px rgba(0,0,0,0.32)" : "none",
+            background: scrolled ? "var(--nav-bg)" : "transparent",
+            borderBottom: scrolled ? "1px solid var(--border-accent-dim)" : "1px solid transparent",
+            boxShadow: scrolled ? "0 8px 32px rgba(0,0,0,0.14)" : "none",
             transition: "background 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease, backdrop-filter 0.35s ease, -webkit-backdrop-filter 0.35s ease",
             willChange: "backdrop-filter, background",
             paddingTop: scrolled ? "10px" : "12px",

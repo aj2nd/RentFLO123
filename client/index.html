@@ -15,10 +15,21 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Noto+Sans+Kannada:wght@400;500;600;700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+    <script>
+      (function(){
+        try {
+          var t = localStorage.getItem('theme') || 'dark';
+          document.documentElement.classList.add(t === 'light' ? 'light' : 'dark');
+        } catch(e) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
     <style>
       /* ── Global reset ─────────────────────────────────── */
       *, *::before, *::after { box-sizing: border-box; }
       body { margin: 0; padding: 0; background: #000; }
+      html.light body { background: #F2F2F2; }
 
       /* ── Main header bar ──────────────────────────────── */
       .i18n-header {
@@ -43,6 +54,8 @@
                     border-radius 0.4s ease, padding 0.4s ease;
       }
 
+      html.light .i18n-header { background: #F2F2F2; }
+
       .i18n-header.glass {
         height: 72px;
         margin: 12px 20px 0;
@@ -56,6 +69,12 @@
         -webkit-backdrop-filter: blur(36px) saturate(220%) brightness(1.08);
         border-bottom: 1px solid rgba(111, 255, 233, 0.10);
         box-shadow: 0 1px 0 rgba(255,255,255,0.05), 0 8px 40px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05);
+      }
+
+      html.light .i18n-header.glass {
+        background: rgba(242, 242, 242, 0.88);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        box-shadow: 0 1px 0 rgba(255,255,255,0.9), 0 8px 32px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.9);
       }
 
       .i18n-header .logo-left {
@@ -84,6 +103,11 @@
         transition: width 0.4s ease, height 0.4s ease;
       }
 
+      html.light .i18n-header .logo-img {
+        mix-blend-mode: multiply;
+        filter: contrast(1.8) brightness(0.75);
+      }
+
       .i18n-header.glass .logo-img {
         width: 52px;
         height: 52px;
@@ -96,6 +120,10 @@
         transition: height 0.4s ease;
       }
 
+      html.light .i18n-header .logo-wordmark {
+        filter: invert(1) drop-shadow(0 0 8px rgba(0, 0, 0, 0.08));
+      }
+
       .i18n-header.glass .logo-wordmark {
         height: 36px;
       }
@@ -104,6 +132,7 @@
         display: flex;
         flex-direction: row;
         align-items: center;
+        gap: 12px;
         justify-content: flex-end;
         flex: 1;
       }
@@ -116,6 +145,8 @@
         align-items: center;
         justify-content: flex-end;
       }
+
+      html.light .i18n-login-bar { background: #F2F2F2; }
 
       /* ── Language switcher ────────────────────────────── */
       .i18n-header .language-switcher {
@@ -130,6 +161,10 @@
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 1.2px;
+      }
+
+      html.light .i18n-header .language-switcher label {
+        color: rgba(0, 0, 0, 0.35);
       }
 
       .i18n-header .language-select {
@@ -156,18 +191,75 @@
         background-size: 12px;
       }
 
+      html.light .i18n-header .language-select {
+        background-color: rgba(0, 0, 0, 0.04);
+        border-color: rgba(0, 0, 0, 0.12);
+        color: rgba(0, 0, 0, 0.60);
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(0,0,0,0.3)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      }
+
+      html.light .i18n-header .language-select option {
+        background: #ffffff;
+        color: #171717;
+      }
+
       .i18n-header .language-select:hover {
         border-color: rgba(255, 255, 255, 0.22);
         background-color: rgba(255, 255, 255, 0.06);
+      }
+
+      html.light .i18n-header .language-select:hover {
+        border-color: rgba(0, 0, 0, 0.22);
+        background-color: rgba(0, 0, 0, 0.06);
       }
 
       .i18n-header .language-select:focus {
         border-color: rgba(111, 255, 233, 0.35);
       }
 
+      html.light .i18n-header .language-select:focus {
+        border-color: rgba(0, 150, 136, 0.45);
+      }
+
       .i18n-header .language-select option {
         background: #0a0a0a;
         color: #c0c0c0;
+      }
+
+      /* ── Theme toggle button ──────────────────────────── */
+      .theme-toggle-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        min-height: 36px;
+        min-width: 36px;
+        border-radius: 50%;
+        border: 1px solid rgba(192, 192, 192, 0.14);
+        background: rgba(255, 255, 255, 0.04);
+        cursor: pointer;
+        transition: background 0.2s, border-color 0.2s;
+        color: rgba(192, 192, 192, 0.65);
+        flex-shrink: 0;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+
+      .theme-toggle-btn:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(192, 192, 192, 0.28);
+      }
+
+      html.light .theme-toggle-btn {
+        border-color: rgba(0, 0, 0, 0.12);
+        background: rgba(0, 0, 0, 0.04);
+        color: rgba(40, 40, 40, 0.70);
+      }
+
+      html.light .theme-toggle-btn:hover {
+        background: rgba(0, 0, 0, 0.08);
+        border-color: rgba(0, 0, 0, 0.22);
       }
 
       /* ── Login button ─────────────────────────────────── */
@@ -260,6 +352,17 @@
             <option value="kn">ಕನ್ನಡ</option>
           </select>
         </div>
+        <button id="header-theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme" data-testid="button-theme-toggle">
+          <svg id="theme-icon-sun" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none">
+            <circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/>
+            <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/>
+            <line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/>
+            <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/>
+          </svg>
+          <svg id="theme-icon-moon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        </button>
       </div>
     </header>
 
@@ -380,6 +483,51 @@
           document.addEventListener('DOMContentLoaded', initI18n);
         } else {
           initI18n();
+        }
+
+        // ── Theme toggle ─────────────────────────────────────────────────────
+        // next-themes uses localStorage key "theme" and sets .light / .dark on <html>
+        var THEME_KEY = 'theme';
+
+        function getStoredTheme() {
+          try { return localStorage.getItem(THEME_KEY) || 'dark'; } catch(e) { return 'dark'; }
+        }
+
+        function applyTheme(theme) {
+          var html = document.documentElement;
+          var sunIcon = document.getElementById('theme-icon-sun');
+          var moonIcon = document.getElementById('theme-icon-moon');
+          if (theme === 'light') {
+            html.classList.add('light');
+            html.classList.remove('dark');
+            if (sunIcon) sunIcon.style.display = 'block';
+            if (moonIcon) moonIcon.style.display = 'none';
+          } else {
+            html.classList.add('dark');
+            html.classList.remove('light');
+            if (sunIcon) sunIcon.style.display = 'none';
+            if (moonIcon) moonIcon.style.display = 'block';
+          }
+        }
+
+        function initTheme() {
+          var saved = getStoredTheme();
+          applyTheme(saved);
+          var btn = document.getElementById('header-theme-toggle');
+          if (btn) {
+            btn.addEventListener('click', function() {
+              var current = getStoredTheme();
+              var next = (current === 'dark') ? 'light' : 'dark';
+              try { localStorage.setItem(THEME_KEY, next); } catch(e) {}
+              applyTheme(next);
+            });
+          }
+        }
+
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', initTheme);
+        } else {
+          initTheme();
         }
 
         window.i18n = {

@@ -41,7 +41,7 @@ export default function Onboarding() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-8">
+    <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-8">
       <div className="max-w-2xl w-full text-center mb-16">
         <h1 className="text-5xl md:text-7xl font-bold tracking-tighter mb-4" style={{ fontFamily: 'Inter, sans-serif' }}>
           RentFLO
@@ -72,7 +72,7 @@ export default function Onboarding() {
         <Button
           onClick={() => handleRoleSelect("TENANT")}
           disabled={setRoleMutation.isPending}
-          className="h-64 bg-black text-white hover:bg-zinc-900 border-2 border-white rounded-none flex flex-col items-center justify-center gap-6"
+          className="h-64 bg-secondary text-foreground hover:bg-muted border-2 border-border rounded-none flex flex-col items-center justify-center gap-6"
           data-testid="button-select-tenant"
         >
           {setRoleMutation.isPending && selectedRole === "TENANT" ? (

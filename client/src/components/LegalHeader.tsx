@@ -8,7 +8,7 @@ export function LegalHeader() {
     <header className="flex items-center justify-between mb-12">
       <Link
         href="/"
-        className="inline-flex items-center gap-3 text-zinc-400 hover:text-zinc-100 transition-colors group"
+        className="inline-flex items-center gap-3 text-muted-foreground hover:text-foreground transition-colors group"
         data-testid="link-back-home"
       >
         <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />

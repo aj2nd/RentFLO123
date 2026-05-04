@@ -101,7 +101,7 @@ export default function Maintenance() {
   const displayed = tab === "open" ? open : resolved;
 
   return (
-    <div className="min-h-screen bg-black text-zinc-300 pb-24">
+    <div className="min-h-screen bg-background text-foreground pb-24">
       <div className="max-w-5xl mx-auto px-6 md:px-10 py-10">
 
         {/* ── Header ──────────────────────────────────────── */}

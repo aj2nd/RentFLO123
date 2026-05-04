@@ -4,7 +4,7 @@ import wordmarkImg from "@assets/IMG_7224_1777731010120.jpeg";
 export function LoadingScreen() {
   return (
     <div
-      className="fixed inset-0 flex flex-col items-center justify-center bg-black z-[9999]"
+      className="fixed inset-0 flex flex-col items-center justify-center bg-background z-[9999]"
       style={{ fontFamily: 'Inter, sans-serif' }}
     >
       {/* Ambient glow */}
