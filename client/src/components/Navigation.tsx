@@ -178,30 +178,53 @@ export function Navigation() {
         </div>
       </nav>
 
-      {/* ── Floating expand tab — shown when collapsed ── */}
+      {/* ── Edge grip — three micro-dots on left edge, shown when collapsed ── */}
       <button
         onClick={toggle}
-        className="fixed z-50 flex items-center justify-center transition-all duration-300 ease-in-out"
-        style={{
-          top: "50%",
-          left: collapsed ? "0px" : "-28px",
-          transform: "translateY(-50%)",
-          width: "28px",
-          height: "64px",
-          background: "rgba(111,255,233,0.06)",
-          backdropFilter: "blur(20px) saturate(180%)",
-          WebkitBackdropFilter: "blur(20px) saturate(180%)",
-          border: "1px solid rgba(111,255,233,0.15)",
-          borderLeft: "none",
-          borderRadius: "0 8px 8px 0",
-          boxShadow: "inset 1px 0 0 rgba(111,255,233,0.10), 0 4px 20px rgba(0,0,0,0.3)",
-          opacity: collapsed ? 1 : 0,
-          pointerEvents: collapsed ? "auto" : "none",
-        }}
         data-testid="button-expand-sidebar"
         title="Open sidebar"
+        style={{
+          position: "fixed",
+          top: "50%",
+          left: collapsed ? "0px" : "-24px",
+          transform: "translateY(-50%)",
+          zIndex: 50,
+          width: "20px",
+          height: "48px",
+          padding: 0,
+          background: "transparent",
+          border: "none",
+          cursor: "pointer",
+          opacity: collapsed ? 1 : 0,
+          pointerEvents: collapsed ? "auto" : "none",
+          transition: "opacity 0.3s, left 0.3s",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "6px",
+        }}
       >
-        <ChevronRight size={13} style={{ color: "rgba(111,255,233,0.60)" }} />
+        {[0, 1, 2].map(i => (
+          <span
+            key={i}
+            style={{
+              display: "block",
+              width: "3px",
+              height: "3px",
+              borderRadius: "50%",
+              background: "rgba(111,255,233,0.75)",
+              boxShadow: "0 0 5px rgba(111,255,233,0.9), 0 0 10px rgba(111,255,233,0.4)",
+              animation: `navDotPulse ${1.8 + i * 0.3}s ease-in-out infinite`,
+            }}
+          />
+        ))}
+        <style>{`
+          @keyframes navDotPulse {
+            0%, 100% { opacity: 0.55; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.5); }
+          }
+        `}</style>
       </button>
     </>
   );
