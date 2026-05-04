@@ -93,7 +93,7 @@ export default function Setup() {
   if (!role) return null;
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6 md:p-12">
+    <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6 md:p-12 pb-24">
       <div className="w-full max-w-lg">
         {/* Logo */}
         <div className="flex items-center gap-3 mb-12">

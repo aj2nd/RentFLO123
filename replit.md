@@ -57,6 +57,14 @@ Preferred communication style: Simple, everyday language.
 - **Mobile UX**: Safe-area-insets, 44px min touch targets, tap-highlight disabled, user-select:none on interactive elements
 
 ### Recent Changes (May 2026)
+- **Scroll & Usability Fixes**: Comprehensive scroll/layout fixes across the entire platform
+  - `client/index.html`: Vanilla HTML header (210px desktop / 138px mobile) is now hidden on all authenticated routes — only shown on public pages (`/`, `/terms`, `/privacy`, `/refund`, `/support`). Previously the header was always visible, eating screen space and making content impossible to scroll on mobile.
+  - `client/src/index.css`: Removed `min-width: 44px` from all `<a>` elements (kept only on `button` and `[role="button"]`). The 44px minimum width was breaking inline link layouts across the app.
+  - `client/src/pages/Messages.tsx`: Fixed height from `calc(100dvh - 270px)` (which was based on old header height) to `calc(100dvh - 64px - env(safe-area-inset-bottom, 0px))`.
+  - `client/src/pages/AdminMessages.tsx`: Fixed height from `h-[calc(100vh-138px)] md:h-[calc(100vh-210px)]` (old hardcoded header heights) to `calc(100dvh - 64px - env(safe-area-inset-bottom, 0px))`.
+  - `client/src/pages/Agreement.tsx`: Added `pb-24` to inner content div so BottomNav doesn't cover form/signature content.
+  - `client/src/pages/Verify.tsx`: Added `pb-24` to inner content div for same reason.
+  - `client/src/pages/Setup.tsx`: Added `pb-24` to outer wrapper so bottom form buttons are accessible above the BottomNav.
 - **Light Mode Fix**: Comprehensive light mode coloring fixed across all pages
   - `client/src/index.css` `.light` section extended with: `bg-zinc-800/700` overrides, opacity-variant selectors (`bg-zinc-950/X`, `bg-zinc-900/X`), `text-zinc-400/500/600/700` dimming, attribute selectors catching all hardcoded hex colors (`#C0C0C0`, `#E8E8E8`, `#9DEFE4`, `#6FFFE9`) and all their opacity variants, `text-white/X` opacity variants, `border-white/X` opacity variants, very-transparent `bg-white/[0.X` backgrounds, Recharts tooltip overrides
   - `client/src/components/Navigation.tsx`: NavItem inactive color changed from hardcoded `rgba(192,192,192,0.50)` to `var(--nav-text)`; icon inactive from `rgba(192,192,192,0.45)` to `var(--nav-text-dim)`; brand "RentFLO" text replaced with `silver-text` class (has dark gradient in light mode)

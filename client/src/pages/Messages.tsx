@@ -94,7 +94,7 @@ export default function Messages() {
   return (
     <div
       className="bg-background text-foreground flex overflow-hidden"
-      style={{ height: "calc(100dvh - 270px)", minHeight: "360px" }}
+      style={{ height: "calc(100dvh - 64px - env(safe-area-inset-bottom, 0px))", minHeight: "360px" }}
     >
       {/* ── Property list sidebar ───────────────────────────────────── */}
       <aside

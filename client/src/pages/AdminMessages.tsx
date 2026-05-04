@@ -45,7 +45,7 @@ export default function AdminMessages() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-138px)] md:h-[calc(100vh-210px)] bg-background overflow-hidden">
+    <div className="flex bg-background overflow-hidden" style={{ height: "calc(100dvh - 64px - env(safe-area-inset-bottom, 0px))" }}>
 
       {/* ── Left: conversation list ─────────────────────────────── */}
       <div

@@ -124,9 +124,12 @@
     background: #C0C0C0;
     color: #000;
   }
-  button, a, [role="button"], select, input[type="submit"] {
+  button, [role="button"] {
     min-height: 44px;
     min-width: 44px;
+  }
+  a {
+    min-height: 44px;
   }
   nav, header, .sidebar, button, a, select, label, [role="button"] {
     -webkit-user-select: none;

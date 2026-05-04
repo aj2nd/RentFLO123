@@ -84,7 +84,7 @@ export default function Verify() {
   return (
     <div className="min-h-screen bg-background text-foreground" style={{ fontFamily: "Inter, sans-serif" }}>
       <main className="min-h-screen flex flex-col">
-        <div className="flex-1 p-5 sm:p-8 md:p-10 max-w-2xl w-full mx-0">
+        <div className="flex-1 p-5 sm:p-8 md:p-10 pb-24 max-w-2xl w-full mx-0">
 
           <div className="mb-8 pt-2">
             <div className="inline-flex items-center gap-2 px-3 py-1 border border-[#6FFFE9]/30 mb-4">

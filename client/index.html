@@ -394,13 +394,20 @@
         const DEFAULT_LANG = 'en';
         const SUPPORTED_LANGS = ['en', 'hi', 'kn'];
 
-        // ── Route-aware login bar visibility ────────────────────────────────
+        // ── Route-aware header visibility ────────────────────────────────────
+        var PUBLIC_PATHS = ['/', '/terms', '/privacy', '/refund', '/support'];
+
         function updateHeaderForRoute() {
           var path = window.location.pathname;
+          var headerEl = document.querySelector('.i18n-header');
           var loginBar = document.getElementById('login-bar');
-          if (!loginBar) return;
-          // Show Login bar ONLY on the landing page
-          loginBar.style.display = (path === '/') ? 'flex' : 'none';
+
+          // Only show the header on public (non-authenticated) pages
+          var isPublic = PUBLIC_PATHS.includes(path);
+          if (headerEl) headerEl.style.display = isPublic ? '' : 'none';
+
+          // Show the login sub-bar only on the exact landing page
+          if (loginBar) loginBar.style.display = (path === '/') ? 'flex' : 'none';
         }
 
         // Run immediately on page load
