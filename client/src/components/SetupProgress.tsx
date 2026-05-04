@@ -70,10 +70,32 @@ const CSS = `
     100% { transform: translateX(220%)  skewX(-18deg); }
   }
 
-  /* CTA button glow breathe */
+  /* CTA button glow breathe — synced to sp-glow-ambient (2.2s) */
   @keyframes sp-cta-breathe {
-    0%,100% { box-shadow: 0 0 0 0 rgba(111,255,233,0.0),  0 2px 18px rgba(111,255,233,0.12); }
-    50%     { box-shadow: 0 0 0 4px rgba(111,255,233,0.07), 0 2px 28px rgba(111,255,233,0.28); }
+    0%,100% {
+      box-shadow: 0 0 0 0 rgba(111,255,233,0.0),
+                  0 2px 6px rgba(111,255,233,0.05),
+                  inset 0 0 0 1px rgba(111,255,233,0.12);
+      border-color: rgba(111,255,233,0.14);
+      background: linear-gradient(135deg, rgba(111,255,233,0.05), rgba(111,255,233,0.02));
+    }
+    50% {
+      box-shadow: 0 0 0 5px rgba(111,255,233,0.10),
+                  0 0 28px rgba(111,255,233,0.50),
+                  0 0 56px rgba(111,255,233,0.20),
+                  inset 0 0 0 1px rgba(111,255,233,0.80),
+                  inset 0 0 18px rgba(111,255,233,0.12);
+      border-color: rgba(111,255,233,0.70);
+      background: linear-gradient(135deg, rgba(111,255,233,0.16), rgba(111,255,233,0.07));
+    }
+  }
+
+  /* Shimmer that sweeps through the CTA on each bright peak */
+  @keyframes sp-cta-shimmer {
+    0%   { transform: translateX(-160%) skewX(-20deg); opacity: 0;   }
+    15%  { opacity: 1; }
+    85%  { opacity: 1; }
+    100% { transform: translateX(260%)  skewX(-20deg); opacity: 0;   }
   }
 
   /* Connector fill sweep */
@@ -521,29 +543,36 @@ export function SetupProgress({ steps }: { steps: ProgressStep[] }) {
             style={{
               display: "flex", alignItems: "center", justifyContent: "center",
               gap: 8, height: 44, borderRadius: 14,
-              background: "linear-gradient(135deg, rgba(111,255,233,0.10), rgba(111,255,233,0.05))",
-              border: "1px solid rgba(111,255,233,0.22)",
+              border: "1px solid rgba(111,255,233,0.14)",
               cursor: "pointer",
-              transition: "all 0.2s ease",
-              animation: "sp-cta-breathe 3.5s ease-in-out infinite",
-              boxShadow: "0 4px 20px rgba(0,0,0,0.35), inset 0 1px 0 rgba(111,255,233,0.10), inset 0 -1px 0 rgba(0,0,0,0.2)",
+              transition: "transform 0.15s ease",
+              animation: "sp-cta-breathe 2.2s ease-in-out infinite",
               position: "relative",
               overflow: "hidden",
             }}
           >
-            {/* CTA inner top highlight */}
+            {/* Top rim highlight */}
             <div style={{
               position: "absolute", top: 0, left: 0, right: 0, height: 1,
-              background: `linear-gradient(90deg, transparent, rgba(111,255,233,0.25), transparent)`,
+              background: "linear-gradient(90deg, transparent, rgba(111,255,233,0.30), transparent)",
+              pointerEvents: "none",
+            }} />
+            {/* Repeating shimmer sweep in sync with glow peak */}
+            <div style={{
+              position: "absolute", top: 0, bottom: 0,
+              width: "35%",
+              background: "linear-gradient(105deg, transparent 20%, rgba(111,255,233,0.10) 50%, transparent 80%)",
+              animation: "sp-cta-shimmer 2.2s ease-in-out infinite",
               pointerEvents: "none",
             }} />
             <span style={{
               fontSize: 13, fontWeight: 700, letterSpacing: "-0.01em", color: TEAL,
-              textShadow: `0 0 20px rgba(111,255,233,0.45)`,
+              textShadow: "0 0 14px rgba(111,255,233,0.55)",
+              position: "relative", zIndex: 1,
             }}>
               {active.label}
             </span>
-            <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none" style={{ position: "relative", zIndex: 1 }}>
               <path d="M2 6.5 H11 M8 3.5 L11 6.5 L8 9.5"
                 stroke={TEAL} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
