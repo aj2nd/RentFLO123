@@ -29,7 +29,7 @@ export default function OwnerDashboard() {
 
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
+    const onScroll = () => setScrolled(window.scrollY > 8);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -68,12 +68,13 @@ export default function OwnerDashboard() {
         <header
           className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sticky top-0 z-20 -mx-4 sm:-mx-6 md:-mx-10 px-4 sm:px-6 md:px-10 pt-3 pb-2"
           style={{
-            backdropFilter: scrolled ? "blur(20px) saturate(180%)" : "blur(0px)",
-            WebkitBackdropFilter: scrolled ? "blur(20px) saturate(180%)" : "blur(0px)",
-            background: scrolled ? "rgba(0,0,0,0.65)" : "transparent",
-            borderBottom: scrolled ? "1px solid rgba(111,255,233,0.14)" : "1px solid transparent",
-            boxShadow: scrolled ? "0 8px 32px rgba(0,0,0,0.22)" : "none",
-            transition: "background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease",
+            backdropFilter: scrolled ? "blur(20px) saturate(180%)" : "blur(8px) saturate(120%)",
+            WebkitBackdropFilter: scrolled ? "blur(20px) saturate(180%)" : "blur(8px) saturate(120%)",
+            background: scrolled ? "rgba(0,0,0,0.82)" : "rgba(0,0,0,0.35)",
+            borderBottom: scrolled ? "1px solid rgba(111,255,233,0.14)" : "1px solid rgba(255,255,255,0.04)",
+            boxShadow: scrolled ? "0 8px 32px rgba(0,0,0,0.32)" : "none",
+            transition: "background 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease, backdrop-filter 0.35s ease, -webkit-backdrop-filter 0.35s ease",
+            willChange: "backdrop-filter, background",
           }}
         >
           <div>
