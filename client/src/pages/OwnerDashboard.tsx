@@ -66,7 +66,7 @@ export default function OwnerDashboard() {
         <SetupProgress steps={ownerSteps} />
 
         <header
-          className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sticky top-0 z-20 -mx-4 sm:-mx-6 md:-mx-10 px-4 sm:px-6 md:px-10 pt-3 pb-2"
+          className="mb-6 sticky top-0 z-20 -mx-4 sm:-mx-6 md:-mx-10 px-4 sm:px-6 md:px-10"
           style={{
             backdropFilter: scrolled ? "blur(20px) saturate(180%)" : "blur(8px) saturate(120%)",
             WebkitBackdropFilter: scrolled ? "blur(20px) saturate(180%)" : "blur(8px) saturate(120%)",
@@ -75,15 +75,37 @@ export default function OwnerDashboard() {
             boxShadow: scrolled ? "0 8px 32px rgba(0,0,0,0.32)" : "none",
             transition: "background 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease, backdrop-filter 0.35s ease, -webkit-backdrop-filter 0.35s ease",
             willChange: "backdrop-filter, background",
+            paddingTop: scrolled ? "10px" : "12px",
+            paddingBottom: scrolled ? "10px" : "8px",
           }}
         >
-          <div>
-            <h1 className="text-3xl sm:text-4xl font-bold tracking-tighter mb-1" style={{ fontFamily: 'Inter, sans-serif' }}>
-              {t('owner_title')}
-            </h1>
-            <p className="text-zinc-500 text-sm">{t('owner_subtitle')}</p>
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h1
+                className="font-bold tracking-tighter"
+                style={{
+                  fontFamily: 'Inter, sans-serif',
+                  fontSize: scrolled ? "1.1rem" : "2rem",
+                  lineHeight: 1.15,
+                  marginBottom: scrolled ? "0px" : "4px",
+                  transition: "font-size 0.3s ease, margin-bottom 0.3s ease",
+                }}
+              >
+                {t('owner_title')}
+              </h1>
+              <div
+                style={{
+                  overflow: "hidden",
+                  maxHeight: scrolled ? "0px" : "28px",
+                  opacity: scrolled ? 0 : 1,
+                  transition: "max-height 0.3s ease, opacity 0.25s ease",
+                }}
+              >
+                <p className="text-zinc-500 text-sm">{t('owner_subtitle')}</p>
+              </div>
+            </div>
+            <AddPropertyModal isVerified={isVerified ?? undefined} />
           </div>
-          <AddPropertyModal isVerified={isVerified ?? undefined} />
         </header>
 
         <div className="mb-10">

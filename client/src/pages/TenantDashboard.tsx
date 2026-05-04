@@ -322,7 +322,7 @@ export default function TenantDashboard() {
 
         {/* ── Page Header ── */}
         <header
-          className="mb-4 sticky top-0 z-20 -mx-4 sm:-mx-6 md:-mx-10 px-4 sm:px-6 md:px-10 pt-3 pb-2"
+          className="mb-4 sticky top-0 z-20 -mx-4 sm:-mx-6 md:-mx-10 px-4 sm:px-6 md:px-10"
           style={{
             backdropFilter: scrolled ? "blur(20px) saturate(180%)" : "blur(8px) saturate(120%)",
             WebkitBackdropFilter: scrolled ? "blur(20px) saturate(180%)" : "blur(8px) saturate(120%)",
@@ -331,22 +331,56 @@ export default function TenantDashboard() {
             boxShadow: scrolled ? "0 8px 32px rgba(0,0,0,0.32)" : "none",
             transition: "background 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease, backdrop-filter 0.35s ease, -webkit-backdrop-filter 0.35s ease",
             willChange: "backdrop-filter, background",
+            paddingTop: scrolled ? "10px" : "12px",
+            paddingBottom: scrolled ? "10px" : "8px",
           }}
         >
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#6FFFE9]/25 bg-[#6FFFE9]/[0.06] backdrop-blur-sm mb-4">
-            <span className="w-1.5 h-1.5 bg-[#6FFFE9] animate-pulse rounded-full" />
-            <span className="text-[10px] font-medium uppercase tracking-wider text-[#9DEFE4]">
-              {t("tenant_secure_pay")}
-            </span>
+          {/* Badge — hidden when scrolled */}
+          <div
+            style={{
+              overflow: "hidden",
+              maxHeight: scrolled ? "0px" : "40px",
+              opacity: scrolled ? 0 : 1,
+              marginBottom: scrolled ? "0px" : "12px",
+              transition: "max-height 0.3s ease, opacity 0.25s ease, margin-bottom 0.3s ease",
+            }}
+          >
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#6FFFE9]/25 bg-[#6FFFE9]/[0.06] backdrop-blur-sm">
+              <span className="w-1.5 h-1.5 bg-[#6FFFE9] animate-pulse rounded-full" />
+              <span className="text-[10px] font-medium uppercase tracking-wider text-[#9DEFE4]">
+                {t("tenant_secure_pay")}
+              </span>
+            </div>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tighter mb-1 silver-text glow-text">
+
+          {/* Title — shrinks when scrolled */}
+          <h1
+            className="font-bold tracking-tighter silver-text glow-text"
+            style={{
+              fontSize: scrolled ? "1.1rem" : "2rem",
+              lineHeight: 1.15,
+              marginBottom: scrolled ? "0px" : "4px",
+              transition: "font-size 0.3s ease, margin-bottom 0.3s ease",
+            }}
+          >
             {t("tenant_title")}
           </h1>
+
+          {/* Address — hidden when scrolled */}
           {property && (
-            <p className="text-[#9DEFE4]/70 text-sm flex items-center gap-1.5">
-              <MapPin size={12} className="text-[#6FFFE9]/60" />
-              {property.address}
-            </p>
+            <div
+              style={{
+                overflow: "hidden",
+                maxHeight: scrolled ? "0px" : "28px",
+                opacity: scrolled ? 0 : 1,
+                transition: "max-height 0.3s ease, opacity 0.25s ease",
+              }}
+            >
+              <p className="text-[#9DEFE4]/70 text-sm flex items-center gap-1.5 mt-1">
+                <MapPin size={12} className="text-[#6FFFE9]/60" />
+                {property.address}
+              </p>
+            </div>
           )}
         </header>
 

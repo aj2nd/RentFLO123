@@ -130,7 +130,7 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-black text-white">
       <div className="p-4 sm:p-6 md:p-10 pb-24">
         <header
-          className="mb-6 sticky top-0 z-20 -mx-4 sm:-mx-6 md:-mx-10 px-4 sm:px-6 md:px-10 pt-3 pb-2"
+          className="mb-6 sticky top-0 z-20 -mx-4 sm:-mx-6 md:-mx-10 px-4 sm:px-6 md:px-10"
           style={{
             backdropFilter: scrolled ? "blur(20px) saturate(180%)" : "blur(8px) saturate(120%)",
             WebkitBackdropFilter: scrolled ? "blur(20px) saturate(180%)" : "blur(8px) saturate(120%)",
@@ -139,18 +139,39 @@ export default function AdminDashboard() {
             boxShadow: scrolled ? "0 8px 32px rgba(0,0,0,0.32)" : "none",
             transition: "background 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease, backdrop-filter 0.35s ease, -webkit-backdrop-filter 0.35s ease",
             willChange: "backdrop-filter, background",
+            paddingTop: scrolled ? "10px" : "12px",
+            paddingBottom: scrolled ? "2px" : "0px",
           }}
         >
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          <div className="flex items-center justify-between gap-4" style={{ marginBottom: scrolled ? "8px" : "16px", transition: "margin-bottom 0.3s ease" }}>
             <div>
-              <h1 className="text-3xl sm:text-4xl font-bold tracking-tighter mb-1">{t('admin_title')}</h1>
-              <p className="text-zinc-500">
-                {t('admin_system_status')} <span className="text-[#6FFFE9] font-medium">{t('admin_operational')}</span>
-              </p>
+              <h1
+                className="font-bold tracking-tighter"
+                style={{
+                  fontSize: scrolled ? "1.1rem" : "2rem",
+                  lineHeight: 1.15,
+                  marginBottom: scrolled ? "0px" : "4px",
+                  transition: "font-size 0.3s ease, margin-bottom 0.3s ease",
+                }}
+              >
+                {t('admin_title')}
+              </h1>
+              <div
+                style={{
+                  overflow: "hidden",
+                  maxHeight: scrolled ? "0px" : "28px",
+                  opacity: scrolled ? 0 : 1,
+                  transition: "max-height 0.3s ease, opacity 0.25s ease",
+                }}
+              >
+                <p className="text-zinc-500 text-sm">
+                  {t('admin_system_status')} <span className="text-[#6FFFE9] font-medium">{t('admin_operational')}</span>
+                </p>
+              </div>
             </div>
-            <Button onClick={downloadAuditLog} className="bg-zinc-900 text-white hover:bg-zinc-800 border border-[#6FFFE9]/25 gap-2" data-testid="button-download-audit">
+            <Button onClick={downloadAuditLog} className="bg-zinc-900 text-white hover:bg-zinc-800 border border-[#6FFFE9]/25 gap-2 flex-shrink-0" data-testid="button-download-audit">
               <Download size={16} />
-              {t('admin_download_audit')}
+              <span className={scrolled ? "hidden sm:inline" : ""}>{t('admin_download_audit')}</span>
             </Button>
           </div>
 
