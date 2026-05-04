@@ -186,14 +186,17 @@ export function Navigation() {
         style={{
           position: "fixed",
           top: "50%",
-          left: collapsed ? "0px" : "-24px",
+          left: collapsed ? "0px" : "-28px",
           transform: "translateY(-50%)",
           zIndex: 50,
-          width: "20px",
-          height: "48px",
+          width: "18px",
+          height: "52px",
           padding: 0,
-          background: "transparent",
-          border: "none",
+          background: "rgba(111,255,233,0.07)",
+          border: "1px solid rgba(111,255,233,0.22)",
+          borderLeft: "none",
+          borderRadius: "0 10px 10px 0",
+          boxShadow: "0 0 12px rgba(111,255,233,0.12), inset 0 1px 0 rgba(111,255,233,0.10)",
           cursor: "pointer",
           opacity: collapsed ? 1 : 0,
           pointerEvents: collapsed ? "auto" : "none",
@@ -210,19 +213,19 @@ export function Navigation() {
             key={i}
             style={{
               display: "block",
-              width: "3px",
-              height: "3px",
+              width: "4px",
+              height: "4px",
               borderRadius: "50%",
-              background: "rgba(111,255,233,0.75)",
-              boxShadow: "0 0 5px rgba(111,255,233,0.9), 0 0 10px rgba(111,255,233,0.4)",
+              background: "rgba(111,255,233,0.85)",
+              boxShadow: "0 0 6px rgba(111,255,233,1), 0 0 14px rgba(111,255,233,0.5)",
               animation: `navDotPulse ${1.8 + i * 0.3}s ease-in-out infinite`,
             }}
           />
         ))}
         <style>{`
           @keyframes navDotPulse {
-            0%, 100% { opacity: 0.55; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.5); }
+            0%, 100% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.6); }
           }
         `}</style>
       </button>
