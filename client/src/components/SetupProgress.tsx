@@ -382,7 +382,7 @@ export function SetupProgress({ steps }: { steps: ProgressStep[] }) {
           ? "0 20px 60px rgba(0,0,0,0.65), 0 0 0 0.5px rgba(111,255,233,0.10) inset, 0 1px 0 rgba(255,255,255,0.07) inset"
           : "0 4px 40px rgba(0,0,0,0.50), 0 1px 0 rgba(255,255,255,0.05) inset",
         fontFamily: FONT,
-        overflow: "hidden",
+        overflow: "visible",
         position: "relative",
         marginBottom: 24,
         transform: cardTransform,
@@ -392,37 +392,41 @@ export function SetupProgress({ steps }: { steps: ProgressStep[] }) {
     >
       <style>{CSS}</style>
 
-      {/* Floating particles */}
-      <Particles />
-
-      {/* Top rim light */}
+      {/* Decorative clipping layer — keeps particles/shimmer/glow inside card bounds
+          while allowing step circle box-shadows to overflow freely */}
       <div style={{
-        position: "absolute", top: 0, left: 0, right: 0, height: 1,
-        background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.09), transparent)",
-        pointerEvents: "none",
-      }} />
+        position: "absolute", inset: 0, borderRadius: 22,
+        overflow: "hidden", pointerEvents: "none", zIndex: 0,
+      }}>
+        {/* Floating particles */}
+        <Particles />
 
-      {/* Shimmer sweep (on hover) */}
-      {hovered && (
+        {/* Top rim light */}
         <div style={{
-          position: "absolute", top: 0, bottom: 0, left: 0,
-          width: "45%",
-          background: "linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.025) 50%, transparent 70%)",
-          animation: "sp-shimmer 1.2s ease forwards",
-          pointerEvents: "none",
-          zIndex: 1,
+          position: "absolute", top: 0, left: 0, right: 0, height: 1,
+          background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.09), transparent)",
         }} />
-      )}
 
-      {/* Ambient teal corner glow */}
-      <div style={{
-        position: "absolute", bottom: -20, right: -20, width: 120, height: 120,
-        borderRadius: "50%",
-        background: "radial-gradient(circle, rgba(111,255,233,0.09) 0%, transparent 70%)",
-        pointerEvents: "none",
-        transition: "opacity 0.4s ease",
-        opacity: hovered ? 1 : 0.5,
-      }} />
+        {/* Shimmer sweep (on hover) */}
+        {hovered && (
+          <div style={{
+            position: "absolute", top: 0, bottom: 0, left: 0,
+            width: "45%",
+            background: "linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.025) 50%, transparent 70%)",
+            animation: "sp-shimmer 1.2s ease forwards",
+            zIndex: 1,
+          }} />
+        )}
+
+        {/* Ambient teal corner glow */}
+        <div style={{
+          position: "absolute", bottom: -20, right: -20, width: 120, height: 120,
+          borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(111,255,233,0.09) 0%, transparent 70%)",
+          transition: "opacity 0.4s ease",
+          opacity: hovered ? 1 : 0.5,
+        }} />
+      </div>
 
       {/* Header */}
       <div style={{
@@ -470,8 +474,8 @@ export function SetupProgress({ steps }: { steps: ProgressStep[] }) {
         </div>
       </div>
 
-      {/* Steps row — overflow hidden prevents glow bleed from breaking page scroll */}
-      <div style={{ display: "flex", alignItems: "center", position: "relative", zIndex: 2, overflow: "hidden" }}>
+      {/* Steps row — overflow visible so circle glows are not clipped */}
+      <div style={{ display: "flex", alignItems: "center", position: "relative", zIndex: 2, overflow: "visible" }}>
         {steps.map((step, i) => {
           const state: State = step.done ? "done" : i === activeIdx ? "active" : "pending";
           return (
