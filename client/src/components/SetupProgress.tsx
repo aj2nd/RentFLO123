@@ -112,7 +112,6 @@ const CSS = `
   }
 
   .sp-card {
-    transform-style: preserve-3d;
     transition: transform 0.18s ease, box-shadow 0.18s ease;
   }
   .sp-cta-btn:hover {
@@ -221,7 +220,6 @@ function StepCircle({ state, idx, href }: { state: State; idx: number; href?: st
     width: 54, height: 54, borderRadius: "50%",
     display: "flex", alignItems: "center", justifyContent: "center",
     position: "relative",
-    transformStyle: "preserve-3d",
   };
 
   const doneStyle: CSSProperties = {
@@ -261,7 +259,7 @@ function StepCircle({ state, idx, href }: { state: State; idx: number; href?: st
       {/* Wide ambient glow behind active — pulses with circle */}
       {state === "active" && (
         <div style={{
-          position: "absolute", inset: -24, borderRadius: "50%",
+          position: "absolute", inset: -14, borderRadius: "50%",
           background: "radial-gradient(circle, rgba(111,255,233,0.55) 0%, rgba(111,255,233,0.15) 40%, transparent 70%)",
           pointerEvents: "none",
           animation: "sp-glow-ambient 2.2s ease-in-out infinite",
@@ -472,8 +470,8 @@ export function SetupProgress({ steps }: { steps: ProgressStep[] }) {
         </div>
       </div>
 
-      {/* Steps row */}
-      <div style={{ display: "flex", alignItems: "center", position: "relative", zIndex: 2 }}>
+      {/* Steps row — overflow hidden prevents glow bleed from breaking page scroll */}
+      <div style={{ display: "flex", alignItems: "center", position: "relative", zIndex: 2, overflow: "hidden" }}>
         {steps.map((step, i) => {
           const state: State = step.done ? "done" : i === activeIdx ? "active" : "pending";
           return (
