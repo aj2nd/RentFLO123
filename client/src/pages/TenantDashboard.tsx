@@ -391,7 +391,7 @@ export default function TenantDashboard() {
                     </div>
                     <div className="w-full h-2.5 bg-white/[0.07] rounded-full mb-5 overflow-hidden">
                       <div
-                        className="h-full bg-gradient-to-r from-[#6FFFE9] to-[#5DEEDB] rounded-full transition-all duration-700"
+                        className="h-full bg-[#6FFFE9] rounded-full transition-all duration-700"
                         style={{ width: `${(onboardingSteps.filter(s => s.done).length / onboardingSteps.length) * 100}%` }}
                       />
                     </div>
@@ -433,7 +433,7 @@ export default function TenantDashboard() {
                     </div>
                     <div className="w-full h-2 bg-white/[0.08] rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-gradient-to-r from-[#6FFFE9] to-[#5DEEDB] rounded-full transition-all duration-700"
+                        className="h-full bg-[#6FFFE9] rounded-full transition-all duration-700"
                         style={{ width: `${progressPercent}%` }}
                         data-testid="progress-bar-settlement"
                       />
@@ -447,7 +447,7 @@ export default function TenantDashboard() {
                   {remaining > 0 && (
                     <Button
                       onClick={() => setActiveTab("payments")}
-                      className="w-full bg-[#6FFFE9] text-black hover:bg-[#5DEEDB] font-bold text-sm h-12 rounded-full shadow-[0_4px_24px_rgba(111,255,233,0.30)]"
+                      className="w-full bg-[#6FFFE9] text-black hover:bg-[#6FFFE9]/85 font-bold text-sm h-12 rounded-full shadow-[0_4px_24px_rgba(111,255,233,0.30)]"
                       data-testid="button-pay-now-overview"
                     >
                       Pay Now — ₹{remaining.toLocaleString()}
@@ -680,7 +680,7 @@ export default function TenantDashboard() {
                           </div>
                           <div className="w-full h-1.5 bg-white/[0.07] rounded-full overflow-hidden">
                             <div
-                              className="h-full bg-gradient-to-r from-[#6FFFE9]/70 to-[#5DEEDB]/50 rounded-full transition-all"
+                              className="h-full bg-[#6FFFE9]/70 rounded-full transition-all"
                               style={{ width: `${pct}%` }}
                             />
                           </div>
@@ -846,7 +846,7 @@ export default function TenantDashboard() {
                       data-testid="input-landlord-email"
                     />
                     <Button onClick={handleSearchProperties} disabled={isSearching}
-                      className="bg-[#6FFFE9] text-black hover:bg-[#5DEEDB] rounded-full font-semibold"
+                      className="bg-[#6FFFE9] text-black hover:bg-[#6FFFE9]/85 rounded-full font-semibold"
                       data-testid="button-search-landlord">
                       {isSearching ? <Loader2 className="animate-spin" size={16} /> : <Search size={16} />}
                       <span className="ml-2">{t("tenant_search")}</span>
@@ -863,7 +863,7 @@ export default function TenantDashboard() {
                           <p className="text-zinc-500 text-xs font-mono">₹{prop.monthlyRent.toLocaleString()} / month</p>
                         </div>
                         <Button onClick={() => handleJoinProperty(prop.id)} disabled={isJoining}
-                          className="bg-[#6FFFE9] text-black hover:bg-[#5DEEDB] text-xs h-8 px-4 rounded-full font-semibold"
+                          className="bg-[#6FFFE9] text-black hover:bg-[#6FFFE9]/85 text-xs h-8 px-4 rounded-full font-semibold"
                           data-testid={`button-join-${prop.id}`}>
                           {isJoining ? <Loader2 size={14} className="animate-spin" /> : null}
                           Join Property
