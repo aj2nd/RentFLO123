@@ -1,6 +1,7 @@
 import { useProperties, useCreateProperty } from "@/hooks/use-properties";
 import { useLedgers, useTicketCounts } from "@/hooks/use-ledgers";
 import { useAuth } from "@/hooks/use-auth";
+import { useTheme } from "next-themes";
 import { Loader2, TrendingUp, Calendar, CreditCard, Wrench, CheckCircle, AlertCircle, Plus, BarChart2 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -24,6 +25,8 @@ export default function OwnerDashboard() {
     queryKey: ["/api/agreements/mine"],
   });
   const { t } = useI18n();
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme !== "light";
 
   const isVerified = currentUser?.isVerified;
 
@@ -185,12 +188,12 @@ export default function OwnerDashboard() {
                     <XAxis dataKey="month" tick={{ fill: "#52525b", fontSize: 10 }} axisLine={false} tickLine={false} />
                     <YAxis hide />
                     <Tooltip
-                      contentStyle={{ background: "#09090b", border: "1px solid rgba(111,255,233,0.2)", borderRadius: 0, fontSize: 11 }}
-                      labelStyle={{ color: "#a1a1aa" }}
+                      contentStyle={{ background: isDark ? "#09090b" : "#fff", border: isDark ? "1px solid rgba(111,255,233,0.2)" : "1px solid #e5e7eb", borderRadius: 0, fontSize: 11 }}
+                      labelStyle={{ color: isDark ? "#a1a1aa" : "#374151" }}
                       formatter={(val: number) => [`₹${val.toLocaleString()}`, ""]}
                     />
-                    <Bar dataKey="advanced" name="Advanced" fill="#3f3f46" radius={0}>
-                      {chartData.map((_, i) => <Cell key={i} fill="#27272a" />)}
+                    <Bar dataKey="advanced" name="Advanced" fill={isDark ? "#3f3f46" : "#d1d5db"} radius={0}>
+                      {chartData.map((_, i) => <Cell key={i} fill={isDark ? "#27272a" : "#e5e7eb"} />)}
                     </Bar>
                     <Bar dataKey="collected" name="Collected" radius={0}>
                       {chartData.map((entry, i) => (

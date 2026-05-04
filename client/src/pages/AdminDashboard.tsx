@@ -13,6 +13,7 @@ import { motion } from "framer-motion";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useI18n } from "@/hooks/use-i18n";
+import { useTheme } from "next-themes";
 import type { User, Payment } from "@shared/schema";
 
 function FileUpload({ onFileChange, currentValue }: { onFileChange: (dataUrl: string) => void; currentValue: string }) {
@@ -114,6 +115,9 @@ export default function AdminDashboard() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme !== "light";
 
   const isLoading = statsLoading || ledgersLoading || propsLoading;
   const chartData = stats ? [{ name: t('admin_advanced'), value: stats.totalAdvanced }, { name: t('admin_collected'), value: stats.totalCollected }] : [];
@@ -348,10 +352,14 @@ export default function AdminDashboard() {
                     <BarChart data={chartData}>
                       <XAxis dataKey="name" stroke="#52525b" fontSize={12} tickLine={false} axisLine={false} />
                       <YAxis stroke="#52525b" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `₹${v/1000}k`} />
-                      <Tooltip contentStyle={{ backgroundColor: '#000', border: '1px solid #333' }} itemStyle={{ color: '#fff' }} cursor={{ fill: 'transparent' }} />
+                      <Tooltip
+                        contentStyle={{ backgroundColor: isDark ? '#000' : '#fff', border: isDark ? '1px solid #333' : '1px solid #e5e7eb' }}
+                        itemStyle={{ color: isDark ? '#fff' : '#111' }}
+                        cursor={{ fill: 'transparent' }}
+                      />
                       <Bar dataKey="value" radius={0} barSize={60}>
                         {chartData.map((_, index) => (
-                          <Cell key={`cell-${index}`} fill={index === 0 ? '#ffffff' : '#6FFFE9'} />
+                          <Cell key={`cell-${index}`} fill={index === 0 ? (isDark ? '#ffffff' : '#374151') : '#6FFFE9'} />
                         ))}
                       </Bar>
                     </BarChart>

@@ -383,4 +383,145 @@
   .light input::placeholder, .light textarea::placeholder {
     color: hsl(var(--muted-foreground)) !important;
   }
+
+  /* ── Zinc background overrides ───────────────────────────────────────── */
+  .light .bg-zinc-800 {
+    background-color: hsl(0 0% 88%) !important;
+  }
+  .light .bg-zinc-700 {
+    background-color: hsl(0 0% 82%) !important;
+  }
+
+  /* Opacity variant overrides (Tailwind escapes slash as \/) */
+  .light .bg-zinc-950\/50,
+  .light .bg-zinc-950\/30,
+  .light .bg-zinc-950\/80 {
+    background-color: hsl(var(--card) / 0.95) !important;
+  }
+  .light .bg-zinc-900\/80,
+  .light .bg-zinc-900\/30 {
+    background-color: hsl(var(--secondary) / 0.8) !important;
+  }
+  .light .bg-black\/40,
+  .light .bg-black\/30 {
+    background-color: rgba(0, 0, 0, 0.06) !important;
+  }
+
+  /* ── Zinc text overrides ─────────────────────────────────────────────── */
+  .light .text-zinc-400 {
+    color: hsl(var(--foreground) / 0.58) !important;
+  }
+  .light .text-zinc-500 {
+    color: hsl(var(--foreground) / 0.48) !important;
+  }
+  .light .text-zinc-600 {
+    color: hsl(var(--foreground) / 0.38) !important;
+  }
+  .light .text-zinc-700 {
+    color: hsl(var(--foreground) / 0.30) !important;
+  }
+
+  /* ── Zinc border overrides ───────────────────────────────────────────── */
+  .light .border-zinc-800,
+  .light .border-zinc-700,
+  .light .border-zinc-600 {
+    border-color: hsl(var(--border)) !important;
+  }
+  .light .divide-zinc-800 > * + *,
+  .light .divide-zinc-700 > * + * {
+    border-color: hsl(var(--border)) !important;
+  }
+
+  /* ── Amber warning colours — keep readable in both modes ─────────────── */
+  .light .text-amber-200 {
+    color: hsl(40 90% 35%) !important;
+  }
+  .light .text-amber-300 {
+    color: hsl(40 90% 30%) !important;
+  }
+
+  /* ── White background elements ───────────────────────────────────────── */
+  /* bg-white used as primary action buttons should stay white (black text) */
+  /* These are intentional design choices, leave them as-is */
+
+  /* ── Input variants ──────────────────────────────────────────────────── */
+  .light .bg-white\/\[0\.05\],
+  .light .bg-white\/\[0\.06\] {
+    background-color: hsl(var(--secondary)) !important;
+  }
+  .light .border-white\/\[0\.12\] {
+    border-color: hsl(var(--border)) !important;
+  }
+
+  /* ── Table header overrides ──────────────────────────────────────────── */
+  .light thead.bg-zinc-900\/80,
+  .light .bg-zinc-900\/80 {
+    background-color: hsl(var(--secondary)) !important;
+  }
+
+  /* ── Hardcoded hex text colours → theme-aware in light mode ─────────── */
+  /* Use attribute selectors so ALL opacity variants (/50, /60, /70…) are caught */
+
+  /* Silver (#C0C0C0) — near-invisible on light backgrounds */
+  .light [class*="text-[#C0C0C0]"] {
+    color: hsl(var(--foreground) / 0.60) !important;
+  }
+  /* Light grey (#E8E8E8) — near-invisible on light backgrounds */
+  .light [class*="text-[#E8E8E8]"] {
+    color: hsl(var(--foreground) / 0.80) !important;
+  }
+  /* Pale tiffany (#9DEFE4) — washed out on light backgrounds */
+  .light [class*="text-[#9DEFE4]"] {
+    color: var(--tiffany-dim) !important;
+    opacity: 1 !important;
+  }
+  /* Bright tiffany (#6FFFE9) — uses the dark-mode teal CSS var in light */
+  .light [class*="text-[#6FFFE9]"] {
+    color: var(--tiffany) !important;
+    opacity: 1 !important;
+  }
+
+  /* ── Hardcoded hex border / background chip colours ─────────────────── */
+  .light [class*="border-[#C0C0C0]"] {
+    border-color: hsl(var(--border)) !important;
+  }
+  .light [class*="bg-[#C0C0C0]"] {
+    background-color: hsl(var(--secondary)) !important;
+  }
+
+  /* ── Recharts chart tooltip ──────────────────────────────────────────── */
+  .light .recharts-tooltip-wrapper .recharts-default-tooltip {
+    background-color: hsl(var(--card)) !important;
+    border-color: hsl(var(--border)) !important;
+    color: hsl(var(--foreground)) !important;
+  }
+  .light .recharts-tooltip-item {
+    color: hsl(var(--foreground)) !important;
+  }
+
+  /* ── text-white opacity variants → visible foreground in light ────────── */
+  /* e.g. text-white/30, text-white/80, text-white/[0.04] — all invisible in light */
+  .light [class*="text-white/"] {
+    color: hsl(var(--foreground) / 0.55) !important;
+  }
+
+  /* ── border-white opacity variants → theme border in light ──────────── */
+  /* e.g. border-white/[0.06], border-white/10, border-white/20 */
+  .light [class*="border-white/"] {
+    border-color: hsl(var(--border)) !important;
+  }
+
+  /* ── Very low-opacity white backgrounds → secondary in light ─────────── */
+  /* e.g. bg-white/[0.03], bg-white/[0.05], bg-white/[0.08] — nearly invisible */
+  .light [class*="bg-white/[0."] {
+    background-color: hsl(var(--secondary) / 0.65) !important;
+  }
+
+  /* ── bg-zinc-950/60, bg-zinc-950/50 (opacity variant) ───────────────── */
+  .light [class*="bg-zinc-950/"] {
+    background-color: hsl(var(--card)) !important;
+  }
+  .light [class*="bg-zinc-900/"] {
+    background-color: hsl(var(--secondary) / 0.8) !important;
+  }
 }

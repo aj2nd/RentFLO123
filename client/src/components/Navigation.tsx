@@ -89,15 +89,7 @@ export function Navigation() {
             <Home size={14} style={{ color: "#6FFFE9" }} />
           </div>
           <div>
-            <span
-              className="text-sm font-bold tracking-tight"
-              style={{
-                background: "linear-gradient(135deg, #C0C0C0 0%, #F0F0F0 50%, #C0C0C0 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-              }}
-            >
+            <span className="text-sm font-bold tracking-tight silver-text">
               RentFLO
             </span>
             {user?.role && (
@@ -248,16 +240,16 @@ function NavItem({ href, icon, label, active, badge, onNavigate }: {
       className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 whitespace-nowrap"
       style={active ? {
         background: "rgba(111,255,233,0.10)",
-        color: "#6FFFE9",
+        color: "var(--tiffany)",
         border: "1px solid rgba(111,255,233,0.22)",
         boxShadow: "inset 0 1px 0 rgba(111,255,233,0.12)",
       } : {
-        color: "rgba(192,192,192,0.50)",
+        color: "var(--nav-text)",
         border: "1px solid transparent",
       }}
       data-testid={`nav-${href.replace(/\//g, "-").slice(1) || "home"}`}
     >
-      <span className="flex-shrink-0" style={{ color: active ? "#6FFFE9" : "rgba(192,192,192,0.45)" }}>
+      <span className="flex-shrink-0" style={{ color: active ? "var(--tiffany)" : "var(--nav-text-dim)" }}>
         {icon}
       </span>
       <span className="text-sm font-medium">{label}</span>

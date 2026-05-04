@@ -57,6 +57,11 @@ Preferred communication style: Simple, everyday language.
 - **Mobile UX**: Safe-area-insets, 44px min touch targets, tap-highlight disabled, user-select:none on interactive elements
 
 ### Recent Changes (May 2026)
+- **Light Mode Fix**: Comprehensive light mode coloring fixed across all pages
+  - `client/src/index.css` `.light` section extended with: `bg-zinc-800/700` overrides, opacity-variant selectors (`bg-zinc-950/X`, `bg-zinc-900/X`), `text-zinc-400/500/600/700` dimming, attribute selectors catching all hardcoded hex colors (`#C0C0C0`, `#E8E8E8`, `#9DEFE4`, `#6FFFE9`) and all their opacity variants, `text-white/X` opacity variants, `border-white/X` opacity variants, very-transparent `bg-white/[0.X` backgrounds, Recharts tooltip overrides
+  - `client/src/components/Navigation.tsx`: NavItem inactive color changed from hardcoded `rgba(192,192,192,0.50)` to `var(--nav-text)`; icon inactive from `rgba(192,192,192,0.45)` to `var(--nav-text-dim)`; brand "RentFLO" text replaced with `silver-text` class (has dark gradient in light mode)
+  - `client/src/pages/AdminDashboard.tsx`: Chart tooltip and bar fill colors now theme-aware via `useTheme()` — white bar replaces with dark-grey in light mode
+  - `client/src/pages/OwnerDashboard.tsx`: Chart tooltip and dark-zinc bar fills now theme-aware via `useTheme()` — uses light-grey bars in light mode
 - **Push Notifications**: Full Web Push API implementation
   - `pushSubscriptions` and `notifications` tables added to schema
   - `server/push.ts`: VAPID key auto-generation on first run, `sendPushToUser()` and `createNotification()` helpers
