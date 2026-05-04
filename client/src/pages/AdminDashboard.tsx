@@ -231,7 +231,7 @@ export default function AdminDashboard() {
                       <td className="p-4"><span className="text-xs bg-zinc-800 px-2 py-1">{user.role || 'NO ROLE'}</span></td>
                       <td className="p-4 text-center">
                         {user.isVerified ? (
-                          <span className="inline-flex items-center gap-1 text-xs bg-green-500/20 text-green-400 border border-green-500/30 px-2 py-1">
+                          <span className="inline-flex items-center gap-1 text-xs bg-[#6FFFE9]/20 text-[#6FFFE9] border border-[#6FFFE9]/30 px-2 py-1">
                             <CheckCircle size={12} />{t('admin_verified')}
                           </span>
                         ) : user.panNumber ? (

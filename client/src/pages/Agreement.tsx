@@ -309,7 +309,7 @@ export default function AgreementPage() {
             <div className="border border-[#6FFFE9]/35 p-6 text-[#9DEFE4] text-sm">
               No property found. Please complete your property setup first.
               <Button
-                className="mt-4 h-10 bg-[#6FFFE9] text-black hover:bg-[#8CFFF0] font-bold rounded-none block"
+                className="mt-4 h-10 bg-[#6FFFE9] text-black hover:bg-[#6FFFE9]/85 font-bold rounded-none block"
                 onClick={() => setLocation("/setup")}
               >
                 Go to Setup
@@ -334,7 +334,7 @@ export default function AgreementPage() {
               </div>
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button
-                  className="flex-1 h-12 bg-[#6FFFE9] text-black hover:bg-[#8CFFF0] font-bold rounded-none"
+                  className="flex-1 h-12 bg-[#6FFFE9] text-black hover:bg-[#6FFFE9]/85 font-bold rounded-none"
                   onClick={() => setLocation(dashboardPath)}
                   data-testid="button-go-to-dashboard"
                 >
