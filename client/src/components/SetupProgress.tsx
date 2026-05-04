@@ -13,19 +13,25 @@ const CSS = `
   }
   @keyframes sp-glow-pulse {
     0%,100% {
-      box-shadow: 0 0 0 0 rgba(111,255,233,0.08),
-                  0 0 18px rgba(111,255,233,0.12),
-                  inset 0 0 0 1.5px rgba(111,255,233,0.65),
+      box-shadow: 0 0 0 0 rgba(111,255,233,0.0),
+                  0 0 6px rgba(111,255,233,0.05),
+                  inset 0 0 0 1.5px rgba(111,255,233,0.30),
                   inset 0 -4px 12px rgba(0,0,0,0.4),
-                  inset 0 2px 4px rgba(111,255,233,0.08);
+                  inset 0 2px 4px rgba(111,255,233,0.04);
     }
     50% {
-      box-shadow: 0 0 24px rgba(111,255,233,0.30),
-                  0 0 44px rgba(111,255,233,0.14),
-                  inset 0 0 0 1.5px rgba(111,255,233,0.95),
-                  inset 0 -4px 12px rgba(0,0,0,0.4),
-                  inset 0 2px 6px rgba(111,255,233,0.18);
+      box-shadow: 0 0 0 6px rgba(111,255,233,0.12),
+                  0 0 36px rgba(111,255,233,0.55),
+                  0 0 70px rgba(111,255,233,0.25),
+                  inset 0 0 0 2px rgba(111,255,233,1.0),
+                  inset 0 -4px 12px rgba(0,0,0,0.3),
+                  inset 0 2px 10px rgba(111,255,233,0.30);
     }
+  }
+
+  @keyframes sp-glow-ambient {
+    0%,100% { opacity: 0.08; transform: scale(1);   }
+    50%     { opacity: 0.55; transform: scale(1.35); }
   }
   @keyframes sp-fade-up {
     from { opacity: 0; transform: translateY(7px); }
@@ -33,16 +39,6 @@ const CSS = `
   }
   @keyframes sp-bar {
     from { width: 0%; }
-  }
-
-  /* 3D Orbit ring around active step */
-  @keyframes sp-orbit {
-    from { transform: rotateZ(0deg) rotateX(72deg); }
-    to   { transform: rotateZ(360deg) rotateX(72deg); }
-  }
-  @keyframes sp-orbit-reverse {
-    from { transform: rotateZ(0deg) rotateX(-65deg); }
-    to   { transform: rotateZ(-360deg) rotateX(-65deg); }
   }
 
   /* 3D flip for done transition */
@@ -192,31 +188,8 @@ function Particles() {
   );
 }
 
-/* ─── 3D Orbit rings (active step only) ─── */
-function OrbitRings() {
-  const ring = (anim: string, color: string, opacity: number) => (
-    <div style={{
-      position: "absolute",
-      inset: -10,
-      borderRadius: "50%",
-      border: `1px solid ${color}`,
-      opacity,
-      animation: anim,
-      transformOrigin: "center center",
-      transformStyle: "preserve-3d",
-      pointerEvents: "none",
-    }} />
-  );
-  return (
-    <div style={{ position: "absolute", inset: -10, transformStyle: "preserve-3d" }}>
-      {ring(`sp-orbit 2.8s linear infinite`, TEAL, 0.55)}
-      {ring(`sp-orbit-reverse 4.2s linear infinite`, TEAL, 0.28)}
-    </div>
-  );
-}
-
 /* ─── Step circle ─── */
-function StepCircle({ state, idx }: { state: State; idx: number }) {
+function StepCircle({ state, idx, href }: { state: State; idx: number; href?: string }) {
   const Icon = ICONS[idx] ?? ICONS[0];
 
   /* 3D sphere-like shading */
@@ -263,31 +236,39 @@ function StepCircle({ state, idx }: { state: State; idx: number }) {
 
   return (
     <div style={{ position: "relative", zIndex: 2, flexShrink: 0 }}>
-      {/* Wide ambient glow behind active */}
+      {/* Wide ambient glow behind active — pulses with circle */}
       {state === "active" && (
         <div style={{
-          position: "absolute", inset: -20, borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(111,255,233,0.16) 0%, transparent 68%)",
+          position: "absolute", inset: -24, borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(111,255,233,0.55) 0%, rgba(111,255,233,0.15) 40%, transparent 70%)",
           pointerEvents: "none",
-          animation: "sp-glow-pulse 3.0s ease-in-out infinite",
+          animation: "sp-glow-ambient 2.2s ease-in-out infinite",
         }} />
       )}
 
-      {/* Orbit rings */}
-      {state === "active" && <OrbitRings />}
-
-      <div style={state === "done" ? doneStyle : state === "active" ? activeStyle : pendingStyle}>
-        {/* Specular top-left highlight for 3D sphere feel */}
-        <div style={{
-          position: "absolute", top: 6, left: 7, width: 14, height: 8,
-          borderRadius: "50%",
-          background: "rgba(255,255,255,0.25)",
-          filter: "blur(3px)",
-          pointerEvents: "none",
-          opacity: state === "pending" ? 0.4 : 0.7,
-        }} />
-        {state === "done" ? <CheckmarkIcon /> : <Icon color={state === "active" ? TEAL : "rgba(255,255,255,0.20)"} />}
-      </div>
+      {href ? (
+        <Link href={href} style={{ display: "block", borderRadius: "50%", textDecoration: "none" }}>
+          <div style={{ ...(state === "done" ? doneStyle : state === "active" ? activeStyle : pendingStyle), cursor: "pointer" }}>
+            <div style={{
+              position: "absolute", top: 6, left: 7, width: 14, height: 8,
+              borderRadius: "50%", background: "rgba(255,255,255,0.25)",
+              filter: "blur(3px)", pointerEvents: "none",
+              opacity: state === "pending" ? 0.4 : 0.7,
+            }} />
+            {state === "done" ? <CheckmarkIcon /> : <Icon color={state === "active" ? TEAL : "rgba(255,255,255,0.20)"} />}
+          </div>
+        </Link>
+      ) : (
+        <div style={state === "done" ? doneStyle : state === "active" ? activeStyle : pendingStyle}>
+          <div style={{
+            position: "absolute", top: 6, left: 7, width: 14, height: 8,
+            borderRadius: "50%", background: "rgba(255,255,255,0.25)",
+            filter: "blur(3px)", pointerEvents: "none",
+            opacity: state === "pending" ? 0.4 : 0.7,
+          }} />
+          {state === "done" ? <CheckmarkIcon /> : <Icon color={state === "active" ? TEAL : "rgba(255,255,255,0.20)"} />}
+        </div>
+      )}
     </div>
   );
 }
@@ -478,7 +459,7 @@ export function SetupProgress({ steps }: { steps: ProgressStep[] }) {
               <div style={{
                 display: "flex", flexDirection: "column", alignItems: "center", gap: 10,
               }}>
-                <StepCircle state={state} idx={i} />
+                <StepCircle state={state} idx={i} href={step.href} />
 
                 {/* Label + badge */}
                 <div style={{
