@@ -2,7 +2,7 @@ import { Link, useLocation } from "wouter";
 import { useEffect } from "react";
 import {
   LayoutDashboard, Home, LogOut, Wallet, Wrench, Receipt,
-  Loader2, ShieldCheck, FileSignature, ChevronRight, MessageSquare, Menu, X,
+  Loader2, ShieldCheck, FileSignature, ChevronRight, MessageSquare, Menu, X, Bell,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
@@ -59,20 +59,21 @@ export function Navigation() {
         style={{
           top: 0,
           height: "48px",
-          zIndex: 40,
+          zIndex: 35,
           background: "var(--nav-bg)",
           backdropFilter: "blur(24px) saturate(200%)",
           WebkitBackdropFilter: "blur(24px) saturate(200%)",
           borderBottom: "1px solid var(--nav-border)",
           boxShadow: "0 1px 0 var(--border-accent-dim)",
+          pointerEvents: "auto",
         }}
       >
         <button
           onClick={toggle}
           data-testid="button-mobile-menu"
           aria-label="Toggle menu"
-          className="flex items-center justify-center w-9 h-9 transition-colors"
-          style={{ color: "var(--nav-text)" }}
+          className="flex items-center justify-center w-10 h-10"
+          style={{ color: "var(--nav-text)", touchAction: "manipulation" }}
         >
           {collapsed ? <Menu size={20} /> : <X size={20} />}
         </button>
@@ -85,17 +86,19 @@ export function Navigation() {
             <Home size={11} style={{ color: "#6FFFE9" }} />
           </div>
           <span className="text-sm font-bold tracking-tight silver-text">RentFLO</span>
-          {user?.role && (
-            <span className="text-[9px] uppercase tracking-widest font-medium" style={{ color: "var(--tiffany-dim)", opacity: 0.7 }}>
-              · {user.role.charAt(0) + user.role.slice(1).toLowerCase()}
-            </span>
-          )}
         </div>
 
-        <div className="flex items-center gap-0.5">
-          <NotificationBell />
-          <ThemeToggle />
-        </div>
+        <Link
+          href="/notifications"
+          className="relative flex items-center justify-center w-10 h-10"
+          style={{ color: "var(--nav-text)", touchAction: "manipulation" }}
+          data-testid="link-mobile-notifications"
+        >
+          <Bell size={19} />
+          {unreadCount > 0 && (
+            <span className="absolute top-2 right-2 w-2 h-2 rounded-full" style={{ background: "#6FFFE9" }} />
+          )}
+        </Link>
       </div>
 
       {/* Backdrop overlay — mobile only, tap to close */}
