@@ -53,6 +53,13 @@
   --surface-card: rgba(9, 9, 9, 0.95);
   --border-subtle: rgba(255, 255, 255, 0.06);
   --border-accent-dim: rgba(111, 255, 233, 0.20);
+
+  /* Mobile top bar height — used in height calculations */
+  --topbar-h: 48px;
+}
+
+@media (min-width: 768px) {
+  :root { --topbar-h: 0px; }
 }
 
 /* ── Light mode overrides ────────────────────────────────────────────── */

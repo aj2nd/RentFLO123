@@ -2,7 +2,7 @@ import { Link, useLocation } from "wouter";
 import { useEffect } from "react";
 import {
   LayoutDashboard, Home, LogOut, Wallet, Wrench, Receipt,
-  Loader2, ShieldCheck, FileSignature, ChevronRight, MessageSquare,
+  Loader2, ShieldCheck, FileSignature, ChevronRight, MessageSquare, Menu, X,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
@@ -53,11 +53,56 @@ export function Navigation() {
 
   return (
     <>
+      {/* ── Mobile top bar — visible only on mobile (md:hidden) ── */}
+      <div
+        className="fixed left-0 right-0 md:hidden flex items-center justify-between px-3"
+        style={{
+          top: 0,
+          height: "48px",
+          zIndex: 40,
+          background: "var(--nav-bg)",
+          backdropFilter: "blur(24px) saturate(200%)",
+          WebkitBackdropFilter: "blur(24px) saturate(200%)",
+          borderBottom: "1px solid var(--nav-border)",
+          boxShadow: "0 1px 0 var(--border-accent-dim)",
+        }}
+      >
+        <button
+          onClick={toggle}
+          data-testid="button-mobile-menu"
+          aria-label="Toggle menu"
+          className="flex items-center justify-center w-9 h-9 transition-colors"
+          style={{ color: "var(--nav-text)" }}
+        >
+          {collapsed ? <Menu size={20} /> : <X size={20} />}
+        </button>
+
+        <div className="flex items-center gap-2">
+          <div
+            className="w-5 h-5 flex items-center justify-center flex-shrink-0"
+            style={{ background: "rgba(111,255,233,0.12)", border: "1px solid rgba(111,255,233,0.25)" }}
+          >
+            <Home size={11} style={{ color: "#6FFFE9" }} />
+          </div>
+          <span className="text-sm font-bold tracking-tight silver-text">RentFLO</span>
+          {user?.role && (
+            <span className="text-[9px] uppercase tracking-widest font-medium" style={{ color: "var(--tiffany-dim)", opacity: 0.7 }}>
+              · {user.role.charAt(0) + user.role.slice(1).toLowerCase()}
+            </span>
+          )}
+        </div>
+
+        <div className="flex items-center gap-0.5">
+          <NotificationBell />
+          <ThemeToggle />
+        </div>
+      </div>
+
       {/* Backdrop overlay — mobile only, tap to close */}
       {!collapsed && (
         <div
-          className="fixed inset-0 z-40 md:hidden"
-          style={{ background: "rgba(0,0,0,0.45)", backdropFilter: "blur(4px)" }}
+          className="fixed left-0 right-0 bottom-0 z-40 md:hidden"
+          style={{ top: "var(--topbar-h)", background: "rgba(0,0,0,0.45)", backdropFilter: "blur(4px)" }}
           onClick={toggle}
           aria-label="Close sidebar"
         />
@@ -65,10 +110,10 @@ export function Navigation() {
 
       {/* ── Sidebar panel ── */}
       <nav
-        className="fixed left-0 top-0 flex flex-col z-50 overflow-hidden transition-all duration-300 ease-in-out"
+        className="fixed left-0 flex flex-col z-50 overflow-hidden transition-all duration-300 ease-in-out"
         style={{
-          paddingTop: "env(safe-area-inset-top, 0px)",
-          height: "calc(100dvh - 64px - env(safe-area-inset-bottom, 0px))",
+          top: "var(--topbar-h)",
+          height: "calc(100dvh - var(--topbar-h) - 64px - env(safe-area-inset-bottom, 0px))",
           width: collapsed ? "0px" : "256px",
           background: "var(--nav-bg)",
           backdropFilter: "blur(40px) saturate(200%)",
@@ -170,11 +215,12 @@ export function Navigation() {
         </div>
       </nav>
 
-      {/* ── Edge grip — three micro-dots on left edge, shown when collapsed ── */}
+      {/* ── Edge grip — desktop only, shown when collapsed ── */}
       <button
         onClick={toggle}
         data-testid="button-expand-sidebar"
         title="Open sidebar"
+        className="hidden md:flex flex-col items-center justify-center"
         style={{
           position: "fixed",
           top: "50%",
@@ -184,6 +230,7 @@ export function Navigation() {
           width: "18px",
           height: "52px",
           padding: 0,
+          gap: "6px",
           background: "rgba(111,255,233,0.07)",
           border: "1px solid rgba(111,255,233,0.22)",
           borderLeft: "none",
@@ -193,11 +240,6 @@ export function Navigation() {
           opacity: collapsed ? 1 : 0,
           pointerEvents: collapsed ? "auto" : "none",
           transition: "opacity 0.3s, left 0.3s",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "6px",
         }}
       >
         {[0, 1, 2].map(i => (

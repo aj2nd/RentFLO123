@@ -38,6 +38,7 @@ function SidebarContent({ children }: { children: React.ReactNode }) {
   return (
     <div
       className={`min-h-screen transition-all duration-300 ease-in-out ${!collapsed ? 'md:pl-64' : ''}`}
+      style={{ paddingTop: "var(--topbar-h)" }}
     >
       {children}
     </div>
