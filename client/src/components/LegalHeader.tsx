@@ -20,10 +20,7 @@ export function LegalHeader() {
         <img
           src="/logo-icon.png"
           alt="RentFLO"
-          style={{
-            width: 40, height: 40, objectFit: "contain",
-            filter: isDark ? "none" : "brightness(0.55) contrast(1.5) saturate(1.4)",
-          }}
+          style={{ width: 40, height: 40, objectFit: "contain" }}
         />
         <img
           src="/logo-wordmark-transparent.png"
@@ -32,7 +29,7 @@ export function LegalHeader() {
             height: 32, objectFit: "contain",
             filter: isDark
               ? "drop-shadow(0 0 8px rgba(192,192,192,0.12))"
-              : "invert(1) drop-shadow(0 0 6px rgba(0,0,0,0.08))",
+              : "invert(1)",
           }}
         />
       </Link>

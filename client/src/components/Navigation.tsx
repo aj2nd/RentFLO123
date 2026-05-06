@@ -89,10 +89,7 @@ export function Navigation() {
           <img
             src="/logo-icon.png"
             alt="RentFLO"
-            style={{
-              width: 40, height: 40, objectFit: "contain", flexShrink: 0,
-              filter: isDark ? "none" : "brightness(0.55) contrast(1.5) saturate(1.4)",
-            }}
+            style={{ width: 40, height: 40, objectFit: "contain", flexShrink: 0 }}
           />
           <img
             src="/logo-wordmark-transparent.png"
