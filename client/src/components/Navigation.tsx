@@ -94,10 +94,10 @@ export function Navigation() {
               height: 40,
               objectFit: "contain",
               flexShrink: 0,
-              mixBlendMode: isDark ? "screen" : "multiply",
+              mixBlendMode: "screen",
               filter: isDark
                 ? "contrast(2.2) brightness(0.88)"
-                : "contrast(1.8) brightness(0.75)",
+                : "contrast(2.0) brightness(0.80)",
               WebkitMaskImage: "radial-gradient(circle at 50% 50%, black 58%, transparent 76%)",
               maskImage: "radial-gradient(circle at 50% 50%, black 58%, transparent 76%)",
             }}
