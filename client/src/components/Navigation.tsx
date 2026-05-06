@@ -2,7 +2,7 @@ import { Link, useLocation } from "wouter";
 import { useEffect } from "react";
 import {
   LayoutDashboard, Home, LogOut, Wallet, Wrench, Receipt,
-  Loader2, ShieldCheck, FileSignature, ChevronRight, MessageSquare, Menu, X, Bell,
+  Loader2, ShieldCheck, FileSignature, ChevronRight, MessageSquare, Menu, X,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
@@ -116,21 +116,10 @@ export function Navigation() {
           />
         </div>
 
-        {/* Right: bell link */}
-        <Link
-          href="/notifications"
-          className="relative flex items-center justify-center flex-shrink-0"
-          style={{ color: "var(--nav-text)", touchAction: "manipulation", width: 44, height: 44 }}
-          data-testid="link-mobile-notifications"
-        >
-          <Bell size={20} />
-          {unreadCount > 0 && (
-            <span
-              className="absolute rounded-full"
-              style={{ top: 10, right: 10, width: 7, height: 7, background: "#6FFFE9", boxShadow: "0 0 6px rgba(111,255,233,0.8)" }}
-            />
-          )}
-        </Link>
+        {/* Right: theme toggle */}
+        <div className="flex items-center justify-center flex-shrink-0" style={{ width: 44, height: 44 }}>
+          <ThemeToggle />
+        </div>
       </div>
 
       {/* Backdrop overlay — mobile only, tap to close */}
