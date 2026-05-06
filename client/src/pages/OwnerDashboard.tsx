@@ -494,18 +494,22 @@ export default function OwnerDashboard() {
         {/* ── Hero payout banner ── */}
         <div className="mb-8 relative overflow-hidden" style={{
           background: latestPayment
-            ? "linear-gradient(135deg, rgba(111,255,233,0.07) 0%, rgba(111,255,233,0.02) 50%, rgba(0,0,0,0) 100%)"
+            ? isDark
+              ? "linear-gradient(135deg, rgba(111,255,233,0.07) 0%, rgba(111,255,233,0.02) 50%, transparent 100%)"
+              : "linear-gradient(135deg, rgba(0,150,136,0.06) 0%, rgba(0,150,136,0.02) 50%, transparent 100%)"
             : "var(--surface-card)",
           border: latestPayment
-            ? "1px solid rgba(111,255,233,0.28)"
+            ? isDark ? "1px solid rgba(111,255,233,0.28)" : "1px solid rgba(0,150,136,0.30)"
             : "1px solid var(--border-subtle)",
           padding: "32px 32px 28px",
           boxShadow: latestPayment
-            ? "0 0 60px rgba(111,255,233,0.07), 0 8px 40px rgba(0,0,0,0.28)"
-            : "0 2px 12px rgba(0,0,0,0.18)",
+            ? isDark
+              ? "0 0 60px rgba(111,255,233,0.07), 0 8px 40px rgba(0,0,0,0.28)"
+              : "0 4px 24px rgba(0,0,0,0.10)"
+            : "0 2px 12px rgba(0,0,0,0.08)",
         }}>
           {/* Ambient glow top-right */}
-          {latestPayment && (
+          {latestPayment && isDark && (
             <div style={{
               position: "absolute", top: -40, right: -40, width: 220, height: 220, borderRadius: "50%",
               background: "radial-gradient(circle, rgba(111,255,233,0.10) 0%, transparent 65%)",
@@ -517,13 +521,19 @@ export default function OwnerDashboard() {
             <>
               <div className="flex items-start justify-between gap-4 flex-wrap">
                 <div>
-                  <p style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(111,255,233,0.65)", marginBottom: 10 }}>
+                  <p style={{
+                    fontSize: 10, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 10,
+                    color: isDark ? "rgba(111,255,233,0.65)" : "var(--tiffany)",
+                  }}>
                     LAST PAYOUT
                   </p>
                   <p
                     className="font-display"
                     data-testid="text-rent-credited"
-                    style={{ fontSize: "clamp(1.4rem, 4vw, 2.2rem)", fontWeight: 700, letterSpacing: "-0.02em", color: "rgba(255,255,255,0.85)", marginBottom: 6 }}
+                    style={{
+                      fontSize: "clamp(1.4rem, 4vw, 2.2rem)", fontWeight: 700, letterSpacing: "-0.02em", marginBottom: 6,
+                      color: isDark ? "rgba(255,255,255,0.85)" : "rgba(0,0,0,0.88)",
+                    }}
                   >
                     {t('owner_rent_credited')}
                   </p>
@@ -535,27 +545,31 @@ export default function OwnerDashboard() {
                       fontWeight: 700,
                       letterSpacing: "-0.03em",
                       lineHeight: 1,
-                      color: "#6FFFE9",
+                      color: isDark ? "#6FFFE9" : "#007a6e",
                     }}
                   >
                     ₹{latestPayment.amountAdvanced.toLocaleString()}
                   </p>
                   <div className="flex items-center gap-2 mt-4">
-                    <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#6FFFE9", display: "inline-block", boxShadow: "0 0 6px rgba(111,255,233,0.8)" }} />
+                    <span style={{
+                      width: 6, height: 6, borderRadius: "50%", display: "inline-block",
+                      background: isDark ? "#6FFFE9" : "#007a6e",
+                      boxShadow: isDark ? "0 0 6px rgba(111,255,233,0.8)" : "none",
+                    }} />
                     <span style={{ fontSize: 12, color: "var(--nav-text-dim)" }}>
                       {t('owner_credited_on')} {new Date(latestPayment.updatedAt || latestPayment.createdAt!).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}
                     </span>
                   </div>
                 </div>
                 <div style={{
-                  background: "rgba(111,255,233,0.06)",
-                  border: "1px solid rgba(111,255,233,0.20)",
+                  background: isDark ? "rgba(111,255,233,0.06)" : "rgba(0,150,136,0.07)",
+                  border: isDark ? "1px solid rgba(111,255,233,0.20)" : "1px solid rgba(0,150,136,0.22)",
                   padding: "12px 18px",
                   alignSelf: "flex-start",
                 }}>
                   <StatusPill status={latestPayment.status} />
                   <p style={{ fontSize: 11, color: "var(--nav-text-dim)", marginTop: 8 }}>
-                    Collected: <span style={{ color: "#6FFFE9", fontWeight: 700 }}>₹{latestPayment.amountCollected.toLocaleString()}</span>
+                    Collected: <span style={{ color: isDark ? "#6FFFE9" : "#007a6e", fontWeight: 700 }}>₹{latestPayment.amountCollected.toLocaleString()}</span>
                   </p>
                 </div>
               </div>
