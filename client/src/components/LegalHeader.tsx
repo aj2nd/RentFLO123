@@ -17,21 +17,32 @@ export function LegalHeader() {
         <span className="text-sm font-medium uppercase tracking-wider" style={{ fontFamily: 'Inter, sans-serif' }}>Back to Home</span>
       </Link>
       <Link href="/" className="flex items-center gap-3" data-testid="link-legal-logo">
-        <img
-          src="/logo-icon.jpeg"
-          alt="RentFLO"
-          style={{
-            width: 40,
-            height: 40,
-            objectFit: "contain",
-            mixBlendMode: "screen",
-            filter: isDark
-              ? "contrast(2.2) brightness(0.88)"
-              : "contrast(2.0) brightness(0.80)",
-            WebkitMaskImage: "radial-gradient(circle at 50% 50%, black 58%, transparent 76%)",
-            maskImage: "radial-gradient(circle at 50% 50%, black 58%, transparent 76%)",
-          }}
-        />
+        <span style={{
+          display: "inline-flex", alignItems: "center", justifyContent: "center",
+          width: 40, height: 40, borderRadius: "50%", flexShrink: 0,
+          background: isDark ? "transparent" : "#111111",
+          overflow: isDark ? "visible" : "hidden",
+        }}>
+          <img
+            src="/logo-icon.jpeg"
+            alt="RentFLO"
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "contain",
+              mixBlendMode: "screen",
+              filter: isDark
+                ? "contrast(2.2) brightness(0.88)"
+                : "contrast(2.2) brightness(0.90)",
+              WebkitMaskImage: isDark
+                ? "radial-gradient(circle at 50% 50%, black 58%, transparent 76%)"
+                : "none",
+              maskImage: isDark
+                ? "radial-gradient(circle at 50% 50%, black 58%, transparent 76%)"
+                : "none",
+            }}
+          />
+        </span>
         <img
           src="/logo-wordmark-transparent.png"
           alt="RentFLO"
