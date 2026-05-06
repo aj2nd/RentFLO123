@@ -86,32 +86,11 @@ export function Navigation() {
 
         {/* Center: logo icon + wordmark — absolutely centered */}
         <div className="flex-1 flex items-center justify-center gap-2 overflow-hidden">
-          <span style={{
-            display: "inline-flex", alignItems: "center", justifyContent: "center",
-            width: 40, height: 40, borderRadius: "50%", flexShrink: 0,
-            background: isDark ? "transparent" : "#111111",
-            overflow: isDark ? "visible" : "hidden",
-          }}>
-            <img
-              src="/logo-icon.jpeg"
-              alt="RentFLO"
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "contain",
-                mixBlendMode: "screen",
-                filter: isDark
-                  ? "contrast(2.2) brightness(0.88)"
-                  : "contrast(2.2) brightness(0.90)",
-                WebkitMaskImage: isDark
-                  ? "radial-gradient(circle at 50% 50%, black 58%, transparent 76%)"
-                  : "none",
-                maskImage: isDark
-                  ? "radial-gradient(circle at 50% 50%, black 58%, transparent 76%)"
-                  : "none",
-              }}
-            />
-          </span>
+          <img
+            src="/logo-icon.png"
+            alt="RentFLO"
+            style={{ width: 40, height: 40, objectFit: "contain", flexShrink: 0 }}
+          />
           <img
             src="/logo-wordmark-transparent.png"
             alt="RentFLO"

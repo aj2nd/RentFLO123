@@ -92,7 +92,7 @@
         text-decoration: none;
       }
 
-      /* Logo icon wrapper — becomes a dark circle in light mode */
+      /* Logo icon wrapper */
       .logo-img-wrap {
         display: inline-flex;
         align-items: center;
@@ -100,13 +100,7 @@
         flex-shrink: 0;
         width: 133px;
         height: 133px;
-        border-radius: 50%;
-        transition: width 0.4s ease, height 0.4s ease, background 0.4s ease;
-      }
-
-      html.light .logo-img-wrap {
-        background: #111111;
-        overflow: hidden;
+        transition: width 0.4s ease, height 0.4s ease;
       }
 
       .i18n-header.glass .logo-img-wrap {
@@ -118,17 +112,6 @@
         width: 100%;
         height: 100%;
         object-fit: contain;
-        mix-blend-mode: screen;
-        filter: contrast(2.2) brightness(0.88);
-        -webkit-mask-image: radial-gradient(circle at 50% 50%, black 60%, transparent 78%);
-        mask-image: radial-gradient(circle at 50% 50%, black 60%, transparent 78%);
-      }
-
-      html.light .i18n-header .logo-img {
-        mix-blend-mode: screen;
-        filter: contrast(2.2) brightness(0.90);
-        -webkit-mask-image: none;
-        mask-image: none;
       }
 
       .i18n-header .logo-wordmark {
@@ -326,6 +309,10 @@
           width: 82px;
           height: 82px;
         }
+        .i18n-header.glass .logo-img-wrap {
+          width: 52px;
+          height: 52px;
+        }
         .i18n-header .logo-wordmark {
           height: 61px;
         }
@@ -342,7 +329,7 @@
     <header class="i18n-header" data-testid="header-i18n">
       <a href="/" class="logo-left">
         <span class="logo-img-wrap">
-          <img src="/logo-icon.jpeg" alt="RentFLO" class="logo-img" data-testid="logo-img" />
+          <img src="/logo-icon.png" alt="RentFLO" class="logo-img" data-testid="logo-img" />
         </span>
       </a>
       <a href="/" class="logo-center">
@@ -377,7 +364,7 @@
 
     <div id="root">
       <div id="splash-screen" style="position:fixed;inset:0;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:99999;transition:opacity 0.3s ease-out;">
-        <img src="/logo-icon.jpeg" alt="RentFLO" style="width:100px;height:100px;object-fit:contain;margin-bottom:20px;animation:splashPulse 1.5s ease-in-out infinite;" />
+        <img src="/logo-icon.png" alt="RentFLO" style="width:100px;height:100px;object-fit:contain;margin-bottom:20px;animation:splashPulse 1.5s ease-in-out infinite;" />
         <div style="color:#e0e0e0;font-family:'Inter',sans-serif;font-size:26px;font-weight:600;letter-spacing:-0.5px;">RentFLO</div>
         <div style="color:#6fffe9;font-family:'Inter',sans-serif;font-size:11px;font-weight:500;margin-top:10px;text-transform:uppercase;letter-spacing:3px;opacity:0.7;">Loading</div>
       </div>
