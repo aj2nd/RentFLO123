@@ -55,7 +55,7 @@
   --border-accent-dim: rgba(111, 255, 233, 0.20);
 
   /* Mobile top bar height — used in height calculations */
-  --topbar-h: 48px;
+  --topbar-h: 60px;
 }
 
 @media (min-width: 768px) {

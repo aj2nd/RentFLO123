@@ -10,10 +10,13 @@ import { useSidebar } from "@/contexts/SidebarContext";
 import { NotificationBell } from "@/components/NotificationBell";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useQuery } from "@tanstack/react-query";
+import { useTheme } from "next-themes";
 
 export function Navigation() {
   const [location] = useLocation();
   const { user, logout, isLoading } = useAuth();
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme !== "light";
   const { t } = useI18n();
   const { collapsed, toggle } = useSidebar();
 
@@ -55,10 +58,10 @@ export function Navigation() {
     <>
       {/* ── Mobile top bar — visible only on mobile (md:hidden) ── */}
       <div
-        className="fixed left-0 right-0 md:hidden flex items-center justify-between px-3"
+        className="fixed left-0 right-0 md:hidden flex items-center"
         style={{
           top: 0,
-          height: "48px",
+          height: "60px",
           zIndex: 35,
           background: "var(--nav-bg)",
           backdropFilter: "blur(24px) saturate(200%)",
@@ -66,37 +69,66 @@ export function Navigation() {
           borderBottom: "1px solid var(--nav-border)",
           boxShadow: "0 1px 0 var(--border-accent-dim)",
           pointerEvents: "auto",
+          paddingLeft: "4px",
+          paddingRight: "4px",
         }}
       >
+        {/* Left: hamburger */}
         <button
           onClick={toggle}
           data-testid="button-mobile-menu"
           aria-label="Toggle menu"
-          className="flex items-center justify-center w-10 h-10"
-          style={{ color: "var(--nav-text)", touchAction: "manipulation" }}
+          className="flex items-center justify-center flex-shrink-0"
+          style={{ color: "var(--nav-text)", touchAction: "manipulation", width: 44, height: 44 }}
         >
-          {collapsed ? <Menu size={20} /> : <X size={20} />}
+          {collapsed ? <Menu size={21} /> : <X size={21} />}
         </button>
 
-        <div className="flex items-center gap-2">
-          <div
-            className="w-5 h-5 flex items-center justify-center flex-shrink-0"
-            style={{ background: "rgba(111,255,233,0.12)", border: "1px solid rgba(111,255,233,0.25)" }}
-          >
-            <Home size={11} style={{ color: "#6FFFE9" }} />
-          </div>
-          <span className="text-sm font-bold tracking-tight silver-text">RentFLO</span>
+        {/* Center: logo icon + wordmark — absolutely centered */}
+        <div className="flex-1 flex items-center justify-center gap-2 overflow-hidden">
+          <img
+            src="/logo-icon.jpeg"
+            alt="RentFLO"
+            style={{
+              width: 40,
+              height: 40,
+              objectFit: "contain",
+              flexShrink: 0,
+              mixBlendMode: isDark ? "screen" : "multiply",
+              filter: isDark
+                ? "contrast(2.2) brightness(0.88)"
+                : "contrast(1.8) brightness(0.75)",
+              WebkitMaskImage: "radial-gradient(circle at 50% 50%, black 58%, transparent 76%)",
+              maskImage: "radial-gradient(circle at 50% 50%, black 58%, transparent 76%)",
+            }}
+          />
+          <img
+            src="/logo-wordmark-transparent.png"
+            alt="RentFLO"
+            style={{
+              height: 26,
+              objectFit: "contain",
+              flexShrink: 0,
+              filter: isDark
+                ? "drop-shadow(0 0 8px rgba(192,192,192,0.12))"
+                : "invert(1) drop-shadow(0 0 6px rgba(0,0,0,0.08))",
+            }}
+          />
         </div>
 
+        {/* Right: bell link */}
         <Link
           href="/notifications"
-          className="relative flex items-center justify-center w-10 h-10"
-          style={{ color: "var(--nav-text)", touchAction: "manipulation" }}
+          className="relative flex items-center justify-center flex-shrink-0"
+          style={{ color: "var(--nav-text)", touchAction: "manipulation", width: 44, height: 44 }}
           data-testid="link-mobile-notifications"
         >
-          <Bell size={19} />
+          <Bell size={20} />
           {unreadCount > 0 && (
-            <span className="absolute top-2 right-2 w-2 h-2 rounded-full" style={{ background: "#6FFFE9" }} />
+            <span
+              className="absolute rounded-full"
+              style={{ top: 10, right: 10, width: 7, height: 7, background: "#6FFFE9", boxShadow: "0 0 6px rgba(111,255,233,0.8)" }}
+            />
           )}
         </Link>
       </div>
