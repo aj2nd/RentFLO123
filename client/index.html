@@ -93,16 +93,18 @@
       }
 
       .i18n-header .logo-img {
-        width: clamp(64px, 16vw, 120px);
-        height: clamp(64px, 16vw, 120px);
+        height: clamp(56px, 14vw, 100px);
+        width: auto;
+        max-width: 38vw;
         object-fit: contain;
         flex-shrink: 0;
-        transition: width 0.4s ease, height 0.4s ease;
+        transition: height 0.4s ease;
       }
 
       .i18n-header.glass .logo-img {
-        width: 44px;
-        height: 44px;
+        height: 40px;
+        width: auto;
+        max-width: none;
       }
 
       .i18n-header .logo-wordmark {
