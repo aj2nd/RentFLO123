@@ -93,20 +93,21 @@
       }
 
       .i18n-header .logo-img {
-        width: 133px;
-        height: 133px;
+        width: clamp(64px, 16vw, 120px);
+        height: clamp(64px, 16vw, 120px);
         object-fit: contain;
         flex-shrink: 0;
         transition: width 0.4s ease, height 0.4s ease;
       }
 
       .i18n-header.glass .logo-img {
-        width: 52px;
-        height: 52px;
+        width: 44px;
+        height: 44px;
       }
 
       .i18n-header .logo-wordmark {
-        height: 94px;
+        height: clamp(40px, 10vw, 80px);
+        max-width: 36vw;
         object-fit: contain;
         filter: drop-shadow(0 0 12px rgba(192, 192, 192, 0.12));
         transition: height 0.4s ease;
@@ -117,7 +118,8 @@
       }
 
       .i18n-header.glass .logo-wordmark {
-        height: 36px;
+        height: 32px;
+        max-width: none;
       }
 
       .i18n-header .right-controls {
@@ -295,18 +297,6 @@
         .i18n-login-bar {
           top: 138px;
           padding: 10px 20px;
-        }
-        .i18n-header .logo-img {
-          width: 82px;
-          height: 82px;
-        }
-        .i18n-header.glass .logo-img {
-          width: 52px;
-          height: 52px;
-        }
-        .i18n-header .logo-wordmark {
-          height: 48px;
-          max-width: calc(100vw - 220px);
         }
         .language-select {
           padding: 7px 28px 7px 12px;
