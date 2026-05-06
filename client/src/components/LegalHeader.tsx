@@ -1,7 +1,11 @@
 import { Link } from "wouter";
 import { ArrowLeft } from "lucide-react";
+import { useTheme } from "next-themes";
 
 export function LegalHeader() {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme !== "light";
+
   return (
     <header className="flex items-center justify-between mb-12">
       <Link
@@ -16,13 +20,20 @@ export function LegalHeader() {
         <img
           src="/logo-icon.png"
           alt="RentFLO"
-          style={{ width: 40, height: 40, objectFit: "contain" }}
+          style={{
+            width: 40, height: 40, objectFit: "contain",
+            filter: isDark ? "none" : "brightness(0.55) contrast(1.5) saturate(1.4)",
+          }}
         />
         <img
           src="/logo-wordmark-transparent.png"
           alt="RentFLO"
-          className="dark:brightness-100 brightness-0"
-          style={{ height: 32, objectFit: "contain" }}
+          style={{
+            height: 32, objectFit: "contain",
+            filter: isDark
+              ? "drop-shadow(0 0 8px rgba(192,192,192,0.12))"
+              : "invert(1) drop-shadow(0 0 6px rgba(0,0,0,0.08))",
+          }}
         />
       </Link>
     </header>
