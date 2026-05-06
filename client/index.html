@@ -92,26 +92,17 @@
         text-decoration: none;
       }
 
-      /* Logo icon wrapper */
-      .logo-img-wrap {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
+      .i18n-header .logo-img {
         width: 133px;
         height: 133px;
+        object-fit: contain;
+        flex-shrink: 0;
         transition: width 0.4s ease, height 0.4s ease;
       }
 
-      .i18n-header.glass .logo-img-wrap {
+      .i18n-header.glass .logo-img {
         width: 52px;
         height: 52px;
-      }
-
-      .i18n-header .logo-img {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
       }
 
       .i18n-header .logo-wordmark {
@@ -305,16 +296,17 @@
           top: 138px;
           padding: 10px 20px;
         }
-        .logo-img-wrap {
+        .i18n-header .logo-img {
           width: 82px;
           height: 82px;
         }
-        .i18n-header.glass .logo-img-wrap {
+        .i18n-header.glass .logo-img {
           width: 52px;
           height: 52px;
         }
         .i18n-header .logo-wordmark {
-          height: 61px;
+          height: 48px;
+          max-width: calc(100vw - 220px);
         }
         .language-select {
           padding: 7px 28px 7px 12px;
@@ -328,9 +320,7 @@
     <!-- Global Header: Logo + Language switcher + conditional Login -->
     <header class="i18n-header" data-testid="header-i18n">
       <a href="/" class="logo-left">
-        <span class="logo-img-wrap">
-          <img src="/logo-icon.png" alt="RentFLO" class="logo-img" data-testid="logo-img" />
-        </span>
+        <img src="/logo-icon.png" alt="RentFLO" class="logo-img" data-testid="logo-img" />
       </a>
       <a href="/" class="logo-center">
         <img src="/logo-wordmark-transparent.png" alt="RentFLO" class="logo-wordmark" />
