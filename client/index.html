@@ -143,31 +143,19 @@
         padding: 12px 36px;
         display: flex;
         align-items: center;
-        justify-content: flex-end;
+        justify-content: space-between;
+        gap: 12px;
       }
 
       html.light .i18n-login-bar { background: #F2F2F2; }
 
-      /* ── Language switcher ────────────────────────────── */
-      .i18n-header .language-switcher {
+      /* ── Language switcher (now in login bar) ─────────── */
+      .language-switcher {
         display: flex;
         align-items: center;
-        gap: 10px;
       }
 
-      .i18n-header .language-switcher label {
-        color: rgba(255, 255, 255, 0.28);
-        font-size: 10px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 1.2px;
-      }
-
-      html.light .i18n-header .language-switcher label {
-        color: rgba(0, 0, 0, 0.35);
-      }
-
-      .i18n-header .language-select {
+      .language-select {
         appearance: none;
         -webkit-appearance: none;
         -moz-appearance: none;
@@ -191,37 +179,37 @@
         background-size: 12px;
       }
 
-      html.light .i18n-header .language-select {
+      html.light .language-select {
         background-color: rgba(0, 0, 0, 0.04);
         border-color: rgba(0, 0, 0, 0.12);
         color: rgba(0, 0, 0, 0.60);
         background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(0,0,0,0.3)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
       }
 
-      html.light .i18n-header .language-select option {
+      html.light .language-select option {
         background: #ffffff;
         color: #171717;
       }
 
-      .i18n-header .language-select:hover {
+      .language-select:hover {
         border-color: rgba(255, 255, 255, 0.22);
         background-color: rgba(255, 255, 255, 0.06);
       }
 
-      html.light .i18n-header .language-select:hover {
+      html.light .language-select:hover {
         border-color: rgba(0, 0, 0, 0.22);
         background-color: rgba(0, 0, 0, 0.06);
       }
 
-      .i18n-header .language-select:focus {
+      .language-select:focus {
         border-color: rgba(111, 255, 233, 0.35);
       }
 
-      html.light .i18n-header .language-select:focus {
+      html.light .language-select:focus {
         border-color: rgba(0, 150, 136, 0.45);
       }
 
-      .i18n-header .language-select option {
+      .language-select option {
         background: #0a0a0a;
         color: #c0c0c0;
       }
@@ -323,10 +311,7 @@
         .i18n-header .logo-wordmark {
           height: 61px;
         }
-        .i18n-header .language-switcher label {
-          display: none;
-        }
-        .i18n-header .language-select {
+        .language-select {
           padding: 7px 28px 7px 12px;
           font-size: 11px;
           min-height: 34px;
@@ -344,14 +329,6 @@
         <img src="/logo-wordmark-transparent.png" alt="RentFLO" class="logo-wordmark" />
       </a>
       <div class="right-controls">
-        <div class="language-switcher">
-          <label for="language-select" data-i18n="change_language">Change Language</label>
-          <select id="language-select" class="language-select" data-testid="select-language">
-            <option value="en">English</option>
-            <option value="hi">हिन्दी</option>
-            <option value="kn">ಕನ್ನಡ</option>
-          </select>
-        </div>
         <button id="header-theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme" data-testid="button-theme-toggle">
           <svg id="theme-icon-sun" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none">
             <circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/>
@@ -368,6 +345,13 @@
 
     <!-- Login sub-bar: below the header, only visible on landing page -->
     <div class="i18n-login-bar" id="login-bar" data-testid="bar-login">
+      <div class="language-switcher">
+        <select id="language-select" class="language-select" data-testid="select-language">
+          <option value="en">English</option>
+          <option value="hi">हिन्दी</option>
+          <option value="kn">ಕನ್ನಡ</option>
+        </select>
+      </div>
       <a href="/api/login" class="login-btn" id="header-login-btn" data-testid="button-header-login">Login</a>
     </div>
 
