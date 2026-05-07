@@ -1,7 +1,7 @@
-import { pgTable, text, integer, timestamp, varchar, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, integer, timestamp, varchar, boolean, uniqueIndex } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 
 // Export everything from auth models
 export * from "./models/auth";
@@ -34,15 +34,38 @@ export const ledgers = pgTable("ledgers", {
 });
 
 // === PAYMENTS TABLE - Multiple installments per ledger ===
+// Flow for UPI manual-verification payments:
+//   1. Tenant clicks "Pay Rent" → UPI app deep-link opens.
+//   2. Tenant returns to RentFLO and submits the UTR (12-digit ref) + optional screenshot.
+//   3. Row inserted with status PENDING_VERIFICATION. Ledger NOT updated yet.
+//   4. Admin reviews UTR against bank statement → flips status to SUCCESS (or FAILED).
+//   5. On SUCCESS, ledger.amountCollected is recomputed from all SUCCESS payments.
 export const payments = pgTable("payments", {
   id: varchar("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   ledgerId: varchar("ledger_id").references(() => ledgers.id).notNull(),
   amount: integer("amount").notNull(), // Amount in rupees (same unit as monthlyRent)
+  // Razorpay fields kept for forward-compat (UPI Collect / PSP migration). Unused for manual-verify flow.
   razorpayOrderId: text("razorpay_order_id"),
   razorpayPaymentId: text("razorpay_payment_id"),
-  status: text("status", { enum: ['PENDING', 'SUCCESS', 'FAILED'] }).default('PENDING').notNull(),
+  // UPI manual-verification fields
+  transactionRef: text("transaction_ref"), // UTR / 12-digit reference number from the UPI app
+  proofScreenshotUrl: text("proof_screenshot_url"), // optional screenshot of UPI receipt
+  paymentMethod: text("payment_method", { enum: ['UPI_MANUAL', 'RAZORPAY'] }).default('UPI_MANUAL').notNull(),
+  verifiedBy: varchar("verified_by").references(() => users.id), // admin who verified
+  verifiedAt: timestamp("verified_at"),
+  rejectionReason: text("rejection_reason"),
+  status: text("status", {
+    enum: ['PENDING', 'PENDING_VERIFICATION', 'SUCCESS', 'FAILED'],
+  }).default('PENDING').notNull(),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => ({
+  // Database-enforced uniqueness on UTR (case-normalized at insert) to prevent
+  // racy duplicate submissions from slipping past the application-level check.
+  // Partial index — ignores rows that have no transaction reference yet.
+  uniqueTxnRef: uniqueIndex("payments_transaction_ref_unique")
+    .on(table.transactionRef)
+    .where(sql`${table.transactionRef} IS NOT NULL`),
+}));
 
 // === MAINTENANCE TICKETS TABLE ===
 export const maintenanceTickets = pgTable("maintenance_tickets", {
@@ -206,6 +229,30 @@ export const insertLedgerSchema = createInsertSchema(ledgers).omit({
 export const insertPaymentSchema = createInsertSchema(payments).omit({
   id: true,
   createdAt: true,
+});
+
+// Tenant-submitted UPI proof payload — strict validation.
+export const submitPaymentProofSchema = z.object({
+  amount: z.number().int().positive().max(10_000_000),
+  // UTR is typically 12 digits, but some banks issue 16 or 22-char alphanumeric refs.
+  // Accept 6–32 alphanumeric to be liberal but bounded.
+  transactionRef: z
+    .string()
+    .trim()
+    .regex(/^[A-Za-z0-9]{6,32}$/, "UTR must be 6–32 alphanumeric characters"),
+  proofScreenshotUrl: z
+    .string()
+    .trim()
+    .max(2048)
+    .url("Screenshot link must be a valid URL")
+    .refine((u) => /^https?:\/\//i.test(u), "URL must start with http(s)://")
+    .optional()
+    .or(z.literal("")),
+});
+export type SubmitPaymentProofRequest = z.infer<typeof submitPaymentProofSchema>;
+
+export const verifyPaymentSchema = z.object({
+  rejectionReason: z.string().trim().min(1).max(500).optional(),
 });
 
 export const insertMaintenanceTicketSchema = createInsertSchema(maintenanceTickets).omit({

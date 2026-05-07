@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import { useState, useRef, useEffect } from "react";
-import { Loader2, AlertCircle, Upload, Check, X, Image, Building2, Users, Download, Shield, CheckCircle } from "lucide-react";
+import { Loader2, AlertCircle, Upload, Check, X, Image, Building2, Users, Download, Shield, CheckCircle, Receipt, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { motion } from "framer-motion";
@@ -73,12 +73,39 @@ export default function AdminDashboard() {
   const { data: stats, isLoading: statsLoading } = useAdminDashboard();
   const { data: ledgers, isLoading: ledgersLoading } = useLedgers({ status: 'ARREARS' });
   const { data: properties, isLoading: propsLoading } = useProperties();
-  const [activeTab, setActiveTab] = useState<'overview' | 'kyc' | 'users'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'kyc' | 'verifications' | 'users'>('overview');
   const { t } = useI18n();
 
   const { data: pendingKyc, isLoading: kycLoading } = useQuery<User[]>({ queryKey: ["/api/kyc/pending"] });
   const { data: allUsers } = useQuery<User[]>({ queryKey: ["/api/users"] });
   const { data: allPayments } = useQuery<Payment[]>({ queryKey: ["/api/payments"] });
+  const { data: pendingVerifs, isLoading: verifsLoading } = useQuery<any[]>({
+    queryKey: ["/api/admin/payments/pending-verification"],
+    refetchInterval: 30000,
+  });
+
+  const verifyPaymentMutation = useMutation({
+    mutationFn: async (paymentId: string) => apiRequest("POST", `/api/payments/${paymentId}/verify`),
+    onSuccess: () => {
+      toast({ title: "Payment Verified", description: "Ledger has been credited." });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/payments/pending-verification"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/payments"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/ledgers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/admin"] });
+    },
+    onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+  });
+
+  const rejectPaymentMutation = useMutation({
+    mutationFn: async ({ id, reason }: { id: string; reason: string }) =>
+      apiRequest("POST", `/api/payments/${id}/reject`, { rejectionReason: reason }),
+    onSuccess: () => {
+      toast({ title: "Payment Rejected", description: "Tenant has been notified." });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/payments/pending-verification"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/payments"] });
+    },
+    onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+  });
 
   const { toast } = useToast();
 
@@ -192,6 +219,15 @@ export default function AdminDashboard() {
                 <span className="bg-[#6FFFE9]/20 text-[#6FFFE9] border border-[#6FFFE9]/40 text-xs px-2 py-0.5">{pendingKyc.length}</span>
               )}
             </button>
+            <button onClick={() => setActiveTab('verifications')}
+              className={`pb-3 px-1 text-sm font-medium transition-colors flex items-center gap-2 ${activeTab === 'verifications' ? 'text-[#6FFFE9] border-b-2 border-[#6FFFE9]' : 'text-zinc-500 hover:text-[#9DEFE4]'}`}
+              data-testid="tab-verifications">
+              <Receipt size={14} />
+              Verifications
+              {pendingVerifs && pendingVerifs.length > 0 && (
+                <span className="bg-blue-500/20 text-blue-300 border border-blue-400/40 text-xs px-2 py-0.5">{pendingVerifs.length}</span>
+              )}
+            </button>
             <button onClick={() => setActiveTab('users')}
               className={`pb-3 px-1 text-sm font-medium transition-colors flex items-center gap-2 ${activeTab === 'users' ? 'text-[#6FFFE9] border-b-2 border-[#6FFFE9]' : 'text-zinc-500 hover:text-[#9DEFE4]'}`}
               data-testid="tab-users">
@@ -249,6 +285,83 @@ export default function AdminDashboard() {
               <div className="p-12 border border-[#6FFFE9]/15 bg-[#6FFFE9]/3 text-center">
                 <Shield className="w-12 h-12 mx-auto mb-4 text-[#6FFFE9]/40" />
                 <p className="text-zinc-500">{t('admin_no_kyc')}</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'verifications' && (
+          <div className="mt-8">
+            <div className="flex items-center gap-3 mb-6">
+              <Receipt className="text-[#6FFFE9]" size={24} />
+              <h2 className="text-2xl font-semibold tracking-tight">Manual Payment Verifications</h2>
+              <span className="text-xs text-zinc-500 ml-2">Match the UTR against your bank statement before approving.</span>
+            </div>
+            {verifsLoading ? (
+              <div className="flex items-center justify-center p-12"><Loader2 className="w-8 h-8 animate-spin" /></div>
+            ) : pendingVerifs && pendingVerifs.length > 0 ? (
+              <div className="space-y-4">
+                {pendingVerifs.map((p: any) => (
+                  <div key={p.id} className="p-6 border border-blue-400/30 bg-zinc-950" data-testid={`verif-row-${p.id}`}>
+                    <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2 flex-wrap">
+                          <h3 className="text-lg font-medium">{p.ledger?.property?.address}</h3>
+                          <span className="text-xs bg-blue-500/20 text-blue-300 border border-blue-400/30 px-2 py-0.5">PENDING VERIFICATION</span>
+                          <span className="text-xs bg-zinc-800 px-2 py-0.5">{p.ledger?.monthYear}</span>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm mt-3">
+                          <div>
+                            <p className="text-zinc-500 text-[10px] uppercase tracking-widest">Amount</p>
+                            <p className="font-mono text-2xl font-semibold text-white">₹{p.amount.toLocaleString("en-IN")}</p>
+                          </div>
+                          <div>
+                            <p className="text-zinc-500 text-[10px] uppercase tracking-widest">UTR / Reference</p>
+                            <p className="font-mono text-base text-[#6FFFE9]" data-testid={`text-utr-${p.id}`}>{p.transactionRef || "—"}</p>
+                          </div>
+                          <div>
+                            <p className="text-zinc-500 text-[10px] uppercase tracking-widest">Submitted</p>
+                            <p className="font-mono text-sm text-zinc-300">{new Date(p.createdAt).toLocaleString("en-IN")}</p>
+                          </div>
+                        </div>
+                        {p.proofScreenshotUrl && (
+                          <a href={p.proofScreenshotUrl} target="_blank" rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 mt-4 text-sm text-[#9DEFE4] hover:text-[#6FFFE9] underline"
+                            data-testid={`link-proof-${p.id}`}>
+                            <ExternalLink size={14} /> View screenshot
+                          </a>
+                        )}
+                      </div>
+                      <div className="flex flex-col gap-2 md:w-48">
+                        <Button
+                          onClick={() => verifyPaymentMutation.mutate(p.id)}
+                          disabled={verifyPaymentMutation.isPending}
+                          className="bg-white text-black hover:bg-zinc-200 gap-2"
+                          data-testid={`button-verify-payment-${p.id}`}>
+                          <CheckCircle size={16} /> Verify
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            const reason = window.prompt("Reason for rejection (shown to tenant):", "UTR not found in bank statement");
+                            if (reason && reason.trim()) {
+                              rejectPaymentMutation.mutate({ id: p.id, reason: reason.trim() });
+                            }
+                          }}
+                          disabled={rejectPaymentMutation.isPending}
+                          className="border-red-500/40 text-red-400 hover:bg-red-500/10 hover:text-red-300 gap-2"
+                          data-testid={`button-reject-payment-${p.id}`}>
+                          <X size={16} /> Reject
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="p-12 border border-[#6FFFE9]/15 bg-[#6FFFE9]/3 text-center">
+                <Receipt className="w-12 h-12 mx-auto mb-4 text-[#6FFFE9]/40" />
+                <p className="text-zinc-500">No payments awaiting verification.</p>
               </div>
             )}
           </div>

@@ -2,6 +2,7 @@ import type { Express, RequestHandler } from "express";
 import type { Server } from "http";
 import { storage } from "./storage";
 import { api, errorSchemas } from "@shared/routes";
+import { submitPaymentProofSchema, verifyPaymentSchema } from "@shared/schema";
 import { z } from "zod";
 import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
 import { authStorage } from "./replit_integrations/auth/storage";
@@ -576,6 +577,174 @@ export async function registerRoutes(
       return res.status(502).json({ message: 'Failed to create payment order' });
     }
   });
+
+  // === MANUAL UPI PAYMENT VERIFICATION ===
+  // Tenant submits proof (UTR + optional screenshot) after returning from their
+  // UPI app. The payment is recorded in PENDING_VERIFICATION state — the ledger
+  // is NOT credited until an admin verifies the UTR against the bank statement.
+  app.post("/api/ledgers/:id/submit-payment-proof", isAuthenticated, async (req: any, res) => {
+    const { id: ledgerId } = req.params;
+    const access = await requireLedgerAccess(req, res, ledgerId);
+    if (!access) return;
+    const { property, role } = access;
+    if (role !== "TENANT") {
+      return res.status(403).json({ message: "Only the tenant can submit payment proof" });
+    }
+
+    let input;
+    try {
+      input = submitPaymentProofSchema.parse(req.body);
+    } catch (err: any) {
+      if (err instanceof z.ZodError) return res.status(400).json({ message: err.errors[0].message });
+      throw err;
+    }
+
+    // Bound amount: must not exceed remaining due across SUCCESS + PENDING_VERIFICATION.
+    const existing = await storage.getPaymentsByLedger(ledgerId);
+    const counted = existing
+      .filter((p) => p.status === "SUCCESS" || p.status === "PENDING_VERIFICATION")
+      .reduce((s, p) => s + p.amount, 0);
+    const remaining = Math.max(0, property.monthlyRent - counted);
+    if (input.amount > remaining) {
+      return res.status(400).json({
+        message: `Amount exceeds remaining due (₹${remaining})`,
+      });
+    }
+
+    // Reject duplicate UTRs across the entire system (prevents reusing the same
+    // reference number for multiple ledgers).
+    const dupSearch = await storage.getAllPayments();
+    const dup = dupSearch.find(
+      (p) =>
+        p.transactionRef &&
+        p.transactionRef.toUpperCase() === input.transactionRef.toUpperCase() &&
+        p.status !== "FAILED",
+    );
+    if (dup) {
+      return res.status(409).json({ message: "This transaction reference has already been submitted" });
+    }
+
+    let payment;
+    try {
+      payment = await storage.createPayment({
+        ledgerId,
+        amount: input.amount,
+        transactionRef: input.transactionRef.toUpperCase(),
+        proofScreenshotUrl: input.proofScreenshotUrl || null,
+        paymentMethod: "UPI_MANUAL",
+        status: "PENDING_VERIFICATION",
+      });
+    } catch (e: any) {
+      // Catches the partial unique index on transaction_ref (race-safe
+      // duplicate guard at the DB layer).
+      if (e?.code === "23505") {
+        return res.status(409).json({ message: "This transaction reference has already been submitted" });
+      }
+      throw e;
+    }
+
+    // Notify all admins so they can verify quickly.
+    const allUsers = await authStorage.getAllUsers();
+    const admins = allUsers.filter((u: any) => u.role === "ADMIN");
+    for (const admin of admins) {
+      createNotification(
+        admin.id,
+        "Payment Awaiting Verification",
+        `Tenant submitted UTR ${input.transactionRef.toUpperCase()} for ₹${input.amount.toLocaleString("en-IN")} — please verify.`,
+        "RENT_COLLECTED",
+        "/admin",
+      ).catch(() => {});
+    }
+
+    res.json(payment);
+  });
+
+  // Admin: list all payments awaiting verification.
+  app.get(
+    "/api/admin/payments/pending-verification",
+    isAuthenticated,
+    requireRole("ADMIN"),
+    async (_req, res) => {
+      const list = await storage.getPendingVerificationPayments();
+      res.json(list);
+    },
+  );
+
+  // Admin: verify a payment (UTR confirmed against bank statement).
+  app.post(
+    "/api/payments/:id/verify",
+    isAuthenticated,
+    requireRole("ADMIN"),
+    async (req: any, res) => {
+      const adminId = req.user?.claims?.sub;
+      try {
+        const { payment, ledger } = await storage.verifyPayment(req.params.id, adminId);
+        const property = await storage.getProperty(ledger.propertyId);
+
+        // Notify tenant: payment confirmed.
+        if (property?.tenantId) {
+          createNotification(
+            property.tenantId,
+            "Payment Verified",
+            `Your payment of ₹${payment.amount.toLocaleString("en-IN")} has been verified.`,
+            "RENT_COLLECTED",
+            "/tenant",
+          ).catch(() => {});
+        }
+        // Notify owner.
+        if (property?.ownerId) {
+          createNotification(
+            property.ownerId,
+            "Tenant Payment Verified",
+            `Your tenant's payment of ₹${payment.amount.toLocaleString("en-IN")} for ${ledger.monthYear} has been verified.`,
+            "RENT_COLLECTED",
+            "/owner",
+          ).catch(() => {});
+        }
+        res.json({ payment, ledger });
+      } catch (err: any) {
+        const status = err?.status || 500;
+        return res.status(status).json({ message: status === 500 ? "Internal Server Error" : err.message });
+      }
+    },
+  );
+
+  // Admin: reject a payment (UTR not found / mismatch).
+  app.post(
+    "/api/payments/:id/reject",
+    isAuthenticated,
+    requireRole("ADMIN"),
+    async (req: any, res) => {
+      const adminId = req.user?.claims?.sub;
+      let parsed;
+      try {
+        parsed = verifyPaymentSchema.parse(req.body);
+      } catch (err: any) {
+        if (err instanceof z.ZodError) return res.status(400).json({ message: err.errors[0].message });
+        throw err;
+      }
+      const reason = parsed.rejectionReason || "Could not verify against bank statement";
+      try {
+        const updated = await storage.rejectPayment(req.params.id, adminId, reason);
+        const ledger = await storage.getLedger(updated.ledgerId);
+        const property = ledger ? await storage.getProperty(ledger.propertyId) : null;
+        if (property?.tenantId) {
+          createNotification(
+            property.tenantId,
+            "Payment Rejected",
+            `Your payment of ₹${updated.amount.toLocaleString("en-IN")} could not be verified. Reason: ${reason}`,
+            "RENT_COLLECTED",
+            "/tenant",
+          ).catch(() => {});
+        }
+        res.json(updated);
+      } catch (err: any) {
+        const status = err?.status || 500;
+        return res.status(status).json({ message: status === 500 ? "Internal Server Error" : err.message });
+      }
+    },
+  );
+
 
   // === MAINTENANCE TICKETS ===
   

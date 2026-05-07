@@ -594,7 +594,8 @@ export default function TenantDashboard() {
 
                     <PayRentButton
                       amount={flexiblePaymentEnabled ? Number(paymentAmount || 0) : remaining}
-                      vpa="YOUR_VPA@bank"
+                      vpa="rentflo@ybl"
+                      ledgerId={unpaidLedger?.id}
                     />
 
                     {/* UPI Deep Links */}
@@ -652,20 +653,30 @@ export default function TenantDashboard() {
                       {paymentsData.map((pmt, idx) => (
                         <div key={pmt.id} className="liquid-glass rounded-xl flex items-center justify-between p-4" data-testid={`payment-entry-${idx}`}>
                           <div className="flex items-center gap-3">
-                            <div className={`w-2 h-2 rounded-full ${pmt.status === "SUCCESS" ? "bg-[#6FFFE9]" : pmt.status === "PENDING" ? "bg-amber-400" : "bg-red-500"}`} />
+                            <div className={`w-2 h-2 rounded-full ${pmt.status === "SUCCESS" ? "bg-[#6FFFE9]" : pmt.status === "PENDING_VERIFICATION" ? "bg-blue-400" : pmt.status === "PENDING" ? "bg-amber-400" : "bg-red-500"}`} />
                             <div>
                               <p className="text-sm text-white">
-                                {pmt.status === "SUCCESS" ? "Payment Received" : pmt.status === "PENDING" ? "Pending" : "Failed"}
+                                {pmt.status === "SUCCESS"
+                                  ? "Payment Received"
+                                  : pmt.status === "PENDING_VERIFICATION"
+                                  ? "Awaiting Verification"
+                                  : pmt.status === "PENDING"
+                                  ? "Pending"
+                                  : "Failed"}
                               </p>
                               <p className="text-[10px] text-zinc-500 font-mono">
+                                {pmt.transactionRef ? `UTR ${pmt.transactionRef} · ` : ""}
                                 {new Date(pmt.createdAt!).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
                               </p>
+                              {pmt.status === "FAILED" && pmt.rejectionReason && (
+                                <p className="text-[10px] text-red-400 mt-0.5">{pmt.rejectionReason}</p>
+                              )}
                             </div>
                           </div>
                           <div className="text-right">
                             <span className="font-mono text-base text-white">₹{pmt.amount.toLocaleString()}</span>
-                            <p className={`text-[10px] ${pmt.status === "SUCCESS" ? "text-[#6FFFE9]" : pmt.status === "PENDING" ? "text-amber-400" : "text-red-400"}`}>
-                              {pmt.status}
+                            <p className={`text-[10px] ${pmt.status === "SUCCESS" ? "text-[#6FFFE9]" : pmt.status === "PENDING_VERIFICATION" ? "text-blue-300" : pmt.status === "PENDING" ? "text-amber-400" : "text-red-400"}`}>
+                              {pmt.status === "PENDING_VERIFICATION" ? "VERIFYING" : pmt.status}
                             </p>
                           </div>
                         </div>

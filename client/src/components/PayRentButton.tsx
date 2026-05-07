@@ -1,19 +1,25 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Copy, QrCode, Loader2 } from "lucide-react";
+import { Copy, QrCode, Loader2, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 
 const SILVER_BTN = {
   background: 'linear-gradient(135deg, #7A7A7A 0%, #C8C8C8 35%, #EFEFEF 50%, #B4B4B4 70%, #7A7A7A 100%)',
   color: '#000',
 };
 
-type PayRentButtonProps = { amount: number; vpa: string };
+type PayRentButtonProps = { amount: number; vpa: string; ledgerId?: string };
 
-export function PayRentButton({ amount, vpa }: PayRentButtonProps) {
+export function PayRentButton({ amount, vpa, ledgerId }: PayRentButtonProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [showFallback, setShowFallback] = useState(false);
+  const [showProofForm, setShowProofForm] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [utr, setUtr] = useState("");
+  const [proofUrl, setProofUrl] = useState("");
   const fallbackTimer = useRef<number | null>(null);
   const { toast } = useToast();
 
@@ -28,10 +34,42 @@ export function PayRentButton({ amount, vpa }: PayRentButtonProps) {
       sessionStorage.removeItem("rentflo-payrent-processing");
       setIsProcessing(false);
       setShowFallback(false);
+      // User came back from UPI app — prompt for proof.
+      if (ledgerId) setShowProofForm(true);
     }
-  }, []);
+  }, [ledgerId]);
+
+  const submitProof = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest("POST", `/api/ledgers/${ledgerId}/submit-payment-proof`, {
+        amount,
+        transactionRef: utr.trim(),
+        proofScreenshotUrl: proofUrl.trim() || undefined,
+      });
+      return res.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Submitted for verification",
+        description: "Our team will verify your payment shortly. You'll be notified when it's confirmed.",
+      });
+      setShowProofForm(false);
+      setUtr("");
+      setProofUrl("");
+      queryClient.invalidateQueries({ queryKey: ["/api/payments"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/ledgers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/ledgers/mine"] });
+    },
+    onError: (err: Error) => {
+      toast({ title: "Submission failed", description: err.message, variant: "destructive" });
+    },
+  });
 
   const handlePayRent = () => {
+    if (amount <= 0) {
+      toast({ title: "Enter an amount", description: "Amount must be greater than zero.", variant: "destructive" });
+      return;
+    }
     setIsProcessing(true);
     setShowFallback(false);
     sessionStorage.setItem("rentflo-payrent-processing", "1");
@@ -41,6 +79,8 @@ export function PayRentButton({ amount, vpa }: PayRentButtonProps) {
       if (!opened || opened.closed) navigator.clipboard.writeText(upiLink).catch(() => {});
       setShowFallback(true);
       setIsProcessing(false);
+      // If we never left the page (desktop / no UPI app), still let them submit proof.
+      if (ledgerId) setShowProofForm(true);
     }, 2000);
   };
 
@@ -54,6 +94,8 @@ export function PayRentButton({ amount, vpa }: PayRentButtonProps) {
       toast({ title: "Copy failed", description: "Please copy the UPI ID manually.", variant: "destructive" });
     }
   };
+
+  const utrValid = /^[A-Za-z0-9]{6,30}$/.test(utr.trim());
 
   return (
     <div className="space-y-4">
@@ -100,6 +142,71 @@ export function PayRentButton({ amount, vpa }: PayRentButtonProps) {
             >
               <QrCode className="h-4 w-4 mr-2" />
               Show QR
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {showProofForm && ledgerId && (
+        <div className="rounded-2xl border border-[#6FFFE9]/30 bg-[#6FFFE9]/[0.04] p-5 space-y-4" data-testid="form-payment-proof">
+          <div className="flex items-start gap-3">
+            <CheckCircle className="h-5 w-5 text-[#6FFFE9] flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-semibold text-white">Did you complete the payment?</p>
+              <p className="text-xs text-zinc-400 mt-1">
+                Enter the UPI transaction ID (UTR) so we can verify it against our bank statement.
+                You'll find it in your UPI app's transaction history.
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[10px] uppercase tracking-widest text-zinc-500">UPI Transaction ID (UTR)</label>
+            <Input
+              value={utr}
+              onChange={(e) => setUtr(e.target.value)}
+              placeholder="e.g. 412345678901"
+              className="bg-black/40 border-white/10 text-white font-mono"
+              maxLength={30}
+              data-testid="input-utr"
+            />
+            <p className="text-[10px] text-zinc-600">12-digit reference shown in your bank/UPI app.</p>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[10px] uppercase tracking-widest text-zinc-500">Screenshot URL (optional)</label>
+            <Input
+              value={proofUrl}
+              onChange={(e) => setProofUrl(e.target.value)}
+              placeholder="https://..."
+              className="bg-black/40 border-white/10 text-white"
+              data-testid="input-proof-url"
+            />
+          </div>
+
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              onClick={() => submitProof.mutate()}
+              disabled={!utrValid || submitProof.isPending}
+              className="flex-1 h-12 rounded-none border-0"
+              style={SILVER_BTN}
+              data-testid="button-submit-proof"
+            >
+              {submitProof.isPending ? (
+                <><Loader2 className="h-4 w-4 animate-spin mr-2" />Submitting</>
+              ) : (
+                "Submit for Verification"
+              )}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowProofForm(false)}
+              className="rounded-none border-white/10 text-zinc-400 hover:bg-white/5"
+              data-testid="button-cancel-proof"
+            >
+              Cancel
             </Button>
           </div>
         </div>

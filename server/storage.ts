@@ -36,8 +36,13 @@ export interface IStorage {
   // Payments (multi-installment)
   getAllPayments(): Promise<Payment[]>;
   getPaymentsByLedger(ledgerId: string): Promise<Payment[]>;
+  getPayment(id: string): Promise<Payment | undefined>;
+  getPendingVerificationPayments(): Promise<(Payment & { ledger: Ledger & { property: Property } })[]>;
   createPayment(payment: CreatePaymentRequest): Promise<Payment>;
   updatePayment(id: string, updates: Partial<InsertPayment>): Promise<Payment>;
+  // Atomic verify: flips PENDING_VERIFICATION → SUCCESS and recomputes ledger.amountCollected.
+  verifyPayment(paymentId: string, adminId: string): Promise<{ payment: Payment; ledger: Ledger }>;
+  rejectPayment(paymentId: string, adminId: string, reason: string): Promise<Payment>;
   
   // Maintenance Tickets
   getTickets(propertyId?: string, status?: string): Promise<(MaintenanceTicket & { property: Property })[]>;
@@ -186,6 +191,94 @@ export class DatabaseStorage implements IStorage {
       .set(updates)
       .where(eq(payments.id, id))
       .returning();
+    return updated;
+  }
+
+  async getPayment(id: string): Promise<Payment | undefined> {
+    const [p] = await db.select().from(payments).where(eq(payments.id, id));
+    return p;
+  }
+
+  async getPendingVerificationPayments(): Promise<(Payment & { ledger: Ledger & { property: Property } })[]> {
+    const rows = await db
+      .select()
+      .from(payments)
+      .innerJoin(ledgers, eq(payments.ledgerId, ledgers.id))
+      .innerJoin(properties, eq(ledgers.propertyId, properties.id))
+      .where(eq(payments.status, 'PENDING_VERIFICATION'))
+      .orderBy(desc(payments.createdAt));
+    return rows.map((r: any) => ({
+      ...r.payments,
+      ledger: { ...r.ledgers, property: r.properties },
+    }));
+  }
+
+  // Atomic verification — flips status to SUCCESS, recomputes the ledger's
+  // amountCollected from all SUCCESS rows, and updates the ledger status.
+  // Done in a transaction so a failed status update can never leave the ledger
+  // out of sync with the payments table.
+  async verifyPayment(paymentId: string, adminId: string): Promise<{ payment: Payment; ledger: Ledger }> {
+    return await db.transaction(async (tx) => {
+      // Conditional update — only flip if still PENDING_VERIFICATION. This
+      // closes the verify/reject race: if a concurrent admin already moved the
+      // row to SUCCESS or FAILED, this returns 0 rows and we 409 out without
+      // touching the ledger.
+      const [updatedPmt] = await tx
+        .update(payments)
+        .set({ status: 'SUCCESS', verifiedBy: adminId, verifiedAt: new Date(), rejectionReason: null })
+        .where(and(eq(payments.id, paymentId), eq(payments.status, 'PENDING_VERIFICATION')))
+        .returning();
+      if (!updatedPmt) {
+        // Distinguish "not found" vs "wrong state" for a clearer error.
+        const [exists] = await tx.select().from(payments).where(eq(payments.id, paymentId));
+        if (!exists) throw Object.assign(new Error("Payment not found"), { status: 404 });
+        throw Object.assign(
+          new Error(`Cannot verify a payment in state ${exists.status}`),
+          { status: 409 },
+        );
+      }
+      const pmt = updatedPmt;
+
+      const [ledger] = await tx.select().from(ledgers).where(eq(ledgers.id, pmt.ledgerId));
+      const [property] = await tx.select().from(properties).where(eq(properties.id, ledger.propertyId));
+
+      const successRows = await tx
+        .select()
+        .from(payments)
+        .where(and(eq(payments.ledgerId, pmt.ledgerId), eq(payments.status, 'SUCCESS')));
+      const totalCollected = successRows.reduce((s, p) => s + p.amount, 0);
+      const isSettled = totalCollected >= property.monthlyRent;
+
+      const [updatedLedger] = await tx
+        .update(ledgers)
+        .set({
+          amountCollected: totalCollected,
+          status: isSettled ? 'SETTLED' : (ledger.amountAdvanced > 0 ? 'EXPOSED' : 'ARREARS'),
+          updatedAt: new Date(),
+        })
+        .where(eq(ledgers.id, pmt.ledgerId))
+        .returning();
+
+      return { payment: updatedPmt, ledger: updatedLedger };
+    });
+  }
+
+  async rejectPayment(paymentId: string, adminId: string, reason: string): Promise<Payment> {
+    // Race-safe: only flip if still PENDING_VERIFICATION. Since pending rows
+    // were never credited to the ledger, no ledger recompute is needed here.
+    const [updated] = await db
+      .update(payments)
+      .set({ status: 'FAILED', verifiedBy: adminId, verifiedAt: new Date(), rejectionReason: reason })
+      .where(and(eq(payments.id, paymentId), eq(payments.status, 'PENDING_VERIFICATION')))
+      .returning();
+    if (!updated) {
+      const [exists] = await db.select().from(payments).where(eq(payments.id, paymentId));
+      if (!exists) throw Object.assign(new Error("Payment not found"), { status: 404 });
+      throw Object.assign(
+        new Error(`Cannot reject a payment in state ${exists.status}`),
+        { status: 409 },
+      );
+    }
     return updated;
   }
 
