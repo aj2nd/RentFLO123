@@ -129,7 +129,8 @@ export class DatabaseStorage implements IStorage {
         property: properties
     })
     .from(ledgers)
-    .innerJoin(properties, eq(ledgers.propertyId, properties.id));
+    .innerJoin(properties, eq(ledgers.propertyId, properties.id))
+    .$dynamic();
 
     if (propertyId) {
       query = query.where(eq(ledgers.propertyId, propertyId));
@@ -192,7 +193,7 @@ export class DatabaseStorage implements IStorage {
   async getTickets(propertyId?: string, status?: string): Promise<(MaintenanceTicket & { property: Property })[]> {
     const conditions = [];
     if (propertyId) conditions.push(eq(maintenanceTickets.propertyId, propertyId));
-    if (status) conditions.push(eq(maintenanceTickets.status, status));
+    if (status) conditions.push(eq(maintenanceTickets.status, status as 'OPEN' | 'IN_PROGRESS' | 'RESOLVED'));
 
     const baseQuery = db.select({
       id: maintenanceTickets.id,

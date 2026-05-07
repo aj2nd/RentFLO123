@@ -226,7 +226,7 @@ export async function registerRoutes(
 
   // Manual Payout (Admin)
   app.post(api.ledgers.payOwner.path, isAuthenticated, requireRole('ADMIN'), async (req, res) => {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const ledger = await storage.getLedger(id);
     if (!ledger) {
       return res.status(404).json({ message: 'Ledger not found' });
@@ -436,7 +436,7 @@ export async function registerRoutes(
 
   // Collect Rent (Manual/Testing - also updates ledger after successful payment)
   app.post(api.ledgers.collectRent.path, isAuthenticated, requireRole('ADMIN'), async (req, res) => {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const ledger = await storage.getLedger(id);
     if (!ledger) {
       return res.status(404).json({ message: 'Ledger not found' });
@@ -1108,9 +1108,10 @@ export function registerMessagingRoutes(app: Express) {
   // GET /api/admin/messages/:propertyId — full thread for one property (admin only)
   app.get('/api/admin/messages/:propertyId', isAuthenticated, requireRole('ADMIN'), async (req, res) => {
     try {
-      const property = await storage.getProperty(req.params.propertyId);
+      const propertyId = req.params.propertyId as string;
+      const property = await storage.getProperty(propertyId);
       if (!property) return res.status(404).json({ message: 'Property not found' });
-      const msgs = await storage.getMessages(req.params.propertyId);
+      const msgs = await storage.getMessages(propertyId);
       res.json({ property, messages: msgs });
     } catch (e) {
       console.error(e);
