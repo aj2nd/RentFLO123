@@ -2,8 +2,8 @@ import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
 import {
-  LayoutDashboard, Wallet, Home, Receipt, Wrench,
-  MessageSquare, ShieldCheck, FileSignature, Bell, UserCircle,
+  LayoutGrid, WalletMinimal, House, BookOpenText, Hammer,
+  MessagesSquare, ShieldCheck, FileSignature, BellRing, CircleUserRound,
 } from "lucide-react";
 
 interface NavItem {
@@ -75,25 +75,25 @@ export function BottomNav() {
 
   const itemsByRole: Record<string, NavItem[]> = {
     TENANT: [
-      { href: "/tenant",         icon: <Home size={22} />,          label: "Home" },
-      { href: "/ledger",         icon: <Receipt size={22} />,       label: "Ledger" },
-      { href: "/maintenance",    icon: <Wrench size={22} />,        label: "Repairs" },
-      { href: "/messages",       icon: <MessageSquare size={22} />, label: "Messages" },
-      { href: "/profile",        icon: <UserCircle size={22} />,    label: "Profile" },
+      { href: "/tenant",         icon: <House size={22} strokeWidth={1.75} />,           label: "Home" },
+      { href: "/ledger",         icon: <BookOpenText size={22} strokeWidth={1.75} />,    label: "Ledger" },
+      { href: "/maintenance",    icon: <Hammer size={22} strokeWidth={1.75} />,          label: "Repairs" },
+      { href: "/messages",       icon: <MessagesSquare size={22} strokeWidth={1.75} />,  label: "Messages" },
+      { href: "/profile",        icon: <CircleUserRound size={22} strokeWidth={1.75} />, label: "Profile" },
     ],
     OWNER: [
-      { href: "/owner",          icon: <Wallet size={22} />,        label: "Home" },
-      { href: "/ledger",         icon: <Receipt size={22} />,       label: "Ledger" },
-      { href: "/messages",       icon: <MessageSquare size={22} />, label: "Messages" },
-      { href: "/notifications",  icon: <Bell size={22} />,          label: "Inbox" },
-      { href: "/profile",        icon: <UserCircle size={22} />,    label: "Profile" },
+      { href: "/owner",          icon: <WalletMinimal size={22} strokeWidth={1.75} />,   label: "Home" },
+      { href: "/ledger",         icon: <BookOpenText size={22} strokeWidth={1.75} />,    label: "Ledger" },
+      { href: "/messages",       icon: <MessagesSquare size={22} strokeWidth={1.75} />,  label: "Messages" },
+      { href: "/notifications",  icon: <BellRing size={22} strokeWidth={1.75} />,        label: "Inbox" },
+      { href: "/profile",        icon: <CircleUserRound size={22} strokeWidth={1.75} />, label: "Profile" },
     ],
     ADMIN: [
-      { href: "/admin",              icon: <LayoutDashboard size={22} />, label: "Admin" },
-      { href: "/ledger",             icon: <Receipt size={22} />,         label: "Ledger" },
-      { href: "/admin/maintenance",  icon: <Wrench size={22} />,          label: "Repairs" },
-      { href: "/admin/messages",     icon: <MessageSquare size={22} />,   label: "Messages" },
-      { href: "/verify",             icon: <ShieldCheck size={22} />,     label: "KYC" },
+      { href: "/admin",              icon: <LayoutGrid size={22} strokeWidth={1.75} />,     label: "Admin" },
+      { href: "/ledger",             icon: <BookOpenText size={22} strokeWidth={1.75} />,   label: "Ledger" },
+      { href: "/admin/maintenance",  icon: <Hammer size={22} strokeWidth={1.75} />,         label: "Repairs" },
+      { href: "/admin/messages",     icon: <MessagesSquare size={22} strokeWidth={1.75} />, label: "Messages" },
+      { href: "/verify",             icon: <ShieldCheck size={22} strokeWidth={1.75} />,    label: "KYC" },
     ],
   };
 
