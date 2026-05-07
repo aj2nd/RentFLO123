@@ -17,8 +17,7 @@ export async function initVapid() {
     privateKey = keys.privateKey;
     process.env.VAPID_PUBLIC_KEY = publicKey;
     process.env.VAPID_PRIVATE_KEY = privateKey;
-    console.log("[push] Generated new VAPID keys (ephemeral — set as secrets for persistence)");
-    console.log("[push] VAPID_PUBLIC_KEY:", publicKey);
+    console.log("[push] Generated new VAPID keys (ephemeral — set VAPID_PUBLIC_KEY/VAPID_PRIVATE_KEY secrets for persistence)");
   }
 
   webpush.setVapidDetails(

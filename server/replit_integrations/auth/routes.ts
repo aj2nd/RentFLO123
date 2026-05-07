@@ -4,6 +4,7 @@ import { isAuthenticated } from "./replitAuth";
 import { db } from "../../db";
 import { properties } from "@shared/schema";
 import { eq, isNull } from "drizzle-orm";
+import { publicUser } from "../../security";
 
 // Register auth-specific routes
 export function registerAuthRoutes(app: Express): void {
@@ -12,7 +13,7 @@ export function registerAuthRoutes(app: Express): void {
     try {
       const userId = req.user.claims.sub;
       const user = await authStorage.getUser(userId);
-      res.json(user);
+      res.json(publicUser(user));
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
@@ -29,10 +30,11 @@ export function registerAuthRoutes(app: Express): void {
         return res.status(400).json({ message: "Invalid role. Must be TENANT or OWNER." });
       }
 
-      const user = await authStorage.updateUserRole(userId, role);
-      if (!user) {
+      const dbUser = await authStorage.updateUserRole(userId, role);
+      if (!dbUser) {
         return res.status(404).json({ message: "User not found" });
       }
+      const user = dbUser;
 
       // Tenant Auto-Match: If user is a tenant with an email, find any property
       // that has been pre-configured with their email and auto-bind them
@@ -51,7 +53,7 @@ export function registerAuthRoutes(app: Express): void {
         }
       }
 
-      res.json(user);
+      res.json(publicUser(user));
     } catch (error) {
       console.error("Error setting user role:", error);
       res.status(500).json({ message: "Failed to set role" });
@@ -62,25 +64,33 @@ export function registerAuthRoutes(app: Express): void {
   app.patch("/api/auth/profile", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const { firstName, lastName } = req.body;
+      const firstName = typeof req.body?.firstName === "string" ? req.body.firstName.trim().slice(0, 100) : undefined;
+      const lastName = typeof req.body?.lastName === "string" ? req.body.lastName.trim().slice(0, 100) : undefined;
       const updated = await authStorage.updateUser(userId, {
         ...(firstName !== undefined ? { firstName } : {}),
         ...(lastName !== undefined ? { lastName } : {}),
       });
       if (!updated) return res.status(404).json({ message: "User not found" });
-      res.json(updated);
+      res.json(publicUser(updated));
     } catch (error) {
       console.error("Error updating profile:", error);
       res.status(500).json({ message: "Failed to update profile" });
     }
   });
 
-  // Look up user by email (for property tenant assignment)
+  // Look up user by email (for property tenant assignment).
+  // Only OWNER/ADMIN can perform lookups (used when adding a tenant to a property).
+  // Email-format validated and length-bounded; rate-limited at the app layer.
   app.get("/api/auth/user-by-email", isAuthenticated, async (req: any, res) => {
     try {
-      const { email } = req.query;
+      const callerId = req.user?.claims?.sub;
+      const caller = await authStorage.getUser(callerId);
+      if (!caller || (caller.role !== "OWNER" && caller.role !== "ADMIN")) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
 
-      if (!email || typeof email !== 'string') {
+      const { email } = req.query;
+      if (!email || typeof email !== "string" || email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         return res.status(400).json({ message: "Email is required" });
       }
 
@@ -89,6 +99,7 @@ export function registerAuthRoutes(app: Express): void {
         return res.status(404).json({ message: "User not found" });
       }
 
+      // Minimal projection — never return KYC PII.
       res.json({ id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName });
     } catch (error) {
       console.error("Error looking up user:", error);

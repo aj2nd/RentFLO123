@@ -67,13 +67,38 @@ const sensitiveLimiter = rateLimit({
   message: { message: "Too many requests for this action. Please try again later." },
 });
 
+// AI/expensive resource limiter (chatbot)
+const aiLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "Too many requests. Please slow down." },
+});
+
+// Webhook limiter (Razorpay) — high enough for legit traffic, low enough to deter abuse
+const webhookLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "Too many requests." },
+});
+
 app.use(globalLimiter);
 app.use("/api/login", authLimiter);
 app.use("/api/callback", authLimiter);
 app.use("/api/auth/set-role", authLimiter);
+app.use("/api/auth/user-by-email", authLimiter);
 app.use("/api/kyc", sensitiveLimiter);
 app.use("/api/payments", sensitiveLimiter);
 app.use("/api/advances", sensitiveLimiter);
+app.use("/api/ledgers", sensitiveLimiter);
+app.use("/api/agreements", sensitiveLimiter);
+app.use("/api/push", sensitiveLimiter);
+app.use("/api/notifications/rent-due-check", sensitiveLimiter);
+app.use("/api/chatbot", aiLimiter);
+app.use("/api/razorpay/webhook", webhookLimiter);
 
 // ── Body Parsing (with size limits) ─────────────────────────────────────────
 app.use(

@@ -9,6 +9,13 @@ import Razorpay from "razorpay";
 import xss from "xss";
 import { initVapid, getVapidPublicKey, createNotification } from "./push";
 import OpenAI from "openai";
+import {
+  encryptPII,
+  publicUser,
+  timingSafeEqualStr,
+  requirePropertyAccess,
+  requireLedgerAccess,
+} from "./security";
 
 function sanitizeStrings(obj: any): any {
   if (typeof obj === 'string') return xss(obj);
@@ -75,10 +82,15 @@ export async function registerRoutes(
 
   // === API ROUTES ===
 
-  // Properties
-  app.get(api.properties.list.path, isAuthenticated, async (req, res) => {
-    const properties = await storage.getProperties();
-    res.json(properties);
+  // Properties — list is scoped to the caller. Admin sees all; OWNER sees own; TENANT sees own.
+  app.get(api.properties.list.path, isAuthenticated, async (req: any, res) => {
+    const userId = req.user?.claims?.sub;
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
+    const u = await authStorage.getUser(userId);
+    if (u?.role === "ADMIN") return res.json(await storage.getProperties());
+    if (u?.role === "OWNER") return res.json(await storage.getPropertiesByOwnerId(userId));
+    if (u?.role === "TENANT") return res.json(await storage.getPropertiesByTenantId(userId));
+    return res.json([]);
   });
 
   app.post(api.properties.create.path, isAuthenticated, async (req: any, res) => {
@@ -136,54 +148,80 @@ export async function registerRoutes(
     return res.json(props);
   });
 
-  app.get(api.properties.get.path, isAuthenticated, async (req, res) => {
-    const property = await storage.getProperty(req.params.id);
-    if (!property) {
-      return res.status(404).json({ message: 'Property not found' });
-    }
-    res.json(property);
+  app.get(api.properties.get.path, isAuthenticated, async (req: any, res) => {
+    const access = await requirePropertyAccess(req, res, req.params.id);
+    if (!access) return;
+    res.json(access.property);
   });
 
-  // Look up properties by owner email (for tenant join)
+  // Look up properties by owner email (for tenant join). Returns only address/id —
+  // no owner PII — and only properties without a tenant (the only ones a tenant
+  // could legitimately join). Limits enumeration value.
   app.get("/api/properties/by-owner-email", isAuthenticated, async (req, res) => {
     const { email } = req.query;
-    if (!email || typeof email !== 'string') {
-      return res.status(400).json({ message: 'Email is required' });
+    if (!email || typeof email !== "string" || email.length > 254) {
+      return res.status(400).json({ message: "Email is required" });
     }
     const props = await storage.getPropertiesByOwnerEmail(email);
-    res.json(props);
+    const safe = props
+      .filter((p) => !p.tenantId)
+      .map((p) => ({ id: p.id, address: p.address, monthlyRent: p.monthlyRent, payoutDay: p.payoutDay }));
+    res.json(safe);
   });
 
-  // Join property as tenant
+  // Join property as tenant — INVITATION-ONLY.
+  // Caller must (a) have TENANT role, (b) be authenticated with the email the
+  // owner pre-registered as `pendingTenantEmail`. This prevents any random
+  // logged-in user from claiming arbitrary vacant properties.
   app.post("/api/properties/:id/join", isAuthenticated, async (req: any, res) => {
     const { id } = req.params;
     const userId = req.user?.claims?.sub;
-    
-    if (!userId) {
-      return res.status(401).json({ message: 'Unauthorized' });
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+
+    const caller = await authStorage.getUser(userId);
+    if (!caller || caller.role !== 'TENANT') {
+      return res.status(403).json({ message: 'Only tenants can join properties' });
     }
 
     const property = await storage.getProperty(id);
     if (!property) {
       return res.status(404).json({ message: 'Property not found' });
     }
-
     if (property.tenantId) {
       return res.status(400).json({ message: 'Property already has a tenant' });
+    }
+
+    const callerEmail = (caller.email || '').toLowerCase();
+    const invited = (property.pendingTenantEmail || '').toLowerCase();
+    if (!invited || !callerEmail || invited !== callerEmail) {
+      return res.status(403).json({
+        message: 'You are not invited to this property. Ask the landlord to add your email.',
+      });
     }
 
     const updated = await storage.updatePropertyTenant(id, userId);
     res.json(updated);
   });
 
-  // Ledgers
-  app.get(api.ledgers.list.path, isAuthenticated, async (req, res) => {
+  // Ledgers — scoped. ADMIN sees all; non-admins only see ledgers for properties they own/rent.
+  app.get(api.ledgers.list.path, isAuthenticated, async (req: any, res) => {
+    const userId = req.user?.claims?.sub;
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
+    const u = await authStorage.getUser(userId);
     const { propertyId, status } = req.query;
-    const ledgers = await storage.getLedgers(
-        typeof propertyId === 'string' ? propertyId : undefined,
-        typeof status === 'string' ? status : undefined
-    );
-    res.json(ledgers);
+
+    // If propertyId is given, verify access first.
+    if (typeof propertyId === "string") {
+      const access = await requirePropertyAccess(req, res, propertyId);
+      if (!access) return;
+      const ledgers = await storage.getLedgers(propertyId, typeof status === "string" ? status : undefined);
+      return res.json(ledgers);
+    }
+
+    const all = await storage.getLedgers(undefined, typeof status === "string" ? status : undefined);
+    if (u?.role === "ADMIN") return res.json(all);
+    const allowed = all.filter((l) => l.property.ownerId === userId || l.property.tenantId === userId);
+    res.json(allowed);
   });
 
   // Manual Payout (Admin)
@@ -227,139 +265,171 @@ export async function registerRoutes(
     }
   });
 
-  // Create Razorpay Order for Tenant Payment
-  app.post('/api/ledgers/:id/create-order', isAuthenticated, async (req, res) => {
+  // Create Razorpay Order for Tenant Payment — only the tenant of the property may create.
+  app.post('/api/ledgers/:id/create-order', isAuthenticated, async (req: any, res) => {
     const { id } = req.params;
-    const ledger = await storage.getLedger(id);
-    if (!ledger) {
-      return res.status(404).json({ message: 'Ledger not found' });
+    const access = await requireLedgerAccess(req, res, id);
+    if (!access) return;
+    const { ledger, property, role } = access;
+    if (role !== "TENANT" && role !== "ADMIN") {
+      return res.status(403).json({ message: "Only the tenant of this property can pay rent" });
     }
 
-    // Get property to know the rent amount
-    const property = await storage.getProperty(ledger.propertyId);
-    if (!property) {
-      return res.status(404).json({ message: 'Property not found' });
-    }
-
-    // Check if Razorpay keys are configured
     const razorpay = getRazorpay();
     if (!razorpay) {
-      return res.status(500).json({ 
-        message: 'Razorpay not configured. Please add RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET to secrets.' 
-      });
+      return res.status(503).json({ message: "Payment gateway not configured" });
     }
 
     try {
-      // Create a real Razorpay order
       const order = await razorpay.orders.create({
-        amount: property.monthlyRent * 100, // Amount in paise
+        amount: property.monthlyRent * 100,
         currency: 'INR',
         receipt: `rent_${id}_${Date.now()}`,
-        notes: {
-          ledgerId: id,
-          propertyId: property.id,
-          monthYear: ledger.monthYear,
-        }
+        notes: { ledgerId: id, propertyId: property.id, monthYear: ledger.monthYear },
       });
 
       res.json({
         orderId: order.id,
         amount: order.amount,
         currency: order.currency,
-        keyId: process.env.RAZORPAY_KEY_ID, // Frontend needs this to open Razorpay checkout
+        keyId: process.env.RAZORPAY_KEY_ID,
       });
     } catch (err: any) {
-      console.error('Razorpay order creation failed:', err);
-      return res.status(500).json({ 
-        message: 'Failed to create payment order', 
-        error: err.message 
-      });
+      console.error('Razorpay order creation failed:', err?.message || err);
+      return res.status(502).json({ message: 'Failed to create payment order' });
     }
   });
 
   // Razorpay Webhook - Payment Verification (handles partial payments)
-  // NOTE: Intentionally unauthenticated - Razorpay sends webhook callbacks without session cookies.
-  // Security is enforced via HMAC signature verification below.
-  app.post('/api/razorpay/webhook', async (req, res) => {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
-    
-    // Verify signature
-    const crypto = await import('crypto');
-    const expectedSignature = crypto
-      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET || '')
-      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
-      .digest('hex');
-
-    if (expectedSignature !== razorpay_signature) {
-      return res.status(400).json({ message: 'Invalid signature' });
-    }
-
+  // SECURITY:
+  //  - HMAC computed over RAW request body (not the parsed/sanitized body) to
+  //    avoid mutation-induced signature drift. Falls back to the documented
+  //    `${order_id}|${payment_id}` callback signature for compatibility with
+  //    Razorpay Checkout success handlers.
+  //  - Uses crypto.timingSafeEqual to prevent timing attacks.
+  //  - Idempotent: if razorpay_payment_id is already SUCCESS, returns 200 without
+  //    re-counting the payment.
+  app.post('/api/razorpay/webhook', async (req: any, res) => {
     try {
-      const razorpay = getRazorpay();
-      if (!razorpay) {
-        return res.status(500).json({ message: 'Razorpay not configured' });
-      }
-      const order = await razorpay.orders.fetch(razorpay_order_id);
-      const ledgerId = order.notes?.ledgerId as string;
+      const cryptoMod = await import('crypto');
+      const secret = process.env.RAZORPAY_KEY_SECRET || '';
+      const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET || secret;
+      if (!secret) return res.status(503).json({ message: 'Payment gateway not configured' });
 
-      if (ledgerId) {
-        const ledger = await storage.getLedger(ledgerId);
-        const property = ledger ? await storage.getProperty(ledger.propertyId) : null;
-        
-        if (ledger && property) {
-          const amountPaid = Number(order.amount_paid) / 100; // amount_paid for partial payments
-          
-          // Update or find the payment record
-          const existingPayments = await storage.getPaymentsByLedger(ledgerId);
-          const pendingPayment = existingPayments.find(p => p.razorpayOrderId === razorpay_order_id);
-          
-          if (pendingPayment) {
-            await storage.updatePayment(pendingPayment.id, {
-              razorpayPaymentId: razorpay_payment_id,
-              status: 'SUCCESS',
-            });
-          }
-          
-          // Sum all successful payments for this ledger
-          const allPayments = await storage.getPaymentsByLedger(ledgerId);
-          const totalCollected = allPayments
-            .filter(p => p.status === 'SUCCESS')
-            .reduce((sum, p) => sum + p.amount, 0);
-          
-          // Determine if fully settled (collected >= monthly rent)
-          const isSettled = totalCollected >= property.monthlyRent;
+      const headerSig = (req.headers['x-razorpay-signature'] as string) || '';
+      const rawBody: Buffer | undefined = req.rawBody as Buffer | undefined;
 
-          await storage.updateLedger(ledgerId, {
-            amountCollected: totalCollected,
-            status: isSettled ? 'SETTLED' : (ledger.amountAdvanced > 0 ? 'EXPOSED' : 'ARREARS'),
-          });
+      let razorpay_order_id: string | undefined;
+      let razorpay_payment_id: string | undefined;
+      let signatureOk = false;
 
-          // Notify tenant: payment received
-          if (property.tenantId) {
-            createNotification(
-              property.tenantId,
-              "Payment Received",
-              `₹${amountPaid.toLocaleString('en-IN')} received for ${ledger.monthYear}. ${isSettled ? 'Rent fully settled!' : 'Partial payment recorded.'}`,
-              "RENT_COLLECTED",
-              "/tenant"
-            ).catch(() => {});
-          }
-          // Notify owner: tenant paid
-          if (property.ownerId) {
-            createNotification(
-              property.ownerId,
-              "Tenant Payment",
-              `Your tenant paid ₹${amountPaid.toLocaleString('en-IN')} for ${ledger.monthYear}.`,
-              "RENT_COLLECTED",
-              "/owner"
-            ).catch(() => {});
-          }
+      // Path A: Razorpay Webhook (server-to-server) — signature in header, HMAC of raw body
+      if (headerSig && rawBody) {
+        const expected = cryptoMod
+          .createHmac('sha256', webhookSecret)
+          .update(rawBody)
+          .digest('hex');
+        if (timingSafeEqualStr(expected, headerSig)) {
+          signatureOk = true;
+          const parsed = JSON.parse(rawBody.toString('utf8'));
+          const payEntity = parsed?.payload?.payment?.entity || {};
+          razorpay_order_id = payEntity.order_id;
+          razorpay_payment_id = payEntity.id;
         }
+      }
+
+      // Path B: Razorpay Checkout success handler callback — body has the three fields
+      if (!signatureOk) {
+        const b = req.body || {};
+        razorpay_order_id = b.razorpay_order_id;
+        razorpay_payment_id = b.razorpay_payment_id;
+        const sig = b.razorpay_signature;
+        if (razorpay_order_id && razorpay_payment_id && sig) {
+          const expected = cryptoMod
+            .createHmac('sha256', secret)
+            .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+            .digest('hex');
+          signatureOk = timingSafeEqualStr(expected, sig);
+        }
+      }
+
+      if (!signatureOk || !razorpay_order_id || !razorpay_payment_id) {
+        return res.status(400).json({ message: 'Invalid signature' });
+      }
+
+      const razorpay = getRazorpay();
+      if (!razorpay) return res.status(503).json({ message: 'Payment gateway not configured' });
+
+      const order = await razorpay.orders.fetch(razorpay_order_id);
+      const ledgerId = order.notes?.ledgerId as string | undefined;
+      if (!ledgerId) return res.json({ status: 'ok' });
+
+      const ledger = await storage.getLedger(ledgerId);
+      const property = ledger ? await storage.getProperty(ledger.propertyId) : null;
+      if (!ledger || !property) return res.json({ status: 'ok' });
+
+      const existingPayments = await storage.getPaymentsByLedger(ledgerId);
+
+      // IDEMPOTENCY: if this payment_id already recorded as SUCCESS, no-op.
+      const alreadyProcessed = existingPayments.some(
+        (p) => p.razorpayPaymentId === razorpay_payment_id && p.status === 'SUCCESS',
+      );
+      if (alreadyProcessed) return res.json({ status: 'ok', idempotent: true });
+
+      const pendingPayment = existingPayments.find((p) => p.razorpayOrderId === razorpay_order_id);
+      let amountPaid = 0;
+      if (pendingPayment) {
+        await storage.updatePayment(pendingPayment.id, {
+          razorpayPaymentId: razorpay_payment_id,
+          status: 'SUCCESS',
+        });
+        amountPaid = pendingPayment.amount;
+      } else {
+        // No pre-created payment row (e.g. flows that go through /create-order
+        // without pre-recording). Insert a SUCCESS row so totals reconcile.
+        amountPaid = Number(order.amount_paid || order.amount) / 100;
+        await storage.createPayment({
+          ledgerId,
+          amount: amountPaid,
+          razorpayOrderId: razorpay_order_id,
+          razorpayPaymentId: razorpay_payment_id,
+          status: 'SUCCESS',
+        });
+      }
+
+      const allPayments = await storage.getPaymentsByLedger(ledgerId);
+      const totalCollected = allPayments
+        .filter((p) => p.status === 'SUCCESS')
+        .reduce((sum, p) => sum + p.amount, 0);
+
+      const isSettled = totalCollected >= property.monthlyRent;
+      await storage.updateLedger(ledgerId, {
+        amountCollected: totalCollected,
+        status: isSettled ? 'SETTLED' : (ledger.amountAdvanced > 0 ? 'EXPOSED' : 'ARREARS'),
+      });
+
+      if (property.tenantId) {
+        createNotification(
+          property.tenantId,
+          'Payment Received',
+          `₹${amountPaid.toLocaleString('en-IN')} received for ${ledger.monthYear}. ${isSettled ? 'Rent fully settled!' : 'Partial payment recorded.'}`,
+          'RENT_COLLECTED',
+          '/tenant',
+        ).catch(() => {});
+      }
+      if (property.ownerId) {
+        createNotification(
+          property.ownerId,
+          'Tenant Payment',
+          `Your tenant paid ₹${amountPaid.toLocaleString('en-IN')} for ${ledger.monthYear}.`,
+          'RENT_COLLECTED',
+          '/owner',
+        ).catch(() => {});
       }
 
       res.json({ status: 'ok' });
     } catch (err: any) {
-      console.error('Webhook processing error:', err);
+      console.error('Webhook processing error:', err?.message || err);
       res.status(500).json({ message: 'Webhook processing failed' });
     }
   });
@@ -410,51 +480,72 @@ export async function registerRoutes(
   });
 
   // === PARTIAL PAYMENTS (Split Engine) ===
-  
-  // Get all payments (for ledger view)
-  app.get("/api/payments", isAuthenticated, async (req, res) => {
-    const payments = await storage.getAllPayments();
-    res.json(payments);
+
+  // List all payments — scoped to caller. ADMIN sees all; OWNER/TENANT see only
+  // payments for their own properties.
+  app.get("/api/payments", isAuthenticated, async (req: any, res) => {
+    const userId = req.user?.claims?.sub;
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
+    const u = await authStorage.getUser(userId);
+    const all = await storage.getAllPayments();
+    if (u?.role === "ADMIN") return res.json(all);
+
+    // Build allowed ledger set for this user.
+    const ledgers = await storage.getLedgers();
+    const allowedLedgerIds = new Set(
+      ledgers
+        .filter((l) => l.property.ownerId === userId || l.property.tenantId === userId)
+        .map((l) => l.id),
+    );
+    res.json(all.filter((p) => allowedLedgerIds.has(p.ledgerId)));
   });
 
-  // Get payments for a ledger
-  app.get(api.payments.listByLedger.path, isAuthenticated, async (req, res) => {
+  // Get payments for a ledger — must own/rent the property.
+  app.get(api.payments.listByLedger.path, isAuthenticated, async (req: any, res) => {
     const { ledgerId } = req.params;
+    const access = await requireLedgerAccess(req, res, String(ledgerId));
+    if (!access) return;
     const payments = await storage.getPaymentsByLedger(String(ledgerId));
     res.json(payments);
   });
 
-  // Create partial payment with Razorpay
-  app.post(api.payments.create.path, isAuthenticated, async (req, res) => {
+  // Create partial payment with Razorpay — only the tenant of the property may pay.
+  app.post(api.payments.create.path, isAuthenticated, async (req: any, res) => {
     const { ledgerId } = req.params;
-    const ledger = await storage.getLedger(ledgerId);
-    if (!ledger) {
-      return res.status(404).json({ message: 'Ledger not found' });
-    }
-
-    const property = await storage.getProperty(ledger.propertyId);
-    if (!property) {
-      return res.status(404).json({ message: 'Property not found' });
+    const access = await requireLedgerAccess(req, res, ledgerId);
+    if (!access) return;
+    const { ledger, property, role } = access;
+    if (role !== "TENANT" && role !== "ADMIN") {
+      return res.status(403).json({ message: "Only the tenant of this property can pay rent" });
     }
 
     const razorpay = getRazorpay();
     if (!razorpay) {
-      return res.status(500).json({ 
-        message: 'Razorpay not configured. Please add RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET to secrets.' 
-      });
+      return res.status(503).json({ message: "Payment gateway not configured" });
     }
 
     try {
       const input = api.payments.create.input.parse(req.body);
+
+      // Bound amount: must be >0 and <= remaining due (avoid overpayment exploits).
+      const existing = await storage.getPaymentsByLedger(ledgerId);
+      const alreadyPaid = existing
+        .filter((p) => p.status === "SUCCESS")
+        .reduce((s, p) => s + p.amount, 0);
+      const remaining = Math.max(0, property.monthlyRent - alreadyPaid);
+      if (input.amount <= 0 || input.amount > remaining + 0) {
+        return res.status(400).json({
+          message: `Amount must be between 1 and ${remaining}`,
+        });
+      }
+
       const amountInPaise = input.amount * 100;
-      
-      // Create Razorpay order with partial_payment enabled
       const order = await razorpay.orders.create({
         amount: amountInPaise,
         currency: 'INR',
         receipt: `partial_${ledgerId}_${Date.now()}`,
-        partial_payment: true, // CRITICAL: Enable partial payments
-        first_payment_min_amount: 100, // Minimum 1 rupee
+        partial_payment: true,
+        first_payment_min_amount: 100,
         notes: {
           ledgerId: ledgerId,
           propertyId: property.id,
@@ -463,7 +554,6 @@ export async function registerRoutes(
         }
       });
 
-      // Create payment record in pending state
       const payment = await storage.createPayment({
         ledgerId: ledgerId,
         amount: input.amount,
@@ -479,30 +569,47 @@ export async function registerRoutes(
         keyId: process.env.RAZORPAY_KEY_ID!,
       });
     } catch (err: any) {
-      console.error('Partial payment order creation failed:', err);
-      return res.status(500).json({ 
-        message: 'Failed to create payment order', 
-        error: err.message 
-      });
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({ message: err.errors[0].message });
+      }
+      console.error('Partial payment order creation failed:', err?.message || err);
+      return res.status(502).json({ message: 'Failed to create payment order' });
     }
   });
 
   // === MAINTENANCE TICKETS ===
   
-  // Get all tickets
-  app.get(api.tickets.list.path, isAuthenticated, async (req, res) => {
+  // List tickets — scoped. ADMIN sees all; non-admins see only their property tickets.
+  app.get(api.tickets.list.path, isAuthenticated, async (req: any, res) => {
+    const userId = req.user?.claims?.sub;
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
+    const u = await authStorage.getUser(userId);
     const { propertyId, status } = req.query;
-    const tickets = await storage.getTickets(
-      typeof propertyId === 'string' ? propertyId : undefined,
-      typeof status === 'string' ? status : undefined
-    );
-    res.json(tickets);
+
+    if (typeof propertyId === "string") {
+      const access = await requirePropertyAccess(req, res, propertyId);
+      if (!access) return;
+      const tickets = await storage.getTickets(propertyId, typeof status === "string" ? status : undefined);
+      return res.json(tickets);
+    }
+
+    const all = await storage.getTickets(undefined, typeof status === "string" ? status : undefined);
+    if (u?.role === "ADMIN") return res.json(all);
+    res.json(all.filter((t) => t.property.ownerId === userId || t.property.tenantId === userId));
   });
 
-  // Create ticket (Tenant)
+  // Create ticket — only the tenant of the property may create.
   app.post(api.tickets.create.path, isAuthenticated, async (req: any, res) => {
     try {
       const input = api.tickets.create.input.parse(req.body);
+      const userId = req.user?.claims?.sub;
+      const access = await requirePropertyAccess(req, res, input.propertyId);
+      if (!access) return;
+      if (access.role !== "TENANT" && access.role !== "ADMIN") {
+        return res.status(403).json({ message: "Only the tenant can report issues" });
+      }
+      // Force tenantId to authenticated user (don't trust client-supplied tenantId)
+      input.tenantId = userId;
       const ticket = await storage.createTicket(input);
 
       // Notify all admins about new maintenance request
@@ -555,64 +662,72 @@ export async function registerRoutes(
     res.json(updated);
   });
 
-  // Get ticket counts by property
-  app.get(api.tickets.countsByProperty.path, isAuthenticated, async (req, res) => {
+  // Get ticket counts by property — must own/rent the property.
+  app.get(api.tickets.countsByProperty.path, isAuthenticated, async (req: any, res) => {
     const { id } = req.params;
+    const access = await requirePropertyAccess(req, res, id);
+    if (!access) return;
     const counts = await storage.getTicketCountsByProperty(id);
     res.json(counts);
   });
 
   // === KYC ROUTES ===
   
-  // Submit KYC documents
+  // Submit KYC documents — strictly validated, PII encrypted at rest.
+  const kycSchema = z.object({
+    fullLegalName: z.string().trim().min(2).max(100),
+    panNumber: z.string().trim().regex(/^[A-Z]{5}[0-9]{4}[A-Z]$/i, "Invalid PAN format").optional().or(z.literal("")),
+    aadhaarNumber: z.string().trim().regex(/^\d{12}$/, "Aadhaar must be 12 digits").optional().or(z.literal("")),
+    kycDocumentUrl: z.string().max(2_000_000).optional().or(z.literal("")),
+    bankAccountNumber: z.string().trim().regex(/^\d{9,18}$/, "Invalid bank account").optional().or(z.literal("")),
+    ifscCode: z.string().trim().regex(/^[A-Z]{4}0[A-Z0-9]{6}$/i, "Invalid IFSC").optional().or(z.literal("")),
+    cancelledChequeUrl: z.string().max(2_000_000).optional().or(z.literal("")),
+  });
+
   app.post("/api/kyc/submit", isAuthenticated, async (req: any, res) => {
     const userId = req.user?.claims?.sub;
-    if (!userId) {
-      return res.status(401).json({ message: 'Unauthorized' });
-    }
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
 
-    const { fullLegalName, panNumber, aadhaarNumber, kycDocumentUrl, bankAccountNumber, ifscCode, cancelledChequeUrl } = req.body;
-
-    if (!fullLegalName) {
-      return res.status(400).json({ message: 'Full legal name is required' });
+    let input: z.infer<typeof kycSchema>;
+    try {
+      input = kycSchema.parse(req.body);
+    } catch (err: any) {
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({ message: err.errors[0].message, field: err.errors[0].path.join(".") });
+      }
+      throw err;
     }
-    if (!panNumber && !aadhaarNumber) {
+    if (!input.panNumber && !input.aadhaarNumber) {
       return res.status(400).json({ message: 'Either PAN number or Aadhaar number is required' });
     }
 
     const updated = await authStorage.updateUser(userId, {
-      fullLegalName,
-      panNumber,
-      aadhaarNumber,
-      kycDocumentUrl,
-      bankAccountNumber,
-      ifscCode,
-      cancelledChequeUrl,
-      isVerified: false, // Set to false, admin will verify
+      fullLegalName: input.fullLegalName,
+      panNumber: input.panNumber ? encryptPII(input.panNumber.toUpperCase()) : null,
+      aadhaarNumber: input.aadhaarNumber ? encryptPII(input.aadhaarNumber) : null,
+      kycDocumentUrl: input.kycDocumentUrl || null,
+      bankAccountNumber: input.bankAccountNumber ? encryptPII(input.bankAccountNumber) : null,
+      ifscCode: input.ifscCode ? input.ifscCode.toUpperCase() : null,
+      cancelledChequeUrl: input.cancelledChequeUrl || null,
+      isVerified: false,
     });
 
-    res.json(updated);
+    // Never echo back raw PII even to the user — return masked.
+    res.json(publicUser(updated));
   });
 
-  // Get users pending KYC verification (Admin only)
+  // Get users pending KYC verification (Admin only) — PII masked.
   app.get("/api/kyc/pending", isAuthenticated, requireRole('ADMIN'), async (req: any, res) => {
     const pendingUsers = await authStorage.getUsersPendingVerification();
-    res.json(pendingUsers);
+    res.json(pendingUsers.map(publicUser));
   });
 
-  // Verify user (Admin only)
+  // Verify user (Admin only).
   app.post("/api/kyc/verify/:userId", isAuthenticated, requireRole('ADMIN'), async (req: any, res) => {
     const { userId } = req.params;
-    
-    const updated = await authStorage.updateUser(userId, {
-      isVerified: true,
-    });
-
-    if (!updated) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    res.json(updated);
+    const updated = await authStorage.updateUser(userId, { isVerified: true });
+    if (!updated) return res.status(404).json({ message: 'User not found' });
+    res.json(publicUser(updated));
   });
 
   // ─── AGREEMENT ROUTES ────────────────────────────────────────────────────
@@ -652,10 +767,18 @@ export async function registerRoutes(
       return res.status(403).json({ message: 'Forbidden' });
     }
 
-    const { signatureUrl, propertyId } = req.body;
-    if (!signatureUrl || !propertyId) {
-      return res.status(400).json({ message: 'signatureUrl and propertyId are required' });
+    const signSchema = z.object({
+      signatureUrl: z.string().min(1).max(2_000_000),
+      propertyId: z.string().min(1).max(100),
+    });
+    let parsed: z.infer<typeof signSchema>;
+    try {
+      parsed = signSchema.parse(req.body);
+    } catch (err: any) {
+      if (err instanceof z.ZodError) return res.status(400).json({ message: err.errors[0].message });
+      throw err;
     }
+    const { signatureUrl, propertyId } = parsed;
 
     // Verify the user owns or rents this property
     const property = await storage.getProperty(propertyId);
@@ -671,10 +794,10 @@ export async function registerRoutes(
     return res.json(agreement);
   });
 
-  // Get all users (Admin only)
+  // Get all users (Admin only) — PII (PAN/Aadhaar/bank) returned masked.
   app.get("/api/users", isAuthenticated, requireRole('ADMIN'), async (req: any, res) => {
     const users = await authStorage.getAllUsers();
-    res.json(users);
+    res.json(users.map(publicUser));
   });
 
   // === PUSH NOTIFICATION ROUTES ===
@@ -684,20 +807,36 @@ export async function registerRoutes(
     res.json({ publicKey: getVapidPublicKey() });
   });
 
-  // Subscribe to push
+  // Subscribe to push — strict validation; storage rejects hijack attempts.
+  const pushSubSchema = z.object({
+    endpoint: z.string().url().max(2000),
+    p256dh: z.string().min(1).max(500),
+    auth: z.string().min(1).max(500),
+  });
   app.post("/api/push/subscribe", isAuthenticated, async (req: any, res) => {
     const userId = req.user?.claims?.sub;
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
-    const { endpoint, p256dh, auth } = req.body;
-    if (!endpoint || !p256dh || !auth) return res.status(400).json({ message: "Missing subscription fields" });
-    await storage.savePushSubscription({ userId, endpoint, p256dh, auth });
+    let input: z.infer<typeof pushSubSchema>;
+    try {
+      input = pushSubSchema.parse(req.body);
+    } catch (err: any) {
+      if (err instanceof z.ZodError) return res.status(400).json({ message: err.errors[0].message });
+      throw err;
+    }
+    try {
+      await storage.savePushSubscription({ userId, ...input });
+    } catch (err: any) {
+      if (err?.status === 403) return res.status(403).json({ message: "Subscription endpoint conflict" });
+      throw err;
+    }
     res.json({ ok: true });
   });
 
-  // Unsubscribe from push
-  app.post("/api/push/unsubscribe", isAuthenticated, async (req, res) => {
-    const { endpoint } = req.body;
-    if (endpoint) await storage.deletePushSubscription(endpoint);
+  // Unsubscribe from push — only deletes the caller's own endpoint.
+  app.post("/api/push/unsubscribe", isAuthenticated, async (req: any, res) => {
+    const userId = req.user?.claims?.sub;
+    const endpoint = typeof req.body?.endpoint === "string" ? req.body.endpoint : null;
+    if (endpoint && userId) await storage.deletePushSubscription(endpoint, userId);
     res.json({ ok: true });
   });
 
@@ -770,8 +909,10 @@ export async function registerRoutes(
     }
   });
 
-  // Seed Data
-  await seedDatabase();
+  // Seed Data — DEV ONLY. Never seed test users into a production DB.
+  if (process.env.NODE_ENV !== "production" && process.env.SEED_DEV_DATA === "true") {
+    await seedDatabase();
+  }
 
   // Messaging
   registerMessagingRoutes(app);
@@ -992,14 +1133,38 @@ export function registerMessagingRoutes(app: Express) {
     return openai;
   }
 
+  const chatSchema = z.object({
+    messages: z
+      .array(
+        z.object({
+          role: z.enum(["user", "assistant", "system"]),
+          content: z.string().min(1).max(4000),
+        }),
+      )
+      .min(1)
+      .max(20),
+    userContext: z
+      .object({
+        role: z.string().max(50).optional(),
+        name: z.string().max(100).optional(),
+        property: z.string().max(500).optional(),
+        monthlyRent: z.number().int().nonnegative().optional(),
+      })
+      .optional(),
+  });
+
   app.post("/api/chatbot", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user?.claims?.sub;
-      const { messages, userContext } = req.body;
-
-      if (!messages || !Array.isArray(messages)) {
-        return res.status(400).json({ message: "messages array is required" });
+      let parsed: z.infer<typeof chatSchema>;
+      try {
+        parsed = chatSchema.parse(req.body);
+      } catch (err: any) {
+        if (err instanceof z.ZodError) return res.status(400).json({ message: err.errors[0].message });
+        throw err;
       }
+      const { messages, userContext } = parsed;
+      // Strip any client-supplied "system" messages — only our trusted prompt allowed.
+      const safeMessages = messages.filter((m) => m.role !== "system");
 
       // Build context-aware system prompt
       const systemPrompt = `You are RentFLO Assistant, a helpful AI for the RentFLO rent-advance platform. You help landlords (owners) and tenants manage their rent, payments, KYC verification, maintenance tickets, and rental agreements.
@@ -1028,7 +1193,7 @@ Keep answers concise, friendly, and specific to rent/property management in Indi
         model: "gpt-5-mini",
         messages: [
           { role: "system", content: systemPrompt },
-          ...messages.map((m: any) => ({ role: m.role, content: m.content })),
+          ...safeMessages.map((m) => ({ role: m.role, content: m.content })),
         ],
         stream: true,
         max_completion_tokens: 500,

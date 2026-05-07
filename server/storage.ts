@@ -53,7 +53,7 @@ export interface IStorage {
 
   // Push Subscriptions
   savePushSubscription(sub: InsertPushSubscription): Promise<PushSubscription>;
-  deletePushSubscription(endpoint: string): Promise<void>;
+  deletePushSubscription(endpoint: string, userId?: string): Promise<void>;
 
   // Notifications
   getNotifications(userId: string): Promise<Notification[]>;
@@ -287,17 +287,35 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Push Subscriptions
+  // SECURITY: Atomic ownership-preserving upsert. The ON CONFLICT update only
+  // fires when the existing row already belongs to the same user — this closes
+  // the check-then-upsert race. If another user owns the endpoint, the update
+  // is skipped and `returning()` yields no rows; we then verify and reject.
   async savePushSubscription(sub: InsertPushSubscription): Promise<PushSubscription> {
-    const [saved] = await db
+    const rows = await db
       .insert(pushSubscriptions)
       .values(sub)
-      .onConflictDoUpdate({ target: pushSubscriptions.endpoint, set: { p256dh: sub.p256dh, auth: sub.auth } })
+      .onConflictDoUpdate({
+        target: pushSubscriptions.endpoint,
+        set: { p256dh: sub.p256dh, auth: sub.auth },
+        where: eq(pushSubscriptions.userId, sub.userId),
+      })
       .returning();
-    return saved;
+    if (rows.length === 0) {
+      throw Object.assign(new Error("Endpoint already registered to another user"), { status: 403 });
+    }
+    return rows[0];
   }
 
-  async deletePushSubscription(endpoint: string): Promise<void> {
-    await db.delete(pushSubscriptions).where(eq(pushSubscriptions.endpoint, endpoint));
+  // SECURITY: Only delete if the endpoint belongs to the requesting user.
+  async deletePushSubscription(endpoint: string, userId?: string): Promise<void> {
+    if (userId) {
+      await db
+        .delete(pushSubscriptions)
+        .where(and(eq(pushSubscriptions.endpoint, endpoint), eq(pushSubscriptions.userId, userId)));
+    } else {
+      await db.delete(pushSubscriptions).where(eq(pushSubscriptions.endpoint, endpoint));
+    }
   }
 
   // Notifications
