@@ -42,7 +42,7 @@ function OwnerSkeleton() {
 type KpiColorScheme = "tiffany" | "gold" | "sage" | "rose" | "violet" | "default";
 
 const kpiColorMap: Record<KpiColorScheme, { text: string; iconColor: string; hoverBg: string; hoverBorder: string }> = {
-  tiffany: { text: "#6FFFE9",                    iconColor: "#6FFFE9",               hoverBg: "rgba(111,255,233,0.05)", hoverBorder: "rgba(111,255,233,0.28)" },
+  tiffany: { text: "var(--tiffany,#6FFFE9)",      iconColor: "var(--tiffany,#6FFFE9)", hoverBg: "rgba(111,255,233,0.05)", hoverBorder: "rgba(111,255,233,0.28)" },
   gold:    { text: "var(--color-gold-mid,#D97706)", iconColor: "var(--color-gold-mid,#D97706)", hoverBg: "rgba(217,119,6,0.04)",  hoverBorder: "rgba(217,119,6,0.28)"  },
   sage:    { text: "var(--color-sage-mid,#059669)", iconColor: "var(--color-sage-mid,#059669)", hoverBg: "rgba(5,150,105,0.04)",  hoverBorder: "rgba(5,150,105,0.28)"  },
   rose:    { text: "var(--color-rose-mid,#E11D48)", iconColor: "var(--color-rose-mid,#E11D48)", hoverBg: "rgba(225,29,72,0.04)",  hoverBorder: "rgba(225,29,72,0.26)"  },

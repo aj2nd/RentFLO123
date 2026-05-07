@@ -66,10 +66,10 @@ export default function LandingPage() {
               href="/onboarding"
               className="inline-flex items-center justify-center px-8 rounded-xl font-bold text-sm tracking-[0.06em] uppercase transition-all duration-200 group"
               style={isLight ? {
-                background: '#0A0A0A',
-                color: '#6FFFE9',
+                background: '#1A1D24',
+                color: '#5EEAD4',
                 height: '52px',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.30), 0 1px 0 rgba(0,0,0,0.12)',
+                boxShadow: '0 1px 2px rgba(15,23,42,0.08), 0 8px 24px rgba(15,23,42,0.12)',
               } : {
                 background: 'linear-gradient(135deg, #8A8A8A 0%, #D4D4D4 28%, #F2F2F2 48%, #E0E0E0 58%, #C0C0C0 72%, #8A8A8A 100%)',
                 color: '#000',
@@ -164,9 +164,9 @@ export default function LandingPage() {
             <div
               className="px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-[2px]"
               style={isLight ? {
-                background: '#0A0A0A',
-                color: '#6FFFE9',
-                boxShadow: '0 2px 12px rgba(0,0,0,0.25)',
+                background: '#1A1D24',
+                color: '#5EEAD4',
+                boxShadow: '0 2px 8px rgba(15,23,42,0.10), 0 1px 2px rgba(15,23,42,0.06)',
               } : {
                 background: 'linear-gradient(135deg, #888 0%, #D0D0D0 40%, #F0F0F0 55%, #B8B8B8 70%, #888 100%)',
                 color: '#000',
@@ -331,7 +331,7 @@ export default function LandingPage() {
                   </svg>
 
                   {/* Arrow */}
-                  <ArrowRight size={20} style={{ color: "#6FFFE9", opacity: 0.5, flexShrink: 0 }} />
+                  <ArrowRight size={20} style={{ color: "var(--tiffany,#6FFFE9)", opacity: 0.5, flexShrink: 0 }} />
 
                   {/* 3 smaller receipts */}
                   <div className="flex flex-col gap-2">
@@ -483,8 +483,8 @@ export default function LandingPage() {
                 <div>
                   <div className="mb-6">
                     {audienceTab === "owners"
-                      ? <Home size={40} strokeWidth={1.2} style={{ color: "#6FFFE9", opacity: 0.6 }} />
-                      : <Users size={40} strokeWidth={1.2} style={{ color: "#6FFFE9", opacity: 0.6 }} />
+                      ? <Home size={40} strokeWidth={1.2} style={{ color: "var(--tiffany,#6FFFE9)", opacity: 0.6 }} />
+                      : <Users size={40} strokeWidth={1.2} style={{ color: "var(--tiffany,#6FFFE9)", opacity: 0.6 }} />
                     }
                   </div>
                   <h3 className="text-4xl md:text-5xl font-black tracking-[-2px] silver-text leading-tight mb-6">
@@ -648,7 +648,7 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
           style={{
             background: open ? "rgba(111,255,233,0.10)" : "rgba(128,128,128,0.06)",
             border: open ? "1px solid rgba(111,255,233,0.22)" : "1px solid rgba(128,128,128,0.12)",
-            color: open ? "#6FFFE9" : "var(--nav-text-dim)",
+            color: open ? "var(--tiffany,#6FFFE9)" : "var(--nav-text-dim)",
           }}
         >
           {open ? <Minus size={13} /> : <Plus size={13} />}

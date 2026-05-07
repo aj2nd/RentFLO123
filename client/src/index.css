@@ -66,79 +66,85 @@
 /* Full-screen tiffany blue canvas. White cards float on it.             */
 /* Deep black text. Frosted glass nav. The highest design standard.      */
 .light {
-  --background: 168 45% 94%;        /* #E4F7F3 — soft pale mint canvas, not overwhelming */
-  --foreground: 0 0% 5%;            /* #0D0D0D — near-black text */
+  /* ── Premium Light Theme — refined warm-neutral canvas with jewel-tone accents ── */
+  --background: 40 20% 97%;         /* #FAFAF7 — warm off-white canvas (Stripe/Mercury feel) */
+  --foreground: 222 15% 12%;        /* #1A1D24 — near-black with subtle warm slate */
 
-  --card: 0 0% 100%;                /* #FFFFFF — pure white floating cards */
-  --card-foreground: 0 0% 5%;
+  --card: 0 0% 100%;                /* #FFFFFF — pure white cards */
+  --card-foreground: 222 15% 12%;
 
   --popover: 0 0% 100%;
-  --popover-foreground: 0 0% 5%;
+  --popover-foreground: 222 15% 12%;
 
-  --primary: 0 0% 5%;               /* black primary buttons */
-  --primary-foreground: 0 0% 100%;  /* white text on black */
+  --primary: 222 18% 11%;           /* deep ink — primary buttons */
+  --primary-foreground: 0 0% 100%;
 
-  --secondary: 38 100% 97%;         /* #FFF8EC — warm cream surface */
+  --secondary: 40 30% 96%;          /* #F8F5EE — warm cream surface */
   --secondary-foreground: 30 40% 20%;
 
-  --muted: 250 60% 97%;             /* #F5F3FF — soft lavender/indigo surface */
-  --muted-foreground: 0 0% 28%;
+  --muted: 220 14% 96%;             /* #F2F4F7 — neutral cool-grey surface */
+  --muted-foreground: 220 9% 38%;   /* #56606E — muted slate text */
 
-  --accent: 169 100% 20%;           /* #006655 — deep teal accent */
+  --accent: 173 80% 28%;            /* #0F766E — refined teal accent */
   --accent-foreground: 0 0% 100%;
 
   --destructive: 0 72% 51%;
   --destructive-foreground: 0 0% 100%;
 
-  --border: 168 30% 88%;            /* soft teal-tinted grey border */
+  --border: 220 13% 90%;            /* #E2E5EA — neutral hairline border */
   --input: 0 0% 100%;               /* white input backgrounds */
-  --ring: 169 100% 20%;             /* deep teal focus ring */
+  --ring: 173 80% 32%;              /* teal focus ring */
 
-  /* Named tokens — Tiffany World overrides */
+  /* Named tokens — refined for white surfaces */
   --silver: #0A0A0A;
-  --silver-light: #222222;
-  --silver-dim: #555555;
-  --tiffany: #005046;               /* deep teal — visible on pale mint AND white cards */
-  --tiffany-dim: #007A6E;
+  --silver-light: #2A2D34;
+  --silver-dim: #6B7280;
+  --tiffany: #0F766E;               /* refined teal — premium, sits beautifully on white */
+  --tiffany-dim: #0D9488;
 
-  /* Secondary palette — rich color variety */
-  --color-gold: #92400E;            /* warm amber text */
-  --color-gold-mid: #D97706;        /* amber icon/accent */
-  --color-gold-bg: #FEF3C7;         /* pale amber surface */
-  --color-gold-border: rgba(217, 119, 6, 0.30);
+  /* Secondary palette — jewel tones, gallery-grade */
+  --color-gold: #78350F;             /* deep amber text */
+  --color-gold-mid: #B45309;         /* rich amber icon/accent */
+  --color-gold-bg: #FEF6E4;          /* whisper-pale amber surface */
+  --color-gold-border: rgba(180, 83, 9, 0.22);
 
-  --color-violet: #4C1D95;          /* deep violet text */
-  --color-violet-mid: #7C3AED;      /* violet icon/accent */
-  --color-violet-bg: #EDE9FE;       /* pale violet surface */
-  --color-violet-border: rgba(124, 58, 237, 0.28);
+  --color-violet: #3B1B85;           /* deep violet text */
+  --color-violet-mid: #6D28D9;       /* royal violet icon/accent */
+  --color-violet-bg: #F2EDFF;        /* whisper-pale violet surface */
+  --color-violet-border: rgba(109, 40, 217, 0.22);
 
-  --color-rose: #9F1239;            /* deep rose text */
-  --color-rose-mid: #E11D48;        /* rose icon/accent */
-  --color-rose-bg: #FFE4E6;         /* pale rose surface */
-  --color-rose-border: rgba(225, 29, 72, 0.28);
+  --color-rose: #881337;             /* deep rose text */
+  --color-rose-mid: #BE123C;         /* crimson icon/accent */
+  --color-rose-bg: #FFE9EC;          /* whisper-pale rose surface */
+  --color-rose-border: rgba(190, 18, 60, 0.22);
 
-  --color-sage: #064E3B;            /* deep sage text */
-  --color-sage-mid: #059669;        /* sage icon/accent */
-  --color-sage-bg: #D1FAE5;         /* pale sage/emerald surface */
-  --color-sage-border: rgba(5, 150, 105, 0.28);
+  --color-sage: #064E3B;             /* deep emerald text */
+  --color-sage-mid: #047857;         /* forest emerald icon/accent */
+  --color-sage-bg: #DCFCE7;          /* whisper-pale sage surface */
+  --color-sage-border: rgba(4, 120, 87, 0.22);
 
-  /* Section zone backgrounds — alternating colored bands */
-  --section-cream: #FFFBF0;
-  --section-violet: #F5F0FF;
-  --section-amber: #FFFBEB;
-  --section-sage: #F0FDF9;
+  /* Section zone backgrounds — refined pastels (subtle on warm-white base) */
+  --section-cream: #FFF9E6;
+  --section-violet: #F3EEFF;
+  --section-amber: #FFF4D6;
+  --section-sage: #E8F8EF;
 
-  /* Surface tokens — frosted white glass on pale mint */
-  --nav-bg: rgba(255, 255, 255, 0.90);
-  --nav-border: rgba(0, 80, 70, 0.14);
-  --nav-text: rgba(0, 0, 0, 0.75);
-  --nav-text-dim: rgba(0, 0, 0, 0.42);
-  --surface-overlay: rgba(0, 80, 70, 0.18);
-  --surface-modal: rgba(255, 255, 255, 0.97);
-  --surface-card: rgba(255, 255, 255, 0.98);
-  --border-subtle: rgba(255, 255, 255, 0.70);
-  --border-accent-dim: rgba(0, 80, 70, 0.18);
+  /* Surface tokens — proper hierarchy with visible borders */
+  --nav-bg: rgba(255, 255, 255, 0.88);
+  --nav-border: rgba(15, 23, 42, 0.10);
+  --nav-text: rgba(15, 23, 42, 0.78);
+  --nav-text-dim: rgba(15, 23, 42, 0.48);
+  --surface-overlay: rgba(15, 23, 42, 0.05);
+  --surface-modal: #FFFFFF;
+  --surface-card: #FFFFFF;
+  --border-subtle: rgba(15, 23, 42, 0.08);
+  --border-accent-dim: rgba(15, 118, 110, 0.20);
   --tiffany-badge-text: #ffffff;
+
+  /* Soft elevation tokens — warm grey shadows for premium feel */
+  --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.06);
+  --shadow-card-hover: 0 4px 12px rgba(15, 23, 42, 0.06), 0 2px 4px rgba(15, 23, 42, 0.05);
+  --shadow-modal: 0 20px 50px rgba(15, 23, 42, 0.15), 0 8px 16px rgba(15, 23, 42, 0.08);
 }
 
 @layer base {

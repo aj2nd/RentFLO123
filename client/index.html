@@ -29,7 +29,7 @@
       /* ── Global reset ─────────────────────────────────── */
       *, *::before, *::after { box-sizing: border-box; }
       body { margin: 0; padding: 0; background: #000; }
-      html.light body { background: #6FFFE9; }
+      html.light body { background: #FAFAF7; }
 
       /* ── Main header bar ──────────────────────────────── */
       .i18n-header {
@@ -54,7 +54,7 @@
                     border-radius 0.4s ease, padding 0.4s ease;
       }
 
-      html.light .i18n-header { background: #6FFFE9; }
+      html.light .i18n-header { background: #FAFAF7; }
 
       .i18n-header.glass {
         height: 72px;
@@ -71,13 +71,13 @@
         box-shadow: 0 1px 0 rgba(255,255,255,0.05), 0 8px 40px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05);
       }
 
-      /* Scrolled glass header on tiffany canvas — frosted tiffany pill */
+      /* Scrolled glass header on warm-white canvas — premium frosted pill */
       html.light .i18n-header.glass {
-        background: rgba(111, 255, 233, 0.72);
-        backdrop-filter: blur(36px) saturate(180%) brightness(1.06);
-        -webkit-backdrop-filter: blur(36px) saturate(180%) brightness(1.06);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.55);
-        box-shadow: 0 1px 0 rgba(255,255,255,0.60), 0 8px 40px rgba(0,80,70,0.15), inset 0 1px 0 rgba(255,255,255,0.65);
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(36px) saturate(180%) brightness(1.02);
+        -webkit-backdrop-filter: blur(36px) saturate(180%) brightness(1.02);
+        border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+        box-shadow: 0 1px 2px rgba(15,23,42,0.04), 0 8px 32px rgba(15,23,42,0.08), inset 0 1px 0 rgba(255,255,255,0.90);
       }
 
       .i18n-header .logo-left {
@@ -146,7 +146,7 @@
         gap: 12px;
       }
 
-      html.light .i18n-login-bar { background: #6FFFE9; }
+      html.light .i18n-login-bar { background: #FAFAF7; }
 
       /* ── Language switcher (now in login bar) ─────────── */
       .language-switcher {
@@ -187,7 +187,7 @@
       }
 
       html.light .language-select option {
-        background: #6FFFE9;
+        background: #FFFFFF;
         color: #0a0a0a;
       }
 
@@ -294,11 +294,11 @@
         opacity: 1;
       }
 
-      /* Login button on tiffany canvas — solid black, tiffany text */
+      /* Login button on warm-white canvas — solid ink, refined teal text */
       html.light .login-btn {
-        background: #0A0A0A;
-        color: #6FFFE9;
-        box-shadow: 0 2px 16px rgba(0, 0, 0, 0.28), 0 0 0 1px rgba(0, 0, 0, 0.12);
+        background: #1A1D24;
+        color: #5EEAD4;
+        box-shadow: 0 1px 2px rgba(15,23,42,0.08), 0 4px 12px rgba(15,23,42,0.10), 0 0 0 1px rgba(15,23,42,0.10);
       }
       html.light .login-btn:hover {
         opacity: 1;
