@@ -46,7 +46,7 @@ export default function LandingPage() {
               CHASE
             </h1>
             <h1 className="text-[40px] sm:text-[60px] md:text-[72px] lg:text-[96px] font-bold tracking-[-2px] sm:tracking-[-3px] md:tracking-[-4px] leading-[0.88] silver-text glow-text select-none">
-              RENT.
+              RENT
             </h1>
           </div>
 
@@ -187,6 +187,16 @@ export default function LandingPage() {
               className="rounded-2xl p-8 md:p-10 flex flex-col"
               style={{ background: "var(--surface-card)", border: "1px solid var(--border-subtle)" }}
             >
+              {/* Badge */}
+              <div className="mb-5">
+                <span
+                  className="inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold uppercase tracking-[2px]"
+                  style={{ background: "rgba(111,255,233,0.1)", border: "1px solid rgba(111,255,233,0.25)", color: "var(--tiffany)" }}
+                >
+                  <Home size={10} />
+                  For Owners
+                </span>
+              </div>
               {/* Number + illustration row */}
               <div className="flex items-center gap-4 mb-8">
                 <span
@@ -243,6 +253,16 @@ export default function LandingPage() {
               className="rounded-2xl p-8 md:p-10 flex flex-col"
               style={{ background: "var(--surface-card)", border: "1px solid var(--border-subtle)" }}
             >
+              {/* Badge */}
+              <div className="mb-5">
+                <span
+                  className="inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold uppercase tracking-[2px]"
+                  style={{ background: "rgba(111,255,233,0.1)", border: "1px solid rgba(111,255,233,0.25)", color: "var(--tiffany)" }}
+                >
+                  <Users size={10} />
+                  For Tenants
+                </span>
+              </div>
               {/* Number + illustration row */}
               <div className="flex items-center gap-4 mb-8">
                 <span
