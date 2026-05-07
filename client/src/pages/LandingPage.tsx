@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
-import { ArrowRight, ShieldCheck, Zap, Building2, Clock, Plus, Minus, Home, Users } from "lucide-react";
+import { ArrowRight, ShieldCheck, Zap, Building2, Clock, Plus, Minus, Home, Users, UserPlus, FileCheck, Wallet } from "lucide-react";
 import { useI18n } from "@/hooks/use-i18n";
 import { useAuth } from "@/hooks/use-auth";
 import { useTheme } from "next-themes";
@@ -448,7 +448,11 @@ export default function LandingPage() {
           {/* Card */}
           <div
             className="relative overflow-hidden"
-            style={{
+            style={isLight ? {
+              background: "var(--surface-card)",
+              border: "1px solid var(--border-subtle)",
+              boxShadow: "var(--shadow-card)",
+            } : {
               background: "linear-gradient(140deg, #080812 0%, #0b1128 50%, #0f1a40 100%)",
               border: "1px solid rgba(111,255,233,0.12)",
             }}
@@ -457,7 +461,9 @@ export default function LandingPage() {
             <div
               className="absolute inset-0 pointer-events-none"
               style={{
-                backgroundImage: "linear-gradient(rgba(111,255,233,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(111,255,233,0.03) 1px, transparent 1px)",
+                backgroundImage: isLight
+                  ? "linear-gradient(rgba(15,118,110,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(15,118,110,0.04) 1px, transparent 1px)"
+                  : "linear-gradient(rgba(111,255,233,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(111,255,233,0.03) 1px, transparent 1px)",
                 backgroundSize: "48px 48px",
               }}
             />
@@ -472,19 +478,22 @@ export default function LandingPage() {
                 height: "320px",
                 borderRadius: "50%",
                 filter: "blur(80px)",
-                background: "rgba(111,255,233,0.07)",
+                background: isLight ? "rgba(15,118,110,0.08)" : "rgba(111,255,233,0.07)",
               }}
             />
 
             <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-0">
 
               {/* Left: big headline */}
-              <div className="p-10 md:p-14 flex flex-col justify-between" style={{ borderRight: "1px solid rgba(111,255,233,0.08)" }}>
+              <div
+                className="p-10 md:p-14 flex flex-col justify-between"
+                style={{ borderRight: isLight ? "1px solid var(--border-subtle)" : "1px solid rgba(111,255,233,0.08)" }}
+              >
                 <div>
                   <div className="mb-6">
                     {audienceTab === "owners"
-                      ? <Home size={40} strokeWidth={1.2} style={{ color: "var(--tiffany,#6FFFE9)", opacity: 0.6 }} />
-                      : <Users size={40} strokeWidth={1.2} style={{ color: "var(--tiffany,#6FFFE9)", opacity: 0.6 }} />
+                      ? <Home size={40} strokeWidth={1.2} style={{ color: "var(--tiffany,#6FFFE9)", opacity: isLight ? 0.9 : 0.6 }} />
+                      : <Users size={40} strokeWidth={1.2} style={{ color: "var(--tiffany,#6FFFE9)", opacity: isLight ? 0.9 : 0.6 }} />
                     }
                   </div>
                   <h3 className="text-4xl md:text-5xl font-black tracking-[-2px] silver-text leading-tight mb-6">
@@ -499,12 +508,59 @@ export default function LandingPage() {
                       : "RentFLO covers your rent upfront so your landlord gets paid on time. You settle with us in smaller weekly or monthly chunks that work for you."
                     }
                   </p>
+
+                  {/* Process checklist: Sign Up → KYC → Collect/Pay Rent */}
+                  <div className="mt-10">
+                    <p
+                      className="text-[10px] font-semibold uppercase tracking-[2px] mb-4"
+                      style={{ color: "var(--tiffany)", opacity: isLight ? 0.8 : 0.5 }}
+                    >
+                      How it works
+                    </p>
+                    <ol className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                      {[
+                        { n: 1, label: "Sign Up", Icon: UserPlus },
+                        { n: 2, label: "KYC", Icon: FileCheck },
+                        { n: 3, label: audienceTab === "owners" ? "Collect Rent" : "Pay Rent", Icon: Wallet },
+                      ].map(({ n, label, Icon }, idx, arr) => (
+                        <li key={n} className="flex items-center gap-2 sm:gap-3">
+                          <div
+                            className="flex items-center gap-2 px-3 py-2"
+                            style={{
+                              background: isLight ? "rgba(15,118,110,0.06)" : "rgba(111,255,233,0.06)",
+                              border: isLight ? "1px solid rgba(15,118,110,0.20)" : "1px solid rgba(111,255,233,0.20)",
+                            }}
+                          >
+                            <span
+                              className="flex items-center justify-center text-[10px] font-bold w-4 h-4"
+                              style={{
+                                background: "var(--tiffany)",
+                                color: isLight ? "#FFFFFF" : "#000000",
+                              }}
+                            >
+                              {n}
+                            </span>
+                            <Icon size={14} style={{ color: "var(--tiffany)" }} />
+                            <span
+                              className="text-xs font-semibold uppercase tracking-[1px]"
+                              style={{ color: "var(--foreground)" }}
+                            >
+                              {label}
+                            </span>
+                          </div>
+                          {idx < arr.length - 1 && (
+                            <ArrowRight size={14} style={{ color: "var(--tiffany)", opacity: 0.6, flexShrink: 0 }} />
+                          )}
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
                 </div>
                 <div className="mt-10">
                   <a
                     href="/api/login"
                     className="inline-flex items-center gap-2 px-7 py-3 font-bold text-sm uppercase tracking-[1.5px] transition-all duration-200"
-                    style={{ background: "var(--tiffany)", color: "#000" }}
+                    style={{ background: "var(--tiffany)", color: isLight ? "#FFFFFF" : "#000" }}
                     onMouseEnter={e => { e.currentTarget.style.opacity = "0.85" }}
                     onMouseLeave={e => { e.currentTarget.style.opacity = "1" }}
                   >
