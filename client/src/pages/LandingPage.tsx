@@ -233,7 +233,7 @@ export default function LandingPage() {
                 </div>
               </div>
               <p className="text-base md:text-lg font-light leading-relaxed text-muted-foreground">
-                We cover your rent upfront on the <span className="font-semibold" style={{ color: "var(--tiffany)", opacity: 0.85 }}>1st of the month</span> — guaranteed, every month.
+                We pay your <span className="font-semibold" style={{ color: "var(--tiffany)", opacity: 0.85 }}>full rent upfront</span> in a lump sum — and collect from your tenants ourselves.
               </p>
             </div>
 
@@ -285,7 +285,7 @@ export default function LandingPage() {
                 </div>
               </div>
               <p className="text-base md:text-lg font-light leading-relaxed text-muted-foreground">
-                Your tenant pays it back in <span className="font-semibold" style={{ color: "var(--tiffany)", opacity: 0.85 }}>smaller amounts</span> that fit their cash flow.
+                Tenants pay us back in <span className="font-semibold" style={{ color: "var(--tiffany)", opacity: 0.85 }}>flexible monthly or weekly</span> payments — on their schedule.
               </p>
             </div>
           </div>
