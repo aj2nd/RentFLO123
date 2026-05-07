@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Loader2, ChevronDown, Sparkles, Bot } from "lucide-react";
+import { Send, Loader2, ChevronDown, Sparkles, Bot, Headset } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLocation } from "wouter";
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -18,6 +19,7 @@ const SUGGESTED_PROMPTS = [
 
 export function AIChatBot() {
   const { user } = useAuth();
+  const [, setLocation] = useLocation();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
@@ -146,6 +148,13 @@ export function AIChatBot() {
     setStreaming(false);
   };
 
+  const talkToLiveAgent = () => {
+    if (streaming) abortRef.current?.abort();
+    const target = user?.role === "ADMIN" ? "/admin/messages" : "/messages";
+    setOpen(false);
+    setLocation(target);
+  };
+
   if (!user?.role) return null;
 
   return (
@@ -221,6 +230,15 @@ export function AIChatBot() {
                 <p className="text-[10px] text-zinc-500 uppercase tracking-widest">AI · Powered by Replit</p>
               </div>
               <div className="flex items-center gap-1">
+                <button
+                  onClick={talkToLiveAgent}
+                  className="flex items-center gap-1.5 px-2 py-1 text-[10px] uppercase tracking-widest text-[#6FFFE9] border border-[#6FFFE9]/30 hover:bg-[#6FFFE9]/10 hover:border-[#6FFFE9]/60 transition-colors"
+                  data-testid="button-talk-to-live-agent"
+                  title="Talk to a live agent"
+                >
+                  <Headset size={12} />
+                  <span className="hidden sm:inline">Live</span>
+                </button>
                 {messages.length > 0 && (
                   <button
                     onClick={clearChat}
@@ -263,6 +281,19 @@ export function AIChatBot() {
                         {prompt}
                       </button>
                     ))}
+                  </div>
+                  <div className="pt-2 border-t border-zinc-800/80">
+                    <button
+                      onClick={talkToLiveAgent}
+                      className="w-full flex items-center justify-center gap-2 px-3 py-2.5 text-xs text-[#6FFFE9] border border-[#6FFFE9]/30 hover:bg-[#6FFFE9]/10 hover:border-[#6FFFE9]/60 transition-all uppercase tracking-widest"
+                      data-testid="button-talk-to-live-agent-empty"
+                    >
+                      <Headset size={14} />
+                      Talk to a Live Agent
+                    </button>
+                    <p className="text-[10px] text-zinc-600 mt-2 text-center">
+                      Need a human? Open a chat with our support team.
+                    </p>
                   </div>
                 </div>
               )}
