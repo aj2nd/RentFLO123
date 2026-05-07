@@ -184,7 +184,7 @@ export default function LandingPage() {
       </div>
 
       {/* ── How It Works ──────────────────────────────────────────────────── */}
-      <section className="py-28 px-8 md:px-16">
+      <section className="py-28 px-8 md:px-16" style={isLight ? { background: "var(--section-sage)" } : {}}>
         <div className="max-w-screen-xl mx-auto">
           {/* Eyebrow */}
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#6FFFE9]/20 bg-[#6FFFE9]/[0.04] mb-10">
@@ -206,7 +206,15 @@ export default function LandingPage() {
               <div className="mb-5">
                 <span
                   className="inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold uppercase tracking-[2px]"
-                  style={{ background: "rgba(111,255,233,0.1)", border: "1px solid rgba(111,255,233,0.25)", color: "var(--tiffany)" }}
+                  style={isLight ? {
+                    background: "var(--color-violet-bg)",
+                    border: "1px solid var(--color-violet-border)",
+                    color: "var(--color-violet)",
+                  } : {
+                    background: "rgba(111,255,233,0.1)",
+                    border: "1px solid rgba(111,255,233,0.25)",
+                    color: "var(--tiffany)",
+                  }}
                 >
                   <Home size={10} />
                   For Owners
@@ -216,7 +224,12 @@ export default function LandingPage() {
               <div className="flex items-center gap-4 mb-8">
                 <span
                   className="text-[80px] font-black leading-none select-none flex-shrink-0 w-20 text-center"
-                  style={{
+                  style={isLight ? {
+                    background: 'linear-gradient(160deg, rgba(124,58,237,0.30) 0%, rgba(124,58,237,0.75) 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                  } : {
                     background: 'linear-gradient(160deg, rgba(111,255,233,0.25) 0%, rgba(111,255,233,0.7) 100%)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
@@ -272,7 +285,15 @@ export default function LandingPage() {
               <div className="mb-5">
                 <span
                   className="inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold uppercase tracking-[2px]"
-                  style={{ background: "rgba(111,255,233,0.1)", border: "1px solid rgba(111,255,233,0.25)", color: "var(--tiffany)" }}
+                  style={isLight ? {
+                    background: "var(--color-gold-bg)",
+                    border: "1px solid var(--color-gold-border)",
+                    color: "var(--color-gold)",
+                  } : {
+                    background: "rgba(111,255,233,0.1)",
+                    border: "1px solid rgba(111,255,233,0.25)",
+                    color: "var(--tiffany)",
+                  }}
                 >
                   <Users size={10} />
                   For Tenants
@@ -282,7 +303,12 @@ export default function LandingPage() {
               <div className="flex items-center gap-4 mb-8">
                 <span
                   className="text-[80px] font-black leading-none select-none flex-shrink-0 w-20 text-center"
-                  style={{
+                  style={isLight ? {
+                    background: 'linear-gradient(160deg, rgba(217,119,6,0.30) 0%, rgba(217,119,6,0.75) 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                  } : {
                     background: 'linear-gradient(160deg, rgba(111,255,233,0.25) 0%, rgba(111,255,233,0.7) 100%)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
@@ -334,7 +360,7 @@ export default function LandingPage() {
       </div>
 
       {/* ── Features ──────────────────────────────────────────────────────── */}
-      <section id="features-section" className="py-28 px-8 md:px-16">
+      <section id="features-section" className="py-28 px-8 md:px-16" style={isLight ? { background: "var(--section-violet)" } : {}}>
         <div className="max-w-screen-xl mx-auto">
           <div className="mb-16">
             <p className="text-[10px] font-semibold uppercase tracking-[2.5px] mb-4" style={{ color: "var(--tiffany)", opacity: 0.55 }}>Why RentFLO</p>
@@ -345,28 +371,36 @@ export default function LandingPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-border">
             <FeatureCard
-              icon={<Zap size={18} style={{ color: "var(--tiffany)" }} />}
+              icon={<Zap size={18} style={{ color: isLight ? "var(--color-gold-mid,#D97706)" : "var(--tiffany)" }} />}
+              iconBg={isLight ? "var(--color-gold-bg,#FEF3C7)" : undefined}
+              iconBorder={isLight ? "var(--color-gold-border,rgba(217,119,6,0.30))" : undefined}
               title={t("usp_1_title")}
               desc={t("usp_1_desc")}
               titleKey="usp_1_title"
               descKey="usp_1_desc"
             />
             <FeatureCard
-              icon={<ShieldCheck size={18} style={{ color: "var(--tiffany)" }} />}
+              icon={<ShieldCheck size={18} style={{ color: isLight ? "var(--color-sage-mid,#059669)" : "var(--tiffany)" }} />}
+              iconBg={isLight ? "var(--color-sage-bg,#D1FAE5)" : undefined}
+              iconBorder={isLight ? "var(--color-sage-border,rgba(5,150,105,0.28))" : undefined}
               title={t("usp_2_title")}
               desc={t("usp_2_desc")}
               titleKey="usp_2_title"
               descKey="usp_2_desc"
             />
             <FeatureCard
-              icon={<Building2 size={18} style={{ color: "var(--tiffany)" }} />}
+              icon={<Building2 size={18} style={{ color: isLight ? "var(--color-violet-mid,#7C3AED)" : "var(--tiffany)" }} />}
+              iconBg={isLight ? "var(--color-violet-bg,#EDE9FE)" : undefined}
+              iconBorder={isLight ? "var(--color-violet-border,rgba(124,58,237,0.28))" : undefined}
               title={t("usp_3_title")}
               desc={t("usp_3_desc")}
               titleKey="usp_3_title"
               descKey="usp_3_desc"
             />
             <FeatureCard
-              icon={<Clock size={18} style={{ color: "var(--tiffany)" }} />}
+              icon={<Clock size={18} style={{ color: isLight ? "var(--color-rose-mid,#E11D48)" : "var(--tiffany)" }} />}
+              iconBg={isLight ? "var(--color-rose-bg,#FFE4E6)" : undefined}
+              iconBorder={isLight ? "var(--color-rose-border,rgba(225,29,72,0.28))" : undefined}
               title={t("usp_4_title")}
               desc={t("usp_4_desc")}
               titleKey="usp_4_title"
@@ -382,7 +416,7 @@ export default function LandingPage() {
       </div>
 
       {/* ── For Owners / For Tenants toggle ───────────────────────────────── */}
-      <section className="py-28 px-8 md:px-16">
+      <section className="py-28 px-8 md:px-16" style={isLight ? { background: "var(--section-cream)" } : {}}>
         <div className="max-w-screen-xl mx-auto">
 
           {/* Eyebrow + toggle pill */}
@@ -524,7 +558,7 @@ export default function LandingPage() {
       </div>
 
       {/* ── FAQ ───────────────────────────────────────────────────────────── */}
-      <section className="py-28 px-8 md:px-16">
+      <section className="py-28 px-8 md:px-16" style={isLight ? { background: "var(--section-amber)" } : {}}>
         <div className="max-w-screen-xl mx-auto">
           {/* Eyebrow */}
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#6FFFE9]/20 bg-[#6FFFE9]/[0.04] mb-10">
@@ -633,18 +667,23 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
 
 // ── Feature Card ──────────────────────────────────────────────────────────────
 
-function FeatureCard({ icon, title, desc, titleKey, descKey }: {
+function FeatureCard({ icon, title, desc, titleKey, descKey, iconBg, iconBorder }: {
   icon: React.ReactNode;
   title: string;
   desc: string;
   titleKey: string;
   descKey: string;
+  iconBg?: string;
+  iconBorder?: string;
 }) {
   return (
     <div className="bg-background p-8 md:p-10 group hover:bg-card transition-colors duration-300">
       <div
         className="mb-5 inline-flex items-center justify-center w-10 h-10 rounded-xl transition-colors duration-300"
-        style={{ border: "1px solid var(--border-accent-dim)", background: "rgba(111,255,233,0.04)" }}
+        style={{
+          border: `1px solid ${iconBorder ?? "var(--border-accent-dim)"}`,
+          background: iconBg ?? "rgba(111,255,233,0.04)",
+        }}
       >
         {icon}
       </div>

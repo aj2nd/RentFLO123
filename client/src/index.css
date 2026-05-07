@@ -66,7 +66,7 @@
 /* Full-screen tiffany blue canvas. White cards float on it.             */
 /* Deep black text. Frosted glass nav. The highest design standard.      */
 .light {
-  --background: 169 100% 72%;       /* #6FFFE9 — full tiffany canvas */
+  --background: 168 45% 94%;        /* #E4F7F3 — soft pale mint canvas, not overwhelming */
   --foreground: 0 0% 5%;            /* #0D0D0D — near-black text */
 
   --card: 0 0% 100%;                /* #FFFFFF — pure white floating cards */
@@ -78,11 +78,11 @@
   --primary: 0 0% 5%;               /* black primary buttons */
   --primary-foreground: 0 0% 100%;  /* white text on black */
 
-  --secondary: 169 80% 92%;         /* #C8F7F1 — pale tiffany tint for surfaces */
-  --secondary-foreground: 0 0% 5%;
+  --secondary: 38 100% 97%;         /* #FFF8EC — warm cream surface */
+  --secondary-foreground: 30 40% 20%;
 
-  --muted: 169 60% 90%;             /* #C5EEE9 — subtle tiffany muted surface */
-  --muted-foreground: 0 0% 28%;     /* dark enough on pale tiffany */
+  --muted: 250 60% 97%;             /* #F5F3FF — soft lavender/indigo surface */
+  --muted-foreground: 0 0% 28%;
 
   --accent: 169 100% 20%;           /* #006655 — deep teal accent */
   --accent-foreground: 0 0% 100%;
@@ -90,7 +90,7 @@
   --destructive: 0 72% 51%;
   --destructive-foreground: 0 0% 100%;
 
-  --border: 0 0% 88%;               /* #E0E0E0 — clean light grey border on white cards */
+  --border: 168 30% 88%;            /* soft teal-tinted grey border */
   --input: 0 0% 100%;               /* white input backgrounds */
   --ring: 169 100% 20%;             /* deep teal focus ring */
 
@@ -98,19 +98,46 @@
   --silver: #0A0A0A;
   --silver-light: #222222;
   --silver-dim: #555555;
-  --tiffany: #005046;               /* deep teal — visible on tiffany bg AND white cards */
+  --tiffany: #005046;               /* deep teal — visible on pale mint AND white cards */
   --tiffany-dim: #007A6E;
 
-  /* Surface tokens — frosted white glass on tiffany */
-  --nav-bg: rgba(255, 255, 255, 0.88);
-  --nav-border: rgba(0, 80, 70, 0.18);
+  /* Secondary palette — rich color variety */
+  --color-gold: #92400E;            /* warm amber text */
+  --color-gold-mid: #D97706;        /* amber icon/accent */
+  --color-gold-bg: #FEF3C7;         /* pale amber surface */
+  --color-gold-border: rgba(217, 119, 6, 0.30);
+
+  --color-violet: #4C1D95;          /* deep violet text */
+  --color-violet-mid: #7C3AED;      /* violet icon/accent */
+  --color-violet-bg: #EDE9FE;       /* pale violet surface */
+  --color-violet-border: rgba(124, 58, 237, 0.28);
+
+  --color-rose: #9F1239;            /* deep rose text */
+  --color-rose-mid: #E11D48;        /* rose icon/accent */
+  --color-rose-bg: #FFE4E6;         /* pale rose surface */
+  --color-rose-border: rgba(225, 29, 72, 0.28);
+
+  --color-sage: #064E3B;            /* deep sage text */
+  --color-sage-mid: #059669;        /* sage icon/accent */
+  --color-sage-bg: #D1FAE5;         /* pale sage/emerald surface */
+  --color-sage-border: rgba(5, 150, 105, 0.28);
+
+  /* Section zone backgrounds — alternating colored bands */
+  --section-cream: #FFFBF0;
+  --section-violet: #F5F0FF;
+  --section-amber: #FFFBEB;
+  --section-sage: #F0FDF9;
+
+  /* Surface tokens — frosted white glass on pale mint */
+  --nav-bg: rgba(255, 255, 255, 0.90);
+  --nav-border: rgba(0, 80, 70, 0.14);
   --nav-text: rgba(0, 0, 0, 0.75);
   --nav-text-dim: rgba(0, 0, 0, 0.42);
-  --surface-overlay: rgba(0, 80, 70, 0.22);
+  --surface-overlay: rgba(0, 80, 70, 0.18);
   --surface-modal: rgba(255, 255, 255, 0.97);
   --surface-card: rgba(255, 255, 255, 0.98);
-  --border-subtle: rgba(255, 255, 255, 0.55);
-  --border-accent-dim: rgba(0, 80, 70, 0.22);
+  --border-subtle: rgba(255, 255, 255, 0.70);
+  --border-accent-dim: rgba(0, 80, 70, 0.18);
   --tiffany-badge-text: #ffffff;
 }
 

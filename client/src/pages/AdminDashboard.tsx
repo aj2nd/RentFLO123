@@ -319,10 +319,10 @@ export default function AdminDashboard() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-              <StatCard label={t('admin_total_advanced')} value={`₹${(stats?.totalAdvanced || 0).toLocaleString()}`} subtext={t('admin_capital_deployed')} />
-              <StatCard label={t('admin_total_collected')} value={`₹${(stats?.totalCollected || 0).toLocaleString()}`} subtext={t('admin_revenue_recovered')} />
-              <StatCard label={t('admin_pending_payouts')} value={stats?.pendingPayouts || 0} subtext={t('admin_actions_required')} />
-              <StatCard label={t('admin_active_properties')} value={stats?.activeProperties || 0} subtext={t('admin_stat_properties_sub')} />
+              <StatCard label={t('admin_total_advanced')} value={`₹${(stats?.totalAdvanced || 0).toLocaleString()}`} subtext={t('admin_capital_deployed')} colorScheme="violet" />
+              <StatCard label={t('admin_total_collected')} value={`₹${(stats?.totalCollected || 0).toLocaleString()}`} subtext={t('admin_revenue_recovered')} colorScheme="sage" />
+              <StatCard label={t('admin_pending_payouts')} value={stats?.pendingPayouts || 0} subtext={t('admin_actions_required')} colorScheme="rose" />
+              <StatCard label={t('admin_active_properties')} value={stats?.activeProperties || 0} subtext={t('admin_stat_properties_sub')} colorScheme="gold" />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">

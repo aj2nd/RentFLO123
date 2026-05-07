@@ -39,8 +39,19 @@ function OwnerSkeleton() {
 }
 
 /* ─── KPI Card ─── */
+type KpiColorScheme = "tiffany" | "gold" | "sage" | "rose" | "violet" | "default";
+
+const kpiColorMap: Record<KpiColorScheme, { text: string; iconColor: string; hoverBg: string; hoverBorder: string }> = {
+  tiffany: { text: "#6FFFE9",                    iconColor: "#6FFFE9",               hoverBg: "rgba(111,255,233,0.05)", hoverBorder: "rgba(111,255,233,0.28)" },
+  gold:    { text: "var(--color-gold-mid,#D97706)", iconColor: "var(--color-gold-mid,#D97706)", hoverBg: "rgba(217,119,6,0.04)",  hoverBorder: "rgba(217,119,6,0.28)"  },
+  sage:    { text: "var(--color-sage-mid,#059669)", iconColor: "var(--color-sage-mid,#059669)", hoverBg: "rgba(5,150,105,0.04)",  hoverBorder: "rgba(5,150,105,0.28)"  },
+  rose:    { text: "var(--color-rose-mid,#E11D48)", iconColor: "var(--color-rose-mid,#E11D48)", hoverBg: "rgba(225,29,72,0.04)",  hoverBorder: "rgba(225,29,72,0.26)"  },
+  violet:  { text: "var(--color-violet-mid,#7C3AED)", iconColor: "var(--color-violet-mid,#7C3AED)", hoverBg: "rgba(124,58,237,0.04)", hoverBorder: "rgba(124,58,237,0.26)" },
+  default: { text: "var(--foreground)",            iconColor: "var(--nav-text-dim)",  hoverBg: "rgba(111,255,233,0.04)", hoverBorder: "rgba(111,255,233,0.20)" },
+};
+
 function KpiCard({
-  label, value, sub, accent, icon, testId,
+  label, value, sub, accent, icon, testId, colorScheme = "default",
 }: {
   label: string;
   value: string;
@@ -48,8 +59,12 @@ function KpiCard({
   accent?: boolean;
   icon: React.ReactNode;
   testId?: string;
+  colorScheme?: KpiColorScheme;
 }) {
   const [hov, setHov] = useState(false);
+  const { resolvedTheme } = useTheme();
+  const isDarkKpi = resolvedTheme !== "light";
+  const scheme = isDarkKpi ? (accent ? kpiColorMap.tiffany : kpiColorMap.default) : kpiColorMap[colorScheme];
   return (
     <div
       data-testid={testId}
@@ -57,16 +72,12 @@ function KpiCard({
       onMouseLeave={() => setHov(false)}
       style={{
         padding: "18px 18px 16px",
-        background: hov
-          ? "rgba(111,255,233,0.05)"
-          : "var(--surface-card)",
-        border: hov
-          ? "1px solid rgba(111,255,233,0.28)"
-          : "1px solid var(--border-subtle)",
+        background: hov ? scheme.hoverBg : "var(--surface-card)",
+        border: hov ? `1px solid ${scheme.hoverBorder}` : "1px solid var(--border-subtle)",
         transition: "background 0.2s, border-color 0.2s, box-shadow 0.2s",
         boxShadow: hov
-          ? "0 0 24px rgba(111,255,233,0.08), 0 8px 32px rgba(0,0,0,0.25)"
-          : "0 2px 12px rgba(0,0,0,0.18)",
+          ? "0 4px 20px rgba(0,0,0,0.12)"
+          : "0 2px 8px rgba(0,0,0,0.10)",
         cursor: "default",
       }}
     >
@@ -74,7 +85,7 @@ function KpiCard({
         <span style={{ color: "var(--nav-text-dim)", fontSize: 10, fontWeight: 600, letterSpacing: "0.10em", textTransform: "uppercase" }}>
           {label}
         </span>
-        <span style={{ color: accent ? "#6FFFE9" : "var(--nav-text-dim)", opacity: 0.7 }}>{icon}</span>
+        <span style={{ color: scheme.iconColor, opacity: 0.7 }}>{icon}</span>
       </div>
       <p
         style={{
@@ -83,7 +94,7 @@ function KpiCard({
           fontWeight: 700,
           letterSpacing: "-0.03em",
           lineHeight: 1,
-          color: accent ? "#6FFFE9" : "var(--foreground)",
+          color: (accent || colorScheme !== "default") ? scheme.text : "var(--foreground)",
           marginBottom: 4,
         }}
       >
@@ -97,18 +108,34 @@ function KpiCard({
 }
 
 /* ─── Status pill ─── */
-function StatusPill({ status }: { status: string }) {
-  const map: Record<string, { label: string; color: string; bg: string }> = {
-    SETTLED:  { label: "Settled",  color: "#6FFFE9",          bg: "rgba(111,255,233,0.10)" },
-    EXPOSED:  { label: "Exposed",  color: "#f97316",          bg: "rgba(249,115,22,0.10)"  },
-    ARREARS:  { label: "Arrears",  color: "rgba(255,255,255,0.40)", bg: "rgba(255,255,255,0.06)" },
+function StatusPill({ status, isDark }: { status: string; isDark: boolean }) {
+  const darkMap: Record<string, { label: string; color: string; bg: string }> = {
+    SETTLED: { label: "Settled", color: "#6FFFE9",                  bg: "rgba(111,255,233,0.10)" },
+    EXPOSED: { label: "Exposed", color: "#f97316",                  bg: "rgba(249,115,22,0.10)"  },
+    ARREARS: { label: "Arrears", color: "rgba(255,255,255,0.40)",   bg: "rgba(255,255,255,0.06)" },
   };
-  const s = map[status] ?? { label: status, color: "rgba(255,255,255,0.35)", bg: "rgba(255,255,255,0.05)" };
+  const lightMap: Record<string, { label: string; color: string; bg: string; border: string }> = {
+    SETTLED: { label: "Settled", color: "var(--color-sage)",  bg: "var(--color-sage-bg)",   border: "var(--color-sage-border)"   },
+    EXPOSED: { label: "Exposed", color: "var(--color-gold)",  bg: "var(--color-gold-bg)",   border: "var(--color-gold-border)"   },
+    ARREARS: { label: "Arrears", color: "var(--color-rose)",  bg: "var(--color-rose-bg)",   border: "var(--color-rose-border)"   },
+  };
+  if (isDark) {
+    const s = darkMap[status] ?? { label: status, color: "rgba(255,255,255,0.35)", bg: "rgba(255,255,255,0.05)" };
+    return (
+      <span style={{
+        fontSize: 9, fontWeight: 700, letterSpacing: "0.09em", textTransform: "uppercase",
+        padding: "3px 8px", color: s.color, background: s.bg,
+        border: `1px solid ${s.color}33`,
+      }}>
+        {s.label}
+      </span>
+    );
+  }
+  const s = lightMap[status] ?? { label: status, color: "var(--nav-text-dim)", bg: "rgba(0,0,0,0.04)", border: "rgba(0,0,0,0.12)" };
   return (
     <span style={{
       fontSize: 9, fontWeight: 700, letterSpacing: "0.09em", textTransform: "uppercase",
-      padding: "3px 8px", color: s.color, background: s.bg,
-      border: `1px solid ${s.color}33`,
+      padding: "3px 8px", color: s.color, background: s.bg, border: `1px solid ${s.border}`,
     }}>
       {s.label}
     </span>
@@ -567,7 +594,7 @@ export default function OwnerDashboard() {
                   padding: "12px 18px",
                   alignSelf: "flex-start",
                 }}>
-                  <StatusPill status={latestPayment.status} />
+                  <StatusPill status={latestPayment.status} isDark={isDark} />
                   <p style={{ fontSize: 11, color: "var(--nav-text-dim)", marginTop: 8 }}>
                     Collected: <span style={{ color: isDark ? "#6FFFE9" : "#007a6e", fontWeight: 700 }}>₹{latestPayment.amountCollected.toLocaleString()}</span>
                   </p>
@@ -599,6 +626,7 @@ export default function OwnerDashboard() {
             value={`₹${totalAdvanced.toLocaleString()}`}
             sub="lifetime"
             icon={<ArrowUpRight size={14} />}
+            colorScheme="violet"
             testId="stat-total-advanced"
           />
           <KpiCard
@@ -607,6 +635,7 @@ export default function OwnerDashboard() {
             sub="from tenants"
             accent
             icon={<TrendingUp size={14} />}
+            colorScheme="sage"
             testId="stat-total-collected"
           />
           <KpiCard
@@ -614,6 +643,7 @@ export default function OwnerDashboard() {
             value={`₹${totalExposure.toLocaleString()}`}
             sub="outstanding"
             icon={<Activity size={14} />}
+            colorScheme={totalExposure > 0 ? "rose" : "sage"}
           />
           <KpiCard
             label="Collection Rate"
@@ -621,6 +651,7 @@ export default function OwnerDashboard() {
             sub={collectionRate >= 90 ? "Excellent" : collectionRate >= 70 ? "Good" : "Needs attention"}
             accent={collectionRate >= 90}
             icon={<BarChart2 size={14} />}
+            colorScheme={collectionRate >= 90 ? "sage" : collectionRate >= 70 ? "gold" : "rose"}
             testId="stat-collection-rate"
           />
         </div>
@@ -787,7 +818,7 @@ export default function OwnerDashboard() {
                         ₹{ledger.amountAdvanced.toLocaleString()}
                       </p>
                       <div className="flex items-center justify-end gap-1.5 mt-1">
-                        <StatusPill status={ledger.status} />
+                        <StatusPill status={ledger.status} isDark={isDark} />
                       </div>
                     </div>
                   </div>

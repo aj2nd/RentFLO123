@@ -33,14 +33,33 @@ declare global {
 type Tab = "overview" | "payments" | "lease";
 
 function StatusBadge({ status }: { status: string }) {
-  const map: Record<string, { label: string; classes: string }> = {
-    SETTLED:  { label: "Settled",   classes: "bg-[#6FFFE9]/10 text-[#6FFFE9] border-[#6FFFE9]/25" },
-    EXPOSED:  { label: "Exposed",   classes: "bg-amber-500/10 text-amber-400 border-amber-500/25" },
-    ARREARS:  { label: "Arrears",   classes: "bg-red-500/10 text-red-400 border-red-500/25" },
+  const map: Record<string, { label: string; darkClasses: string; lightStyle: React.CSSProperties }> = {
+    SETTLED: {
+      label: "Settled",
+      darkClasses: "bg-[#6FFFE9]/10 text-[#6FFFE9] border-[#6FFFE9]/25",
+      lightStyle: { background: "var(--color-sage-bg,#D1FAE5)", color: "var(--color-sage,#064E3B)", borderColor: "var(--color-sage-border,rgba(5,150,105,0.28))" },
+    },
+    EXPOSED: {
+      label: "Exposed",
+      darkClasses: "bg-amber-500/10 text-amber-400 border-amber-500/25",
+      lightStyle: { background: "var(--color-gold-bg,#FEF3C7)", color: "var(--color-gold,#92400E)", borderColor: "var(--color-gold-border,rgba(217,119,6,0.30))" },
+    },
+    ARREARS: {
+      label: "Arrears",
+      darkClasses: "bg-red-500/10 text-red-400 border-red-500/25",
+      lightStyle: { background: "var(--color-rose-bg,#FFE4E6)", color: "var(--color-rose,#9F1239)", borderColor: "var(--color-rose-border,rgba(225,29,72,0.28))" },
+    },
   };
-  const s = map[status] ?? { label: status, classes: "bg-white/[0.06] text-zinc-400 border-white/[0.10]" };
+  const s = map[status] ?? {
+    label: status,
+    darkClasses: "bg-white/[0.06] text-zinc-400 border-white/[0.10]",
+    lightStyle: {},
+  };
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-widest border rounded-full backdrop-blur-sm ${s.classes}`}>
+    <span
+      className={`inline-flex items-center px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-widest border rounded-full`}
+      style={s.lightStyle}
+    >
       {s.label}
     </span>
   );
