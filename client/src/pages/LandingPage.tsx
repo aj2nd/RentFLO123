@@ -182,97 +182,111 @@ export default function LandingPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-16">
             {/* Step 1 */}
-            <div className="relative group">
-              <div
-                className="rounded-2xl p-8 md:p-10 h-full flex flex-col"
-                style={{ background: "var(--surface-card)", border: "1px solid var(--border-subtle)" }}
-              >
-                <div className="flex items-start gap-6 mb-8">
-                  <span
-                    className="text-[88px] font-black leading-none select-none flex-shrink-0"
-                    style={{
-                      background: 'linear-gradient(135deg, rgba(111,255,233,0.15) 0%, rgba(111,255,233,0.55) 100%)',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                      backgroundClip: 'text',
-                    }}
-                  >
-                    1
-                  </span>
-                  {/* Visual: building + calendar */}
-                  <div className="flex items-center gap-3 pt-4">
-                    <div
-                      className="w-16 h-16 rounded-xl flex items-center justify-center flex-shrink-0"
-                      style={{ background: "rgba(111,255,233,0.07)", border: "1px solid rgba(111,255,233,0.18)" }}
-                    >
-                      <Building2 size={28} style={{ color: "#6FFFE9", opacity: 0.8 }} />
-                    </div>
-                    <div className="w-px h-8 opacity-20" style={{ background: "var(--tiffany)" }} />
-                    <div
-                      className="w-14 h-14 rounded-xl flex flex-col items-center justify-center flex-shrink-0"
-                      style={{ background: "rgba(111,255,233,0.04)", border: "1px solid rgba(111,255,233,0.14)" }}
-                    >
-                      <span className="text-[9px] font-bold uppercase tracking-widest" style={{ color: "var(--tiffany)", opacity: 0.5 }}>1st</span>
-                      <span className="text-xl font-black" style={{ color: "var(--tiffany)", opacity: 0.7 }}>1</span>
-                    </div>
-                  </div>
+            <div
+              className="rounded-2xl p-8 md:p-10 flex flex-col"
+              style={{ background: "var(--surface-card)", border: "1px solid var(--border-subtle)" }}
+            >
+              {/* Number + illustration row */}
+              <div className="flex items-center gap-4 mb-8">
+                <span
+                  className="text-[80px] font-black leading-none select-none flex-shrink-0 w-20 text-center"
+                  style={{
+                    background: 'linear-gradient(160deg, rgba(111,255,233,0.25) 0%, rgba(111,255,233,0.7) 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                  }}
+                >
+                  1
+                </span>
+                {/* Building + calendar illustration */}
+                <div className="flex-1 flex items-center justify-center gap-4">
+                  {/* Property building */}
+                  <svg width="90" height="90" viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="8" y="28" width="54" height="54" rx="4" fill="rgba(111,255,233,0.08)" stroke="rgba(111,255,233,0.3)" strokeWidth="1.5"/>
+                    {/* Awning stripes */}
+                    <rect x="8" y="28" width="54" height="14" rx="4" fill="rgba(111,255,233,0.15)" stroke="rgba(111,255,233,0.35)" strokeWidth="1.5"/>
+                    <line x1="18" y1="28" x2="18" y2="42" stroke="rgba(111,255,233,0.2)" strokeWidth="4"/>
+                    <line x1="30" y1="28" x2="30" y2="42" stroke="rgba(111,255,233,0.2)" strokeWidth="4"/>
+                    <line x1="42" y1="28" x2="42" y2="42" stroke="rgba(111,255,233,0.2)" strokeWidth="4"/>
+                    {/* Windows */}
+                    <rect x="16" y="50" width="12" height="10" rx="1.5" fill="rgba(111,255,233,0.18)" stroke="rgba(111,255,233,0.3)" strokeWidth="1"/>
+                    <rect x="36" y="50" width="12" height="10" rx="1.5" fill="rgba(111,255,233,0.18)" stroke="rgba(111,255,233,0.3)" strokeWidth="1"/>
+                    {/* Door */}
+                    <rect x="23" y="65" width="14" height="17" rx="2" fill="rgba(111,255,233,0.12)" stroke="rgba(111,255,233,0.28)" strokeWidth="1.2"/>
+                    {/* Sign */}
+                    <rect x="14" y="20" width="42" height="10" rx="2" fill="rgba(111,255,233,0.12)" stroke="rgba(111,255,233,0.25)" strokeWidth="1"/>
+                    <text x="35" y="28" textAnchor="middle" fontSize="6" fontWeight="700" fill="rgba(111,255,233,0.7)" fontFamily="Inter, sans-serif">STORE</text>
+                  </svg>
+                  {/* Calendar */}
+                  <svg width="72" height="72" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="6" y="12" width="60" height="54" rx="6" fill="rgba(111,255,233,0.06)" stroke="rgba(111,255,233,0.25)" strokeWidth="1.5"/>
+                    {/* Header bar */}
+                    <rect x="6" y="12" width="60" height="18" rx="6" fill="rgba(111,255,233,0.14)" stroke="rgba(111,255,233,0.28)" strokeWidth="1.5"/>
+                    {/* Calendar rings */}
+                    <rect x="20" y="6" width="5" height="14" rx="2.5" fill="rgba(111,255,233,0.45)"/>
+                    <rect x="47" y="6" width="5" height="14" rx="2.5" fill="rgba(111,255,233,0.45)"/>
+                    {/* Big "1" date */}
+                    <text x="36" y="56" textAnchor="middle" fontSize="28" fontWeight="900" fill="rgba(111,255,233,0.85)" fontFamily="Inter, sans-serif">1</text>
+                    <text x="36" y="24" textAnchor="middle" fontSize="7" fontWeight="700" fill="rgba(111,255,233,0.55)" fontFamily="Inter, sans-serif" letterSpacing="1">1ST</text>
+                  </svg>
                 </div>
-                <p className="text-base md:text-lg font-light leading-relaxed text-muted-foreground">
-                  We cover your rent upfront on the <span className="font-semibold" style={{ color: "var(--tiffany)", opacity: 0.8 }}>1st of the month</span> — guaranteed, every month.
-                </p>
               </div>
+              <p className="text-base md:text-lg font-light leading-relaxed text-muted-foreground">
+                We cover your rent upfront on the <span className="font-semibold" style={{ color: "var(--tiffany)", opacity: 0.85 }}>1st of the month</span> — guaranteed, every month.
+              </p>
             </div>
 
             {/* Step 2 */}
-            <div className="relative group">
-              <div
-                className="rounded-2xl p-8 md:p-10 h-full flex flex-col"
-                style={{ background: "var(--surface-card)", border: "1px solid var(--border-subtle)" }}
-              >
-                <div className="flex items-start gap-6 mb-8">
-                  <span
-                    className="text-[88px] font-black leading-none select-none flex-shrink-0"
-                    style={{
-                      background: 'linear-gradient(135deg, rgba(111,255,233,0.15) 0%, rgba(111,255,233,0.55) 100%)',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                      backgroundClip: 'text',
-                    }}
-                  >
-                    2
-                  </span>
-                  {/* Visual: split payments */}
-                  <div className="flex items-center gap-2 pt-6">
-                    <div
-                      className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0"
-                      style={{ background: "rgba(111,255,233,0.07)", border: "1px solid rgba(111,255,233,0.18)" }}
-                    >
-                      <div className="flex flex-col gap-1">
-                        {[100, 70, 40].map((w, i) => (
-                          <div key={i} className="h-1 rounded-full" style={{ width: `${w}%`, background: "#6FFFE9", opacity: 0.5 + i * 0.2 }} />
-                        ))}
-                      </div>
-                    </div>
-                    <ArrowRight size={16} style={{ color: "var(--tiffany)", opacity: 0.4 }} />
-                    <div className="flex flex-col gap-1.5">
-                      {[1, 2, 3].map((i) => (
-                        <div
-                          key={i}
-                          className="h-5 rounded px-2 flex items-center"
-                          style={{
-                            background: `rgba(111,255,233,${0.04 + i * 0.02})`,
-                            border: "1px solid rgba(111,255,233,0.12)",
-                            width: `${52 - i * 8}px`,
-                          }}
-                        />
-                      ))}
-                    </div>
+            <div
+              className="rounded-2xl p-8 md:p-10 flex flex-col"
+              style={{ background: "var(--surface-card)", border: "1px solid var(--border-subtle)" }}
+            >
+              {/* Number + illustration row */}
+              <div className="flex items-center gap-4 mb-8">
+                <span
+                  className="text-[80px] font-black leading-none select-none flex-shrink-0 w-20 text-center"
+                  style={{
+                    background: 'linear-gradient(160deg, rgba(111,255,233,0.25) 0%, rgba(111,255,233,0.7) 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                  }}
+                >
+                  2
+                </span>
+                {/* Receipt → split payments illustration */}
+                <div className="flex-1 flex items-center justify-center gap-3">
+                  {/* Long receipt */}
+                  <svg width="72" height="90" viewBox="0 0 72 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="8" y="4" width="56" height="78" rx="4" fill="rgba(111,255,233,0.07)" stroke="rgba(111,255,233,0.28)" strokeWidth="1.5"/>
+                    {/* Receipt lines */}
+                    {[18, 30, 42, 54, 66].map((y, i) => (
+                      <rect key={i} x="16" y={y} width={i % 2 === 0 ? 40 : 28} height="5" rx="2" fill="rgba(111,255,233,0.2)"/>
+                    ))}
+                    {/* Zigzag bottom */}
+                    <path d="M8 82 L14 86 L20 82 L26 86 L32 82 L38 86 L44 82 L50 86 L56 82 L62 86 L64 82" stroke="rgba(111,255,233,0.3)" strokeWidth="1.5" fill="none"/>
+                  </svg>
+
+                  {/* Arrow */}
+                  <ArrowRight size={20} style={{ color: "#6FFFE9", opacity: 0.5, flexShrink: 0 }} />
+
+                  {/* 3 smaller receipts */}
+                  <div className="flex flex-col gap-2">
+                    {[62, 48, 36].map((w, i) => (
+                      <svg key={i} width={w} height="26" viewBox={`0 0 ${w} 26`} fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="1" y="1" width={w - 2} height="20" rx="3" fill="rgba(111,255,233,0.06)" stroke="rgba(111,255,233,0.25)" strokeWidth="1.2"/>
+                        <rect x="6" y="7" width={w - 22} height="4" rx="1.5" fill={`rgba(111,255,233,${0.25 - i * 0.05})`}/>
+                        <rect x="6" y="14" width={w - 30} height="3" rx="1.5" fill="rgba(111,255,233,0.12)"/>
+                        <path d={`M1 21 L4 25 L8 21 L12 25 L16 21 L20 25 L24 21 L${w - 1} 21`} stroke="rgba(111,255,233,0.2)" strokeWidth="1" fill="none"/>
+                      </svg>
+                    ))}
                   </div>
                 </div>
-                <p className="text-base md:text-lg font-light leading-relaxed text-muted-foreground">
-                  Your tenant pays it back in <span className="font-semibold" style={{ color: "var(--tiffany)", opacity: 0.8 }}>smaller amounts</span> that fit their cash flow.
-                </p>
               </div>
+              <p className="text-base md:text-lg font-light leading-relaxed text-muted-foreground">
+                Your tenant pays it back in <span className="font-semibold" style={{ color: "var(--tiffany)", opacity: 0.85 }}>smaller amounts</span> that fit their cash flow.
+              </p>
             </div>
           </div>
         </div>
