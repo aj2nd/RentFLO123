@@ -356,8 +356,10 @@ export default function TenantDashboard() {
           )}
         </header>
 
-        {hasProperty ? (
-          <>
+        {/* Stats bar, tabs, and tab content always render — even when no
+            property is joined yet. The Overview tab shows the "Join My Home"
+            card in that empty state. */}
+        <>
             {/* ── Stats Bar ── */}
             <div className="grid grid-cols-3 gap-3 mb-6">
               <div className="liquid-glass rounded-2xl p-3 sm:p-4 flex flex-col items-center text-center" data-testid="stat-rent-due">
@@ -401,6 +403,61 @@ export default function TenantDashboard() {
             {/* ══ OVERVIEW TAB ══ */}
             {activeTab === "overview" && (
               <div className="space-y-6">
+
+                {/* Join Home — shown only when tenant has no property. */}
+                {!hasProperty && (
+                  <div className="liquid-glass-teal rounded-3xl p-5 sm:p-8" data-testid="card-join-home">
+                    <div className="flex items-start gap-3 mb-5">
+                      <Building2 size={22} className="text-[#6FFFE9] mt-0.5" />
+                      <div>
+                        <h2 className="text-2xl sm:text-3xl font-bold tracking-tighter">{t("tenant_join_home")}</h2>
+                        <p className="text-zinc-500 text-sm mt-1">{t("tenant_join_home_subtitle")}</p>
+                      </div>
+                    </div>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="landlordEmail" className="text-zinc-400 uppercase text-[10px] tracking-wider">
+                          {t("tenant_landlord_email")}
+                        </Label>
+                        <div className="flex flex-col sm:flex-row gap-3">
+                          <Input
+                            id="landlordEmail" type="email"
+                            value={landlordEmail} onChange={e => setLandlordEmail(e.target.value)}
+                            onKeyDown={e => e.key === "Enter" && handleSearchProperties()}
+                            placeholder="landlord@example.com"
+                            className="flex-1 bg-white/[0.05] border-white/[0.12] text-white placeholder:text-zinc-600 focus:border-[#6FFFE9]/40"
+                            data-testid="input-landlord-email"
+                          />
+                          <Button onClick={handleSearchProperties} disabled={isSearching}
+                            className="bg-[#6FFFE9] text-black hover:bg-[#6FFFE9]/85 rounded-full font-semibold"
+                            data-testid="button-search-landlord">
+                            {isSearching ? <Loader2 className="animate-spin" size={16} /> : <Search size={16} />}
+                            <span className="ml-2">{t("tenant_search")}</span>
+                          </Button>
+                        </div>
+                      </div>
+                      {availableProperties.length > 0 && (
+                        <div className="space-y-3 pt-2">
+                          <p className="text-[10px] uppercase tracking-wider text-zinc-400">{t("tenant_available_properties")}</p>
+                          {availableProperties.map(prop => (
+                            <div key={prop.id} className="liquid-glass rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4" data-testid={`available-property-${prop.id}`}>
+                              <div>
+                                <p className="font-medium text-white text-sm">{prop.address}</p>
+                                <p className="text-zinc-500 text-xs font-mono">₹{prop.monthlyRent.toLocaleString()} / month</p>
+                              </div>
+                              <Button onClick={() => handleJoinProperty(prop.id)} disabled={isJoining}
+                                className="bg-[#6FFFE9] text-black hover:bg-[#6FFFE9]/85 text-xs h-8 px-4 rounded-full font-semibold"
+                                data-testid={`button-join-${prop.id}`}>
+                                {isJoining ? <Loader2 size={14} className="animate-spin" /> : null}
+                                Join Property
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 {/* Onboarding Checklist */}
                 {!allOnboardingDone && (
@@ -532,7 +589,12 @@ export default function TenantDashboard() {
             )}
 
             {/* ══ PAYMENTS TAB ══ */}
-            {activeTab === "payments" && (
+            {activeTab === "payments" && !hasProperty && (
+              <div className="liquid-glass rounded-3xl p-8 text-center text-zinc-500 text-sm" data-testid="empty-payments">
+                Join a property from the Overview tab to start making rent payments.
+              </div>
+            )}
+            {activeTab === "payments" && hasProperty && (
               <div className="space-y-6">
 
                 {/* Pay Now Panel */}
@@ -732,7 +794,12 @@ export default function TenantDashboard() {
             )}
 
             {/* ══ LEASE TAB ══ */}
-            {activeTab === "lease" && (
+            {activeTab === "lease" && !hasProperty && (
+              <div className="liquid-glass rounded-3xl p-8 text-center text-zinc-500 text-sm" data-testid="empty-lease">
+                You haven't joined a property yet. Find your home from the Overview tab to view lease details.
+              </div>
+            )}
+            {activeTab === "lease" && hasProperty && (
               <div className="space-y-4">
 
                 {/* Property Card */}
@@ -856,62 +923,6 @@ export default function TenantDashboard() {
               </div>
             )}
           </>
-        ) : (
-          /* ── No Property: Join Flow ── */
-          <div className="space-y-6">
-            <div className="liquid-glass-teal rounded-3xl p-5 sm:p-8">
-              <div className="flex items-start gap-3 mb-5">
-                <Building2 size={22} className="text-[#6FFFE9] mt-0.5" />
-                <div>
-                  <h2 className="text-2xl sm:text-3xl font-bold tracking-tighter">{t("tenant_join_home")}</h2>
-                  <p className="text-zinc-500 text-sm mt-1">{t("tenant_join_home_subtitle")}</p>
-                </div>
-              </div>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="landlordEmail" className="text-zinc-400 uppercase text-[10px] tracking-wider">
-                    {t("tenant_landlord_email")}
-                  </Label>
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <Input
-                      id="landlordEmail" type="email"
-                      value={landlordEmail} onChange={e => setLandlordEmail(e.target.value)}
-                      onKeyDown={e => e.key === "Enter" && handleSearchProperties()}
-                      placeholder="landlord@example.com"
-                      className="flex-1 bg-white/[0.05] border-white/[0.12] text-white placeholder:text-zinc-600 focus:border-[#6FFFE9]/40"
-                      data-testid="input-landlord-email"
-                    />
-                    <Button onClick={handleSearchProperties} disabled={isSearching}
-                      className="bg-[#6FFFE9] text-black hover:bg-[#6FFFE9]/85 rounded-full font-semibold"
-                      data-testid="button-search-landlord">
-                      {isSearching ? <Loader2 className="animate-spin" size={16} /> : <Search size={16} />}
-                      <span className="ml-2">{t("tenant_search")}</span>
-                    </Button>
-                  </div>
-                </div>
-                {availableProperties.length > 0 && (
-                  <div className="space-y-3 pt-2">
-                    <p className="text-[10px] uppercase tracking-wider text-zinc-400">{t("tenant_available_properties")}</p>
-                    {availableProperties.map(prop => (
-                      <div key={prop.id} className="liquid-glass rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4" data-testid={`available-property-${prop.id}`}>
-                        <div>
-                          <p className="font-medium text-white text-sm">{prop.address}</p>
-                          <p className="text-zinc-500 text-xs font-mono">₹{prop.monthlyRent.toLocaleString()} / month</p>
-                        </div>
-                        <Button onClick={() => handleJoinProperty(prop.id)} disabled={isJoining}
-                          className="bg-[#6FFFE9] text-black hover:bg-[#6FFFE9]/85 text-xs h-8 px-4 rounded-full font-semibold"
-                          data-testid={`button-join-${prop.id}`}>
-                          {isJoining ? <Loader2 size={14} className="animate-spin" /> : null}
-                          Join Property
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
