@@ -20,12 +20,12 @@ app.use(
     contentSecurityPolicy: {
       directives: {
         defaultSrc:     ["'self'"],
-        scriptSrc:      ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://checkout.razorpay.com"],
+        scriptSrc:      ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://sdk.cashfree.com", "https://*.cashfree.com"],
         styleSrc:       ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         imgSrc:         ["'self'", "data:", "blob:", "https:"],
         fontSrc:        ["'self'", "data:", "https://fonts.gstatic.com"],
-        connectSrc:     ["'self'", "https://api.razorpay.com", "wss:", "ws:"],
-        frameSrc:       ["https://api.razorpay.com", "https://checkout.razorpay.com"],
+        connectSrc:     ["'self'", "https://*.cashfree.com", "wss:", "ws:"],
+        frameSrc:       ["'self'", "https://*.cashfree.com"],
         objectSrc:      ["'none'"],
         baseUri:        ["'self'"],
         formAction:     ["'self'"],
@@ -76,7 +76,7 @@ const aiLimiter = rateLimit({
   message: { message: "Too many requests. Please slow down." },
 });
 
-// Webhook limiter (Razorpay) — high enough for legit traffic, low enough to deter abuse
+// Webhook limiter (Cashfree) — high enough for legit traffic, low enough to deter abuse
 const webhookLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 60,
@@ -98,7 +98,7 @@ app.use("/api/agreements", sensitiveLimiter);
 app.use("/api/push", sensitiveLimiter);
 app.use("/api/notifications/rent-due-check", sensitiveLimiter);
 app.use("/api/chatbot", aiLimiter);
-app.use("/api/razorpay/webhook", webhookLimiter);
+app.use("/api/cashfree/webhook", webhookLimiter);
 
 // ── Body Parsing (with size limits) ─────────────────────────────────────────
 app.use(

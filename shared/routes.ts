@@ -85,16 +85,16 @@ export const api = {
         404: errorSchemas.notFound,
       },
     },
-    // Create Razorpay order for tenant payment
+    // Create Cashfree order for tenant payment
     createOrder: {
       method: 'POST' as const,
       path: '/api/ledgers/:id/create-order',
       responses: {
         200: z.object({
           orderId: z.string(),
+          paymentSessionId: z.string(),
           amount: z.number(),
           currency: z.string(),
-          keyId: z.string(),
         }),
         404: errorSchemas.notFound,
         500: errorSchemas.internal,
@@ -133,9 +133,9 @@ export const api = {
         200: z.object({
           payment: z.custom<typeof payments.$inferSelect>(),
           orderId: z.string(),
+          paymentSessionId: z.string(),
           amount: z.number(),
           currency: z.string(),
-          keyId: z.string(),
         }),
         500: errorSchemas.internal,
       },

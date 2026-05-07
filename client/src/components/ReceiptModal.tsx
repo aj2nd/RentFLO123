@@ -67,9 +67,9 @@ export function ReceiptModal({ data, onClose }: ReceiptModalProps) {
         <div class="row"><span class="label">Property</span><span class="value">${escapeHtml(data.property)}</span></div>
         <div class="row"><span class="label">Tenant</span><span class="value">${escapeHtml(data.tenantName)}</span></div>
         ${data.monthYear ? `<div class="row"><span class="label">Period</span><span class="value">${escapeHtml(data.monthYear)}</span></div>` : ""}
-        <div class="row"><span class="label">Razorpay ID</span><span class="value" style="font-family:monospace;font-size:11px">${escapeHtml(data.paymentId)}</span></div>
+        <div class="row"><span class="label">Payment ID</span><span class="value" style="font-family:monospace;font-size:11px">${escapeHtml(data.paymentId)}</span></div>
         <hr class="divider">
-        <div class="footer">rentflo.com &nbsp;·&nbsp; Secured by Razorpay &nbsp;·&nbsp; Keep for your records</div>
+        <div class="footer">rentflo.com &nbsp;·&nbsp; Secured by Cashfree &nbsp;·&nbsp; Keep for your records</div>
       </body>
       </html>
     `);
@@ -112,7 +112,7 @@ export function ReceiptModal({ data, onClose }: ReceiptModalProps) {
               { label: "Property", value: data.property },
               { label: "Tenant", value: data.tenantName },
               ...(data.monthYear ? [{ label: "Period", value: data.monthYear }] : []),
-              { label: "Razorpay ID", value: data.paymentId, mono: true },
+              { label: "Payment ID", value: data.paymentId, mono: true },
             ].map(row => (
               <div key={row.label} className="flex justify-between items-baseline gap-3">
                 <span className="text-[10px] uppercase tracking-widest text-zinc-500 shrink-0">{row.label}</span>
@@ -123,7 +123,7 @@ export function ReceiptModal({ data, onClose }: ReceiptModalProps) {
 
           <div className="mt-5 pt-4 border-t border-white/[0.06]">
             <p className="text-[9px] uppercase tracking-widest text-zinc-600 text-center">
-              Secured by Razorpay · rentflo.com
+              Secured by Cashfree · rentflo.com
             </p>
           </div>
         </div>

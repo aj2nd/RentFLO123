@@ -142,7 +142,9 @@ Preferred communication style: Simple, everyday language.
 ## External Dependencies
 
 ### Payment Processing
-- **Razorpay**: Payment gateway for tenant rent collection (lazy-initialized from `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` environment variables)
+- **Cashfree**: Payment gateway for tenant rent collection. Server calls Cashfree PG REST API directly (`/pg/orders`, sandbox base `https://sandbox.cashfree.com/pg`, API version `2025-01-01`) using `CASHFREE_APP_ID` / `CASHFREE_SECRET_KEY`. Client uses `@cashfreepayments/cashfree-js` (`load({mode:"sandbox"}).checkout({paymentSessionId, redirectTarget:"_modal"})`).
+  - **Webhook**: `POST /api/cashfree/webhook` — verifies `x-webhook-signature` = base64(HMAC-SHA256(secret, `x-webhook-timestamp` + rawBody)). Only acts on `PAYMENT_SUCCESS_WEBHOOK` + `payment_status === "SUCCESS"`. Idempotency enforced both in code (cf_payment_id check) and DB (unique index on `payments.razorpay_payment_id`).
+  - **Schema note**: DB columns `razorpay_order_id` / `razorpay_payment_id` are reused as generic gateway IDs; `paymentMethod` enum is `'UPI_MANUAL' | 'RAZORPAY' | 'CASHFREE'` (RAZORPAY kept for historical rows).
 
 ### Database
 - **PostgreSQL**: Primary data store (connection via `DATABASE_URL` environment variable)

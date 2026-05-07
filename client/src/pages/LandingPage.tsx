@@ -666,7 +666,7 @@ const FAQ_ITEMS = [
   },
   {
     question: "How can I pay my rent using flexible payment options?",
-    answer: "Once you're onboarded as a tenant on RentFLO, you can choose how many instalments to split your rent into. Payments are made securely via Razorpay using UPI, cards, or net banking.",
+    answer: "Once you're onboarded as a tenant on RentFLO, you can choose how many instalments to split your rent into. Payments are made securely via Cashfree using UPI, cards, or net banking.",
   },
   {
     question: "Are there extra fees when I split my rent?",

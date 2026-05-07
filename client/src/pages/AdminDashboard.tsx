@@ -124,7 +124,7 @@ export default function AdminDashboard() {
       toast({ title: "No Data", description: "No transactions to export.", variant: "destructive" });
       return;
     }
-    const headers = ["Transaction UUID", "Timestamp", "Ledger ID", "Amount", "Status", "Razorpay Order ID"];
+    const headers = ["Transaction UUID", "Timestamp", "Ledger ID", "Amount", "Status", "Gateway Order ID"];
     const rows = allPayments.map(p => [p.id, p.createdAt ? new Date(p.createdAt).toISOString() : "", p.ledgerId, p.amount, p.status, p.razorpayOrderId || ""]);
     const csvContent = [headers.join(","), ...rows.map(row => row.join(","))].join("\n");
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });

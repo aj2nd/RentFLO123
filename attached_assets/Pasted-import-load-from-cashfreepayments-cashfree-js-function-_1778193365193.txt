@@ -1,0 +1,51 @@
+import { load } from "@cashfreepayments/cashfree-js";
+
+function Checkout() {
+    let cashfree;
+    var initializeSDK = async function () {          
+        cashfree = await load({
+            mode: "sandbox"
+        });
+    }
+    initializeSDK();
+
+    const doPayment = async () => {
+        let checkoutOptions = {
+            paymentSessionId: "session_pIb8shNbJj3Q90SoI-fDFth2Z2ZK05T3EFMFvVmG2QCm1lDdgmO4JIew7LZABTVCBODhZOXX0zwS-QPvOkKXy1UQ85c30JHjLhoe6e2MASl0joAnQMKaWPWVjsApayment",
+            redirectTarget: document.getElementById("cf_checkout"),
+            appearance: {
+                width: "425px",
+                height: "700px",
+            }
+        };
+        cashfree.checkout(checkoutOptions).then((result) => {
+            if(result.error){
+                // This will be true when there is any error during the payment
+                console.log("There is some payment error, Check for Payment Status");
+                console.log(result.error);
+            }
+            if(result.redirect){
+                // This will be true when the payment redirection page couldnt be opened in the same window
+                // This is an exceptional case only when the page is opened inside an inAppBrowser
+                // In this case the customer will be redirected to return url once payment is completed
+                console.log("Payment will be redirected");
+            }
+            if(result.paymentDetails){
+                // This will be called whenever the payment is completed irrespective of transaction status
+                console.log("Payment has been completed, Check for Payment Status");
+                console.log(result.paymentDetails.paymentMessage);
+            }
+        });
+    };
+
+    return (
+        <div class="row">
+            <p>Click below to open the checkout page here</p>
+            <button type="submit" class="btn btn-primary" id="renderBtn" onClick={doPayment}>
+                Proceed to Pay
+            </button>
+            <div id="cf_checkout"></div>
+        </div>
+    );
+}
+export default Checkout;

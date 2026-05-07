@@ -33,7 +33,7 @@ export default function Terms() {
 
           <section>
             <h2 className="text-xl font-semibold mb-3 text-white">5. Payment Terms</h2>
-            <p>All payments are processed through Razorpay. By using our payment services, you agree to Razorpay's terms of service. RentFlo charges a service fee as disclosed during the transaction process.</p>
+            <p>All payments are processed through Cashfree. By using our payment services, you agree to Cashfree's terms of service. RentFlo charges a service fee as disclosed during the transaction process.</p>
           </section>
 
           <section>

@@ -26,8 +26,16 @@ import type { Property, User, Agreement } from "@shared/schema";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 
-declare global {
-  interface Window { Razorpay: any; }
+// Cashfree JS SDK is loaded on demand inside the payment handler.
+type CashfreeInstance = { checkout: (opts: any) => Promise<any> };
+let cashfreePromise: Promise<CashfreeInstance> | null = null;
+async function getCashfree(): Promise<CashfreeInstance> {
+  if (!cashfreePromise) {
+    cashfreePromise = import("@cashfreepayments/cashfree-js").then(({ load }) =>
+      load({ mode: "sandbox" }) as Promise<CashfreeInstance>
+    );
+  }
+  return cashfreePromise;
 }
 
 type Tab = "overview" | "payments" | "lease";
@@ -86,7 +94,6 @@ export default function TenantDashboard() {
 
   const [activeTab, setActiveTab] = useState<Tab>("overview");
   const [showSuccess, setShowSuccess] = useState(false);
-  const [razorpayLoaded, setRazorpayLoaded] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState<string>("");
   const [flexiblePaymentEnabled, setFlexiblePaymentEnabled] = useState(false);
   const [showMaintenanceForm, setShowMaintenanceForm] = useState(false);
@@ -136,13 +143,8 @@ export default function TenantDashboard() {
   const agreementStatus = agreementData?.agreement?.status ?? null;
 
   useEffect(() => {
-    if (window.Razorpay) { setRazorpayLoaded(true); return; }
-    const script = document.createElement("script");
-    script.src = "https://checkout.razorpay.com/v1/checkout.js";
-    script.async = true;
-    script.onload = () => setRazorpayLoaded(true);
-    document.body.appendChild(script);
-    return () => { try { document.body.removeChild(script); } catch {} };
+    // Pre-warm the Cashfree SDK so the first checkout click feels instant.
+    getCashfree().catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -169,34 +171,39 @@ export default function TenantDashboard() {
     createPartialPayment(
       { ledgerId: unpaidLedger.id, amount },
       {
-        onSuccess: (orderData) => {
-          if (!razorpayLoaded || !window.Razorpay) {
-            toast({ title: "Payment Error", description: "Payment system not loaded. Please refresh.", variant: "destructive" });
-            return;
+        onSuccess: async (orderData: any) => {
+          try {
+            const cashfree = await getCashfree();
+            if (!orderData.paymentSessionId) {
+              toast({ title: "Payment Error", description: "Payment session missing. Please try again.", variant: "destructive" });
+              return;
+            }
+            const result = await cashfree.checkout({
+              paymentSessionId: orderData.paymentSessionId,
+              redirectTarget: "_modal",
+            });
+            // Cashfree resolves with { error?, paymentDetails?, redirect? }
+            if (result?.error) {
+              toast({ title: "Payment Failed", description: result.error?.message ?? "Payment was not completed.", variant: "destructive" });
+              return;
+            }
+            // The webhook is the source of truth; show optimistic UI here.
+            setShowSuccess(true); setPaymentAmount("");
+            queryClient.invalidateQueries({ queryKey: ["/api/ledgers"] });
+            queryClient.invalidateQueries({ queryKey: ["/api/payments"] });
+            setReceiptData({
+              amount: parseInt(amountToUse, 10),
+              paymentId: result?.paymentDetails?.paymentMessage ?? orderData.orderId,
+              orderId: orderData.orderId,
+              date: new Date(),
+              property: property?.address ?? "Your Property",
+              tenantName: currentUser?.fullLegalName ?? currentUser?.email ?? "Tenant",
+              monthYear: unpaidLedger?.monthYear,
+            });
+            setTimeout(() => setShowSuccess(false), 3000);
+          } catch (err: any) {
+            toast({ title: "Payment Error", description: err?.message ?? "Could not open payment.", variant: "destructive" });
           }
-          const options = {
-            key: orderData.keyId, amount: orderData.amount, currency: orderData.currency,
-            name: "RentFLO", description: `Rent payment for ${property?.address}`,
-            order_id: orderData.orderId,
-            handler: (response: { razorpay_payment_id: string; razorpay_order_id: string }) => {
-              setShowSuccess(true); setPaymentAmount("");
-              queryClient.invalidateQueries({ queryKey: ["/api/ledgers"] });
-              queryClient.invalidateQueries({ queryKey: ["/api/payments"] });
-              setReceiptData({
-                amount: parseInt(amountToUse, 10),
-                paymentId: response?.razorpay_payment_id ?? orderData.orderId,
-                orderId: orderData.orderId,
-                date: new Date(),
-                property: property?.address ?? "Your Property",
-                tenantName: currentUser?.fullLegalName ?? currentUser?.email ?? "Tenant",
-                monthYear: unpaidLedger?.monthYear,
-              });
-              setTimeout(() => setShowSuccess(false), 3000);
-            },
-            prefill: { name: currentUser?.fullLegalName ?? "Tenant", email: currentUser?.email ?? "" },
-            theme: { color: "#000000" },
-          };
-          new window.Razorpay(options).open();
         },
         onError: (error: any) => {
           toast({ title: "Payment Setup Failed", description: error.message ?? "Could not create payment order.", variant: "destructive" });

@@ -28,7 +28,7 @@ export default function Privacy() {
 
           <section>
             <h2 className="text-xl font-semibold mb-3 text-white">4. Data Sharing</h2>
-            <p>We share your information with payment processors (Razorpay), property owners/tenants as necessary, and service providers who assist in operating our platform. We may also disclose information when required by law.</p>
+            <p>We share your information with payment processors (Cashfree), property owners/tenants as necessary, and service providers who assist in operating our platform. We may also disclose information when required by law.</p>
           </section>
 
           <section>

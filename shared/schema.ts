@@ -44,13 +44,15 @@ export const payments = pgTable("payments", {
   id: varchar("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   ledgerId: varchar("ledger_id").references(() => ledgers.id).notNull(),
   amount: integer("amount").notNull(), // Amount in rupees (same unit as monthlyRent)
-  // Razorpay fields kept for forward-compat (UPI Collect / PSP migration). Unused for manual-verify flow.
+  // Gateway order/payment IDs. Column names retained for back-compat — these
+  // now hold Cashfree order_id / cf_payment_id for the CASHFREE flow, and were
+  // previously used for Razorpay. Unused for manual-verify flow.
   razorpayOrderId: text("razorpay_order_id"),
-  razorpayPaymentId: text("razorpay_payment_id"),
+  razorpayPaymentId: text("razorpay_payment_id").unique(),
   // UPI manual-verification fields
   transactionRef: text("transaction_ref"), // UTR / 12-digit reference number from the UPI app
   proofScreenshotUrl: text("proof_screenshot_url"), // optional screenshot of UPI receipt
-  paymentMethod: text("payment_method", { enum: ['UPI_MANUAL', 'RAZORPAY'] }).default('UPI_MANUAL').notNull(),
+  paymentMethod: text("payment_method", { enum: ['UPI_MANUAL', 'RAZORPAY', 'CASHFREE'] }).default('UPI_MANUAL').notNull(),
   verifiedBy: varchar("verified_by").references(() => users.id), // admin who verified
   verifiedAt: timestamp("verified_at"),
   rejectionReason: text("rejection_reason"),

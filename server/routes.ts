@@ -6,7 +6,6 @@ import { submitPaymentProofSchema, verifyPaymentSchema } from "@shared/schema";
 import { z } from "zod";
 import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
 import { authStorage } from "./replit_integrations/auth/storage";
-import Razorpay from "razorpay";
 import xss from "xss";
 import { initVapid, getVapidPublicKey, createNotification } from "./push";
 import OpenAI from "openai";
@@ -52,19 +51,51 @@ const requireRole = (...roles: string[]): RequestHandler => {
   };
 };
 
-// Lazy initialize Razorpay (keys from secrets) - only when needed
-let razorpayInstance: Razorpay | null = null;
-function getRazorpay(): Razorpay | null {
-  if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
-    return null;
+// === CASHFREE PAYMENT GATEWAY ===
+// We call Cashfree's PG REST API directly (no SDK) to keep deps minimal.
+// Sandbox base: https://sandbox.cashfree.com/pg
+// Production base: https://api.cashfree.com/pg
+const CASHFREE_API_VERSION = "2025-01-01";
+function cashfreeBaseUrl(): string {
+  // Sandbox keys start with "TEST" — flip base accordingly.
+  const appId = process.env.CASHFREE_APP_ID || "";
+  return appId.startsWith("TEST")
+    ? "https://sandbox.cashfree.com/pg"
+    : "https://api.cashfree.com/pg";
+}
+function cashfreeConfigured(): boolean {
+  return !!(process.env.CASHFREE_APP_ID && process.env.CASHFREE_SECRET_KEY);
+}
+function cashfreeHeaders(): Record<string, string> {
+  return {
+    "x-client-id": process.env.CASHFREE_APP_ID!,
+    "x-client-secret": process.env.CASHFREE_SECRET_KEY!,
+    "x-api-version": CASHFREE_API_VERSION,
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+  };
+}
+async function cashfreeCreateOrder(body: any): Promise<any> {
+  const res = await fetch(`${cashfreeBaseUrl()}/orders`, {
+    method: "POST",
+    headers: cashfreeHeaders(),
+    body: JSON.stringify(body),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const msg = (data && (data.message || data.error_description)) || `Cashfree create order failed (${res.status})`;
+    throw new Error(msg);
   }
-  if (!razorpayInstance) {
-    razorpayInstance = new Razorpay({
-      key_id: process.env.RAZORPAY_KEY_ID,
-      key_secret: process.env.RAZORPAY_KEY_SECRET,
-    });
-  }
-  return razorpayInstance;
+  return data;
+}
+async function cashfreeFetchOrder(orderId: string): Promise<any> {
+  const res = await fetch(`${cashfreeBaseUrl()}/orders/${encodeURIComponent(orderId)}`, {
+    method: "GET",
+    headers: cashfreeHeaders(),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error((data && data.message) || `Cashfree fetch order failed (${res.status})`);
+  return data;
 }
 
 export async function registerRoutes(
@@ -266,7 +297,7 @@ export async function registerRoutes(
     }
   });
 
-  // Create Razorpay Order for Tenant Payment — only the tenant of the property may create.
+  // Create Cashfree Order for Tenant Payment — only the tenant of the property may create.
   app.post('/api/ledgers/:id/create-order', isAuthenticated, async (req: any, res) => {
     const { id } = req.params;
     const access = await requireLedgerAccess(req, res, id);
@@ -276,93 +307,110 @@ export async function registerRoutes(
       return res.status(403).json({ message: "Only the tenant of this property can pay rent" });
     }
 
-    const razorpay = getRazorpay();
-    if (!razorpay) {
+    if (!cashfreeConfigured()) {
       return res.status(503).json({ message: "Payment gateway not configured" });
     }
 
     try {
-      const order = await razorpay.orders.create({
-        amount: property.monthlyRent * 100,
-        currency: 'INR',
-        receipt: `rent_${id}_${Date.now()}`,
-        notes: { ledgerId: id, propertyId: property.id, monthYear: ledger.monthYear },
+      const userId = req.user?.claims?.sub as string;
+      const u = await authStorage.getUser(userId);
+      const orderId = `rent_${id}_${Date.now()}`;
+      const order = await cashfreeCreateOrder({
+        order_id: orderId,
+        order_amount: property.monthlyRent,
+        order_currency: "INR",
+        customer_details: {
+          customer_id: userId,
+          customer_email: u?.email || `tenant_${userId}@rentflo.app`,
+          customer_phone: (u as any)?.phoneNumber || "9999999999",
+          customer_name: (u as any)?.fullLegalName || u?.email || "Tenant",
+        },
+        order_meta: {
+          notify_url: `${req.protocol}://${req.get("host")}/api/cashfree/webhook`,
+        },
+        order_note: `Rent for ${ledger.monthYear}`,
+        order_tags: { ledgerId: id, propertyId: property.id, monthYear: ledger.monthYear },
       });
 
       res.json({
-        orderId: order.id,
-        amount: order.amount,
-        currency: order.currency,
-        keyId: process.env.RAZORPAY_KEY_ID,
+        orderId: order.order_id,
+        paymentSessionId: order.payment_session_id,
+        amount: property.monthlyRent,
+        currency: "INR",
       });
     } catch (err: any) {
-      console.error('Razorpay order creation failed:', err?.message || err);
+      console.error('Cashfree order creation failed:', err?.message || err);
       return res.status(502).json({ message: 'Failed to create payment order' });
     }
   });
 
-  // Razorpay Webhook - Payment Verification (handles partial payments)
+  // Cashfree Webhook - Payment Verification (handles partial payments)
   // SECURITY:
-  //  - HMAC computed over RAW request body (not the parsed/sanitized body) to
-  //    avoid mutation-induced signature drift. Falls back to the documented
-  //    `${order_id}|${payment_id}` callback signature for compatibility with
-  //    Razorpay Checkout success handlers.
-  //  - Uses crypto.timingSafeEqual to prevent timing attacks.
-  //  - Idempotent: if razorpay_payment_id is already SUCCESS, returns 200 without
-  //    re-counting the payment.
-  app.post('/api/razorpay/webhook', async (req: any, res) => {
+  //  - HMAC-SHA256 over `${timestamp}${rawBody}` using CASHFREE_SECRET_KEY,
+  //    base64-encoded. Compared via timing-safe equal.
+  //  - Computed over RAW request body (not parsed/sanitized) to avoid drift.
+  //  - Idempotent: if a payment row with the same cf_payment_id is already SUCCESS,
+  //    we return 200 without re-counting.
+  // The DB columns `razorpay_order_id` / `razorpay_payment_id` are reused as
+  // generic gateway-order-id / gateway-payment-id (no migration needed).
+  app.post('/api/cashfree/webhook', async (req: any, res) => {
     try {
       const cryptoMod = await import('crypto');
-      const secret = process.env.RAZORPAY_KEY_SECRET || '';
-      const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET || secret;
+      const secret = process.env.CASHFREE_SECRET_KEY || '';
       if (!secret) return res.status(503).json({ message: 'Payment gateway not configured' });
 
-      const headerSig = (req.headers['x-razorpay-signature'] as string) || '';
+      const headerSig = (req.headers['x-webhook-signature'] as string) || '';
+      const headerTs = (req.headers['x-webhook-timestamp'] as string) || '';
       const rawBody: Buffer | undefined = req.rawBody as Buffer | undefined;
 
-      let razorpay_order_id: string | undefined;
-      let razorpay_payment_id: string | undefined;
-      let signatureOk = false;
-
-      // Path A: Razorpay Webhook (server-to-server) — signature in header, HMAC of raw body
-      if (headerSig && rawBody) {
-        const expected = cryptoMod
-          .createHmac('sha256', webhookSecret)
-          .update(rawBody)
-          .digest('hex');
-        if (timingSafeEqualStr(expected, headerSig)) {
-          signatureOk = true;
-          const parsed = JSON.parse(rawBody.toString('utf8'));
-          const payEntity = parsed?.payload?.payment?.entity || {};
-          razorpay_order_id = payEntity.order_id;
-          razorpay_payment_id = payEntity.id;
-        }
-      }
-
-      // Path B: Razorpay Checkout success handler callback — body has the three fields
-      if (!signatureOk) {
-        const b = req.body || {};
-        razorpay_order_id = b.razorpay_order_id;
-        razorpay_payment_id = b.razorpay_payment_id;
-        const sig = b.razorpay_signature;
-        if (razorpay_order_id && razorpay_payment_id && sig) {
-          const expected = cryptoMod
-            .createHmac('sha256', secret)
-            .update(`${razorpay_order_id}|${razorpay_payment_id}`)
-            .digest('hex');
-          signatureOk = timingSafeEqualStr(expected, sig);
-        }
-      }
-
-      if (!signatureOk || !razorpay_order_id || !razorpay_payment_id) {
+      if (!headerSig || !headerTs || !rawBody) {
         return res.status(400).json({ message: 'Invalid signature' });
       }
 
-      const razorpay = getRazorpay();
-      if (!razorpay) return res.status(503).json({ message: 'Payment gateway not configured' });
+      const expected = cryptoMod
+        .createHmac('sha256', secret)
+        .update(headerTs + rawBody.toString('utf8'))
+        .digest('base64');
+      if (!timingSafeEqualStr(expected, headerSig)) {
+        return res.status(400).json({ message: 'Invalid signature' });
+      }
 
-      const order = await razorpay.orders.fetch(razorpay_order_id);
-      const ledgerId = order.notes?.ledgerId as string | undefined;
+      const parsed = JSON.parse(rawBody.toString('utf8'));
+      const data = parsed?.data || {};
+      const orderInfo = data?.order || {};
+      const paymentInfo = data?.payment || {};
+      const cf_order_id: string | undefined = orderInfo.order_id;
+      const cf_payment_id: string | undefined =
+        paymentInfo.cf_payment_id?.toString?.() || paymentInfo.payment_id?.toString?.();
+      const paymentStatus: string = paymentInfo.payment_status || '';
+      const eventType: string = parsed?.type || '';
+
+      // Only act on successful payment events. Both the event type AND the
+      // payment status must indicate success — otherwise we ignore deterministically.
+      const isSuccess =
+        eventType === 'PAYMENT_SUCCESS_WEBHOOK' && paymentStatus === 'SUCCESS';
+      if (!isSuccess) {
+        return res.json({ status: 'ok', ignored: true });
+      }
+
+      if (!cf_order_id || !cf_payment_id) {
+        return res.json({ status: 'ok', ignored: true });
+      }
+
+      // Look up the original ledger via our pre-created payment row, or fall
+      // back to fetching the order from Cashfree to read order_tags.ledgerId.
+      const allPaymentsForLookup = await storage.getAllPayments();
+      const matchingRow = allPaymentsForLookup.find((p) => p.razorpayOrderId === cf_order_id);
+      let ledgerId: string | undefined = matchingRow?.ledgerId;
+
+      if (!ledgerId) {
+        try {
+          const order = await cashfreeFetchOrder(cf_order_id);
+          ledgerId = order?.order_tags?.ledgerId;
+        } catch {
+          /* fall through */
+        }
+      }
       if (!ledgerId) return res.json({ status: 'ok' });
 
       const ledger = await storage.getLedger(ledgerId);
@@ -371,31 +419,43 @@ export async function registerRoutes(
 
       const existingPayments = await storage.getPaymentsByLedger(ledgerId);
 
-      // IDEMPOTENCY: if this payment_id already recorded as SUCCESS, no-op.
+      // IDEMPOTENCY: if this cf_payment_id already recorded as SUCCESS, no-op.
       const alreadyProcessed = existingPayments.some(
-        (p) => p.razorpayPaymentId === razorpay_payment_id && p.status === 'SUCCESS',
+        (p) => p.razorpayPaymentId === cf_payment_id && p.status === 'SUCCESS',
       );
       if (alreadyProcessed) return res.json({ status: 'ok', idempotent: true });
 
-      const pendingPayment = existingPayments.find((p) => p.razorpayOrderId === razorpay_order_id);
+      const pendingPayment = existingPayments.find((p) => p.razorpayOrderId === cf_order_id);
       let amountPaid = 0;
       if (pendingPayment) {
         await storage.updatePayment(pendingPayment.id, {
-          razorpayPaymentId: razorpay_payment_id,
+          razorpayPaymentId: cf_payment_id,
           status: 'SUCCESS',
         });
         amountPaid = pendingPayment.amount;
       } else {
-        // No pre-created payment row (e.g. flows that go through /create-order
-        // without pre-recording). Insert a SUCCESS row so totals reconcile.
-        amountPaid = Number(order.amount_paid || order.amount) / 100;
-        await storage.createPayment({
-          ledgerId,
-          amount: amountPaid,
-          razorpayOrderId: razorpay_order_id,
-          razorpayPaymentId: razorpay_payment_id,
-          status: 'SUCCESS',
-        });
+        // No pre-created payment row (e.g. /create-order flow). Insert a
+        // SUCCESS row so totals reconcile. Cashfree amounts are in rupees.
+        // The DB has a unique index on razorpay_payment_id — concurrent
+        // duplicate webhook deliveries will fail the second insert; we catch
+        // that and treat it as already-processed.
+        amountPaid = Number(paymentInfo.payment_amount || orderInfo.order_amount || 0);
+        try {
+          await storage.createPayment({
+            ledgerId,
+            amount: amountPaid,
+            razorpayOrderId: cf_order_id,
+            razorpayPaymentId: cf_payment_id,
+            paymentMethod: 'CASHFREE',
+            status: 'SUCCESS',
+          });
+        } catch (e: any) {
+          const code = e?.code || e?.cause?.code;
+          if (code === '23505') {
+            return res.json({ status: 'ok', idempotent: true });
+          }
+          throw e;
+        }
       }
 
       const allPayments = await storage.getPaymentsByLedger(ledgerId);
@@ -510,7 +570,7 @@ export async function registerRoutes(
     res.json(payments);
   });
 
-  // Create partial payment with Razorpay — only the tenant of the property may pay.
+  // Create partial payment with Cashfree — only the tenant of the property may pay.
   app.post(api.payments.create.path, isAuthenticated, async (req: any, res) => {
     const { ledgerId } = req.params;
     const access = await requireLedgerAccess(req, res, ledgerId);
@@ -520,8 +580,7 @@ export async function registerRoutes(
       return res.status(403).json({ message: "Only the tenant of this property can pay rent" });
     }
 
-    const razorpay = getRazorpay();
-    if (!razorpay) {
+    if (!cashfreeConfigured()) {
       return res.status(503).json({ message: "Payment gateway not configured" });
     }
 
@@ -540,34 +599,45 @@ export async function registerRoutes(
         });
       }
 
-      const amountInPaise = input.amount * 100;
-      const order = await razorpay.orders.create({
-        amount: amountInPaise,
-        currency: 'INR',
-        receipt: `partial_${ledgerId}_${Date.now()}`,
-        partial_payment: true,
-        first_payment_min_amount: 100,
-        notes: {
-          ledgerId: ledgerId,
+      const userId = req.user?.claims?.sub as string;
+      const u = await authStorage.getUser(userId);
+      const orderId = `partial_${ledgerId}_${Date.now()}`;
+      const order = await cashfreeCreateOrder({
+        order_id: orderId,
+        order_amount: input.amount,
+        order_currency: 'INR',
+        customer_details: {
+          customer_id: userId,
+          customer_email: u?.email || `tenant_${userId}@rentflo.app`,
+          customer_phone: (u as any)?.phoneNumber || "9999999999",
+          customer_name: (u as any)?.fullLegalName || u?.email || "Tenant",
+        },
+        order_meta: {
+          notify_url: `${req.protocol}://${req.get("host")}/api/cashfree/webhook`,
+        },
+        order_note: `Partial rent for ${ledger.monthYear}`,
+        order_tags: {
+          ledgerId,
           propertyId: property.id,
           monthYear: ledger.monthYear,
           paymentType: 'partial',
-        }
+        },
       });
 
       const payment = await storage.createPayment({
         ledgerId: ledgerId,
         amount: input.amount,
-        razorpayOrderId: order.id,
+        razorpayOrderId: order.order_id,
+        paymentMethod: 'CASHFREE',
         status: 'PENDING',
       });
 
       res.json({
         payment,
-        orderId: order.id,
-        amount: order.amount,
-        currency: order.currency,
-        keyId: process.env.RAZORPAY_KEY_ID!,
+        orderId: order.order_id,
+        paymentSessionId: order.payment_session_id,
+        amount: input.amount,
+        currency: 'INR',
       });
     } catch (err: any) {
       if (err instanceof z.ZodError) {
