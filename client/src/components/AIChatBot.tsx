@@ -162,10 +162,10 @@ export function AIChatBot() {
               transition={{ type: "spring", stiffness: 260, damping: 20 }}
               onClick={() => setOpen(true)}
               data-testid="button-open-chatbot"
-              className="relative flex items-center justify-center w-14 h-14 bg-[#6FFFE9] text-black shadow-lg shadow-[#6FFFE9]/20 hover:bg-[#9DEFE4] transition-colors"
+              className="relative flex items-center justify-center w-14 h-14 text-[#6FFFE9] hover:text-[#9DEFE4] transition-colors drop-shadow-lg"
               aria-label="Open AI assistant"
             >
-              <MessageCircle size={26} />
+              <MessageCircle size={32} strokeWidth={1.8} />
               {hasUnread && (
                 <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-white rounded-full border-2 border-[#6FFFE9]" />
               )}
