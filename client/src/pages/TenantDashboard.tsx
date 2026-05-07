@@ -135,6 +135,10 @@ export default function TenantDashboard() {
 
   useEffect(() => {
     if (!property) return;
+    // Only fire once per calendar day per property to avoid spamming the server
+    const key = `rent-due-check-${property.id}-${new Date().toDateString()}`;
+    if (sessionStorage.getItem(key)) return;
+    sessionStorage.setItem(key, "1");
     apiRequest("POST", "/api/notifications/rent-due-check", {}).catch(() => {});
   }, [property?.id]);
 

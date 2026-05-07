@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { eq, desc, sql, or, and } from "drizzle-orm";
+import { eq, desc, sql, or, and, count } from "drizzle-orm";
 import {
   properties, ledgers, payments, maintenanceTickets, agreements,
   pushSubscriptions, notifications, messages,
@@ -190,7 +190,11 @@ export class DatabaseStorage implements IStorage {
 
   // Maintenance Tickets
   async getTickets(propertyId?: string, status?: string): Promise<(MaintenanceTicket & { property: Property })[]> {
-    let query = db.select({
+    const conditions = [];
+    if (propertyId) conditions.push(eq(maintenanceTickets.propertyId, propertyId));
+    if (status) conditions.push(eq(maintenanceTickets.status, status));
+
+    const baseQuery = db.select({
       id: maintenanceTickets.id,
       propertyId: maintenanceTickets.propertyId,
       tenantId: maintenanceTickets.tenantId,
@@ -206,17 +210,12 @@ export class DatabaseStorage implements IStorage {
     })
     .from(maintenanceTickets)
     .innerJoin(properties, eq(maintenanceTickets.propertyId, properties.id));
-    
-    const results = await query.orderBy(desc(maintenanceTickets.createdAt));
-    
-    let filtered = results;
-    if (propertyId) {
-      filtered = filtered.filter(t => t.propertyId === propertyId);
-    }
-    if (status) {
-      filtered = filtered.filter(t => t.status === status);
-    }
-    return filtered;
+
+    const results = conditions.length > 0
+      ? await baseQuery.where(and(...conditions)).orderBy(desc(maintenanceTickets.createdAt))
+      : await baseQuery.orderBy(desc(maintenanceTickets.createdAt));
+
+    return results;
   }
 
   async getTicket(id: string): Promise<MaintenanceTicket | undefined> {
@@ -238,13 +237,21 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getTicketCountsByProperty(propertyId: string): Promise<{ open: number; resolved: number }> {
-    const results = await db.select().from(maintenanceTickets)
-      .where(eq(maintenanceTickets.propertyId, propertyId));
-    
-    return {
-      open: results.filter(t => t.status === 'OPEN' || t.status === 'IN_PROGRESS').length,
-      resolved: results.filter(t => t.status === 'RESOLVED').length
-    };
+    const [openRow] = await db
+      .select({ count: count() })
+      .from(maintenanceTickets)
+      .where(and(
+        eq(maintenanceTickets.propertyId, propertyId),
+        sql`${maintenanceTickets.status} IN ('OPEN','IN_PROGRESS')`
+      ));
+    const [resolvedRow] = await db
+      .select({ count: count() })
+      .from(maintenanceTickets)
+      .where(and(
+        eq(maintenanceTickets.propertyId, propertyId),
+        eq(maintenanceTickets.status, 'RESOLVED')
+      ));
+    return { open: openRow?.count ?? 0, resolved: resolvedRow?.count ?? 0 };
   }
 
   // Agreements
@@ -304,11 +311,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUnreadCount(userId: string): Promise<number> {
-    const rows = await db
-      .select()
+    const [row] = await db
+      .select({ count: count() })
       .from(notifications)
-      .where(eq(notifications.userId, userId));
-    return rows.filter(n => !n.read).length;
+      .where(and(eq(notifications.userId, userId), eq(notifications.read, false)));
+    return row?.count ?? 0;
   }
 
   async markNotificationsRead(userId: string): Promise<void> {
@@ -345,11 +352,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUnreadMessageCount(userId: string): Promise<number> {
-    const rows = await db
-      .select()
+    const [row] = await db
+      .select({ count: count() })
       .from(messages)
       .where(and(eq(messages.receiverId, userId), eq(messages.read, false)));
-    return rows.length;
+    return row?.count ?? 0;
   }
 }
 

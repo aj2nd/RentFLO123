@@ -41,14 +41,14 @@ export function BottomNav() {
 
   const { data: unreadData } = useQuery<{ count: number }>({
     queryKey: ["/api/messages/unread/count"],
-    refetchInterval: 15000,
+    refetchInterval: 60000,
     enabled: !!user,
   });
   const unreadCount = unreadData?.count ?? 0;
 
   const { data: unreadNotifsData } = useQuery<{ count: number }>({
     queryKey: ["/api/notifications/unread-count"],
-    refetchInterval: 30000,
+    refetchInterval: 60000,
     enabled: !!user,
   });
   const unreadNotifCount = unreadNotifsData?.count ?? 0;

@@ -34,7 +34,7 @@ export function Navigation() {
 
   const { data: unreadData } = useQuery<{ count: number }>({
     queryKey: ["/api/messages/unread/count"],
-    refetchInterval: 15000,
+    refetchInterval: 60000,
     enabled: !!user,
   });
   const unreadCount = unreadData?.count ?? 0;

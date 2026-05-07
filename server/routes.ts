@@ -115,15 +115,8 @@ export async function registerRoutes(
     }
   });
 
-  app.get(api.properties.get.path, isAuthenticated, async (req, res) => {
-    const property = await storage.getProperty(req.params.id);
-    if (!property) {
-      return res.status(404).json({ message: 'Property not found' });
-    }
-    res.json(property);
-  });
-
   // My properties — filtered by the logged-in user's role
+  // IMPORTANT: must be registered BEFORE /api/properties/:id to avoid "mine" matching as an id
   app.get("/api/properties/mine", isAuthenticated, async (req: any, res) => {
     const userId = req.user?.claims?.sub;
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
@@ -141,6 +134,14 @@ export async function registerRoutes(
     // ADMIN sees all
     const props = await storage.getProperties();
     return res.json(props);
+  });
+
+  app.get(api.properties.get.path, isAuthenticated, async (req, res) => {
+    const property = await storage.getProperty(req.params.id);
+    if (!property) {
+      return res.status(404).json({ message: 'Property not found' });
+    }
+    res.json(property);
   });
 
   // Look up properties by owner email (for tenant join)
@@ -931,20 +932,32 @@ export function registerMessagingRoutes(app: Express) {
   // GET /api/admin/messages — all properties with active conversations (admin only)
   app.get('/api/admin/messages', isAuthenticated, requireRole('ADMIN'), async (_req, res) => {
     try {
-      const allProperties = await storage.getProperties();
-      const conversations = await Promise.all(
-        allProperties.map(async (p) => {
-          const msgs = await storage.getMessages(p.id);
-          if (!msgs.length) return null;
-          return {
-            property: p,
-            messageCount: msgs.length,
-            lastMessage: msgs[msgs.length - 1] ?? null,
-            unreadCount: msgs.filter(m => !m.read).length,
-          };
-        })
-      );
-      res.json(conversations.filter(Boolean));
+      // Single query: get all messages joined with properties, then group in JS
+      const { db } = await import("./db");
+      const { messages: msgsTable, properties: propsTable } = await import("@shared/schema");
+      const { eq: eqFn, desc: descFn } = await import("drizzle-orm");
+
+      const rows = await db
+        .select({ msg: msgsTable, property: propsTable })
+        .from(msgsTable)
+        .innerJoin(propsTable, eqFn(msgsTable.propertyId, propsTable.id))
+        .orderBy(descFn(msgsTable.createdAt));
+
+      // Group by propertyId
+      const grouped = new Map<string, { property: typeof rows[0]['property']; msgs: typeof rows[0]['msg'][] }>();
+      for (const { msg, property } of rows) {
+        if (!grouped.has(property.id)) grouped.set(property.id, { property, msgs: [] });
+        grouped.get(property.id)!.msgs.push(msg);
+      }
+
+      const conversations = Array.from(grouped.values()).map(({ property, msgs }) => ({
+        property,
+        messageCount: msgs.length,
+        lastMessage: msgs[0] ?? null,
+        unreadCount: msgs.filter(m => !m.read).length,
+      }));
+
+      res.json(conversations);
     } catch (e) {
       console.error(e);
       res.status(500).json({ message: 'Internal server error' });
