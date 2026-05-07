@@ -8,6 +8,7 @@ import { authStorage } from "./replit_integrations/auth/storage";
 import Razorpay from "razorpay";
 import xss from "xss";
 import { initVapid, getVapidPublicKey, createNotification } from "./push";
+import OpenAI from "openai";
 
 function sanitizeStrings(obj: any): any {
   if (typeof obj === 'string') return xss(obj);
@@ -960,6 +961,74 @@ export function registerMessagingRoutes(app: Express) {
     } catch (e) {
       console.error(e);
       res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  // === AI CHATBOT ===
+  const openai = new OpenAI({
+    apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
+    baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
+  });
+
+  app.post("/api/chatbot", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const { messages, userContext } = req.body;
+
+      if (!messages || !Array.isArray(messages)) {
+        return res.status(400).json({ message: "messages array is required" });
+      }
+
+      // Build context-aware system prompt
+      const systemPrompt = `You are RentFLO Assistant, a helpful AI for the RentFLO rent-advance platform. You help landlords (owners) and tenants manage their rent, payments, KYC verification, maintenance tickets, and rental agreements.
+
+User context:
+- Role: ${userContext?.role || 'unknown'}
+- Name: ${userContext?.name || 'User'}
+${userContext?.property ? `- Property: ${userContext.property}` : ''}
+${userContext?.monthlyRent ? `- Monthly Rent: ₹${userContext.monthlyRent.toLocaleString()}` : ''}
+
+You can help with:
+- Explaining rent advance status (ARREARS, EXPOSED, SETTLED)
+- KYC verification process (PAN, Aadhaar, bank details)
+- Payment and split payment questions
+- Maintenance ticket status
+- Rental agreement signing
+- How to navigate the platform
+
+Keep answers concise, friendly, and specific to rent/property management in India. Use ₹ for currency. If a question is unrelated to the platform or property management, politely redirect to relevant topics.`;
+
+      res.setHeader("Content-Type", "text/event-stream");
+      res.setHeader("Cache-Control", "no-cache");
+      res.setHeader("Connection", "keep-alive");
+
+      const stream = await openai.chat.completions.create({
+        model: "gpt-5-mini",
+        messages: [
+          { role: "system", content: systemPrompt },
+          ...messages.map((m: any) => ({ role: m.role, content: m.content })),
+        ],
+        stream: true,
+        max_completion_tokens: 500,
+      });
+
+      for await (const chunk of stream) {
+        const content = chunk.choices[0]?.delta?.content || "";
+        if (content) {
+          res.write(`data: ${JSON.stringify({ content })}\n\n`);
+        }
+      }
+
+      res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+      res.end();
+    } catch (err: any) {
+      console.error("Chatbot error:", err);
+      if (res.headersSent) {
+        res.write(`data: ${JSON.stringify({ error: "Something went wrong." })}\n\n`);
+        res.end();
+      } else {
+        res.status(500).json({ message: "Internal server error" });
+      }
     }
   });
 }
