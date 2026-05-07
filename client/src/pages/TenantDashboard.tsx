@@ -187,13 +187,21 @@ export default function TenantDashboard() {
               toast({ title: "Payment Failed", description: result.error?.message ?? "Payment was not completed.", variant: "destructive" });
               return;
             }
-            // The webhook is the source of truth; show optimistic UI here.
+            // Belt-and-suspenders: ask the server to verify the payment with
+            // Cashfree directly (in case the webhook hasn't landed yet).
+            let verifiedPaymentId: string | undefined;
+            try {
+              const v = await apiRequest("POST", `/api/cashfree/verify/${orderData.orderId}`);
+              const vData = await v.json().catch(() => ({}));
+              verifiedPaymentId = vData?.paymentId;
+            } catch { /* webhook will reconcile if verify fails */ }
+
             setShowSuccess(true); setPaymentAmount("");
             queryClient.invalidateQueries({ queryKey: ["/api/ledgers"] });
             queryClient.invalidateQueries({ queryKey: ["/api/payments"] });
             setReceiptData({
               amount: parseInt(amountToUse, 10),
-              paymentId: result?.paymentDetails?.paymentMessage ?? orderData.orderId,
+              paymentId: verifiedPaymentId ?? result?.paymentDetails?.paymentMessage ?? orderData.orderId,
               orderId: orderData.orderId,
               date: new Date(),
               property: property?.address ?? "Your Property",

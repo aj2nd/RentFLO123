@@ -97,6 +97,15 @@ async function cashfreeFetchOrder(orderId: string): Promise<any> {
   if (!res.ok) throw new Error((data && data.message) || `Cashfree fetch order failed (${res.status})`);
   return data;
 }
+async function cashfreeFetchOrderPayments(orderId: string): Promise<any[]> {
+  const res = await fetch(`${cashfreeBaseUrl()}/orders/${encodeURIComponent(orderId)}/payments`, {
+    method: "GET",
+    headers: cashfreeHeaders(),
+  });
+  const data = await res.json().catch(() => ([]));
+  if (!res.ok) throw new Error((data && data.message) || `Cashfree fetch order payments failed (${res.status})`);
+  return Array.isArray(data) ? data : [];
+}
 
 export async function registerRoutes(
   httpServer: Server,
@@ -492,6 +501,102 @@ export async function registerRoutes(
     } catch (err: any) {
       console.error('Webhook processing error:', err?.message || err);
       res.status(500).json({ message: 'Webhook processing failed' });
+    }
+  });
+
+  // Verify Payment (fallback if webhook hasn't fired) — tenant calls this after
+  // the Cashfree modal closes; we fetch the order's payments from Cashfree and
+  // reconcile the ledger using the same logic as the webhook. Idempotent: the
+  // unique index on razorpay_payment_id ensures we never double-count.
+  app.post('/api/cashfree/verify/:orderId', isAuthenticated, async (req: any, res) => {
+    const orderId = req.params.orderId as string;
+    if (!cashfreeConfigured()) {
+      return res.status(503).json({ message: 'Payment gateway not configured' });
+    }
+    try {
+      const payments = await cashfreeFetchOrderPayments(orderId);
+      const successPayment = payments.find((p) => p?.payment_status === 'SUCCESS');
+      if (!successPayment) {
+        return res.json({ status: 'pending', settled: false });
+      }
+      const cf_payment_id = successPayment.cf_payment_id?.toString?.() || successPayment.payment_id?.toString?.();
+      const amount = Number(successPayment.payment_amount || 0);
+
+      // Look up ledger via pre-created payment row, or via order_tags.
+      const allRows = await storage.getAllPayments();
+      const matching = allRows.find((p) => p.razorpayOrderId === orderId);
+      let ledgerId: string | undefined = matching?.ledgerId;
+      if (!ledgerId) {
+        try {
+          const order = await cashfreeFetchOrder(orderId);
+          ledgerId = order?.order_tags?.ledgerId;
+        } catch { /* ignore */ }
+      }
+      if (!ledgerId) return res.json({ status: 'ok', settled: false });
+
+      const ledger = await storage.getLedger(ledgerId);
+      const property = ledger ? await storage.getProperty(ledger.propertyId) : null;
+      if (!ledger || !property) return res.json({ status: 'ok', settled: false });
+
+      // Authorization: only the tenant on this property (or admin) may verify.
+      const userId = req.user?.claims?.sub as string;
+      const u = await authStorage.getUser(userId);
+      const isAdmin = u?.role === 'ADMIN';
+      const isTenant = property.tenantId === userId;
+      if (!isAdmin && !isTenant) {
+        return res.status(403).json({ message: 'Not authorized' });
+      }
+
+      const existingPayments = await storage.getPaymentsByLedger(ledgerId);
+      const alreadyProcessed = existingPayments.some(
+        (p) => p.razorpayPaymentId === cf_payment_id && p.status === 'SUCCESS',
+      );
+
+      if (!alreadyProcessed) {
+        const pending = existingPayments.find((p) => p.razorpayOrderId === orderId);
+        if (pending) {
+          await storage.updatePayment(pending.id, {
+            razorpayPaymentId: cf_payment_id,
+            status: 'SUCCESS',
+          });
+        } else {
+          try {
+            await storage.createPayment({
+              ledgerId,
+              amount,
+              razorpayOrderId: orderId,
+              razorpayPaymentId: cf_payment_id,
+              paymentMethod: 'CASHFREE',
+              status: 'SUCCESS',
+            });
+          } catch (e: any) {
+            // Unique-index race with the webhook: treat as already processed.
+            if ((e?.code || e?.cause?.code) !== '23505') throw e;
+          }
+        }
+
+        const refreshed = await storage.getPaymentsByLedger(ledgerId);
+        const totalCollected = refreshed
+          .filter((p) => p.status === 'SUCCESS')
+          .reduce((sum, p) => sum + p.amount, 0);
+        const isSettled = totalCollected >= property.monthlyRent;
+        await storage.updateLedger(ledgerId, {
+          amountCollected: totalCollected,
+          status: isSettled ? 'SETTLED' : (ledger.amountAdvanced > 0 ? 'EXPOSED' : 'ARREARS'),
+        });
+      }
+
+      const finalLedger = await storage.getLedger(ledgerId);
+      const settled = (finalLedger?.amountCollected ?? 0) >= property.monthlyRent;
+      return res.json({
+        status: 'ok',
+        settled,
+        paymentId: cf_payment_id,
+        amount,
+      });
+    } catch (err: any) {
+      console.error('Cashfree verify failed:', err?.message || err);
+      return res.status(502).json({ message: 'Failed to verify payment' });
     }
   });
 
