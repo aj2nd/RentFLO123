@@ -87,8 +87,9 @@ export function Navigation() {
         </button>
 
         {/* Center: wordmark — absolutely centered so it's always in the middle */}
-        <div className="absolute inset-x-0 flex items-center justify-center pointer-events-none" style={{ height: "60px" }}>
-          <span className="text-sm font-bold tracking-tight silver-text">RentFLO</span>
+        <div className="absolute inset-x-0 flex items-center justify-center gap-2 pointer-events-none" style={{ height: "60px" }}>
+          <img src="/logo-icon.png" alt="RentFLO" style={{ height: 28, width: 28, objectFit: "contain" }} />
+          <img src="/logo-wordmark-transparent.png" alt="RentFLO" style={{ height: 20, objectFit: "contain" }} />
         </div>
 
         <div className="flex-1" />
@@ -125,35 +126,27 @@ export function Navigation() {
       >
         {/* ── Brand header ── */}
         <div
-          className="w-64 px-4 py-4 flex items-center gap-2.5 flex-shrink-0"
+          className="w-64 px-5 py-5 flex items-center gap-3 flex-shrink-0"
           style={{ borderBottom: "1px solid var(--nav-border)" }}
         >
-          <div
-            className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
-            style={{ background: "rgba(111,255,233,0.12)", border: "1px solid rgba(111,255,233,0.25)" }}
-          >
-            <Home size={14} style={{ color: "#6FFFE9" }} />
-          </div>
-          <div>
-            <span className="text-sm font-bold tracking-tight silver-text">
-              RentFLO
-            </span>
+          <img src="/logo-icon.png" alt="RentFLO" style={{ height: 32, width: 32, objectFit: "contain", flexShrink: 0 }} />
+          <div className="flex flex-col gap-0.5">
+            <img src="/logo-wordmark-transparent.png" alt="RentFLO" style={{ height: 18, objectFit: "contain", objectPosition: "left" }} />
             {user?.role && (
-              <p className="text-[9px] uppercase tracking-widest leading-none mt-0.5" style={{ color: "var(--tiffany-dim)", opacity: 0.7 }}>
-                {user.role.charAt(0) + user.role.slice(1).toLowerCase()}
+              <p className="text-[9px] uppercase tracking-[2px] leading-none" style={{ color: "var(--tiffany)", opacity: 0.6 }}>
+                {user.role.charAt(0) + user.role.slice(1).toLowerCase()} Portal
               </p>
             )}
           </div>
-          {/* Tiffany accent dot */}
           <div
-            className="ml-auto w-1.5 h-1.5 rounded-full flex-shrink-0"
-            style={{ background: "#6FFFE9", boxShadow: "0 0 6px rgba(111,255,233,0.7)" }}
+            className="ml-auto w-2 h-2 rounded-full flex-shrink-0"
+            style={{ background: "#6FFFE9", boxShadow: "0 0 8px rgba(111,255,233,0.8)" }}
           />
         </div>
 
         {/* ── Nav items — scrollable ── */}
-        <div className="flex-1 min-h-0 overflow-y-auto w-64 py-3">
-          <div className="space-y-0.5 px-3">
+        <div className="flex-1 min-h-0 overflow-y-auto w-64 py-4">
+          <div className="space-y-1 px-4">
             {isLoading ? (
               <div className="flex items-center justify-center py-8">
                 <Loader2 className="w-4 h-4 animate-spin" style={{ color: "rgba(111,255,233,0.40)" }} />
@@ -176,14 +169,17 @@ export function Navigation() {
 
         {/* ── Footer: alerts + sign out ── */}
         <div
-          className="px-3 flex flex-col gap-1 w-64 pb-4 pt-3 flex-shrink-0"
+          className="w-64 px-4 pb-5 pt-4 flex flex-col gap-2 flex-shrink-0"
           style={{ borderTop: "1px solid var(--nav-border)" }}
         >
           {/* Alerts + Theme toggle row */}
-          <div className="flex items-center gap-2 px-3 py-2">
+          <div
+            className="flex items-center gap-3 px-3 py-3 rounded-xl"
+            style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--nav-border)" }}
+          >
             <NotificationBell />
             <span
-              className="text-[9px] font-medium uppercase tracking-widest flex-1"
+              className="text-[10px] font-semibold uppercase tracking-widest flex-1"
               style={{ color: "var(--nav-text-dim)" }}
             >
               Alerts
@@ -194,7 +190,7 @@ export function Navigation() {
           {/* Sign out */}
           <button
             onClick={() => logout()}
-            className="flex items-center gap-3 px-3 py-2.5 w-full rounded-xl transition-all duration-200 group"
+            className="flex items-center gap-3 px-3 py-3 w-full rounded-xl transition-all duration-200"
             style={{
               color: "var(--nav-text)",
               background: "transparent",
@@ -210,13 +206,13 @@ export function Navigation() {
             }}
             data-testid="button-logout"
           >
-            <LogOut size={15} className="flex-shrink-0" />
+            <LogOut size={16} className="flex-shrink-0" style={{ color: "var(--nav-text-dim)" }} />
             <span className="text-sm font-medium whitespace-nowrap">{t("nav_sign_out")}</span>
           </button>
 
           {/* Legal links */}
-          <div className="px-3 pt-2 mt-1" style={{ borderTop: "1px solid var(--nav-border)" }}>
-            <div className="flex flex-wrap gap-x-3 gap-y-1">
+          <div className="px-3 pt-3 mt-1" style={{ borderTop: "1px solid var(--nav-border)" }}>
+            <div className="flex flex-wrap gap-x-4 gap-y-2 mb-2">
               {[
                 { label: "Terms", href: "/terms" },
                 { label: "Privacy", href: "/privacy" },
@@ -236,13 +232,13 @@ export function Navigation() {
             </div>
             <a
               href="mailto:help@rentflo.com"
-              className="text-[10px] mt-1.5 block transition-colors"
+              className="text-[10px] block transition-colors mb-1"
               style={{ color: "var(--nav-text-dim)" }}
               data-testid="nav-legal-email"
             >
               help@rentflo.com
             </a>
-            <p className="text-[9px] mt-1 opacity-40 whitespace-nowrap" style={{ color: "var(--nav-text-dim)" }}>
+            <p className="text-[9px] opacity-40 whitespace-nowrap" style={{ color: "var(--nav-text-dim)" }}>
               © {new Date().getFullYear()} RentFLO Technologies Pvt. Ltd.
             </p>
           </div>
