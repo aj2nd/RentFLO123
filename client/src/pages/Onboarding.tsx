@@ -22,14 +22,14 @@ export default function Onboarding() {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       toast({
         title: t('welcome_message'),
-        description: role === "OWNER" ? "Let's set up your first property." : "Find your home and start paying rent.",
+        description: role === "OWNER" ? t('onboarding_owner_next_step') : t('onboarding_tenant_next_step'),
       });
       setLocation("/setup");
     },
     onError: () => {
       toast({
-        title: "Error",
-        description: "Failed to set your role. Please try again.",
+        title: t('generic_error_title'),
+        description: t('onboarding_role_error'),
         variant: "destructive",
       });
     },
@@ -81,15 +81,11 @@ export default function Onboarding() {
             <>
               <Home className="w-16 h-16" strokeWidth={1.5} />
               <span className="text-2xl font-bold tracking-tight">{t('onboarding_iam_tenant')}</span>
-              <span className="text-sm text-zinc-500">{t('onboarding_tenant_desc')}</span>
+              <span className="text-sm text-zinc-600">{t('onboarding_tenant_desc')}</span>
             </>
           )}
         </Button>
       </div>
-
-      <p className="text-zinc-600 text-sm mt-16">
-        {t('onboarding_role_later')}
-      </p>
     </div>
   );
 }

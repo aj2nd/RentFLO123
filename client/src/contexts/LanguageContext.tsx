@@ -63,6 +63,10 @@ const translations = {
     onboarding_iam_tenant: "I AM A TENANT",
     onboarding_tenant_desc: "Pay rent in flexible installments",
     onboarding_role_later: "You can change your role later in settings",
+    onboarding_owner_next_step: "Let's set up your first property.",
+    onboarding_tenant_next_step: "Find your home and start paying rent.",
+    onboarding_role_error: "Failed to set your role. Please try again.",
+    generic_error_title: "Error",
 
     // ── Setup ───────────────────────────────────────────────────────────────
     setup_landlord_badge: "Landlord Setup",
@@ -85,6 +89,18 @@ const translations = {
     setup_redirecting: "Redirecting to your dashboard…",
     setup_month: "month",
     setup_payout_day_label: "Payout day",
+    setup_owner_address_required: "Address required",
+    setup_owner_rent_invalid: "Enter a valid monthly rent",
+    setup_owner_payout_invalid: "Payout day must be between 1 and 28",
+    setup_property_added: "Property added!",
+    setup_property_ready_desc: "Your property and rent cycle are set up.",
+    setup_property_failed: "Failed to add property",
+    setup_tenant_email_required: "Enter your landlord's email",
+    setup_no_properties_found: "No properties found",
+    setup_no_vacant_properties: "No available (vacant) properties for that landlord.",
+    setup_search_failed: "Search failed",
+    setup_join_success: "Success",
+    setup_join_success_desc: "You're linked to this property.",
 
     // ── Owner Dashboard ─────────────────────────────────────────────────────
     owner_title: "Owner Portal",
@@ -106,7 +122,6 @@ const translations = {
     owner_property_health: "Property Health",
     owner_paid_badge: "Paid",
     owner_pending_badge: "Pending",
-    // Add property modal
     modal_add_property: "Add Property",
     modal_monthly_rent: "Monthly Rent (₹)",
     modal_payout_day: "Payout Day",
@@ -201,14 +216,12 @@ const translations = {
     admin_not_submitted: "Not Submitted",
     admin_verify_user: "Verify User",
     admin_no_role: "NO ROLE",
-    // Pay owner modal
     admin_mark_paid: "Confirm & Mark Paid",
     admin_net_transfer: "Net Transfer",
     admin_platform_fee: "Platform Fee (5%)",
     admin_confirm_amount: "Confirm Amount",
     admin_bank_receipt: "Bank Transfer Receipt",
     admin_receipt_hint: "Upload screenshot of bank transfer as proof of payment.",
-    // Additional admin keys
     admin_stat_properties_sub: "Currently managed portfolio",
     admin_kyc_pan: "PAN",
     admin_kyc_aadhaar: "Aadhaar",
@@ -417,7 +430,6 @@ const translations = {
   },
 
   hi: {
-    // ── Landing page ────────────────────────────────────────────────────────
     home: "होम",
     settings: "सेटिंग्स",
     welcome_message: "RentFLO में आपका स्वागत है",
@@ -449,8 +461,6 @@ const translations = {
     usp_3_desc: "हम शुरू से अंत तक मरम्मत का प्रबंधन करते हैं।",
     usp_4_title: "किराएदार के पीछे न भागें",
     usp_4_desc: "सभी फॉलो-अप और विवाद हम संभालते हैं।",
-
-    // ── Navigation ──────────────────────────────────────────────────────────
     nav_admin_console: "एडमिन कंसोल",
     nav_maintenance: "रखरखाव",
     nav_owner_portal: "मालिक पोर्टल",
@@ -459,27 +469,19 @@ const translations = {
     nav_kyc: "KYC सत्यापन",
     nav_agreement: "समझौता",
     nav_sign_out: "साइन आउट",
-
-    // ── Legal Footer ────────────────────────────────────────────────────────
     footer_refund: "रद्दीकरण/धनवापसी नीति",
-
-    // ── KYC Banner ──────────────────────────────────────────────────────────
     kyc_banner_in_progress: "सत्यापन जारी है",
     kyc_banner_complete: "KYC सत्यापन पूर्ण करें",
     kyc_banner_reviewing: "आपके दस्तावेज़ समीक्षाधीन हैं। इसमें 1-2 कार्यदिवस लग सकते हैं।",
     kyc_banner_verify_owner: "संपत्ति जोड़ने के लिए अपनी पहचान सत्यापित करें।",
     kyc_banner_verify_tenant: "किराया चुकाने के लिए अपनी पहचान सत्यापित करें।",
     kyc_banner_button: "KYC पूर्ण करें",
-
-    // ── Onboarding ──────────────────────────────────────────────────────────
     onboarding_subtitle: "किराया प्रबंधन का भविष्य। हमें बताएं आप कौन हैं।",
     onboarding_iam_landlord: "मैं मकान मालिक हूँ",
     onboarding_landlord_desc: "किराया अग्रिम प्राप्त करें",
     onboarding_iam_tenant: "मैं किराएदार हूँ",
     onboarding_tenant_desc: "लचीली किस्तों में किराया चुकाएं",
     onboarding_role_later: "आप बाद में सेटिंग्स में अपनी भूमिका बदल सकते हैं",
-
-    // ── Setup ───────────────────────────────────────────────────────────────
     setup_landlord_badge: "मालिक सेटअप",
     setup_tenant_badge: "किराएदार सेटअप",
     setup_owner_heading: "अपनी संपत्ति जोड़ें।",
@@ -500,8 +502,6 @@ const translations = {
     setup_redirecting: "डैशबोर्ड पर जा रहे हैं...",
     setup_month: "माह",
     setup_payout_day_label: "भुगतान दिन",
-
-    // ── Owner Dashboard ─────────────────────────────────────────────────────
     owner_title: "मालिक पोर्टल",
     owner_subtitle: "वापसी पर स्वागत। आपका पोर्टफोलियो अवलोकन।",
     owner_add_property: "नई संपत्ति जोड़ें",
@@ -527,8 +527,6 @@ const translations = {
     modal_tenant_email_optional: "किराएदार ईमेल (वैकल्पिक)",
     modal_tenant_email_hint: "किराएदार का ईमेल दर्ज करें",
     modal_submit_property: "संपत्ति जोड़ें",
-
-    // ── Tenant Dashboard ────────────────────────────────────────────────────
     tenant_title: "किराएदार डैशबोर्ड",
     tenant_secure_pay: "RentFLO सुरक्षित भुगतान",
     tenant_manage_stay: "यहाँ अपने प्रवास का प्रबंधन करें:",
@@ -570,8 +568,6 @@ const translations = {
     tenant_no_active_rent: "कोई सक्रिय किराया नहीं",
     tenant_no_active_rent_desc: "संपत्ति से जुड़ने के बाद किराया यहाँ दिखेगा।",
     tenant_full_prefix: "पूर्ण:",
-
-    // ── Admin Dashboard ─────────────────────────────────────────────────────
     admin_title: "व्यवस्थापक डैशबोर्ड",
     admin_system_status: "सिस्टम स्थिति:",
     admin_operational: "क्रियाशील",
@@ -630,10 +626,8 @@ const translations = {
     admin_kyc_view_cheque: "रद्द चेक देखें",
     admin_due_now: "अभी देय",
     admin_net_payout: "शुद्ध भुगतान",
-    admin_process_payout: "भुगतान संसाधित करें",
+    admin_process_payout: "पावती संसाधित करें",
     admin_confirm_transfer: "मैनुअल ट्रांसफर की पुष्टि करें",
-
-    // ── Ledger ──────────────────────────────────────────────────────────────
     ledger_title: "मास्टर खाता बही",
     ledger_current_exposure: "वर्तमान एक्सपोज़र",
     ledger_date: "दिनांक",
@@ -645,8 +639,6 @@ const translations = {
     ledger_no_transactions: "अभी कोई लेनदेन नहीं।",
     ledger_footer: "बैंक-स्तरीय ऑडिट • रियल-टाइम सिंक • संस्थागत पारदर्शिता",
     ledger_balance_label: "शेष:",
-
-    // ── Admin Maintenance ───────────────────────────────────────────────────
     maint_title: "रखरखाव पोर्टल",
     maint_subtitle: "सभी रखरखाव अनुरोध प्रबंधित करें।",
     maint_total: "कुल",
@@ -661,8 +653,6 @@ const translations = {
     maint_resolve: "हल करें",
     maint_view_photo: "फोटो देखें",
     maint_click_close: "बंद करने के लिए कहीं भी क्लिक करें",
-
-    // ── KYC Verify page ─────────────────────────────────────────────────────
     kyc_identity_badge: "पहचान सत्यापन",
     kyc_page_title: "KYC सत्यापन",
     kyc_page_subtitle: "सभी सुविधाएँ अनलॉक करने के लिए पहचान जाँच करें।",
@@ -697,8 +687,6 @@ const translations = {
     kyc_upload_cheque: "चेक अपलोड करें",
     kyc_submitting: "सबमिट हो रहा है…",
     kyc_submit: "सत्यापन के लिए सबमिट करें",
-
-    // ── Agreement page ──────────────────────────────────────────────────────
     agr_badge: "त्रिपक्षीय समझौता",
     agr_title: "अपने समझौते पर हस्ताक्षर करें",
     agr_subtitle: "नीचे पूरा समझौता पढ़ें, फिर डिजिटल हस्ताक्षर करें।",
@@ -722,8 +710,6 @@ const translations = {
     agr_signed_tick: "✓ हस्ताक्षरित",
     agr_pending: "लंबित",
     agr_rent_advance: "किराया अग्रिम समझौता",
-
-    // ── Bottom Navigation ───────────────────────────────────────────────────
     nav_home: "होम",
     nav_repairs: "मरम्मत",
     nav_messages: "संदेश",
@@ -731,8 +717,6 @@ const translations = {
     nav_inbox: "इनबॉक्स",
     nav_admin_short: "एडमिन",
     nav_kyc_short: "KYC",
-
-    // ── AI Chatbot ──────────────────────────────────────────────────────────
     chat_assistant_title: "RentFLO सहायक",
     chat_assistant_subtitle: "AI · Replit द्वारा संचालित",
     chat_how_help: "मैं कैसे मदद कर सकता हूँ?",
@@ -749,8 +733,6 @@ const translations = {
     chat_suggestion_2: "मैं अपना KYC कैसे पूरा करूँ?",
     chat_suggestion_3: "किराया अग्रिम कैसे काम करता है?",
     chat_suggestion_4: "मैं रखरखाव की समस्या कैसे रिपोर्ट करूँ?",
-
-    // ── Tenant Tabs / Stats / Empty States ──────────────────────────────────
     tab_overview: "अवलोकन",
     tab_payments: "भुगतान",
     tab_lease: "पट्टा",
@@ -829,7 +811,6 @@ const translations = {
   },
 
   kn: {
-    // ── Landing page ────────────────────────────────────────────────────────
     home: "ಮುಖಪುಟ",
     settings: "ಸೆಟ್ಟಿಂಗ್‌ಗಳು",
     welcome_message: "RentFLO ಗೆ ಸ್ವಾಗತ",
@@ -861,8 +842,6 @@ const translations = {
     usp_3_desc: "ನಾವು ಆರಂಭದಿಂದ ಕೊನೆಯವರೆಗೆ ದುರಸ್ತಿ ನಿರ್ವಹಿಸುತ್ತೇವೆ.",
     usp_4_title: "ಬಾಡಿಗೆದಾರರ ಹಿಂದೆ ಓಡಬೇಡಿ",
     usp_4_desc: "ಎಲ್ಲಾ ಫಾಲೋ-ಅಪ್ ಮತ್ತು ವಿವಾದಗಳನ್ನು ನಾವು ನಿಭಾಯಿಸುತ್ತೇವೆ.",
-
-    // ── Navigation ──────────────────────────────────────────────────────────
     nav_admin_console: "ಅಡ್ಮಿನ್ ಕನ್ಸೋಲ್",
     nav_maintenance: "ನಿರ್ವಹಣೆ",
     nav_owner_portal: "ಮಾಲೀಕ ಪೋರ್ಟಲ್",
@@ -871,27 +850,19 @@ const translations = {
     nav_kyc: "KYC ಪರಿಶೀಲನೆ",
     nav_agreement: "ಒಪ್ಪಂದ",
     nav_sign_out: "ಸೈನ್ ಔಟ್",
-
-    // ── Legal Footer ────────────────────────────────────────────────────────
     footer_refund: "ರದ್ದು/ಮರುಪಾವತಿ ನೀತಿ",
-
-    // ── KYC Banner ──────────────────────────────────────────────────────────
     kyc_banner_in_progress: "ಪರಿಶೀಲನೆ ಪ್ರಗತಿಯಲ್ಲಿದೆ",
     kyc_banner_complete: "KYC ಪರಿಶೀಲನೆ ಪೂರ್ಣಗೊಳಿಸಿ",
     kyc_banner_reviewing: "ನಿಮ್ಮ ದಾಖಲೆಗಳನ್ನು ಪರಿಶೀಲಿಸಲಾಗುತ್ತಿದೆ. ಇದು ಸಾಮಾನ್ಯವಾಗಿ 1-2 ವ್ಯಾಪಾರ ದಿನ ತೆಗೆದುಕೊಳ್ಳುತ್ತದೆ.",
     kyc_banner_verify_owner: "ಆಸ್ತಿ ಸೇರಿಸಲು ನಿಮ್ಮ ಗುರುತು ಪರಿಶೀಲಿಸಿ.",
     kyc_banner_verify_tenant: "ಬಾಡಿಗೆ ಪಾವತಿ ಮಾಡಲು ನಿಮ್ಮ ಗುರುತು ಪರಿಶೀಲಿಸಿ.",
     kyc_banner_button: "KYC ಪೂರ್ಣಗೊಳಿಸಿ",
-
-    // ── Onboarding ──────────────────────────────────────────────────────────
     onboarding_subtitle: "ಬಾಡಿಗೆ ನಿರ್ವಹಣೆಯ ಭವಿಷ್ಯ. ನೀವು ಯಾರು ಎಂದು ನಮಗೆ ತಿಳಿಸಿ.",
     onboarding_iam_landlord: "ನಾನು ಮನೆಮಾಲೀಕ",
     onboarding_landlord_desc: "ಮುಂಗಡ ಬಾಡಿಗೆ ಪಡೆಯಿರಿ",
     onboarding_iam_tenant: "ನಾನು ಬಾಡಿಗೆದಾರ",
     onboarding_tenant_desc: "ಹಂತಹಂತವಾಗಿ ಬಾಡಿಗೆ ಪಾವತಿಸಿ",
     onboarding_role_later: "ನೀವು ನಂತರ ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ನಿಮ್ಮ ಪಾತ್ರ ಬದಲಾಯಿಸಬಹುದು",
-
-    // ── Setup ───────────────────────────────────────────────────────────────
     setup_landlord_badge: "ಮಾಲೀಕ ಸೆಟಪ್",
     setup_tenant_badge: "ಬಾಡಿಗೆದಾರ ಸೆಟಪ್",
     setup_owner_heading: "ನಿಮ್ಮ ಆಸ್ತಿ ಸೇರಿಸಿ.",
@@ -912,8 +883,6 @@ const translations = {
     setup_redirecting: "ಡ್ಯಾಶ್‌ಬೋರ್ಡ್‌ಗೆ ಮರುನಿರ್ದೇಶಿಸಲಾಗುತ್ತಿದೆ…",
     setup_month: "ತಿಂಗಳು",
     setup_payout_day_label: "ಪಾವತಿ ದಿನ",
-
-    // ── Owner Dashboard ─────────────────────────────────────────────────────
     owner_title: "ಮಾಲೀಕ ಪೋರ್ಟಲ್",
     owner_subtitle: "ಮರಳಿ ಸ್ವಾಗತ. ನಿಮ್ಮ ಪೋರ್ಟ್‌ಫೋಲಿಯೊ ಅವಲೋಕನ.",
     owner_add_property: "ಹೊಸ ಆಸ್ತಿ ಸೇರಿಸಿ",
@@ -939,8 +908,6 @@ const translations = {
     modal_tenant_email_optional: "ಬಾಡಿಗೆದಾರ ಇಮೇಲ್ (ಐಚ್ಛಿಕ)",
     modal_tenant_email_hint: "ಬಾಡಿಗೆದಾರ ಇಮೇಲ್ ನಮೂದಿಸಿ",
     modal_submit_property: "ಆಸ್ತಿ ಸೇರಿಸಿ",
-
-    // ── Tenant Dashboard ────────────────────────────────────────────────────
     tenant_title: "ಬಾಡಿಗೆದಾರ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್",
     tenant_secure_pay: "RentFLO ಸುರಕ್ಷಿತ ಪಾವತಿ",
     tenant_manage_stay: "ಇಲ್ಲಿ ನಿಮ್ಮ ವಾಸ್ತವ್ಯ ನಿರ್ವಹಿಸಿ:",
@@ -982,8 +949,6 @@ const translations = {
     tenant_no_active_rent: "ಸಕ್ರಿಯ ಬಾಡಿಗೆ ಇಲ್ಲ",
     tenant_no_active_rent_desc: "ಆಸ್ತಿ ಸೇರಿದ ನಂತರ, ಬಾಡಿಗೆ ಪಾವತಿ ಇಲ್ಲಿ ಕಾಣಿಸುತ್ತದೆ.",
     tenant_full_prefix: "ಪೂರ್ಣ:",
-
-    // ── Admin Dashboard ─────────────────────────────────────────────────────
     admin_title: "ಅಡ್ಮಿನ್ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್",
     admin_system_status: "ಸಿಸ್ಟಮ್ ಸ್ಥಿತಿ:",
     admin_operational: "ಕಾರ್ಯಾಚರಣೆ",
@@ -1044,8 +1009,6 @@ const translations = {
     admin_net_payout: "ನಿವ್ವಳ ಪಾವತಿ",
     admin_process_payout: "ಪಾವತಿ ಸಂಸ್ಕರಿಸಿ",
     admin_confirm_transfer: "ಕೈಪಿಡಿ ವರ್ಗಾವಣೆ ದೃಢೀಕರಿಸಿ",
-
-    // ── Ledger ──────────────────────────────────────────────────────────────
     ledger_title: "ಮಾಸ್ಟರ್ ಲೆಡ್ಜರ್",
     ledger_current_exposure: "ಪ್ರಸ್ತುತ ಎಕ್ಸ್‌ಪೋಶರ್",
     ledger_date: "ದಿನಾಂಕ",
@@ -1057,8 +1020,6 @@ const translations = {
     ledger_no_transactions: "ಇನ್ನೂ ಯಾವುದೇ ವಹಿವಾಟು ಇಲ್ಲ.",
     ledger_footer: "ಬ್ಯಾಂಕ್ ದರ್ಜೆ ಆಡಿಟ್ • ರಿಯಲ್-ಟೈಮ್ ಸಿಂಕ್ • ಸಾಂಸ್ಥಿಕ ಪಾರದರ್ಶಿತೆ",
     ledger_balance_label: "ಬ್ಯಾಲೆನ್ಸ್:",
-
-    // ── Admin Maintenance ───────────────────────────────────────────────────
     maint_title: "ನಿರ್ವಹಣೆ ಪೋರ್ಟಲ್",
     maint_subtitle: "ಎಲ್ಲಾ ಆಸ್ತಿ ನಿರ್ವಹಣೆ ವಿನಂತಿಗಳನ್ನು ನಿರ್ವಹಿಸಿ.",
     maint_total: "ಒಟ್ಟು",
@@ -1073,8 +1034,6 @@ const translations = {
     maint_resolve: "ಪರಿಹರಿಸಿ",
     maint_view_photo: "ಫೋಟೋ ನೋಡಿ",
     maint_click_close: "ಮುಚ್ಚಲು ಎಲ್ಲಿಯಾದರೂ ಕ್ಲಿಕ್ ಮಾಡಿ",
-
-    // ── KYC Verify page ─────────────────────────────────────────────────────
     kyc_identity_badge: "ಗುರುತು ಪರಿಶೀಲನೆ",
     kyc_page_title: "KYC ಪರಿಶೀಲನೆ",
     kyc_page_subtitle: "ಎಲ್ಲಾ ವೈಶಿಷ್ಟ್ಯಗಳನ್ನು ಅನ್‌ಲಾಕ್ ಮಾಡಲು ನಿಮ್ಮ ಗುರುತು ಪರಿಶೀಲಿಸಿ.",
@@ -1109,8 +1068,6 @@ const translations = {
     kyc_upload_cheque: "ಚೆಕ್ ಅಪ್‌ಲೋಡ್ ಮಾಡಿ",
     kyc_submitting: "ಸಲ್ಲಿಸಲಾಗುತ್ತಿದೆ…",
     kyc_submit: "ಪರಿಶೀಲನೆಗಾಗಿ ಸಲ್ಲಿಸಿ",
-
-    // ── Agreement page ──────────────────────────────────────────────────────
     agr_badge: "ತ್ರಿಪಕ್ಷ ಒಪ್ಪಂದ",
     agr_title: "ನಿಮ್ಮ ಒಪ್ಪಂದಕ್ಕೆ ಸಹಿ ಹಾಕಿ",
     agr_subtitle: "ಕೆಳಗಿನ ಒಪ್ಪಂದ ಓದಿ, ನಂತರ ಡಿಜಿಟಲ್ ಸಹಿ ಮಾಡಿ.",
@@ -1134,8 +1091,6 @@ const translations = {
     agr_signed_tick: "✓ ಸಹಿ",
     agr_pending: "ಬಾಕಿ",
     agr_rent_advance: "ಬಾಡಿಗೆ ಮುಂಗಡ ಒಪ್ಪಂದ",
-
-    // ── Bottom Navigation ───────────────────────────────────────────────────
     nav_home: "ಮುಖಪುಟ",
     nav_repairs: "ದುರಸ್ತಿ",
     nav_messages: "ಸಂದೇಶಗಳು",
@@ -1143,8 +1098,6 @@ const translations = {
     nav_inbox: "ಇನ್‌ಬಾಕ್ಸ್",
     nav_admin_short: "ಅಡ್ಮಿನ್",
     nav_kyc_short: "KYC",
-
-    // ── AI Chatbot ──────────────────────────────────────────────────────────
     chat_assistant_title: "RentFLO ಸಹಾಯಕ",
     chat_assistant_subtitle: "AI · Replit ನಿಂದ ಚಾಲಿತ",
     chat_how_help: "ನಾನು ಹೇಗೆ ಸಹಾಯ ಮಾಡಬಹುದು?",
@@ -1161,8 +1114,6 @@ const translations = {
     chat_suggestion_2: "ನನ್ನ KYC ಅನ್ನು ನಾನು ಹೇಗೆ ಪೂರ್ಣಗೊಳಿಸುವುದು?",
     chat_suggestion_3: "ಬಾಡಿಗೆ ಮುಂಗಡ ಹೇಗೆ ಕಾರ್ಯನಿರ್ವಹಿಸುತ್ತದೆ?",
     chat_suggestion_4: "ನಿರ್ವಹಣಾ ಸಮಸ್ಯೆಯನ್ನು ನಾನು ಹೇಗೆ ವರದಿ ಮಾಡುವುದು?",
-
-    // ── Tenant Tabs / Stats / Empty States ──────────────────────────────────
     tab_overview: "ಅವಲೋಕನ",
     tab_payments: "ಪಾವತಿಗಳು",
     tab_lease: "ಗುತ್ತಿಗೆ",
@@ -1277,7 +1228,6 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     if (select) select.value = lang;
   }, []);
 
-  // Listen for changes coming from the vanilla-JS header selector
   useEffect(() => {
     const handler = (e: Event) => {
       const lang = (e as CustomEvent<{ lang: Language }>).detail?.lang;
@@ -1291,15 +1241,12 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('languageChange', handler);
   }, []);
 
-  // Sync html lang attr on mount
   useEffect(() => {
     document.documentElement.lang = language;
   }, [language]);
 
   const t = useCallback((key: TranslationKey): string => {
-    return (translations[language] as Record<string, string>)[key]
-      ?? (translations.en as Record<string, string>)[key]
-      ?? key;
+    return translations[language][key] ?? translations.en[key] ?? String(key);
   }, [language]);
 
   return (
@@ -1309,9 +1256,10 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useI18n() {
+export function useLanguage() {
   return useContext(LanguageContext);
 }
 
-export type { Language };
-export { translations };
+export function useI18n() {
+  return useLanguage();
+}
