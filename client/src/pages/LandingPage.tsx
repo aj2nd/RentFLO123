@@ -8,6 +8,7 @@ export default function LandingPage() {
   const { t } = useI18n();
   const { isAuthenticated, isLoading, user } = useAuth();
   const [, navigate] = useLocation();
+  const [audienceTab, setAudienceTab] = useState<"owners" | "tenants">("owners");
 
   useEffect(() => {
     if (isLoading) return;
@@ -345,102 +346,140 @@ export default function LandingPage() {
         <div className="max-w-screen-xl mx-auto h-px bg-gradient-to-r from-transparent via-border to-transparent" />
       </div>
 
-      {/* ── For Tenants / For Properties ──────────────────────────────────── */}
+      {/* ── For Owners / For Tenants toggle ───────────────────────────────── */}
       <section className="py-28 px-8 md:px-16">
         <div className="max-w-screen-xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-            {/* For Tenants */}
+          {/* Eyebrow + toggle pill */}
+          <div className="flex flex-col items-center gap-8 mb-14">
+            <p className="text-[10px] font-semibold uppercase tracking-[2.5px]" style={{ color: "var(--tiffany)", opacity: 0.55 }}>Who it's for</p>
             <div
-              className="relative rounded-2xl overflow-hidden flex flex-col justify-end"
-              style={{
-                minHeight: "340px",
-                background: "linear-gradient(140deg, #0a0a1a 0%, #0d1535 40%, #0f1a40 100%)",
-                border: "1px solid rgba(111,255,233,0.12)",
-              }}
+              className="inline-flex p-1 gap-1"
+              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid var(--border-subtle)" }}
             >
-              {/* Background grid pattern */}
-              <div
-                className="absolute inset-0 pointer-events-none"
-                style={{
-                  backgroundImage: "linear-gradient(rgba(111,255,233,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(111,255,233,0.04) 1px, transparent 1px)",
-                  backgroundSize: "40px 40px",
-                }}
-              />
-              {/* Glow */}
-              <div className="absolute top-0 right-0 w-48 h-48 rounded-full blur-3xl pointer-events-none" style={{ background: "rgba(111,255,233,0.06)" }} />
-
-              {/* Icon illustration */}
-              <div className="absolute top-8 right-8 opacity-20">
-                <Users size={96} strokeWidth={1} style={{ color: "#6FFFE9" }} />
-              </div>
-
-              {/* Content */}
-              <div className="relative z-10 p-8 md:p-10">
-                <h3 className="text-3xl md:text-4xl font-bold text-white mb-6 tracking-tight">For Tenants</h3>
-                <a
-                  href="/api/login"
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm tracking-wide transition-all duration-200"
-                  style={{
-                    background: "rgba(255,255,255,0.95)",
+              {(["owners", "tenants"] as const).map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setAudienceTab(tab)}
+                  className="px-7 py-2.5 text-sm font-semibold uppercase tracking-[1.5px] transition-all duration-200"
+                  style={audienceTab === tab ? {
+                    background: "var(--tiffany)",
                     color: "#000",
+                  } : {
+                    background: "transparent",
+                    color: "var(--muted-foreground)",
                   }}
-                  onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,1)")}
-                  onMouseLeave={e => (e.currentTarget.style.background = "rgba(255,255,255,0.95)")}
                 >
-                  Learn More <ArrowRight size={14} />
-                </a>
-              </div>
+                  {tab === "owners" ? "For Owners" : "For Tenants"}
+                </button>
+              ))}
             </div>
-
-            {/* For Properties */}
-            <div
-              className="relative rounded-2xl overflow-hidden flex flex-col justify-end"
-              style={{
-                minHeight: "340px",
-                background: "linear-gradient(140deg, #080812 0%, #0b1128 40%, #0d1535 100%)",
-                border: "1px solid rgba(111,255,233,0.08)",
-              }}
-            >
-              {/* Background grid pattern */}
-              <div
-                className="absolute inset-0 pointer-events-none"
-                style={{
-                  backgroundImage: "linear-gradient(rgba(111,255,233,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(111,255,233,0.03) 1px, transparent 1px)",
-                  backgroundSize: "40px 40px",
-                }}
-              />
-              {/* Glow */}
-              <div className="absolute bottom-0 right-0 w-56 h-56 rounded-full blur-3xl pointer-events-none" style={{ background: "rgba(111,255,233,0.04)" }} />
-
-              {/* Icon illustration */}
-              <div className="absolute top-8 right-8 opacity-15">
-                <Home size={96} strokeWidth={1} style={{ color: "#6FFFE9" }} />
-              </div>
-              {/* Secondary icon */}
-              <div className="absolute top-12 right-20 opacity-10">
-                <Building2 size={64} strokeWidth={1} style={{ color: "#6FFFE9" }} />
-              </div>
-
-              {/* Content */}
-              <div className="relative z-10 p-8 md:p-10">
-                <h3 className="text-3xl md:text-4xl font-bold text-white mb-6 tracking-tight">For Properties</h3>
-                <a
-                  href="/api/login"
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm tracking-wide transition-all duration-200"
-                  style={{
-                    background: "rgba(255,255,255,0.95)",
-                    color: "#000",
-                  }}
-                  onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,1)")}
-                  onMouseLeave={e => (e.currentTarget.style.background = "rgba(255,255,255,0.95)")}
-                >
-                  Learn More <ArrowRight size={14} />
-                </a>
-              </div>
-            </div>
-
           </div>
+
+          {/* Card */}
+          <div
+            className="relative overflow-hidden"
+            style={{
+              background: "linear-gradient(140deg, #080812 0%, #0b1128 50%, #0f1a40 100%)",
+              border: "1px solid rgba(111,255,233,0.12)",
+            }}
+          >
+            {/* Grid bg */}
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                backgroundImage: "linear-gradient(rgba(111,255,233,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(111,255,233,0.03) 1px, transparent 1px)",
+                backgroundSize: "48px 48px",
+              }}
+            />
+            {/* Glow */}
+            <div
+              className="absolute pointer-events-none transition-all duration-500"
+              style={{
+                top: audienceTab === "owners" ? "-40px" : "auto",
+                bottom: audienceTab === "tenants" ? "-40px" : "auto",
+                right: "-40px",
+                width: "320px",
+                height: "320px",
+                borderRadius: "50%",
+                filter: "blur(80px)",
+                background: "rgba(111,255,233,0.07)",
+              }}
+            />
+
+            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-0">
+
+              {/* Left: big headline */}
+              <div className="p-10 md:p-14 flex flex-col justify-between" style={{ borderRight: "1px solid rgba(111,255,233,0.08)" }}>
+                <div>
+                  <div className="mb-6">
+                    {audienceTab === "owners"
+                      ? <Home size={40} strokeWidth={1.2} style={{ color: "#6FFFE9", opacity: 0.6 }} />
+                      : <Users size={40} strokeWidth={1.2} style={{ color: "#6FFFE9", opacity: 0.6 }} />
+                    }
+                  </div>
+                  <h3 className="text-4xl md:text-5xl font-black tracking-[-2px] silver-text leading-tight mb-6">
+                    {audienceTab === "owners"
+                      ? <>Full rent.<br />Zero chasing.</>
+                      : <>Pay your way.<br />No pressure.</>
+                    }
+                  </h3>
+                  <p className="text-base font-light leading-relaxed text-muted-foreground max-w-sm">
+                    {audienceTab === "owners"
+                      ? "We pay you the full month's rent as a lump sum on the 1st — regardless of what your tenants do. Never follow up again."
+                      : "RentFLO covers your rent upfront so your landlord gets paid on time. You settle with us in smaller weekly or monthly chunks that work for you."
+                    }
+                  </p>
+                </div>
+                <div className="mt-10">
+                  <a
+                    href="/api/login"
+                    className="inline-flex items-center gap-2 px-7 py-3 font-bold text-sm uppercase tracking-[1.5px] transition-all duration-200"
+                    style={{ background: "var(--tiffany)", color: "#000" }}
+                    onMouseEnter={e => { e.currentTarget.style.opacity = "0.85" }}
+                    onMouseLeave={e => { e.currentTarget.style.opacity = "1" }}
+                  >
+                    Get Started <ArrowRight size={14} />
+                  </a>
+                </div>
+              </div>
+
+              {/* Right: benefit bullets */}
+              <div className="p-10 md:p-14">
+                <p className="text-[10px] font-semibold uppercase tracking-[2px] mb-8" style={{ color: "var(--tiffany)", opacity: 0.5 }}>
+                  {audienceTab === "owners" ? "What you get" : "How it helps you"}
+                </p>
+                <ul className="space-y-6">
+                  {(audienceTab === "owners" ? [
+                    { title: "Lump-sum on the 1st", desc: "Full month's rent hits your account on the first — every month, on time." },
+                    { title: "We collect from tenants", desc: "RentFLO handles all tenant follow-ups, reminders, and repayment collection." },
+                    { title: "Zero vacancy risk", desc: "Rent keeps flowing even during tenant transitions or late payments." },
+                    { title: "Real-time dashboard", desc: "Track every property's status, payouts, and settlement progress in one place." },
+                  ] : [
+                    { title: "Rent paid on your behalf", desc: "Your landlord gets paid in full — no late fees, no awkward conversations." },
+                    { title: "Weekly or monthly plans", desc: "Split your rent into manageable instalments that match your pay cycle." },
+                    { title: "No large lump sum needed", desc: "Move in without draining your savings — spread the cost over time." },
+                    { title: "Build a payment history", desc: "Consistent repayments help you build a reliable financial track record." },
+                  ]).map((item, i) => (
+                    <li key={i} className="flex gap-4">
+                      <div
+                        className="mt-1 flex-shrink-0 w-5 h-5 flex items-center justify-center"
+                        style={{ border: "1px solid rgba(111,255,233,0.3)", background: "rgba(111,255,233,0.06)" }}
+                      >
+                        <div className="w-1.5 h-1.5" style={{ background: "var(--tiffany)" }} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-foreground mb-1">{item.title}</p>
+                        <p className="text-sm font-light text-muted-foreground leading-relaxed">{item.desc}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+            </div>
+          </div>
+
         </div>
       </section>
 
