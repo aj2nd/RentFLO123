@@ -79,7 +79,7 @@ export function BottomNav() {
       { href: "/ledger",         icon: <Receipt size={22} />,       label: "Ledger" },
       { href: "/maintenance",    icon: <Wrench size={22} />,        label: "Repairs" },
       { href: "/messages",       icon: <MessageSquare size={22} />, label: "Messages" },
-      { href: "/notifications",  icon: <Bell size={22} />,          label: "Inbox" },
+      { href: "/profile",        icon: <UserCircle size={22} />,    label: "Profile" },
     ],
     OWNER: [
       { href: "/owner",          icon: <Wallet size={22} />,        label: "Home" },
