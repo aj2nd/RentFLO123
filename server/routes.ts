@@ -978,10 +978,19 @@ export function registerMessagingRoutes(app: Express) {
   });
 
   // === AI CHATBOT ===
-  const openai = new OpenAI({
-    apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
-    baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
-  });
+  let openai: OpenAI | null = null;
+  function getOpenAI(): OpenAI {
+    if (!openai) {
+      if (!process.env.AI_INTEGRATIONS_OPENAI_API_KEY) {
+        throw new Error("OpenAI API key not configured");
+      }
+      openai = new OpenAI({
+        apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
+        baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
+      });
+    }
+    return openai;
+  }
 
   app.post("/api/chatbot", isAuthenticated, async (req: any, res) => {
     try {
@@ -1015,7 +1024,7 @@ Keep answers concise, friendly, and specific to rent/property management in Indi
       res.setHeader("Cache-Control", "no-cache");
       res.setHeader("Connection", "keep-alive");
 
-      const stream = await openai.chat.completions.create({
+      const stream = await getOpenAI().chat.completions.create({
         model: "gpt-5-mini",
         messages: [
           { role: "system", content: systemPrompt },
