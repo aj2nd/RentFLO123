@@ -72,6 +72,7 @@ export function Navigation() {
           pointerEvents: "auto",
           paddingLeft: "4px",
           paddingRight: "4px",
+          position: "fixed",
         }}
       >
         {/* Left: hamburger */}
@@ -84,6 +85,11 @@ export function Navigation() {
         >
           {collapsed ? <Menu size={21} /> : <X size={21} />}
         </button>
+
+        {/* Center: wordmark — absolutely centered so it's always in the middle */}
+        <div className="absolute inset-x-0 flex items-center justify-center pointer-events-none" style={{ height: "60px" }}>
+          <span className="text-sm font-bold tracking-tight silver-text">RentFLO</span>
+        </div>
 
         <div className="flex-1" />
 
