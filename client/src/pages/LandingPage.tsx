@@ -453,7 +453,7 @@ export default function LandingPage() {
               border: "1px solid var(--border-subtle)",
               boxShadow: "var(--shadow-card)",
             } : {
-              background: "linear-gradient(140deg, #080812 0%, #0b1128 50%, #0f1a40 100%)",
+              background: "var(--surface-card)",
               border: "1px solid rgba(111,255,233,0.12)",
             }}
           >
