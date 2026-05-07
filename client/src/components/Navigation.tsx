@@ -140,7 +140,7 @@ export function Navigation() {
           </div>
           <div
             className="ml-auto w-2 h-2 rounded-full flex-shrink-0"
-            style={{ background: "#6FFFE9", boxShadow: "0 0 8px rgba(111,255,233,0.8)" }}
+            style={{ background: "var(--tiffany)", boxShadow: "0 0 8px rgba(111,255,233,0.6)" }}
           />
         </div>
 
@@ -328,14 +328,14 @@ function NavItem({ href, icon, label, active, badge, onNavigate }: {
       {badge && badge > 0 ? (
         <span
           className="ml-auto flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[9px] font-bold rounded-full"
-          style={{ background: "#6FFFE9", color: "#000" }}
+          style={{ background: "var(--tiffany)", color: "var(--tiffany-badge-text, #000)" }}
         >
           {badge > 99 ? "99+" : badge}
         </span>
       ) : active ? (
         <span
           className="ml-auto w-1.5 h-1.5 rounded-full"
-          style={{ background: "#6FFFE9", boxShadow: "0 0 6px rgba(111,255,233,0.7)" }}
+          style={{ background: "var(--tiffany)", boxShadow: "0 0 6px rgba(111,255,233,0.5)" }}
         />
       ) : null}
     </Link>

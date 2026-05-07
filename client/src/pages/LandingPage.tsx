@@ -3,12 +3,15 @@ import { useLocation } from "wouter";
 import { ArrowRight, ShieldCheck, Zap, Building2, Clock, Plus, Minus, Home, Users } from "lucide-react";
 import { useI18n } from "@/hooks/use-i18n";
 import { useAuth } from "@/hooks/use-auth";
+import { useTheme } from "next-themes";
 
 export default function LandingPage() {
   const { t } = useI18n();
   const { isAuthenticated, isLoading, user } = useAuth();
   const [, navigate] = useLocation();
   const [audienceTab, setAudienceTab] = useState<"owners" | "tenants">("owners");
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === "light";
 
   useEffect(() => {
     if (isLoading) return;
@@ -62,11 +65,16 @@ export default function LandingPage() {
             <a
               href="/onboarding"
               className="inline-flex items-center justify-center px-8 rounded-xl font-bold text-sm tracking-[0.06em] uppercase transition-all duration-200 group"
-              style={{
+              style={isLight ? {
+                background: '#0A0A0A',
+                color: '#6FFFE9',
+                height: '52px',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.30), 0 1px 0 rgba(0,0,0,0.12)',
+              } : {
                 background: 'linear-gradient(135deg, #8A8A8A 0%, #D4D4D4 28%, #F2F2F2 48%, #E0E0E0 58%, #C0C0C0 72%, #8A8A8A 100%)',
                 color: '#000',
                 height: '52px',
-                boxShadow: '0 2px 16px rgba(192,192,192,0.15), inset 0 1px 0 rgba(255,255,255,0.4)'
+                boxShadow: '0 2px 16px rgba(192,192,192,0.15), inset 0 1px 0 rgba(255,255,255,0.4)',
               }}
               data-testid="button-get-started"
             >
@@ -154,8 +162,15 @@ export default function LandingPage() {
 
           <div className="absolute bottom-7 right-7 z-10">
             <div
-              className="px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-[2px] text-black"
-              style={{ background: 'linear-gradient(135deg, #888 0%, #D0D0D0 40%, #F0F0F0 55%, #B8B8B8 70%, #888 100%)' }}
+              className="px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-[2px]"
+              style={isLight ? {
+                background: '#0A0A0A',
+                color: '#6FFFE9',
+                boxShadow: '0 2px 12px rgba(0,0,0,0.25)',
+              } : {
+                background: 'linear-gradient(135deg, #888 0%, #D0D0D0 40%, #F0F0F0 55%, #B8B8B8 70%, #888 100%)',
+                color: '#000',
+              }}
             >
               Rent Guaranteed
             </div>

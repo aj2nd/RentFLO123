@@ -29,7 +29,7 @@
       /* ── Global reset ─────────────────────────────────── */
       *, *::before, *::after { box-sizing: border-box; }
       body { margin: 0; padding: 0; background: #000; }
-      html.light body { background: #F2F2F2; }
+      html.light body { background: #6FFFE9; }
 
       /* ── Main header bar ──────────────────────────────── */
       .i18n-header {
@@ -54,7 +54,7 @@
                     border-radius 0.4s ease, padding 0.4s ease;
       }
 
-      html.light .i18n-header { background: #F2F2F2; }
+      html.light .i18n-header { background: #6FFFE9; }
 
       .i18n-header.glass {
         height: 72px;
@@ -71,10 +71,13 @@
         box-shadow: 0 1px 0 rgba(255,255,255,0.05), 0 8px 40px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05);
       }
 
+      /* Scrolled glass header on tiffany canvas — frosted tiffany pill */
       html.light .i18n-header.glass {
-        background: rgba(242, 242, 242, 0.88);
-        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-        box-shadow: 0 1px 0 rgba(255,255,255,0.9), 0 8px 32px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.9);
+        background: rgba(111, 255, 233, 0.72);
+        backdrop-filter: blur(36px) saturate(180%) brightness(1.06);
+        -webkit-backdrop-filter: blur(36px) saturate(180%) brightness(1.06);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.55);
+        box-shadow: 0 1px 0 rgba(255,255,255,0.60), 0 8px 40px rgba(0,80,70,0.15), inset 0 1px 0 rgba(255,255,255,0.65);
       }
 
       .i18n-header .logo-left {
@@ -143,7 +146,7 @@
         gap: 12px;
       }
 
-      html.light .i18n-login-bar { background: #F2F2F2; }
+      html.light .i18n-login-bar { background: #6FFFE9; }
 
       /* ── Language switcher (now in login bar) ─────────── */
       .language-switcher {
@@ -175,16 +178,17 @@
         background-size: 12px;
       }
 
+      /* Language select on tiffany canvas — black glass frosted */
       html.light .language-select {
-        background-color: rgba(0, 0, 0, 0.04);
-        border-color: rgba(0, 0, 0, 0.12);
-        color: rgba(0, 0, 0, 0.60);
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(0,0,0,0.3)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        background-color: rgba(0, 0, 0, 0.08);
+        border-color: rgba(0, 0, 0, 0.15);
+        color: rgba(0, 0, 0, 0.75);
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(0,0,0,0.5)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
       }
 
       html.light .language-select option {
-        background: #ffffff;
-        color: #171717;
+        background: #6FFFE9;
+        color: #0a0a0a;
       }
 
       .language-select:hover {
@@ -193,8 +197,8 @@
       }
 
       html.light .language-select:hover {
-        border-color: rgba(0, 0, 0, 0.22);
-        background-color: rgba(0, 0, 0, 0.06);
+        border-color: rgba(0, 0, 0, 0.25);
+        background-color: rgba(0, 0, 0, 0.12);
       }
 
       .language-select:focus {
@@ -235,15 +239,16 @@
         border-color: rgba(192, 192, 192, 0.28);
       }
 
+      /* Theme toggle on tiffany canvas — dark ink glass pill */
       html.light .theme-toggle-btn {
-        border-color: rgba(0, 0, 0, 0.12);
-        background: rgba(0, 0, 0, 0.04);
-        color: rgba(40, 40, 40, 0.70);
+        border-color: rgba(0, 0, 0, 0.18);
+        background: rgba(0, 0, 0, 0.08);
+        color: rgba(0, 0, 0, 0.80);
       }
 
       html.light .theme-toggle-btn:hover {
-        background: rgba(0, 0, 0, 0.08);
-        border-color: rgba(0, 0, 0, 0.22);
+        background: rgba(0, 0, 0, 0.14);
+        border-color: rgba(0, 0, 0, 0.30);
       }
 
       /* ── Login button ─────────────────────────────────── */
@@ -287,6 +292,18 @@
       .login-btn:active {
         transform: translateY(0);
         opacity: 1;
+      }
+
+      /* Login button on tiffany canvas — solid black, tiffany text */
+      html.light .login-btn {
+        background: #0A0A0A;
+        color: #6FFFE9;
+        box-shadow: 0 2px 16px rgba(0, 0, 0, 0.28), 0 0 0 1px rgba(0, 0, 0, 0.12);
+      }
+      html.light .login-btn:hover {
+        opacity: 1;
+        background: #1a1a1a;
+        box-shadow: 0 6px 28px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(0, 0, 0, 0.12);
       }
 
       /* ── Responsive ───────────────────────────────────── */

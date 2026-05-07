@@ -16,20 +16,36 @@ function NavTab({ href, icon, label, active, badge }: {
   href: string; icon: React.ReactNode; label: string; active: boolean; badge?: number;
 }) {
   return (
-    <Link href={href} className="flex flex-col items-center justify-center gap-1 flex-1 py-2 relative" data-testid={`bottom-nav-${label.toLowerCase()}`}>
-      <span className={`relative transition-colors duration-200 ${active ? "text-[#6FFFE9]" : "text-zinc-500"}`}>
+    <Link
+      href={href}
+      className="flex flex-col items-center justify-center gap-1 flex-1 py-2 relative"
+      data-testid={`bottom-nav-${label.toLowerCase()}`}
+    >
+      <span
+        className="relative transition-colors duration-200"
+        style={{ color: active ? "var(--tiffany)" : "rgba(120,120,120,0.65)" }}
+      >
         {icon}
         {!!badge && (
-          <span className="absolute -top-1 -right-2 min-w-[16px] h-4 px-1 bg-[#6FFFE9] text-black text-[9px] font-bold rounded-full flex items-center justify-center leading-none">
+          <span
+            className="absolute -top-1 -right-2 min-w-[16px] h-4 px-1 text-[9px] font-bold rounded-full flex items-center justify-center leading-none"
+            style={{ background: "var(--tiffany)", color: "#fff" }}
+          >
             {badge > 99 ? "99+" : badge}
           </span>
         )}
       </span>
-      <span className={`text-[9px] uppercase tracking-widest font-medium transition-colors duration-200 leading-none ${active ? "text-[#6FFFE9]" : "text-zinc-600"}`}>
+      <span
+        className="text-[9px] uppercase tracking-widest font-medium transition-colors duration-200 leading-none"
+        style={{ color: active ? "var(--tiffany)" : "rgba(120,120,120,0.55)" }}
+      >
         {label}
       </span>
       {active && (
-        <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-[2px] bg-[#6FFFE9] rounded-b-full" />
+        <span
+          className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-[2px] rounded-b-full"
+          style={{ background: "var(--tiffany)" }}
+        />
       )}
     </Link>
   );
@@ -88,14 +104,14 @@ export function BottomNav() {
       className="fixed bottom-0 left-0 right-0 z-50 flex"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
-      {/* Glass background */}
       <div
-        className="w-full flex border-t border-border"
+        className="w-full flex border-t"
         style={{
           background: "var(--nav-bg)",
           backdropFilter: "blur(28px) saturate(180%)",
           WebkitBackdropFilter: "blur(28px) saturate(180%)",
-          boxShadow: "0 -1px 0 var(--border-subtle), 0 -8px 32px rgba(0,0,0,0.18)",
+          borderColor: "var(--nav-border)",
+          boxShadow: "0 -1px 0 var(--border-subtle), 0 -8px 32px rgba(0,0,0,0.12)",
         }}
       >
         {items.map(item => (

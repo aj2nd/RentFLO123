@@ -46,35 +46,52 @@ export function NotificationBell() {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(o => !o)}
-        className="relative flex items-center justify-center w-9 h-9 rounded-none text-[#6FFFE9]/60 hover:text-[#6FFFE9] hover:bg-[#6FFFE9]/8 transition-all"
+        className="relative flex items-center justify-center w-9 h-9 rounded-none transition-all"
+        style={{ color: "var(--nav-text-dim)" }}
         data-testid="button-notification-bell"
         title="Notifications"
       >
-        {unread > 0 ? <BellRing size={18} className="text-[#6FFFE9]" /> : <Bell size={18} />}
+        {unread > 0 ? (
+          <BellRing size={18} style={{ color: "var(--tiffany)" }} />
+        ) : (
+          <Bell size={18} />
+        )}
         {unread > 0 && (
-          <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#6FFFE9]" />
+          <span
+            className="absolute top-1 right-1 w-2 h-2 rounded-full"
+            style={{ background: "var(--tiffany)" }}
+          />
         )}
       </button>
 
       {open && (
         <div
-          className="absolute left-full top-0 ml-2 w-80 bg-[#0a0a0a] border border-[#6FFFE9]/20 shadow-2xl z-50"
-          style={{ minWidth: 300 }}
+          className="absolute left-full top-0 ml-2 w-80 shadow-2xl z-50"
+          style={{
+            background: "var(--surface-card)",
+            border: "1px solid var(--nav-border)",
+            minWidth: 300,
+          }}
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-[#6FFFE9]/10">
-            <span className="text-xs font-semibold uppercase tracking-widest text-[#6FFFE9]/70">
+          <div
+            className="flex items-center justify-between px-4 py-3 border-b"
+            style={{ borderColor: "var(--nav-border)" }}
+          >
+            <span
+              className="text-xs font-semibold uppercase tracking-widest"
+              style={{ color: "var(--tiffany)", opacity: 0.8 }}
+            >
               Notifications
             </span>
             <div className="flex items-center gap-2">
-              {/* Push toggle */}
               <button
                 onClick={() => status === "subscribed" ? unsubscribe() : subscribe()}
                 disabled={status === "unsupported" || status === "denied" || status === "loading"}
                 className="flex items-center gap-1 text-[10px] uppercase tracking-wider px-2 py-1 border transition-all"
                 style={{
-                  borderColor: status === "subscribed" ? "rgba(111,255,233,0.4)" : "rgba(255,255,255,0.1)",
-                  color: status === "subscribed" ? "#6FFFE9" : "#666",
+                  borderColor: status === "subscribed" ? "var(--tiffany)" : "var(--nav-border)",
+                  color: status === "subscribed" ? "var(--tiffany)" : "var(--nav-text-dim)",
                 }}
                 title={
                   status === "unsupported" ? "Push not supported in this browser"
@@ -87,7 +104,11 @@ export function NotificationBell() {
                 {status === "subscribed" ? <BellRing size={10} /> : <BellOff size={10} />}
                 {status === "subscribed" ? "On" : status === "unsupported" ? "N/A" : status === "denied" ? "Blocked" : "Off"}
               </button>
-              <button onClick={() => setOpen(false)} className="text-[#6FFFE9]/40 hover:text-[#6FFFE9]">
+              <button
+                onClick={() => setOpen(false)}
+                className="transition-colors"
+                style={{ color: "var(--nav-text-dim)" }}
+              >
                 <X size={14} />
               </button>
             </div>
@@ -96,30 +117,46 @@ export function NotificationBell() {
           {/* List */}
           <div className="max-h-80 overflow-y-auto">
             {notifs.length === 0 ? (
-              <div className="py-8 text-center text-xs text-[#6FFFE9]/30">
+              <div
+                className="py-8 text-center text-xs"
+                style={{ color: "var(--nav-text-dim)", opacity: 0.5 }}
+              >
                 No notifications yet
               </div>
             ) : (
               notifs.map((n) => (
                 <div
                   key={n.id}
-                  className={`px-4 py-3 border-b border-[#6FFFE9]/5 transition-colors ${!n.read ? "bg-[#6FFFE9]/5" : ""}`}
+                  className="px-4 py-3 border-b transition-colors"
+                  style={{
+                    borderColor: "var(--nav-border)",
+                    background: !n.read ? "rgba(111,255,233,0.04)" : "transparent",
+                  }}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-0.5">
                         <span
                           className="text-[9px] uppercase tracking-widest px-1.5 py-0.5 border"
-                          style={{ borderColor: "rgba(111,255,233,0.25)", color: "#6FFFE9" }}
+                          style={{ borderColor: "var(--tiffany)", color: "var(--tiffany)", opacity: 0.8 }}
                         >
                           {TYPE_LABELS[n.type] ?? n.type}
                         </span>
-                        {!n.read && <span className="w-1.5 h-1.5 rounded-full bg-[#6FFFE9] flex-shrink-0" />}
+                        {!n.read && (
+                          <span
+                            className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                            style={{ background: "var(--tiffany)" }}
+                          />
+                        )}
                       </div>
-                      <p className="text-xs font-medium text-white leading-snug">{n.title}</p>
-                      <p className="text-[11px] text-[#6FFFE9]/50 mt-0.5 leading-snug">{n.body}</p>
+                      <p className="text-xs font-medium leading-snug" style={{ color: "var(--nav-text)" }}>
+                        {n.title}
+                      </p>
+                      <p className="text-[11px] mt-0.5 leading-snug" style={{ color: "var(--nav-text-dim)" }}>
+                        {n.body}
+                      </p>
                     </div>
-                    <span className="text-[10px] text-zinc-600 flex-shrink-0 mt-0.5">
+                    <span className="text-[10px] flex-shrink-0 mt-0.5" style={{ color: "var(--nav-text-dim)", opacity: 0.6 }}>
                       {formatRelative(n.createdAt)}
                     </span>
                   </div>
@@ -129,10 +166,11 @@ export function NotificationBell() {
           </div>
 
           {notifs.length > 0 && (
-            <div className="px-4 py-2 border-t border-[#6FFFE9]/10">
+            <div className="px-4 py-2 border-t" style={{ borderColor: "var(--nav-border)" }}>
               <button
                 onClick={() => markRead.mutate()}
-                className="flex items-center gap-1.5 text-[10px] text-[#6FFFE9]/40 hover:text-[#6FFFE9] transition-colors uppercase tracking-wider"
+                className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider transition-colors"
+                style={{ color: "var(--nav-text-dim)" }}
                 data-testid="button-mark-all-read"
               >
                 <CheckCheck size={11} /> Mark all read
