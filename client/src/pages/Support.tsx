@@ -7,9 +7,10 @@ export default function Support() {
       <div className="max-w-3xl mx-auto">
         <LegalHeader />
         <h1 className="text-4xl font-bold mb-8 tracking-tighter" style={{ fontFamily: 'Playfair Display, Georgia, serif' }}>
-          Contact Support
+          Contact Support | RentFLO
         </h1>
-        
+        <p className="text-zinc-400 mb-8">Get help with KYC, rent payments, property setup, and maintenance requests.</p>
+
         <div className="space-y-8 text-zinc-300">
           <section className="bg-zinc-900 p-8 border-2 border-white">
             <h2 className="text-2xl font-semibold mb-6 text-white" style={{ fontFamily: 'Playfair Display, Georgia, serif' }}>

@@ -6,9 +6,10 @@ export default function Privacy() {
       <div className="max-w-3xl mx-auto">
         <LegalHeader />
         <h1 className="text-4xl font-bold mb-8 tracking-tighter" style={{ fontFamily: 'Playfair Display, Georgia, serif' }}>
-          Privacy Policy
+          Privacy Policy | RentFLO
         </h1>
-        
+        <p className="text-zinc-400 mb-8">How RentFLO collects, uses, and protects your information.</p>
+
         <div className="space-y-6 text-zinc-300">
           <section>
             <h2 className="text-xl font-semibold mb-3 text-white">1. Information We Collect</h2>

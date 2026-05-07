@@ -6,9 +6,10 @@ export default function Terms() {
       <div className="max-w-3xl mx-auto">
         <LegalHeader />
         <h1 className="text-4xl font-bold mb-8 tracking-tighter" style={{ fontFamily: 'Playfair Display, Georgia, serif' }}>
-          Terms of Service
+          Terms of Service | RentFLO
         </h1>
-        
+        <p className="text-zinc-400 mb-8">The rules for using RentFLO's rent-advance platform and services.</p>
+
         <div className="space-y-6 text-zinc-300">
           <section>
             <h2 className="text-xl font-semibold mb-3 text-white">1. Agreement to Terms</h2>

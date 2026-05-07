@@ -6,9 +6,10 @@ export default function Refund() {
       <div className="max-w-3xl mx-auto">
         <LegalHeader />
         <h1 className="text-4xl font-bold mb-8 tracking-tighter" style={{ fontFamily: 'Playfair Display, Georgia, serif' }}>
-          Cancellation & Refund Policy
+          Cancellation & Refund Policy | RentFLO
         </h1>
-        
+        <p className="text-zinc-400 mb-8">How cancellations and refunds work for RentFLO rent advances and payments.</p>
+
         <div className="space-y-6 text-zinc-300">
           <section className="bg-zinc-900 p-6 border-2 border-white">
             <h2 className="text-xl font-semibold mb-3 text-white">IMPORTANT: Non-Refundable Advances</h2>
