@@ -33,19 +33,20 @@ declare global {
 type Tab = "overview" | "payments" | "lease";
 
 function StatusBadge({ status }: { status: string }) {
+  const { t } = useI18n();
   const map: Record<string, { label: string; darkClasses: string; lightStyle: React.CSSProperties }> = {
     SETTLED: {
-      label: "Settled",
+      label: t("status_settled"),
       darkClasses: "bg-[#6FFFE9]/10 text-[#6FFFE9] border-[#6FFFE9]/25",
       lightStyle: { background: "var(--color-sage-bg,#D1FAE5)", color: "var(--color-sage,#064E3B)", borderColor: "var(--color-sage-border,rgba(5,150,105,0.28))" },
     },
     EXPOSED: {
-      label: "Exposed",
+      label: t("status_exposed"),
       darkClasses: "bg-amber-500/10 text-amber-400 border-amber-500/25",
       lightStyle: { background: "var(--color-gold-bg,#FEF3C7)", color: "var(--color-gold,#92400E)", borderColor: "var(--color-gold-border,rgba(217,119,6,0.30))" },
     },
     ARREARS: {
-      label: "Arrears",
+      label: t("status_arrears"),
       darkClasses: "bg-red-500/10 text-red-400 border-red-500/25",
       lightStyle: { background: "var(--color-rose-bg,#FFE4E6)", color: "var(--color-rose,#9F1239)", borderColor: "var(--color-rose-border,rgba(225,29,72,0.28))" },
     },
@@ -296,23 +297,23 @@ export default function TenantDashboard() {
   const hasProperty = !!property;
 
   const tabs: { id: Tab; label: string }[] = [
-    { id: "overview", label: "Overview" },
-    { id: "payments", label: "Payments" },
-    { id: "lease", label: "Lease" },
+    { id: "overview", label: t("tab_overview") },
+    { id: "payments", label: t("tab_payments") },
+    { id: "lease", label: t("tab_lease") },
   ];
 
   const hasFirstPayment = (ledgers ?? []).some(l => l.amountCollected > 0);
   const onboardingSteps = [
-    { label: "Join a property", done: !!property },
-    { label: "Complete KYC verification", done: !!isVerified },
-    { label: "Sign the rental agreement", done: agreementStatus === "FULLY_SIGNED" || agreementStatus === "TENANT_SIGNED" },
-    { label: "Make your first payment", done: hasFirstPayment },
+    { label: t("step_join_property"), done: !!property },
+    { label: t("step_complete_kyc"), done: !!isVerified },
+    { label: t("step_sign_agreement"), done: agreementStatus === "FULLY_SIGNED" || agreementStatus === "TENANT_SIGNED" },
+    { label: t("step_first_payment"), done: hasFirstPayment },
   ];
   const allOnboardingDone = onboardingSteps.every(s => s.done);
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
-      <SuccessAnimation show={showSuccess} message="Payment Successful" />
+      <SuccessAnimation show={showSuccess} message={t("payment_successful")} />
       {receiptData && (
         <ReceiptModal data={receiptData} onClose={() => setReceiptData(null)} />
       )}
@@ -330,9 +331,9 @@ export default function TenantDashboard() {
 
         {/* ── 3-Step Progress Tracker ── */}
         <SetupProgress steps={[
-          { label: "Verify Identity", done: !!isVerified,                                                                          href: "/verify"    },
-          { label: "Sign Agreement",  done: agreementStatus === "FULLY_SIGNED" || agreementStatus === "TENANT_SIGNED",             href: "/agreement" },
-          { label: "Pay Rent",        done: hasFirstPayment                                                                                           },
+          { label: t("step_verify_identity"), done: !!isVerified,                                                                          href: "/verify"    },
+          { label: t("step_sign_agreement_short"),  done: agreementStatus === "FULLY_SIGNED" || agreementStatus === "TENANT_SIGNED",             href: "/agreement" },
+          { label: t("step_pay_rent"),        done: hasFirstPayment                                                                                           },
         ]} />
 
         {/* ── Page Header ── */}
@@ -363,7 +364,7 @@ export default function TenantDashboard() {
             {/* ── Stats Bar ── */}
             <div className="grid grid-cols-3 gap-3 mb-6">
               <div className="liquid-glass rounded-2xl p-3 sm:p-4 flex flex-col items-center text-center" data-testid="stat-rent-due">
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-medium mb-2 border border-[#C0C0C0]/20 bg-[#C0C0C0]/[0.06] text-[#C0C0C0]">Monthly Rent</span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-medium mb-2 border border-[#C0C0C0]/20 bg-[#C0C0C0]/[0.06] text-[#C0C0C0]">{t("tenant_monthly_rent")}</span>
                 <span className="text-sm sm:text-base font-bold font-mono text-[#C0C0C0]">₹{totalDue.toLocaleString()}</span>
               </div>
               <div className="liquid-glass rounded-2xl p-3 sm:p-4 flex flex-col items-center text-center" data-testid="stat-days-due">
@@ -371,13 +372,13 @@ export default function TenantDashboard() {
                   daysUntilDue <= 5
                     ? "bg-amber-500/10 text-amber-300 border-amber-400/25"
                     : "border-[#C0C0C0]/20 bg-[#C0C0C0]/[0.06] text-[#C0C0C0]"
-                }`}>Due In</span>
+                }`}>{t("stat_due_in")}</span>
                 <span className={`text-sm sm:text-base font-bold font-mono ${daysUntilDue <= 5 ? "text-amber-200" : "text-[#E8E8E8]"}`}>
                   {daysUntilDue}d
                 </span>
               </div>
               <div className="liquid-glass rounded-2xl p-3 sm:p-4 flex flex-col items-center text-center" data-testid="stat-paid-ytd">
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-medium mb-2 border border-[#6FFFE9]/25 bg-[#6FFFE9]/[0.07] text-[#9DEFE4]">Paid YTD</span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-medium mb-2 border border-[#6FFFE9]/25 bg-[#6FFFE9]/[0.07] text-[#9DEFE4]">{t("stat_paid_ytd")}</span>
                 <span className="text-sm sm:text-base font-bold font-mono text-[#6FFFE9] glow-tiffany">₹{totalPaidYTD.toLocaleString()}</span>
               </div>
             </div>
@@ -443,13 +444,13 @@ export default function TenantDashboard() {
                             <div key={prop.id} className="liquid-glass rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4" data-testid={`available-property-${prop.id}`}>
                               <div>
                                 <p className="font-medium text-white text-sm">{prop.address}</p>
-                                <p className="text-zinc-500 text-xs font-mono">₹{prop.monthlyRent.toLocaleString()} / month</p>
+                                <p className="text-zinc-500 text-xs font-mono">₹{prop.monthlyRent.toLocaleString()} {t("per_month")}</p>
                               </div>
                               <Button onClick={() => handleJoinProperty(prop.id)} disabled={isJoining}
                                 className="bg-[#6FFFE9] text-black hover:bg-[#6FFFE9]/85 text-xs h-8 px-4 rounded-full font-semibold"
                                 data-testid={`button-join-${prop.id}`}>
                                 {isJoining ? <Loader2 size={14} className="animate-spin" /> : null}
-                                Join Property
+                                {t("join_property_btn")}
                               </Button>
                             </div>
                           ))}
@@ -464,8 +465,8 @@ export default function TenantDashboard() {
                   <div className="liquid-glass rounded-3xl p-5">
                     <div className="flex justify-between items-end mb-4">
                       <div>
-                        <h3 className="font-semibold text-lg silver-text">Getting Started</h3>
-                        <p className="text-xs text-[#C0C0C0]/50 mt-1">{onboardingSteps.filter(s => s.done).length} of {onboardingSteps.length} completed</p>
+                        <h3 className="font-semibold text-lg silver-text">{t("getting_started")}</h3>
+                        <p className="text-xs text-[#C0C0C0]/50 mt-1">{onboardingSteps.filter(s => s.done).length} / {onboardingSteps.length} {t("of_completed")}</p>
                       </div>
                       <div className="text-2xl font-bold text-[#6FFFE9]">
                         {Math.round((onboardingSteps.filter(s => s.done).length / onboardingSteps.length) * 100)}%
@@ -500,7 +501,7 @@ export default function TenantDashboard() {
                 <div className="liquid-glass-teal rounded-3xl p-5 sm:p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div>
-                      <div className="inline-block px-2.5 py-1 rounded-full bg-black/40 text-[10px] font-bold text-[#C0C0C0] uppercase tracking-wider mb-2 border border-[#C0C0C0]/[0.18]">Current Month</div>
+                      <div className="inline-block px-2.5 py-1 rounded-full bg-black/40 text-[10px] font-bold text-[#C0C0C0] uppercase tracking-wider mb-2 border border-[#C0C0C0]/[0.18]">{t("current_month")}</div>
                       <h2 className="text-4xl sm:text-5xl font-bold tracking-tighter font-mono leading-none silver-text glow-text">
                         ₹{totalDue.toLocaleString()}
                       </h2>
@@ -510,8 +511,8 @@ export default function TenantDashboard() {
 
                   <div className="space-y-1.5 mb-5">
                     <div className="flex justify-between text-xs font-medium">
-                      <span className="text-[#C0C0C0]/70">Settlement Progress</span>
-                      <span className="text-[#6FFFE9]/80" data-testid="text-progress-percent">{progressPercent}% Settled</span>
+                      <span className="text-[#C0C0C0]/70">{t("settlement_progress_label")}</span>
+                      <span className="text-[#6FFFE9]/80" data-testid="text-progress-percent">{progressPercent}% {t("settled_suffix")}</span>
                     </div>
                     <div className="w-full h-2 bg-white/[0.08] rounded-full overflow-hidden">
                       <div
@@ -521,8 +522,8 @@ export default function TenantDashboard() {
                       />
                     </div>
                     <div className="flex justify-between text-xs text-[#C0C0C0]/50">
-                      <span>Paid <span className="text-[#6FFFE9] font-mono" data-testid="text-amount-paid">₹{amountPaid.toLocaleString()}</span></span>
-                      <span>Remaining <span className="text-[#C0C0C0] font-mono" data-testid="text-amount-remaining">₹{remaining.toLocaleString()}</span></span>
+                      <span>{t("paid_label")} <span className="text-[#6FFFE9] font-mono" data-testid="text-amount-paid">₹{amountPaid.toLocaleString()}</span></span>
+                      <span>{t("remaining_label")} <span className="text-[#C0C0C0] font-mono" data-testid="text-amount-remaining">₹{remaining.toLocaleString()}</span></span>
                     </div>
                   </div>
 
@@ -532,14 +533,14 @@ export default function TenantDashboard() {
                       className="w-full bg-[#6FFFE9] text-black hover:bg-[#6FFFE9]/85 font-bold text-sm h-12 rounded-full shadow-[0_4px_24px_rgba(111,255,233,0.30)]"
                       data-testid="button-pay-now-overview"
                     >
-                      Pay Now — ₹{remaining.toLocaleString()}
+                      {t("pay_now")} — ₹{remaining.toLocaleString()}
                       <ChevronRight size={16} className="ml-1" strokeWidth={3} />
                     </Button>
                   )}
                   {remaining === 0 && (
                     <div className="flex items-center gap-2 text-[#6FFFE9] text-sm font-medium mt-2">
                       <CheckCircle2 size={16} />
-                      This month is fully settled
+                      {t("this_month_settled")}
                     </div>
                   )}
                 </div>
@@ -552,8 +553,8 @@ export default function TenantDashboard() {
                       <div className="flex items-center gap-3">
                         <AlertCircle size={18} className="text-amber-400" />
                         <div>
-                          <p className="text-sm font-medium text-white">{openTickets} open maintenance {openTickets === 1 ? "request" : "requests"}</p>
-                          <p className="text-xs text-zinc-500">Tap to view status</p>
+                          <p className="text-sm font-medium text-white">{openTickets} {openTickets === 1 ? t("open_request_singular") : t("open_request_plural")}</p>
+                          <p className="text-xs text-zinc-500">{t("tap_view_status")}</p>
                         </div>
                       </div>
                       <ChevronRight size={16} className="text-zinc-500" />
@@ -565,9 +566,9 @@ export default function TenantDashboard() {
                 {paymentsData && paymentsData.filter(p => p.status === "SUCCESS").length > 0 && (
                   <div>
                     <div className="flex items-center justify-between mb-3">
-                      <p className="text-[10px] uppercase tracking-widest text-[#C0C0C0]/50">Recent Payments</p>
+                      <p className="text-[10px] uppercase tracking-widest text-[#C0C0C0]/50">{t("recent_payments")}</p>
                       <button onClick={() => setActiveTab("payments")} className="text-[10px] text-[#6FFFE9]/70 uppercase tracking-wider hover:text-[#6FFFE9] transition-colors">
-                        View All
+                        {t("view_all")}
                       </button>
                     </div>
                     <div className="space-y-2">
@@ -591,7 +592,7 @@ export default function TenantDashboard() {
             {/* ══ PAYMENTS TAB ══ */}
             {activeTab === "payments" && !hasProperty && (
               <div className="liquid-glass rounded-3xl p-8 text-center text-zinc-500 text-sm" data-testid="empty-payments">
-                Join a property from the Overview tab to start making rent payments.
+                {t("payments_empty_no_property")}
               </div>
             )}
             {activeTab === "payments" && hasProperty && (
@@ -624,7 +625,7 @@ export default function TenantDashboard() {
                           type="number"
                           value={paymentAmount}
                           onChange={(e) => setPaymentAmount(e.target.value)}
-                          placeholder={`Max ₹${remaining.toLocaleString()}`}
+                          placeholder={`${t("max_prefix")} ₹${remaining.toLocaleString()}`}
                           className="bg-white/[0.05] border-white/[0.12] text-white h-12 text-base font-mono placeholder:text-zinc-600 focus:border-[#6FFFE9]/40"
                           data-testid="input-payment-amount"
                         />
@@ -641,7 +642,7 @@ export default function TenantDashboard() {
                             onClick={() => setPaymentAmount(String(remaining))}
                             className="liquid-glass-chip border-[#6FFFE9]/25 text-[#6FFFE9] hover:bg-[#6FFFE9]/10 text-xs rounded-full"
                             data-testid="button-preset-full">
-                            Full ₹{remaining.toLocaleString()}
+                            {t("full_prefix")} ₹{remaining.toLocaleString()}
                           </Button>
                         </div>
                       </div>
@@ -670,7 +671,7 @@ export default function TenantDashboard() {
                       if (upiAmount <= 0) return null;
                       return (
                         <div className="space-y-2">
-                          <p className="text-[9px] uppercase tracking-widest text-zinc-600 text-center">Or pay directly via</p>
+                          <p className="text-[9px] uppercase tracking-widest text-zinc-600 text-center">{t("or_pay_directly")}</p>
                           <div className="grid grid-cols-2 gap-2">
                             <a
                               href={`gpay://upi/pay?pa=${upiVpa}&pn=${upiPayee}&am=${upiAmount}&cu=INR&tn=${upiNote}`}
@@ -678,7 +679,7 @@ export default function TenantDashboard() {
                               data-testid="button-upi-gpay"
                             >
                               <span className="text-base">G</span>
-                              <span>Pay via GPay</span>
+                              <span>{t("pay_via_gpay")}</span>
                             </a>
                             <a
                               href={`phonepe://pay?pa=${upiVpa}&pn=${upiPayee}&am=${upiAmount}&cu=INR&tn=${upiNote}`}
@@ -686,7 +687,7 @@ export default function TenantDashboard() {
                               data-testid="button-upi-phonepe"
                             >
                               <span className="text-base">₱</span>
-                              <span>Pay via PhonePe</span>
+                              <span>{t("pay_via_phonepe")}</span>
                             </a>
                           </div>
                           <a
@@ -694,7 +695,7 @@ export default function TenantDashboard() {
                             className="liquid-glass rounded-xl flex items-center justify-center gap-2 p-2.5 hover:bg-white/[0.06] transition-colors text-xs text-zinc-300 w-full"
                             data-testid="button-upi-any"
                           >
-                            Any UPI App →
+                            {t("any_upi_app")}
                           </a>
                         </div>
                       );
@@ -719,12 +720,12 @@ export default function TenantDashboard() {
                             <div>
                               <p className="text-sm text-white">
                                 {pmt.status === "SUCCESS"
-                                  ? "Payment Received"
+                                  ? t("payment_received")
                                   : pmt.status === "PENDING_VERIFICATION"
-                                  ? "Awaiting Verification"
+                                  ? t("awaiting_verification")
                                   : pmt.status === "PENDING"
-                                  ? "Pending"
-                                  : "Failed"}
+                                  ? t("pending_label")
+                                  : t("failed_label")}
                               </p>
                               <p className="text-[10px] text-zinc-500 font-mono">
                                 {pmt.transactionRef ? `UTR ${pmt.transactionRef} · ` : ""}
@@ -738,7 +739,7 @@ export default function TenantDashboard() {
                           <div className="text-right">
                             <span className="font-mono text-base text-white">₹{pmt.amount.toLocaleString()}</span>
                             <p className={`text-[10px] ${pmt.status === "SUCCESS" ? "text-[#6FFFE9]" : pmt.status === "PENDING_VERIFICATION" ? "text-blue-300" : pmt.status === "PENDING" ? "text-amber-400" : "text-red-400"}`}>
-                              {pmt.status === "PENDING_VERIFICATION" ? "VERIFYING" : pmt.status}
+                              {pmt.status === "PENDING_VERIFICATION" ? t("verifying_label") : pmt.status}
                             </p>
                           </div>
                         </div>
@@ -751,8 +752,8 @@ export default function TenantDashboard() {
                 <div>
                   <div className="flex items-center gap-2 mb-3">
                     <TrendingUp size={14} className="text-[#6FFFE9]/60" />
-                    <p className="text-[10px] uppercase tracking-widest text-[#C0C0C0]/50">All Months</p>
-                    <span className="ml-auto text-[10px] text-[#6FFFE9]/60 font-mono">{settledMonths} settled</span>
+                    <p className="text-[10px] uppercase tracking-widest text-[#C0C0C0]/50">{t("all_months")}</p>
+                    <span className="ml-auto text-[10px] text-[#6FFFE9]/60 font-mono">{settledMonths} {t("settled_count_suffix")}</span>
                   </div>
                   <div className="space-y-2">
                     {allLedgers.map(ledger => {
@@ -786,7 +787,7 @@ export default function TenantDashboard() {
                       );
                     })}
                     {allLedgers.length === 0 && (
-                      <div className="text-center py-10 text-zinc-600 text-sm">No payment history yet.</div>
+                      <div className="text-center py-10 text-zinc-600 text-sm">{t("no_payment_history")}</div>
                     )}
                   </div>
                 </div>
@@ -796,7 +797,7 @@ export default function TenantDashboard() {
             {/* ══ LEASE TAB ══ */}
             {activeTab === "lease" && !hasProperty && (
               <div className="liquid-glass rounded-3xl p-8 text-center text-zinc-500 text-sm" data-testid="empty-lease">
-                You haven't joined a property yet. Find your home from the Overview tab to view lease details.
+                {t("lease_empty_no_property")}
               </div>
             )}
             {activeTab === "lease" && hasProperty && (
@@ -804,28 +805,28 @@ export default function TenantDashboard() {
 
                 {/* Property Card */}
                 <div className="liquid-glass rounded-3xl p-5 sm:p-6 space-y-4" data-testid="card-property-details">
-                  <p className="text-[10px] uppercase tracking-widest text-[#C0C0C0]/50">Property Details</p>
+                  <p className="text-[10px] uppercase tracking-widest text-[#C0C0C0]/50">{t("property_details")}</p>
                   <div className="space-y-3">
                     <div className="flex items-start gap-3">
                       <MapPin size={16} className="text-[#6FFFE9]/50 mt-0.5 shrink-0" />
                       <div>
-                        <p className="text-[10px] uppercase tracking-wider text-[#C0C0C0]/45 mb-0.5">Address</p>
+                        <p className="text-[10px] uppercase tracking-wider text-[#C0C0C0]/45 mb-0.5">{t("address_label")}</p>
                         <p className="text-sm text-[#E8E8E8] font-medium" data-testid="text-property-address">{property.address}</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
                       <Banknote size={16} className="text-[#C0C0C0]/50 mt-0.5 shrink-0" />
                       <div>
-                        <p className="text-[10px] uppercase tracking-wider text-[#C0C0C0]/45 mb-0.5">Monthly Rent</p>
+                        <p className="text-[10px] uppercase tracking-wider text-[#C0C0C0]/45 mb-0.5">{t("tenant_monthly_rent")}</p>
                         <p className="text-sm text-[#C0C0C0] font-mono" data-testid="text-monthly-rent">₹{property.monthlyRent.toLocaleString()}</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
                       <CalendarDays size={16} className="text-[#C0C0C0]/50 mt-0.5 shrink-0" />
                       <div>
-                        <p className="text-[10px] uppercase tracking-wider text-[#C0C0C0]/45 mb-0.5">Payment Due</p>
+                        <p className="text-[10px] uppercase tracking-wider text-[#C0C0C0]/45 mb-0.5">{t("payment_due")}</p>
                         <p className="text-sm text-[#E8E8E8]" data-testid="text-payout-day">
-                          {payoutDay === 1 ? "1st" : payoutDay === 2 ? "2nd" : payoutDay === 3 ? "3rd" : `${payoutDay}th`} of every month
+                          {payoutDay === 1 ? "1st" : payoutDay === 2 ? "2nd" : payoutDay === 3 ? "3rd" : `${payoutDay}th`} {t("of_every_month")}
                         </p>
                       </div>
                     </div>
@@ -835,7 +836,7 @@ export default function TenantDashboard() {
                 {/* Agreement Status */}
                 <div className="liquid-glass rounded-3xl p-5 sm:p-6" data-testid="card-agreement-status">
                   <div className="flex items-center justify-between mb-4">
-                    <p className="text-[10px] uppercase tracking-widest text-[#C0C0C0]/50">Agreement Status</p>
+                    <p className="text-[10px] uppercase tracking-widest text-[#C0C0C0]/50">{t("agreement_status_label")}</p>
                     {agreementStatus && <StatusBadge status={
                       agreementStatus === "FULLY_SIGNED" ? "SETTLED" :
                       agreementStatus === "PENDING" ? "ARREARS" : "EXPOSED"
@@ -843,10 +844,10 @@ export default function TenantDashboard() {
                   </div>
                   <div className="space-y-3">
                     {[
-                      { label: "Agreement Created", done: !!agreementStatus },
-                      { label: "Owner Signed", done: agreementStatus === "OWNER_SIGNED" || agreementStatus === "FULLY_SIGNED" },
-                      { label: "Tenant Signed", done: agreementStatus === "TENANT_SIGNED" || agreementStatus === "FULLY_SIGNED" },
-                      { label: "Fully Executed", done: agreementStatus === "FULLY_SIGNED" },
+                      { label: t("agreement_created"), done: !!agreementStatus },
+                      { label: t("owner_signed_step"), done: agreementStatus === "OWNER_SIGNED" || agreementStatus === "FULLY_SIGNED" },
+                      { label: t("tenant_signed_step"), done: agreementStatus === "TENANT_SIGNED" || agreementStatus === "FULLY_SIGNED" },
+                      { label: t("fully_executed"), done: agreementStatus === "FULLY_SIGNED" },
                     ].map(step => (
                       <div key={step.label} className="flex items-center gap-3">
                         <div className={`w-4 h-4 rounded-full flex items-center justify-center border ${
@@ -862,7 +863,7 @@ export default function TenantDashboard() {
                     <Button variant="outline"
                       className="w-full liquid-glass-chip border-white/[0.12] text-white hover:bg-white/[0.08] text-xs h-9 rounded-xl"
                       data-testid="button-view-agreement">
-                      View / Sign Agreement
+                      {t("view_sign_agreement")}
                     </Button>
                   </Link>
                 </div>
@@ -871,12 +872,12 @@ export default function TenantDashboard() {
                 <div className="liquid-glass rounded-3xl p-5 sm:p-6" data-testid="card-kyc-status">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-[10px] uppercase tracking-widest text-[#C0C0C0]/50 mb-1">KYC Verification</p>
+                      <p className="text-[10px] uppercase tracking-widest text-[#C0C0C0]/50 mb-1">{t("kyc_verification_label")}</p>
                       <p className="text-sm text-white">
-                        {isVerified ? "Identity Verified" : hasPendingKyc ? "Under Review" : "Not Submitted"}
+                        {isVerified ? t("identity_verified") : hasPendingKyc ? t("under_review") : t("not_submitted")}
                       </p>
                       <p className="text-xs text-zinc-500 mt-0.5">
-                        {isVerified ? "You're cleared to make payments." : "Required to process rent payments."}
+                        {isVerified ? t("cleared_to_pay") : t("required_to_process")}
                       </p>
                     </div>
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center border ${
@@ -897,7 +898,7 @@ export default function TenantDashboard() {
                         className="w-full liquid-glass-chip border-white/[0.12] text-white hover:bg-white/[0.08] text-xs h-9 rounded-xl"
                         data-testid="button-kyc-lease">
                         <ShieldCheck size={14} className="mr-2" />
-                        {hasPendingKyc ? "Check KYC Status" : "Complete KYC Now"}
+                        {hasPendingKyc ? t("check_kyc_status") : t("complete_kyc_now")}
                       </Button>
                     </Link>
                   )}
@@ -909,11 +910,11 @@ export default function TenantDashboard() {
                     <div className="flex items-center gap-3">
                       <Wrench size={16} className="text-zinc-500" />
                       <div>
-                        <p className="text-sm text-white">Maintenance Requests</p>
+                        <p className="text-sm text-white">{t("maintenance_requests")}</p>
                         <p className="text-xs text-zinc-500">
                           {tickets?.length
-                            ? `${tickets.length} total · ${openTickets} open`
-                            : "No requests yet"}
+                            ? `${tickets.length} ${t("total_label")} · ${openTickets} ${t("open_label")}`
+                            : t("no_requests_yet")}
                         </p>
                       </div>
                     </div>

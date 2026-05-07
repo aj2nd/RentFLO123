@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Send, Loader2, ChevronDown, Sparkles, Bot, Headset } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
+import { useI18n } from "@/hooks/use-i18n";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "wouter";
@@ -10,16 +11,16 @@ interface ChatMessage {
   content: string;
 }
 
-const SUGGESTED_PROMPTS = [
-  "What does EXPOSED status mean?",
-  "How do I complete my KYC?",
-  "How does rent advance work?",
-  "How do I report a maintenance issue?",
-];
-
 export function AIChatBot() {
   const { user } = useAuth();
+  const { t } = useI18n();
   const [, setLocation] = useLocation();
+  const SUGGESTED_PROMPTS = [
+    t("chat_suggestion_1"),
+    t("chat_suggestion_2"),
+    t("chat_suggestion_3"),
+    t("chat_suggestion_4"),
+  ];
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
@@ -123,7 +124,7 @@ export function AIChatBot() {
           const updated = [...prev];
           updated[updated.length - 1] = {
             role: "assistant",
-            content: "Sorry, something went wrong. Please try again.",
+            content: t("chat_error"),
           };
           return updated;
         });
@@ -172,7 +173,7 @@ export function AIChatBot() {
               onClick={() => setOpen(true)}
               data-testid="button-open-chatbot"
               className="relative flex items-center justify-center w-14 h-14 text-[#6FFFE9] hover:text-[#9DEFE4] transition-colors drop-shadow-lg"
-              aria-label="Open AI assistant"
+              aria-label={t("chat_open_aria")}
             >
               {/* Chat bubble with AI text */}
               <svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -193,7 +194,7 @@ export function AIChatBot() {
                   fontWeight="700"
                   fontFamily="Inter, system-ui, sans-serif"
                   letterSpacing="0.5"
-                >Chat</text>
+                >{t("chat_floating_label")}</text>
               </svg>
               {hasUnread && (
                 <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-white rounded-full border-2 border-[#6FFFE9]" />
@@ -226,18 +227,18 @@ export function AIChatBot() {
                 <Sparkles size={16} className="text-[#6FFFE9]" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-white leading-tight">RentFLO Assistant</p>
-                <p className="text-[10px] text-zinc-500 uppercase tracking-widest">AI · Powered by Replit</p>
+                <p className="text-sm font-semibold text-white leading-tight">{t("chat_assistant_title")}</p>
+                <p className="text-[10px] text-zinc-500 uppercase tracking-widest">{t("chat_assistant_subtitle")}</p>
               </div>
               <div className="flex items-center gap-1">
                 <button
                   onClick={talkToLiveAgent}
                   className="flex items-center gap-1.5 px-2 py-1 text-[10px] uppercase tracking-widest text-[#6FFFE9] border border-[#6FFFE9]/30 hover:bg-[#6FFFE9]/10 hover:border-[#6FFFE9]/60 transition-colors"
                   data-testid="button-talk-to-live-agent"
-                  title="Talk to a live agent"
+                  title={t("chat_live_title")}
                 >
                   <Headset size={12} />
-                  <span className="hidden sm:inline">Live</span>
+                  <span className="hidden sm:inline">{t("chat_live")}</span>
                 </button>
                 {messages.length > 0 && (
                   <button
@@ -245,14 +246,14 @@ export function AIChatBot() {
                     className="p-1.5 text-zinc-500 hover:text-white transition-colors text-[10px] uppercase tracking-widest"
                     data-testid="button-clear-chat"
                   >
-                    Clear
+                    {t("chat_clear")}
                   </button>
                 )}
                 <button
                   onClick={() => setOpen(false)}
                   className="p-1.5 text-zinc-500 hover:text-white transition-colors"
                   data-testid="button-close-chatbot"
-                  aria-label="Close chat"
+                  aria-label={t("chat_close_aria")}
                 >
                   <ChevronDown size={18} />
                 </button>
@@ -267,8 +268,8 @@ export function AIChatBot() {
                     <div className="inline-flex items-center justify-center w-12 h-12 bg-[#6FFFE9]/10 border border-[#6FFFE9]/20 mb-3">
                       <Bot size={22} className="text-[#6FFFE9]" />
                     </div>
-                    <p className="text-sm text-zinc-300 font-medium">How can I help you?</p>
-                    <p className="text-xs text-zinc-600 mt-1">Ask me anything about your rent, KYC, or payments.</p>
+                    <p className="text-sm text-zinc-300 font-medium">{t("chat_how_help")}</p>
+                    <p className="text-xs text-zinc-600 mt-1">{t("chat_ask_anything")}</p>
                   </div>
                   <div className="grid grid-cols-1 gap-2">
                     {SUGGESTED_PROMPTS.map((prompt) => (
@@ -289,10 +290,10 @@ export function AIChatBot() {
                       data-testid="button-talk-to-live-agent-empty"
                     >
                       <Headset size={14} />
-                      Talk to a Live Agent
+                      {t("chat_talk_to_live")}
                     </button>
                     <p className="text-[10px] text-zinc-600 mt-2 text-center">
-                      Need a human? Open a chat with our support team.
+                      {t("chat_need_human")}
                     </p>
                   </div>
                 </div>
@@ -317,7 +318,7 @@ export function AIChatBot() {
                       msg.role === "assistant" && streaming && i === messages.length - 1 ? (
                         <span className="flex items-center gap-1.5 text-zinc-500">
                           <Loader2 size={12} className="animate-spin" />
-                          <span className="text-xs">Thinking…</span>
+                          <span className="text-xs">{t("chat_thinking")}</span>
                         </span>
                       ) : null
                     )}
@@ -336,7 +337,7 @@ export function AIChatBot() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Ask about rent, KYC, payments…"
+                  placeholder={t("chat_placeholder")}
                   rows={1}
                   className="flex-1 resize-none bg-zinc-900 border border-zinc-800 text-sm text-white placeholder-zinc-600 px-3 py-2.5 focus:outline-none focus:border-[#6FFFE9]/40 transition-colors min-h-[40px] max-h-[100px]"
                   style={{ scrollbarWidth: "none" }}
@@ -348,13 +349,13 @@ export function AIChatBot() {
                   disabled={!input.trim() || streaming}
                   className="flex-shrink-0 w-10 h-10 flex items-center justify-center bg-[#6FFFE9] text-black hover:bg-[#9DEFE4] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                   data-testid="button-send-chat"
-                  aria-label="Send message"
+                  aria-label={t("chat_send_aria")}
                 >
                   {streaming ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
                 </button>
               </div>
               <p className="text-[9px] text-zinc-700 mt-1.5 text-center uppercase tracking-widest">
-                AI may make mistakes · Not financial advice
+                {t("chat_disclaimer")}
               </p>
             </div>
           </motion.div>

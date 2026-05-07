@@ -1,5 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
+import { useI18n } from "@/hooks/use-i18n";
 import { useQuery } from "@tanstack/react-query";
 import {
   LayoutGrid, WalletMinimal, House, BookOpenText, Hammer,
@@ -53,6 +54,7 @@ function NavTab({ href, icon, label, active, badge }: {
 
 export function BottomNav() {
   const { user } = useAuth();
+  const { t } = useI18n();
   const [location] = useLocation();
 
   const { data: unreadData } = useQuery<{ count: number }>({
@@ -75,25 +77,25 @@ export function BottomNav() {
 
   const itemsByRole: Record<string, NavItem[]> = {
     TENANT: [
-      { href: "/tenant",         icon: <House size={22} strokeWidth={1.75} />,           label: "Home" },
-      { href: "/ledger",         icon: <BookOpenText size={22} strokeWidth={1.75} />,    label: "Ledger" },
-      { href: "/maintenance",    icon: <Hammer size={22} strokeWidth={1.75} />,          label: "Repairs" },
-      { href: "/messages",       icon: <MessagesSquare size={22} strokeWidth={1.75} />,  label: "Messages" },
-      { href: "/profile",        icon: <CircleUserRound size={22} strokeWidth={1.75} />, label: "Profile" },
+      { href: "/tenant",         icon: <House size={22} strokeWidth={1.75} />,           label: t("nav_home") },
+      { href: "/ledger",         icon: <BookOpenText size={22} strokeWidth={1.75} />,    label: t("nav_ledger") },
+      { href: "/maintenance",    icon: <Hammer size={22} strokeWidth={1.75} />,          label: t("nav_repairs") },
+      { href: "/messages",       icon: <MessagesSquare size={22} strokeWidth={1.75} />,  label: t("nav_messages") },
+      { href: "/profile",        icon: <CircleUserRound size={22} strokeWidth={1.75} />, label: t("nav_profile") },
     ],
     OWNER: [
-      { href: "/owner",          icon: <WalletMinimal size={22} strokeWidth={1.75} />,   label: "Home" },
-      { href: "/ledger",         icon: <BookOpenText size={22} strokeWidth={1.75} />,    label: "Ledger" },
-      { href: "/messages",       icon: <MessagesSquare size={22} strokeWidth={1.75} />,  label: "Messages" },
-      { href: "/notifications",  icon: <BellRing size={22} strokeWidth={1.75} />,        label: "Inbox" },
-      { href: "/profile",        icon: <CircleUserRound size={22} strokeWidth={1.75} />, label: "Profile" },
+      { href: "/owner",          icon: <WalletMinimal size={22} strokeWidth={1.75} />,   label: t("nav_home") },
+      { href: "/ledger",         icon: <BookOpenText size={22} strokeWidth={1.75} />,    label: t("nav_ledger") },
+      { href: "/messages",       icon: <MessagesSquare size={22} strokeWidth={1.75} />,  label: t("nav_messages") },
+      { href: "/notifications",  icon: <BellRing size={22} strokeWidth={1.75} />,        label: t("nav_inbox") },
+      { href: "/profile",        icon: <CircleUserRound size={22} strokeWidth={1.75} />, label: t("nav_profile") },
     ],
     ADMIN: [
-      { href: "/admin",              icon: <LayoutGrid size={22} strokeWidth={1.75} />,     label: "Admin" },
-      { href: "/ledger",             icon: <BookOpenText size={22} strokeWidth={1.75} />,   label: "Ledger" },
-      { href: "/admin/maintenance",  icon: <Hammer size={22} strokeWidth={1.75} />,         label: "Repairs" },
-      { href: "/admin/messages",     icon: <MessagesSquare size={22} strokeWidth={1.75} />, label: "Messages" },
-      { href: "/verify",             icon: <ShieldCheck size={22} strokeWidth={1.75} />,    label: "KYC" },
+      { href: "/admin",              icon: <LayoutGrid size={22} strokeWidth={1.75} />,     label: t("nav_admin_short") },
+      { href: "/ledger",             icon: <BookOpenText size={22} strokeWidth={1.75} />,   label: t("nav_ledger") },
+      { href: "/admin/maintenance",  icon: <Hammer size={22} strokeWidth={1.75} />,         label: t("nav_repairs") },
+      { href: "/admin/messages",     icon: <MessagesSquare size={22} strokeWidth={1.75} />, label: t("nav_messages") },
+      { href: "/verify",             icon: <ShieldCheck size={22} strokeWidth={1.75} />,    label: t("nav_kyc_short") },
     ],
   };
 
