@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Bot, X, Send, Loader2, ChevronDown, Sparkles } from "lucide-react";
+import { MessageCircle, Send, Loader2, ChevronDown, Sparkles, Bot } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
@@ -165,7 +165,7 @@ export function AIChatBot() {
               className="relative flex items-center justify-center w-14 h-14 bg-[#6FFFE9] text-black shadow-lg shadow-[#6FFFE9]/20 hover:bg-[#9DEFE4] transition-colors"
               aria-label="Open AI assistant"
             >
-              <Bot size={26} />
+              <MessageCircle size={26} />
               {hasUnread && (
                 <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-white rounded-full border-2 border-[#6FFFE9]" />
               )}
