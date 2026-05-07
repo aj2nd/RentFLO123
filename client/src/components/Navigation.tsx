@@ -85,26 +85,7 @@ export function Navigation() {
           {collapsed ? <Menu size={21} /> : <X size={21} />}
         </button>
 
-        {/* Center: logo icon + wordmark — absolutely centered */}
-        <div className="flex-1 flex items-center justify-center gap-2 overflow-hidden">
-          <img
-            src="/logo-icon.png"
-            alt="RentFLO"
-            style={{ width: 40, height: 40, objectFit: "contain", flexShrink: 0 }}
-          />
-          <img
-            src="/logo-wordmark-transparent.png"
-            alt="RentFLO"
-            style={{
-              height: 26,
-              objectFit: "contain",
-              flexShrink: 0,
-              filter: isDark
-                ? "drop-shadow(0 0 8px rgba(192,192,192,0.12))"
-                : "invert(1) drop-shadow(0 0 6px rgba(0,0,0,0.08))",
-            }}
-          />
-        </div>
+        <div className="flex-1" />
 
         {/* Right: theme toggle */}
         <div className="flex items-center justify-center flex-shrink-0" style={{ width: 44, height: 44 }}>
