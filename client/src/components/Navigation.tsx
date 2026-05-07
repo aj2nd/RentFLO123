@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import {
   LayoutDashboard, Home, LogOut, Wallet, Wrench, Receipt,
   Loader2, ShieldCheck, FileSignature, ChevronRight, MessageSquare, Menu, X,
+  ExternalLink,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
@@ -225,6 +226,39 @@ export function Navigation() {
             <LogOut size={15} className="flex-shrink-0" />
             <span className="text-sm font-medium whitespace-nowrap">{t("nav_sign_out")}</span>
           </button>
+
+          {/* Legal links */}
+          <div className="px-3 pt-2 mt-1" style={{ borderTop: "1px solid var(--nav-border)" }}>
+            <div className="flex flex-wrap gap-x-3 gap-y-1">
+              {[
+                { label: "Terms", href: "/terms" },
+                { label: "Privacy", href: "/privacy" },
+                { label: "Refund", href: "/refund" },
+                { label: "Support", href: "/support" },
+              ].map(({ label, href }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  className="text-[10px] uppercase tracking-widest transition-colors whitespace-nowrap"
+                  style={{ color: "var(--nav-text-dim)" }}
+                  data-testid={`nav-legal-${label.toLowerCase()}`}
+                >
+                  {label}
+                </Link>
+              ))}
+            </div>
+            <a
+              href="mailto:help@rentflo.com"
+              className="text-[10px] mt-1.5 block transition-colors"
+              style={{ color: "var(--nav-text-dim)" }}
+              data-testid="nav-legal-email"
+            >
+              help@rentflo.com
+            </a>
+            <p className="text-[9px] mt-1 opacity-40 whitespace-nowrap" style={{ color: "var(--nav-text-dim)" }}>
+              © {new Date().getFullYear()} RentFLO Technologies Pvt. Ltd.
+            </p>
+          </div>
         </div>
       </nav>
 
