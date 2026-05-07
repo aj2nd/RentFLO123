@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 
-const translations = {
+export const translations = {
   en: {
     // ── Existing landing page keys ──────────────────────────────────────────
     home: "Home",
@@ -76,9 +76,14 @@ const translations = {
     setup_owner_subtitle: "Enter your property details to start receiving rent advances.",
     setup_tenant_subtitle: "Search by your landlord's email to link your account to your home.",
     setup_property_address: "Property Address",
+    setup_property_address_placeholder: "e.g. 42 MG Road, Bangalore 560001",
     setup_monthly_rent: "Monthly Rent (₹)",
+    setup_monthly_rent_placeholder: "e.g. 20000",
     setup_payout_day: "Payout Day (1–28)",
+    setup_payout_day_placeholder: "1",
     setup_tenant_email: "Tenant Email",
+    setup_tenant_email_placeholder: "tenant@email.com",
+    setup_landlord_email_placeholder: "landlord@email.com",
     setup_tenant_email_optional: "optional — invite your tenant",
     setup_submit: "Set Up Property",
     setup_skip: "Skip for now",
@@ -489,9 +494,14 @@ const translations = {
     setup_owner_subtitle: "किराया अग्रिम प्राप्त करने के लिए अपनी संपत्ति विवरण दर्ज करें।",
     setup_tenant_subtitle: "अपने मकान मालिक के ईमेल से खोजें।",
     setup_property_address: "संपत्ति का पता",
+    setup_property_address_placeholder: "जैसे 42 एमजी रोड, बैंगलोर 560001",
     setup_monthly_rent: "मासिक किराया (₹)",
+    setup_monthly_rent_placeholder: "जैसे 20000",
     setup_payout_day: "भुगतान दिन (1–28)",
+    setup_payout_day_placeholder: "1",
     setup_tenant_email: "किराएदार ईमेल",
+    setup_tenant_email_placeholder: "tenant@email.com",
+    setup_landlord_email_placeholder: "landlord@email.com",
     setup_tenant_email_optional: "वैकल्पिक — किराएदार को आमंत्रित करें",
     setup_submit: "संपत्ति सेट करें",
     setup_skip: "अभी छोड़ें",
@@ -870,9 +880,14 @@ const translations = {
     setup_owner_subtitle: "ಬಾಡಿಗೆ ಮುಂಗಡ ಪಡೆಯಲು ಆಸ್ತಿ ವಿವರ ನಮೂದಿಸಿ.",
     setup_tenant_subtitle: "ನಿಮ್ಮ ಮನೆಮಾಲೀಕರ ಇಮೇಲ್‌ನಿಂದ ಹುಡುಕಿ.",
     setup_property_address: "ಆಸ್ತಿ ವಿಳಾಸ",
+    setup_property_address_placeholder: "ಉದಾ. 42 ಎಂಜಿ ರಸ್ತೆ, ಬೆಂಗಳೂರು 560001",
     setup_monthly_rent: "ಮಾಸಿಕ ಬಾಡಿಗೆ (₹)",
+    setup_monthly_rent_placeholder: "ಉದಾ. 20000",
     setup_payout_day: "ಪಾವತಿ ದಿನ (1–28)",
+    setup_payout_day_placeholder: "1",
     setup_tenant_email: "ಬಾಡಿಗೆದಾರ ಇಮೇಲ್",
+    setup_tenant_email_placeholder: "tenant@email.com",
+    setup_landlord_email_placeholder: "landlord@email.com",
     setup_tenant_email_optional: "ಐಚ್ಛಿಕ — ಬಾಡಿಗೆದಾರರನ್ನು ಆಮಂತ್ರಿಸಿ",
     setup_submit: "ಆಸ್ತಿ ಹೊಂದಿಸಿ",
     setup_skip: "ಈಗ ಬಿಟ್ಟುಬಿಡಿ",
