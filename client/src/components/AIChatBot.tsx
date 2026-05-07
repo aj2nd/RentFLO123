@@ -180,11 +180,11 @@ export function AIChatBot() {
                   textAnchor="middle"
                   dominantBaseline="middle"
                   fill="currentColor"
-                  fontSize="11"
+                  fontSize="9"
                   fontWeight="700"
                   fontFamily="Inter, system-ui, sans-serif"
                   letterSpacing="0.5"
-                >AI</text>
+                >Chat</text>
               </svg>
               {hasUnread && (
                 <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-white rounded-full border-2 border-[#6FFFE9]" />
