@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { MessageCircle, Send, Loader2, ChevronDown, Sparkles, Bot } from "lucide-react";
+import { Send, Loader2, ChevronDown, Sparkles, Bot } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
@@ -165,7 +165,27 @@ export function AIChatBot() {
               className="relative flex items-center justify-center w-14 h-14 text-[#6FFFE9] hover:text-[#9DEFE4] transition-colors drop-shadow-lg"
               aria-label="Open AI assistant"
             >
-              <MessageCircle size={32} strokeWidth={1.8} />
+              {/* Chat bubble with AI text */}
+              <svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M4 7C4 5.34315 5.34315 4 7 4H31C32.6569 4 34 5.34315 34 7V25C34 26.6569 32.6569 28 31 28H11L4 34V7Z"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinejoin="round"
+                  fill="none"
+                />
+                <text
+                  x="19"
+                  y="20"
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  fill="currentColor"
+                  fontSize="11"
+                  fontWeight="700"
+                  fontFamily="Inter, system-ui, sans-serif"
+                  letterSpacing="0.5"
+                >AI</text>
+              </svg>
               {hasUnread && (
                 <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-white rounded-full border-2 border-[#6FFFE9]" />
               )}
