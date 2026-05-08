@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Upload, CheckCircle, Clock, ShieldCheck, FileSignature } from "lucide-react";
+import { Upload, CheckCircle, Clock, ShieldCheck, FileSignature, Zap, ExternalLink, Loader2 } from "lucide-react";
 import { useLocation } from "wouter";
 import { useI18n } from "@/hooks/use-i18n";
 import type { User } from "@shared/schema";
@@ -33,6 +33,77 @@ export default function Verify() {
   });
 
   const { data: currentUser, isLoading } = useQuery<User>({ queryKey: ["/api/auth/user"] });
+
+  // === Digilocker (Setu) E-KYC state ===
+  const [digilockerLoading, setDigilockerLoading] = useState(false);
+  const [digilockerPolling, setDigilockerPolling] = useState(false);
+  const pollTimerRef = useRef<number | null>(null);
+
+  const stopPolling = () => {
+    if (pollTimerRef.current) {
+      window.clearInterval(pollTimerRef.current);
+      pollTimerRef.current = null;
+    }
+    setDigilockerPolling(false);
+  };
+
+  useEffect(() => () => stopPolling(), []);
+
+  const startDigilockerPolling = () => {
+    if (pollTimerRef.current) return;
+    setDigilockerPolling(true);
+    let attempts = 0;
+    const tick = async () => {
+      attempts += 1;
+      try {
+        const r = await apiRequest("GET", "/api/kyc/digilocker/status");
+        if (r.status === 429) {
+          stopPolling();
+          toast({ title: "Slow down", description: "Too many status checks. Please wait a minute and try again.", variant: "destructive" });
+          return;
+        }
+        const data = await r.json().catch(() => ({}));
+        if (data?.verified) {
+          stopPolling();
+          toast({ title: "Verified!", description: "Your identity has been verified via Digilocker." });
+          queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+          setLocation("/tenant");
+          return;
+        }
+      } catch {
+        // ignore — will retry next tick
+      }
+      // Stop after ~5 minutes (60 attempts × 5s)
+      if (attempts >= 60) {
+        stopPolling();
+        toast({ title: "Verification timed out", description: "Please try again or use the manual form below.", variant: "destructive" });
+      }
+    };
+    // Fire once immediately, then every 5 seconds.
+    void tick();
+    pollTimerRef.current = window.setInterval(tick, 5000);
+  };
+
+  const handleDigilockerStart = async () => {
+    setDigilockerLoading(true);
+    try {
+      const r = await apiRequest("POST", "/api/kyc/digilocker/start");
+      const data = await r.json();
+      if (!r.ok || !data?.url) {
+        throw new Error(data?.message || "Could not start Digilocker.");
+      }
+      window.open(data.url, "_blank", "noopener,noreferrer");
+      toast({
+        title: "Digilocker opened in a new tab",
+        description: "Approve Aadhaar share there. We'll update this page automatically.",
+      });
+      startDigilockerPolling();
+    } catch (err: any) {
+      toast({ title: "Could not start Digilocker", description: err?.message ?? "Please try again.", variant: "destructive" });
+    } finally {
+      setDigilockerLoading(false);
+    }
+  };
 
   const submitKycMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
@@ -127,6 +198,61 @@ export default function Verify() {
           /* FORM */
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
+
+              {/* Digilocker (Setu) — instant E-KYC */}
+              <div className="border border-[#6FFFE9]/45 bg-[#6FFFE9]/[0.04] p-5 sm:p-6 space-y-4" data-testid="card-digilocker">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 flex items-center justify-center bg-[#6FFFE9]/15 border border-[#6FFFE9]/30 shrink-0">
+                    <Zap size={18} className="text-[#6FFFE9]" />
+                  </div>
+                  <div className="flex-1">
+                    <h2 className="text-base font-semibold uppercase tracking-wider text-[#9DEFE4]">
+                      Instant E-KYC with Digilocker
+                    </h2>
+                    <p className="text-sm text-zinc-400 mt-1">
+                      Verify in under a minute. We'll pull your Aadhaar securely from Digilocker — no upload needed.
+                    </p>
+                  </div>
+                </div>
+
+                <Button
+                  type="button"
+                  onClick={handleDigilockerStart}
+                  disabled={digilockerLoading || digilockerPolling}
+                  className="w-full h-12 rounded-none border-0 text-sm font-bold uppercase tracking-widest bg-[#6FFFE9] hover:bg-[#6FFFE9]/90 text-black flex items-center justify-center gap-2"
+                  data-testid="button-digilocker-start"
+                >
+                  {digilockerPolling ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" />
+                      Waiting for Digilocker…
+                    </>
+                  ) : digilockerLoading ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" />
+                      Opening Digilocker…
+                    </>
+                  ) : (
+                    <>
+                      <ExternalLink size={16} />
+                      Verify with Digilocker
+                    </>
+                  )}
+                </Button>
+
+                {digilockerPolling && (
+                  <p className="text-xs text-zinc-500 text-center">
+                    Don't see the Digilocker tab? <button type="button" className="text-[#6FFFE9] underline" onClick={handleDigilockerStart}>Reopen it</button>.
+                  </p>
+                )}
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="flex-1 h-px bg-white/[0.08]" />
+                <span className="text-[10px] uppercase tracking-widest text-zinc-600">Or verify manually</span>
+                <div className="flex-1 h-px bg-white/[0.08]" />
+              </div>
+
 
               <div className="border border-[#6FFFE9]/18 bg-black p-5 sm:p-6 space-y-5">
                 <h2 className="text-base font-semibold uppercase tracking-wider text-[#9DEFE4]/80">

@@ -58,13 +58,26 @@ const authLimiter = rateLimit({
   message: { message: "Too many authentication attempts. Please try again later." },
 });
 
-// Sensitive action limiter (KYC, payments): 20 per 15 minutes per IP
+// Sensitive action limiter (KYC, payments): 20 per 15 minutes per IP.
+// Digilocker status polling is intentionally exempted — it's polled every 5s
+// from the client and has its own dedicated, polling-friendly limiter below.
 const sensitiveLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 20,
   standardHeaders: true,
   legacyHeaders: false,
   message: { message: "Too many requests for this action. Please try again later." },
+  skip: (req) => req.path === "/api/kyc/digilocker/status",
+});
+
+// Polling limiter for Digilocker status — generous because the client polls
+// every 5s for up to 5 minutes (~60 calls) per verification attempt.
+const digilockerPollLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 200,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "Too many status checks. Please slow down." },
 });
 
 // AI/expensive resource limiter (chatbot)
@@ -90,6 +103,7 @@ app.use("/api/login", authLimiter);
 app.use("/api/callback", authLimiter);
 app.use("/api/auth/set-role", authLimiter);
 app.use("/api/auth/user-by-email", authLimiter);
+app.use("/api/kyc/digilocker/status", digilockerPollLimiter);
 app.use("/api/kyc", sensitiveLimiter);
 app.use("/api/payments", sensitiveLimiter);
 app.use("/api/advances", sensitiveLimiter);

@@ -32,6 +32,9 @@ export const users = pgTable("users", {
   bankAccountNumber: text("bank_account_number"),
   ifscCode: text("ifsc_code"),
   cancelledChequeUrl: text("cancelled_cheque_url"),
+  // Setu Digilocker E-KYC fields
+  digilockerRequestId: text("digilocker_request_id"), // Setu request id (used for polling)
+  digilockerCompletedAt: timestamp("digilocker_completed_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
