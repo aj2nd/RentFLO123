@@ -649,12 +649,7 @@ export default function TenantDashboard() {
             )}
 
             {/* ══ PAYMENTS TAB ══ */}
-            {activeTab === "payments" && !hasProperty && (
-              <div className="liquid-glass rounded-3xl p-8 text-center text-zinc-500 text-sm" data-testid="empty-payments">
-                {t("payments_empty_no_property")}
-              </div>
-            )}
-            {activeTab === "payments" && hasProperty && (
+            {activeTab === "payments" && (
               <div className="space-y-6">
 
                 {/* Pay Now Panel */}
@@ -854,12 +849,7 @@ export default function TenantDashboard() {
             )}
 
             {/* ══ LEASE TAB ══ */}
-            {activeTab === "lease" && !hasProperty && (
-              <div className="liquid-glass rounded-3xl p-8 text-center text-zinc-500 text-sm" data-testid="empty-lease">
-                {t("lease_empty_no_property")}
-              </div>
-            )}
-            {activeTab === "lease" && hasProperty && (
+            {activeTab === "lease" && (
               <div className="space-y-4">
 
                 {/* Property Card */}
@@ -870,14 +860,14 @@ export default function TenantDashboard() {
                       <MapPin size={16} className="text-[#6FFFE9]/50 mt-0.5 shrink-0" />
                       <div>
                         <p className="text-[10px] uppercase tracking-wider text-[#C0C0C0]/45 mb-0.5">{t("address_label")}</p>
-                        <p className="text-sm text-[#E8E8E8] font-medium" data-testid="text-property-address">{property.address}</p>
+                        <p className="text-sm text-[#E8E8E8] font-medium" data-testid="text-property-address">{property?.address ?? "—"}</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
                       <Banknote size={16} className="text-[#C0C0C0]/50 mt-0.5 shrink-0" />
                       <div>
                         <p className="text-[10px] uppercase tracking-wider text-[#C0C0C0]/45 mb-0.5">{t("tenant_monthly_rent")}</p>
-                        <p className="text-sm text-[#C0C0C0] font-mono" data-testid="text-monthly-rent">₹{property.monthlyRent.toLocaleString()}</p>
+                        <p className="text-sm text-[#C0C0C0] font-mono" data-testid="text-monthly-rent">₹{(property?.monthlyRent ?? 0).toLocaleString()}</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
