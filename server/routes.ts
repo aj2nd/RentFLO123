@@ -1614,8 +1614,10 @@ You can help with:
 Keep answers concise, friendly, and specific to rent/property management in India. Use ₹ for currency. If a question is unrelated to the platform or property management, politely redirect to relevant topics.`;
 
       res.setHeader("Content-Type", "text/event-stream");
-      res.setHeader("Cache-Control", "no-cache");
+      res.setHeader("Cache-Control", "no-cache, no-transform");
       res.setHeader("Connection", "keep-alive");
+      res.setHeader("X-Accel-Buffering", "no");
+      res.flushHeaders?.();
 
       const stream = await getOpenAI().chat.completions.create({
         model: "gpt-5-mini",
@@ -1624,18 +1626,28 @@ Keep answers concise, friendly, and specific to rent/property management in Indi
           ...safeMessages.map((m) => ({ role: m.role, content: m.content })),
         ],
         stream: true,
-        max_completion_tokens: 500,
+        max_completion_tokens: 800,
+      });
+
+      // Abort upstream request if client disconnects (saves tokens + CPU)
+      let clientGone = false;
+      req.on("close", () => {
+        clientGone = true;
+        try { (stream as any).controller?.abort?.(); } catch {}
       });
 
       for await (const chunk of stream) {
+        if (clientGone) break;
         const content = chunk.choices[0]?.delta?.content || "";
         if (content) {
           res.write(`data: ${JSON.stringify({ content })}\n\n`);
         }
       }
 
-      res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
-      res.end();
+      if (!clientGone) {
+        res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+        res.end();
+      }
     } catch (err: any) {
       console.error("Chatbot error:", err);
       if (res.headersSent) {
