@@ -5,9 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Upload, CheckCircle, Clock, ShieldCheck, FileSignature, Zap, ExternalLink, Loader2, X } from "lucide-react";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+import { Upload, CheckCircle, Clock, ShieldCheck, FileSignature, Zap, ExternalLink, Loader2 } from "lucide-react";
 import { useLocation } from "wouter";
 import { useI18n } from "@/hooks/use-i18n";
 import type { User } from "@shared/schema";
@@ -36,57 +34,11 @@ export default function Verify() {
 
   const { data: currentUser, isLoading } = useQuery<User>({ queryKey: ["/api/auth/user"] });
 
-  // === Digilocker (Setu) E-KYC state ===
+  // === Digilocker (Setu) E-KYC ===
+  // Setu blocks iframe embedding (returns 403), so we navigate the current
+  // tab to Digilocker. Setu redirects back to /tenant?kyc=digilocker when
+  // done, where TenantDashboard finalizes verification.
   const [digilockerLoading, setDigilockerLoading] = useState(false);
-  const [digilockerPolling, setDigilockerPolling] = useState(false);
-  const [digilockerUrl, setDigilockerUrl] = useState<string | null>(null);
-  const pollTimerRef = useRef<number | null>(null);
-
-  const stopPolling = () => {
-    if (pollTimerRef.current) {
-      window.clearInterval(pollTimerRef.current);
-      pollTimerRef.current = null;
-    }
-    setDigilockerPolling(false);
-  };
-
-  useEffect(() => () => stopPolling(), []);
-
-  const startDigilockerPolling = () => {
-    if (pollTimerRef.current) return;
-    setDigilockerPolling(true);
-    let attempts = 0;
-    const tick = async () => {
-      attempts += 1;
-      try {
-        const r = await apiRequest("GET", "/api/kyc/digilocker/status");
-        if (r.status === 429) {
-          stopPolling();
-          toast({ title: "Slow down", description: "Too many status checks. Please wait a minute and try again.", variant: "destructive" });
-          return;
-        }
-        const data = await r.json().catch(() => ({}));
-        if (data?.verified) {
-          stopPolling();
-          setDigilockerUrl(null);
-          toast({ title: "Verified!", description: "Your identity has been verified via Digilocker." });
-          queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-          setLocation("/tenant");
-          return;
-        }
-      } catch {
-        // ignore — will retry next tick
-      }
-      // Stop after ~5 minutes (60 attempts × 5s)
-      if (attempts >= 60) {
-        stopPolling();
-        toast({ title: "Verification timed out", description: "Please try again or use the manual form below.", variant: "destructive" });
-      }
-    };
-    // Fire once immediately, then every 5 seconds.
-    void tick();
-    pollTimerRef.current = window.setInterval(tick, 5000);
-  };
 
   const handleDigilockerStart = async () => {
     setDigilockerLoading(true);
@@ -96,11 +48,11 @@ export default function Verify() {
       if (!r.ok || !data?.url) {
         throw new Error(data?.message || "Could not start Digilocker.");
       }
-      setDigilockerUrl(data.url);
-      startDigilockerPolling();
+      // Mark that we're mid-flow so the return page knows to finalize.
+      sessionStorage.setItem("digilocker:in_progress", "1");
+      window.location.assign(data.url);
     } catch (err: any) {
       toast({ title: "Could not start Digilocker", description: err?.message ?? "Please try again.", variant: "destructive" });
-    } finally {
       setDigilockerLoading(false);
     }
   };
@@ -218,16 +170,11 @@ export default function Verify() {
                 <Button
                   type="button"
                   onClick={handleDigilockerStart}
-                  disabled={digilockerLoading || digilockerPolling}
+                  disabled={digilockerLoading}
                   className="w-full h-12 rounded-none border-0 text-sm font-bold uppercase tracking-widest bg-[#6FFFE9] hover:bg-[#6FFFE9]/90 text-black flex items-center justify-center gap-2"
                   data-testid="button-digilocker-start"
                 >
-                  {digilockerPolling ? (
-                    <>
-                      <Loader2 size={16} className="animate-spin" />
-                      Waiting for Digilocker…
-                    </>
-                  ) : digilockerLoading ? (
+                  {digilockerLoading ? (
                     <>
                       <Loader2 size={16} className="animate-spin" />
                       Opening Digilocker…
@@ -239,75 +186,10 @@ export default function Verify() {
                     </>
                   )}
                 </Button>
-
-                {digilockerPolling && !digilockerUrl && (
-                  <p className="text-xs text-zinc-500 text-center">
-                    Waiting for Digilocker… <button type="button" className="text-[#6FFFE9] underline" onClick={handleDigilockerStart}>Reopen</button>
-                  </p>
-                )}
+                <p className="text-[11px] text-zinc-500 text-center">
+                  You'll be sent to Digilocker and brought right back to RentFLO when done.
+                </p>
               </div>
-
-              {/* In-app Digilocker modal */}
-              <Dialog
-                open={!!digilockerUrl}
-                onOpenChange={(open) => {
-                  if (!open) {
-                    setDigilockerUrl(null);
-                    stopPolling();
-                  }
-                }}
-              >
-                <DialogContent
-                  className="p-0 gap-0 max-w-[100vw] sm:max-w-3xl w-full h-[100dvh] sm:h-[85vh] sm:rounded-none border border-[#6FFFE9]/40 bg-black flex flex-col"
-                  data-testid="dialog-digilocker"
-                >
-                  <VisuallyHidden>
-                    <DialogTitle>Digilocker E-KYC</DialogTitle>
-                  </VisuallyHidden>
-                  <div className="flex items-center justify-between px-4 h-12 border-b border-white/[0.08] shrink-0">
-                    <div className="flex items-center gap-2">
-                      <Zap size={14} className="text-[#6FFFE9]" />
-                      <span className="text-xs font-semibold uppercase tracking-widest text-[#9DEFE4]">
-                        Digilocker E-KYC
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <a
-                        href={digilockerUrl ?? "#"}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[10px] uppercase tracking-widest text-zinc-400 hover:text-white inline-flex items-center gap-1"
-                        data-testid="link-digilocker-newtab"
-                      >
-                        <ExternalLink size={12} /> Open in new tab
-                      </a>
-                      <button
-                        type="button"
-                        onClick={() => { setDigilockerUrl(null); stopPolling(); }}
-                        className="text-zinc-400 hover:text-white"
-                        aria-label="Close"
-                        data-testid="button-digilocker-close"
-                      >
-                        <X size={16} />
-                      </button>
-                    </div>
-                  </div>
-                  {digilockerUrl && (
-                    <iframe
-                      src={digilockerUrl}
-                      title="Digilocker"
-                      className="flex-1 w-full bg-white"
-                      // Allow Digilocker to open its own popups for OTP / consent
-                      sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation"
-                      allow="clipboard-write; web-share"
-                      data-testid="iframe-digilocker"
-                    />
-                  )}
-                  <div className="px-4 py-2 border-t border-white/[0.08] text-[11px] text-zinc-500 shrink-0">
-                    Approve Aadhaar share above. We'll detect verification automatically.
-                  </div>
-                </DialogContent>
-              </Dialog>
 
               <div className="flex items-center gap-3">
                 <div className="flex-1 h-px bg-white/[0.08]" />

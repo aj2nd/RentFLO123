@@ -147,6 +147,50 @@ export default function TenantDashboard() {
     getCashfree().catch(() => {});
   }, []);
 
+  // === Digilocker return-trip handler ===
+  // When Setu redirects the user back with ?kyc=digilocker, finalize KYC by
+  // polling /api/kyc/digilocker/status (which pulls Aadhaar from Setu and
+  // flips isVerified=true on the first authenticated response).
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const inProgress = sessionStorage.getItem("digilocker:in_progress") === "1";
+    if (params.get("kyc") !== "digilocker" && !inProgress) return;
+
+    let cancelled = false;
+    let attempts = 0;
+    const finalize = async () => {
+      while (!cancelled && attempts < 12) { // ~36s max
+        attempts += 1;
+        try {
+          const r = await apiRequest("GET", "/api/kyc/digilocker/status");
+          const data = await r.json().catch(() => ({}));
+          if (data?.verified) {
+            sessionStorage.removeItem("digilocker:in_progress");
+            toast({ title: "Verified!", description: "Your identity has been verified via Digilocker." });
+            queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+            // Strip the ?kyc=digilocker query param.
+            window.history.replaceState({}, "", "/tenant");
+            return;
+          }
+        } catch {
+          // retry
+        }
+        await new Promise((r) => setTimeout(r, 3000));
+      }
+      if (!cancelled) {
+        sessionStorage.removeItem("digilocker:in_progress");
+        toast({
+          title: "Verification not completed",
+          description: "Please try again or finish the flow on Digilocker.",
+          variant: "destructive",
+        });
+        window.history.replaceState({}, "", "/tenant");
+      }
+    };
+    void finalize();
+    return () => { cancelled = true; };
+  }, [toast]);
+
   useEffect(() => {
     if (!property) return;
     // Only fire once per calendar day per property to avoid spamming the server
