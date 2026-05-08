@@ -38,13 +38,16 @@ function setuHeaders(): Record<string, string> {
 }
 
 async function setuFetch(path: string, init: RequestInit = {}): Promise<any> {
-  const res = await fetch(`${setuBaseUrl()}${path}`, {
+  const url = `${setuBaseUrl()}${path}`;
+  const res = await fetch(url, {
     ...init,
     headers: { ...setuHeaders(), ...(init.headers as Record<string, string> | undefined) },
   });
   const text = await res.text();
   let data: any = null;
   try { data = text ? JSON.parse(text) : {}; } catch { data = { raw: text }; }
+  console.log(`[setu] ${init.method || "GET"} ${path} → ${res.status}`,
+    res.ok ? JSON.stringify(data).slice(0, 300) : data);
   if (!res.ok) {
     const msg = data?.error?.message || data?.message || `Setu request failed (${res.status})`;
     const err: any = new Error(msg);

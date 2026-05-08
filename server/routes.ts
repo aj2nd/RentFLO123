@@ -1097,8 +1097,9 @@ export async function registerRoutes(
     }
     try {
       const proto = (req.headers['x-forwarded-proto'] as string)?.split(',')[0] || req.protocol;
-      const host = req.get('host');
+      const host = (req.headers['x-forwarded-host'] as string)?.split(',')[0] || req.get('host');
       const redirectUrl = `${proto}://${host}/tenant?kyc=digilocker`;
+      console.log(`[setu] creating request with redirectUrl=${redirectUrl}`);
       const created = await createDigilockerRequest(redirectUrl);
       await authStorage.updateUser(userId, {
         digilockerRequestId: created.id,
