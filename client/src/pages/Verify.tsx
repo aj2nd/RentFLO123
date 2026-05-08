@@ -5,7 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Upload, CheckCircle, Clock, ShieldCheck, FileSignature, Zap, ExternalLink, Loader2 } from "lucide-react";
+import { Upload, CheckCircle, Clock, ShieldCheck, FileSignature, Zap, ExternalLink, Loader2, X } from "lucide-react";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { useLocation } from "wouter";
 import { useI18n } from "@/hooks/use-i18n";
 import type { User } from "@shared/schema";
@@ -37,6 +39,7 @@ export default function Verify() {
   // === Digilocker (Setu) E-KYC state ===
   const [digilockerLoading, setDigilockerLoading] = useState(false);
   const [digilockerPolling, setDigilockerPolling] = useState(false);
+  const [digilockerUrl, setDigilockerUrl] = useState<string | null>(null);
   const pollTimerRef = useRef<number | null>(null);
 
   const stopPolling = () => {
@@ -65,6 +68,7 @@ export default function Verify() {
         const data = await r.json().catch(() => ({}));
         if (data?.verified) {
           stopPolling();
+          setDigilockerUrl(null);
           toast({ title: "Verified!", description: "Your identity has been verified via Digilocker." });
           queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
           setLocation("/tenant");
@@ -92,11 +96,7 @@ export default function Verify() {
       if (!r.ok || !data?.url) {
         throw new Error(data?.message || "Could not start Digilocker.");
       }
-      window.open(data.url, "_blank", "noopener,noreferrer");
-      toast({
-        title: "Digilocker opened in a new tab",
-        description: "Approve Aadhaar share there. We'll update this page automatically.",
-      });
+      setDigilockerUrl(data.url);
       startDigilockerPolling();
     } catch (err: any) {
       toast({ title: "Could not start Digilocker", description: err?.message ?? "Please try again.", variant: "destructive" });
@@ -240,12 +240,74 @@ export default function Verify() {
                   )}
                 </Button>
 
-                {digilockerPolling && (
+                {digilockerPolling && !digilockerUrl && (
                   <p className="text-xs text-zinc-500 text-center">
-                    Don't see the Digilocker tab? <button type="button" className="text-[#6FFFE9] underline" onClick={handleDigilockerStart}>Reopen it</button>.
+                    Waiting for Digilocker… <button type="button" className="text-[#6FFFE9] underline" onClick={handleDigilockerStart}>Reopen</button>
                   </p>
                 )}
               </div>
+
+              {/* In-app Digilocker modal */}
+              <Dialog
+                open={!!digilockerUrl}
+                onOpenChange={(open) => {
+                  if (!open) {
+                    setDigilockerUrl(null);
+                    stopPolling();
+                  }
+                }}
+              >
+                <DialogContent
+                  className="p-0 gap-0 max-w-[100vw] sm:max-w-3xl w-full h-[100dvh] sm:h-[85vh] sm:rounded-none border border-[#6FFFE9]/40 bg-black flex flex-col"
+                  data-testid="dialog-digilocker"
+                >
+                  <VisuallyHidden>
+                    <DialogTitle>Digilocker E-KYC</DialogTitle>
+                  </VisuallyHidden>
+                  <div className="flex items-center justify-between px-4 h-12 border-b border-white/[0.08] shrink-0">
+                    <div className="flex items-center gap-2">
+                      <Zap size={14} className="text-[#6FFFE9]" />
+                      <span className="text-xs font-semibold uppercase tracking-widest text-[#9DEFE4]">
+                        Digilocker E-KYC
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <a
+                        href={digilockerUrl ?? "#"}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[10px] uppercase tracking-widest text-zinc-400 hover:text-white inline-flex items-center gap-1"
+                        data-testid="link-digilocker-newtab"
+                      >
+                        <ExternalLink size={12} /> Open in new tab
+                      </a>
+                      <button
+                        type="button"
+                        onClick={() => { setDigilockerUrl(null); stopPolling(); }}
+                        className="text-zinc-400 hover:text-white"
+                        aria-label="Close"
+                        data-testid="button-digilocker-close"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                  </div>
+                  {digilockerUrl && (
+                    <iframe
+                      src={digilockerUrl}
+                      title="Digilocker"
+                      className="flex-1 w-full bg-white"
+                      // Allow Digilocker to open its own popups for OTP / consent
+                      sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation"
+                      allow="clipboard-write; web-share"
+                      data-testid="iframe-digilocker"
+                    />
+                  )}
+                  <div className="px-4 py-2 border-t border-white/[0.08] text-[11px] text-zinc-500 shrink-0">
+                    Approve Aadhaar share above. We'll detect verification automatically.
+                  </div>
+                </DialogContent>
+              </Dialog>
 
               <div className="flex items-center gap-3">
                 <div className="flex-1 h-px bg-white/[0.08]" />
