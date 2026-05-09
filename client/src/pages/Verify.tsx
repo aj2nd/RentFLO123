@@ -57,6 +57,28 @@ export default function Verify() {
     }
   };
 
+  // === Didit E-KYC ===
+  // Same full-page-redirect pattern as Setu. Didit redirects back to
+  // /tenant?kyc=didit, where TenantDashboard polls /api/kyc/didit/status to
+  // finalize verification.
+  const [diditLoading, setDiditLoading] = useState(false);
+
+  const handleDiditStart = async () => {
+    setDiditLoading(true);
+    try {
+      const r = await apiRequest("POST", "/api/kyc/didit/start");
+      const data = await r.json();
+      if (!r.ok || !data?.url) {
+        throw new Error(data?.message || "Could not start Didit verification.");
+      }
+      sessionStorage.setItem("didit:in_progress", "1");
+      window.location.assign(data.url);
+    } catch (err: any) {
+      toast({ title: "Could not start Didit", description: err?.message ?? "Please try again.", variant: "destructive" });
+      setDiditLoading(false);
+    }
+  };
+
   const submitKycMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
       const res = await apiRequest("POST", "/api/kyc/submit", data);
@@ -151,7 +173,47 @@ export default function Verify() {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
 
-              {/* Digilocker (Setu) — instant E-KYC */}
+              {/* Didit — instant E-KYC (primary) */}
+              <div className="border border-[#6FFFE9]/45 bg-[#6FFFE9]/[0.04] p-5 sm:p-6 space-y-4" data-testid="card-didit">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 flex items-center justify-center bg-[#6FFFE9]/15 border border-[#6FFFE9]/30 shrink-0">
+                    <Zap size={18} className="text-[#6FFFE9]" />
+                  </div>
+                  <div className="flex-1">
+                    <h2 className="text-base font-semibold uppercase tracking-wider text-[#9DEFE4]">
+                      {t('didit_title')}
+                    </h2>
+                    <p className="text-sm text-zinc-400 mt-1">
+                      {t('didit_subtitle')}
+                    </p>
+                  </div>
+                </div>
+
+                <Button
+                  type="button"
+                  onClick={handleDiditStart}
+                  disabled={diditLoading}
+                  className="w-full h-12 rounded-none border-0 text-sm font-bold uppercase tracking-widest bg-[#6FFFE9] hover:bg-[#6FFFE9]/90 text-black flex items-center justify-center gap-2"
+                  data-testid="button-didit-start"
+                >
+                  {diditLoading ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" />
+                      {t('didit_opening')}
+                    </>
+                  ) : (
+                    <>
+                      <ExternalLink size={16} />
+                      {t('didit_button')}
+                    </>
+                  )}
+                </Button>
+                <p className="text-[11px] text-zinc-500 text-center">
+                  {t('didit_redirect_note')}
+                </p>
+              </div>
+
+              {/* Digilocker (Setu) — alternative E-KYC */}
               <div className="border border-[#6FFFE9]/45 bg-[#6FFFE9]/[0.04] p-5 sm:p-6 space-y-4" data-testid="card-digilocker">
                 <div className="flex items-start gap-3">
                   <div className="w-10 h-10 flex items-center justify-center bg-[#6FFFE9]/15 border border-[#6FFFE9]/30 shrink-0">

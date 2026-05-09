@@ -432,6 +432,11 @@ export const translations = {
     chat_close_aria: "Close chat",
     chat_send_aria: "Send message",
     chat_live_title: "Talk to a live agent",
+    didit_title: "Instant E-KYC with Didit",
+    didit_subtitle: "Verify your identity in under a minute. Government-grade ID checks powered by Didit.",
+    didit_button: "Verify with Didit",
+    didit_opening: "Opening Didit…",
+    didit_redirect_note: "You'll be sent to Didit and brought right back to RentFLO when done.",
   },
 
   hi: {
@@ -818,6 +823,11 @@ export const translations = {
     chat_close_aria: "चैट बंद करें",
     chat_send_aria: "संदेश भेजें",
     chat_live_title: "लाइव एजेंट से बात करें",
+    didit_title: "Didit के साथ तत्काल E-KYC",
+    didit_subtitle: "एक मिनट से भी कम समय में अपनी पहचान सत्यापित करें। Didit द्वारा संचालित सरकारी-स्तरीय जाँच।",
+    didit_button: "Didit से सत्यापित करें",
+    didit_opening: "Didit खोला जा रहा है…",
+    didit_redirect_note: "आपको Didit पर भेजा जाएगा और पूरा होने पर RentFLO पर वापस लाया जाएगा।",
   },
 
   kn: {
@@ -1204,6 +1214,11 @@ export const translations = {
     chat_close_aria: "ಚಾಟ್ ಮುಚ್ಚಿ",
     chat_send_aria: "ಸಂದೇಶ ಕಳುಹಿಸಿ",
     chat_live_title: "ಲೈವ್ ಏಜೆಂಟ್‌ನೊಂದಿಗೆ ಮಾತನಾಡಿ",
+    didit_title: "Didit ಜೊತೆಗೆ ತಕ್ಷಣದ E-KYC",
+    didit_subtitle: "ಒಂದು ನಿಮಿಷದೊಳಗೆ ನಿಮ್ಮ ಗುರುತು ಪರಿಶೀಲಿಸಿ. Didit ಮೂಲಕ ಸರ್ಕಾರಿ ಮಟ್ಟದ ಪರಿಶೀಲನೆಗಳು.",
+    didit_button: "Didit ನೊಂದಿಗೆ ಪರಿಶೀಲಿಸಿ",
+    didit_opening: "Didit ತೆರೆಯಲಾಗುತ್ತಿದೆ…",
+    didit_redirect_note: "ನಿಮ್ಮನ್ನು Didit ಗೆ ಕಳುಹಿಸಲಾಗುತ್ತದೆ ಮತ್ತು ಮುಗಿದ ಮೇಲೆ RentFLO ಗೆ ಮರಳಿ ತರಲಾಗುತ್ತದೆ.",
   },
 
   ta: {
@@ -1606,6 +1621,11 @@ export const translations = {
     chat_close_aria: "அரட்டையை மூடு",
     chat_send_aria: "செய்தி அனுப்பு",
     chat_live_title: "நேரடி முகவருடன் பேசு",
+    didit_title: "Didit உடன் உடனடி E-KYC",
+    didit_subtitle: "ஒரு நிமிடத்திற்குள் உங்கள் அடையாளத்தை சரிபார்க்கவும். Didit ஆல் இயக்கப்படும் அரசு தர சோதனைகள்.",
+    didit_button: "Didit மூலம் சரிபார்",
+    didit_opening: "Didit திறக்கப்படுகிறது…",
+    didit_redirect_note: "நீங்கள் Didit க்கு அனுப்பப்படுவீர்கள், முடிந்ததும் RentFLO க்கு திரும்பி அழைத்து வரப்படுவீர்கள்.",
   },
 
   ml: {
@@ -2008,6 +2028,11 @@ export const translations = {
     chat_close_aria: "ചാറ്റ് അടയ്ക്കുക",
     chat_send_aria: "സന്ദേശം അയയ്ക്കുക",
     chat_live_title: "ലൈവ് ഏജന്റുമായി സംസാരിക്കുക",
+    didit_title: "Didit ഉപയോഗിച്ച് തൽക്ഷണ E-KYC",
+    didit_subtitle: "ഒരു മിനിറ്റിനുള്ളിൽ നിങ്ങളുടെ ഐഡന്റിറ്റി പരിശോധിക്കുക. Didit പ്രവർത്തിപ്പിക്കുന്ന സർക്കാർ-ഗ്രേഡ് പരിശോധനകൾ.",
+    didit_button: "Didit ഉപയോഗിച്ച് പരിശോധിക്കുക",
+    didit_opening: "Didit തുറക്കുന്നു…",
+    didit_redirect_note: "നിങ്ങളെ Didit-ലേക്ക് അയയ്ക്കും, പൂർത്തിയായാൽ RentFLO-ലേക്ക് തിരികെ കൊണ്ടുവരും.",
   },
 } as const;
 

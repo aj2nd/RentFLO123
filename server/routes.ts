@@ -14,6 +14,15 @@ import {
   getDigilockerStatus,
   getDigilockerAadhaar,
 } from "./setu";
+import {
+  diditConfigured,
+  createDiditSession,
+  getDiditDecision,
+  verifyDiditWebhook,
+  diditWebhookSecretConfigured,
+  DIDIT_APPROVED_STATUSES,
+  type DiditDecision,
+} from "./didit";
 import OpenAI from "openai";
 import {
   encryptPII,
@@ -1154,6 +1163,150 @@ export async function registerRoutes(
     } catch (err: any) {
       console.error('[setu] status check failed:', err?.message || err);
       return res.status(502).json({ message: err?.message || 'Failed to check Digilocker status' });
+    }
+  });
+
+  // === DIDIT E-KYC ===
+  // Flow:
+  //   1) Client POSTs /api/kyc/didit/start → server creates a Didit session
+  //      bound to DIDIT_WORKFLOW_ID, stores the session_id on the user, and
+  //      returns the hosted verification URL.
+  //   2) Client opens that URL (full-page nav). Didit redirects back to our
+  //      app on the configured callback once the user completes the flow.
+  //   3) Client polls /api/kyc/didit/status. As soon as Didit reports an
+  //      "Approved" decision, we capture full_name + last-4 of any document
+  //      number returned, encrypt them, and flip isVerified=true.
+  //   Webhook (/api/kyc/didit/webhook) is best-effort — we still re-fetch the
+  //   decision before trusting any state change.
+  app.post("/api/kyc/didit/start", isAuthenticated, async (req: any, res) => {
+    const userId = req.user?.claims?.sub;
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+    if (!diditConfigured()) {
+      return res.status(503).json({ message: 'E-KYC provider not configured' });
+    }
+    try {
+      const proto = (req.headers['x-forwarded-proto'] as string)?.split(',')[0] || req.protocol;
+      const host = (req.headers['x-forwarded-host'] as string)?.split(',')[0] || req.get('host');
+      const callback = `${proto}://${host}/tenant?kyc=didit`;
+      console.log(`[didit] creating session with callback=${callback}`);
+      const session = await createDiditSession({
+        callback,
+        vendor_data: userId,
+      });
+      await authStorage.updateUser(userId, {
+        diditSessionId: session.session_id,
+      });
+      return res.json({
+        id: session.session_id,
+        url: session.url,
+        status: session.status,
+      });
+    } catch (err: any) {
+      console.error('[didit] start failed:', err?.message || err);
+      return res.status(502).json({ message: err?.message || 'Failed to start Didit session' });
+    }
+  });
+
+  // Shared finalize: applied identically by `/status` polling and by webhook
+  // re-fetches so a verified user always ends up with the same record shape
+  // regardless of which path completes first.
+  async function finalizeDiditKyc(user: any, decision: DiditDecision) {
+    const idv = decision.id_verification || {};
+    const name: string | undefined =
+      (typeof idv.full_name === 'string' && idv.full_name) ||
+      (typeof idv.first_name === 'string' && typeof idv.last_name === 'string'
+        ? `${idv.first_name} ${idv.last_name}`.trim()
+        : undefined) ||
+      undefined;
+    const docNumber: string | undefined = typeof idv.document_number === 'string'
+      ? idv.document_number
+      : undefined;
+    const docLast4 = docNumber ? docNumber.replace(/\s+/g, '').slice(-4) : undefined;
+    const docType = typeof idv.document_type === 'string' ? idv.document_type.toUpperCase() : '';
+    const isAadhaar = docType.includes('AADHAAR') || docType.includes('AADHAR');
+    const isPan = docType.includes('PAN');
+    await authStorage.updateUser(user.id, {
+      fullLegalName: name || user.fullLegalName || null,
+      aadhaarNumber: isAadhaar && docLast4
+        ? encryptPII(`XXXXXXXX${docLast4}`)
+        : user.aadhaarNumber,
+      panNumber: isPan && docLast4
+        ? encryptPII(`XXXXXX${docLast4}`)
+        : user.panNumber,
+      isVerified: true,
+      diditCompletedAt: new Date(),
+    });
+  }
+
+  app.get("/api/kyc/didit/status", isAuthenticated, async (req: any, res) => {
+    const userId = req.user?.claims?.sub;
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+    if (!diditConfigured()) {
+      return res.status(503).json({ message: 'E-KYC provider not configured' });
+    }
+    const me = await authStorage.getUser(userId);
+    if (!me?.diditSessionId) {
+      return res.json({ status: 'not_started', verified: false });
+    }
+    if (me.isVerified) {
+      return res.json({ status: 'verified', verified: true });
+    }
+    try {
+      const decision = await getDiditDecision(me.diditSessionId);
+      const approved = DIDIT_APPROVED_STATUSES.has(decision.status);
+      if (!approved) {
+        return res.json({ status: decision.status, verified: false });
+      }
+      await finalizeDiditKyc(me, decision);
+      return res.json({ status: 'verified', verified: true });
+    } catch (err: any) {
+      console.error('[didit] status check failed:', err?.message || err);
+      return res.status(502).json({ message: err?.message || 'Failed to check Didit status' });
+    }
+  });
+
+  // Webhook: Didit POSTs decision events here.
+  // We treat the body as advisory — the actual verification flip is done by
+  // re-fetching the decision via the API. BUT we still strictly enforce the
+  // signature when DIDIT_WEBHOOK_SECRET is configured: an invalid signature
+  // gets a 401 and we do nothing. (If the secret isn't configured at all, we
+  // log a warning and accept the webhook as a passive ping — the re-fetch
+  // step ensures we never trust the body itself for state changes.)
+  app.post("/api/kyc/didit/webhook", async (req: any, res) => {
+    try {
+      const sig = (req.headers['x-signature'] || req.headers['x-didit-signature']) as string | undefined;
+      const rawBody: Buffer | undefined = req.rawBody as Buffer | undefined;
+
+      if (diditWebhookSecretConfigured()) {
+        if (!rawBody || !sig || !verifyDiditWebhook(rawBody, sig)) {
+          console.warn('[didit] webhook rejected — invalid or missing signature');
+          return res.status(401).json({ message: 'Invalid signature' });
+        }
+      } else {
+        console.warn('[didit] webhook accepted without signature verification — set DIDIT_WEBHOOK_SECRET to enforce');
+      }
+
+      const event = req.body || {};
+      const sessionId: string | undefined = event.session_id || event.id;
+      console.log(`[didit] webhook received session=${sessionId} status=${event.status}`);
+      if (!sessionId) {
+        return res.status(200).json({ ok: true });
+      }
+      const user = await authStorage.getUserByDiditSessionId(sessionId);
+      if (user && !user.isVerified) {
+        try {
+          const decision = await getDiditDecision(sessionId);
+          if (DIDIT_APPROVED_STATUSES.has(decision.status)) {
+            await finalizeDiditKyc(user, decision);
+          }
+        } catch (e: any) {
+          console.error('[didit] webhook re-fetch failed:', e?.message || e);
+        }
+      }
+      return res.status(200).json({ ok: true });
+    } catch (err: any) {
+      console.error('[didit] webhook error:', err?.message || err);
+      return res.status(200).json({ ok: true });
     }
   });
 

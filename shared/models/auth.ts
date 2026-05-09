@@ -35,6 +35,9 @@ export const users = pgTable("users", {
   // Setu Digilocker E-KYC fields
   digilockerRequestId: text("digilocker_request_id"), // Setu request id (used for polling)
   digilockerCompletedAt: timestamp("digilocker_completed_at"),
+  // Didit E-KYC fields
+  diditSessionId: text("didit_session_id").unique(), // Didit session id (used for polling/webhook lookup)
+  diditCompletedAt: timestamp("didit_completed_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

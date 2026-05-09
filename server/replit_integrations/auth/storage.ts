@@ -12,6 +12,7 @@ export interface IAuthStorage {
   updateUser(id: string, updates: Partial<UpsertUser>): Promise<User | undefined>;
   getAllUsers(): Promise<User[]>;
   getUsersPendingVerification(): Promise<User[]>;
+  getUserByDiditSessionId(sessionId: string): Promise<User | undefined>;
 }
 
 class AuthStorage implements IAuthStorage {
@@ -69,6 +70,11 @@ class AuthStorage implements IAuthStorage {
         eq(users.isVerified, false)
       )
     );
+  }
+
+  async getUserByDiditSessionId(sessionId: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.diditSessionId, sessionId));
+    return user;
   }
 }
 
