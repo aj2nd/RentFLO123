@@ -24,8 +24,8 @@ app.use(
         styleSrc:       ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         imgSrc:         ["'self'", "data:", "blob:", "https:"],
         fontSrc:        ["'self'", "data:", "https://fonts.gstatic.com"],
-        connectSrc:     ["'self'", "https://*.cashfree.com", "https://*.setu.co", "wss:", "ws:"],
-        frameSrc:       ["'self'", "https://*.cashfree.com", "https://*.setu.co", "https://*.digilocker.gov.in", "https://*.meripehchaan.gov.in"],
+        connectSrc:     ["'self'", "https://*.cashfree.com", "https://*.didit.me", "wss:", "ws:"],
+        frameSrc:       ["'self'", "https://*.cashfree.com", "https://*.didit.me", "https://verify.didit.me"],
         objectSrc:      ["'none'"],
         baseUri:        ["'self'"],
         formAction:     ["'self'"],
@@ -59,7 +59,7 @@ const authLimiter = rateLimit({
 });
 
 // Sensitive action limiter (KYC, payments): 20 per 15 minutes per IP.
-// Digilocker status polling is intentionally exempted — it's polled every 5s
+// Didit status polling is intentionally exempted — it's polled every 3s
 // from the client and has its own dedicated, polling-friendly limiter below.
 const sensitiveLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -67,12 +67,12 @@ const sensitiveLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { message: "Too many requests for this action. Please try again later." },
-  skip: (req) => req.path === "/api/kyc/digilocker/status",
+  skip: (req) => req.path === "/api/kyc/didit/status",
 });
 
-// Polling limiter for Digilocker status — generous because the client polls
-// every 5s for up to 5 minutes (~60 calls) per verification attempt.
-const digilockerPollLimiter = rateLimit({
+// Polling limiter for Didit status — generous because the client polls
+// every 3s for up to 36s (~12 calls) per verification attempt.
+const diditPollLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 200,
   standardHeaders: true,
@@ -103,7 +103,7 @@ app.use("/api/login", authLimiter);
 app.use("/api/callback", authLimiter);
 app.use("/api/auth/set-role", authLimiter);
 app.use("/api/auth/user-by-email", authLimiter);
-app.use("/api/kyc/digilocker/status", digilockerPollLimiter);
+app.use("/api/kyc/didit/status", diditPollLimiter);
 app.use("/api/kyc", sensitiveLimiter);
 app.use("/api/payments", sensitiveLimiter);
 app.use("/api/advances", sensitiveLimiter);

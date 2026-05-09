@@ -8,12 +8,7 @@ import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integra
 import { authStorage } from "./replit_integrations/auth/storage";
 import xss from "xss";
 import { initVapid, getVapidPublicKey, createNotification } from "./push";
-import {
-  setuConfigured,
-  createDigilockerRequest,
-  getDigilockerStatus,
-  getDigilockerAadhaar,
-} from "./setu";
+
 import {
   diditConfigured,
   createDiditSession,
@@ -1087,83 +1082,6 @@ export async function registerRoutes(
     const updated = await authStorage.updateUser(userId, { isVerified: true });
     if (!updated) return res.status(404).json({ message: 'User not found' });
     res.json(publicUser(updated));
-  });
-
-  // === SETU DIGILOCKER E-KYC ===
-  // Flow:
-  //   1) Client POSTs /api/kyc/digilocker/start → server creates a Setu request,
-  //      stores its `id` against the user, returns the Digilocker auth `url`.
-  //   2) Client opens that URL in a new tab. User authenticates on Digilocker
-  //      and approves Aadhaar share. Setu redirects them back to our app.
-  //   3) Client polls /api/kyc/digilocker/status. As soon as Setu reports
-  //      `authenticated`, we pull the Aadhaar from Setu, store the masked number
-  //      + legal name (encrypted), and flip isVerified=true.
-  app.post("/api/kyc/digilocker/start", isAuthenticated, async (req: any, res) => {
-    const userId = req.user?.claims?.sub;
-    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
-    if (!setuConfigured()) {
-      return res.status(503).json({ message: 'E-KYC provider not configured' });
-    }
-    try {
-      const proto = (req.headers['x-forwarded-proto'] as string)?.split(',')[0] || req.protocol;
-      const host = (req.headers['x-forwarded-host'] as string)?.split(',')[0] || req.get('host');
-      const redirectUrl = `${proto}://${host}/tenant?kyc=digilocker`;
-      console.log(`[setu] creating request with redirectUrl=${redirectUrl}`);
-      const created = await createDigilockerRequest(redirectUrl);
-      await authStorage.updateUser(userId, {
-        digilockerRequestId: created.id,
-      });
-      return res.json({
-        id: created.id,
-        url: created.url,
-        validUpto: created.validUpto,
-      });
-    } catch (err: any) {
-      console.error('[setu] start failed:', err?.message || err);
-      return res.status(502).json({ message: err?.message || 'Failed to start Digilocker request' });
-    }
-  });
-
-  app.get("/api/kyc/digilocker/status", isAuthenticated, async (req: any, res) => {
-    const userId = req.user?.claims?.sub;
-    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
-    if (!setuConfigured()) {
-      return res.status(503).json({ message: 'E-KYC provider not configured' });
-    }
-    const me = await authStorage.getUser(userId);
-    if (!me?.digilockerRequestId) {
-      return res.json({ status: 'not_started', verified: false });
-    }
-    if (me.isVerified) {
-      return res.json({ status: 'verified', verified: true });
-    }
-    try {
-      const s = await getDigilockerStatus(me.digilockerRequestId);
-      if (s.status !== 'authenticated') {
-        return res.json({ status: s.status, verified: false });
-      }
-      // Authenticated → pull the Aadhaar payload and finalize KYC.
-      const aadhaarRes = await getDigilockerAadhaar(me.digilockerRequestId);
-      const a = aadhaarRes.aadhaar || {};
-      const name: string | undefined =
-        typeof a.name === 'string' ? a.name : undefined;
-      // Setu only returns the last-4 of the Aadhaar number for compliance.
-      const aadhaarLast4: string | undefined =
-        typeof a.aadhaarNumber === 'string'
-          ? a.aadhaarNumber.replace(/\D/g, '').slice(-4)
-          : undefined;
-      await authStorage.updateUser(userId, {
-        fullLegalName: name || me.fullLegalName || null,
-        // Store only the last-4 (encrypted), never the full Aadhaar.
-        aadhaarNumber: aadhaarLast4 ? encryptPII(`XXXXXXXX${aadhaarLast4}`) : me.aadhaarNumber,
-        isVerified: true,
-        digilockerCompletedAt: new Date(),
-      });
-      return res.json({ status: 'verified', verified: true });
-    } catch (err: any) {
-      console.error('[setu] status check failed:', err?.message || err);
-      return res.status(502).json({ message: err?.message || 'Failed to check Digilocker status' });
-    }
   });
 
   // === DIDIT E-KYC ===

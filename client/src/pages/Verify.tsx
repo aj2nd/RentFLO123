@@ -34,33 +34,9 @@ export default function Verify() {
 
   const { data: currentUser, isLoading } = useQuery<User>({ queryKey: ["/api/auth/user"] });
 
-  // === Digilocker (Setu) E-KYC ===
-  // Setu blocks iframe embedding (returns 403), so we navigate the current
-  // tab to Digilocker. Setu redirects back to /tenant?kyc=digilocker when
-  // done, where TenantDashboard finalizes verification.
-  const [digilockerLoading, setDigilockerLoading] = useState(false);
-
-  const handleDigilockerStart = async () => {
-    setDigilockerLoading(true);
-    try {
-      const r = await apiRequest("POST", "/api/kyc/digilocker/start");
-      const data = await r.json();
-      if (!r.ok || !data?.url) {
-        throw new Error(data?.message || "Could not start Digilocker.");
-      }
-      // Mark that we're mid-flow so the return page knows to finalize.
-      sessionStorage.setItem("digilocker:in_progress", "1");
-      window.location.assign(data.url);
-    } catch (err: any) {
-      toast({ title: "Could not start Digilocker", description: err?.message ?? "Please try again.", variant: "destructive" });
-      setDigilockerLoading(false);
-    }
-  };
-
   // === Didit E-KYC ===
-  // Same full-page-redirect pattern as Setu. Didit redirects back to
-  // /tenant?kyc=didit, where TenantDashboard polls /api/kyc/didit/status to
-  // finalize verification.
+  // Didit redirects back to /tenant?kyc=didit after verification.
+  // TenantDashboard polls /api/kyc/didit/status to finalize.
   const [diditLoading, setDiditLoading] = useState(false);
 
   const handleDiditStart = async () => {
@@ -210,46 +186,6 @@ export default function Verify() {
                 </Button>
                 <p className="text-[11px] text-zinc-500 text-center">
                   {t('didit_redirect_note')}
-                </p>
-              </div>
-
-              {/* Digilocker (Setu) — alternative E-KYC */}
-              <div className="border border-[#6FFFE9]/45 bg-[#6FFFE9]/[0.04] p-5 sm:p-6 space-y-4" data-testid="card-digilocker">
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 flex items-center justify-center bg-[#6FFFE9]/15 border border-[#6FFFE9]/30 shrink-0">
-                    <Zap size={18} className="text-[#6FFFE9]" />
-                  </div>
-                  <div className="flex-1">
-                    <h2 className="text-base font-semibold uppercase tracking-wider text-[#9DEFE4]">
-                      Instant E-KYC with Digilocker
-                    </h2>
-                    <p className="text-sm text-zinc-400 mt-1">
-                      Verify in under a minute. We'll pull your Aadhaar securely from Digilocker — no upload needed.
-                    </p>
-                  </div>
-                </div>
-
-                <Button
-                  type="button"
-                  onClick={handleDigilockerStart}
-                  disabled={digilockerLoading}
-                  className="w-full h-12 rounded-none border-0 text-sm font-bold uppercase tracking-widest bg-[#6FFFE9] hover:bg-[#6FFFE9]/90 text-black flex items-center justify-center gap-2"
-                  data-testid="button-digilocker-start"
-                >
-                  {digilockerLoading ? (
-                    <>
-                      <Loader2 size={16} className="animate-spin" />
-                      Opening Digilocker…
-                    </>
-                  ) : (
-                    <>
-                      <ExternalLink size={16} />
-                      Verify with Digilocker
-                    </>
-                  )}
-                </Button>
-                <p className="text-[11px] text-zinc-500 text-center">
-                  You'll be sent to Digilocker and brought right back to RentFLO when done.
                 </p>
               </div>
 

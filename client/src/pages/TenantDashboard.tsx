@@ -147,37 +147,25 @@ export default function TenantDashboard() {
     getCashfree().catch(() => {});
   }, []);
 
-  // === E-KYC return-trip handler (Setu Digilocker + Didit) ===
-  // Both providers redirect back with ?kyc=<provider>. We poll the matching
-  // status endpoint until verified or timeout.
+  // === Didit E-KYC return-trip handler ===
+  // Didit redirects back with ?kyc=didit. Poll /api/kyc/didit/status until
+  // verified or timeout (~36 s).
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const kycParam = params.get("kyc");
-    const setuInProgress = sessionStorage.getItem("digilocker:in_progress") === "1";
-    const diditInProgress = sessionStorage.getItem("didit:in_progress") === "1";
-    const provider: "digilocker" | "didit" | null =
-      kycParam === "didit" || diditInProgress ? "didit"
-      : kycParam === "digilocker" || setuInProgress ? "digilocker"
-      : null;
-    if (!provider) return;
-
-    const statusUrl = provider === "didit"
-      ? "/api/kyc/didit/status"
-      : "/api/kyc/digilocker/status";
-    const flagKey = provider === "didit" ? "didit:in_progress" : "digilocker:in_progress";
-    const providerLabel = provider === "didit" ? "Didit" : "Digilocker";
+    const isDidit = params.get("kyc") === "didit" || sessionStorage.getItem("didit:in_progress") === "1";
+    if (!isDidit) return;
 
     let cancelled = false;
     let attempts = 0;
     const finalize = async () => {
-      while (!cancelled && attempts < 12) { // ~36s max
+      while (!cancelled && attempts < 12) {
         attempts += 1;
         try {
-          const r = await apiRequest("GET", statusUrl);
+          const r = await apiRequest("GET", "/api/kyc/didit/status");
           const data = await r.json().catch(() => ({}));
           if (data?.verified) {
-            sessionStorage.removeItem(flagKey);
-            toast({ title: "Verified!", description: `Your identity has been verified via ${providerLabel}.` });
+            sessionStorage.removeItem("didit:in_progress");
+            toast({ title: "Verified!", description: "Your identity has been verified via Didit." });
             queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
             window.history.replaceState({}, "", "/tenant");
             return;
@@ -188,10 +176,10 @@ export default function TenantDashboard() {
         await new Promise((r) => setTimeout(r, 3000));
       }
       if (!cancelled) {
-        sessionStorage.removeItem(flagKey);
+        sessionStorage.removeItem("didit:in_progress");
         toast({
           title: "Verification not completed",
-          description: `Please try again or finish the flow on ${providerLabel}.`,
+          description: "Please try again or finish the flow on Didit.",
           variant: "destructive",
         });
         window.history.replaceState({}, "", "/tenant");
