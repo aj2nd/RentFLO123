@@ -370,6 +370,8 @@
           <option value="en">English</option>
           <option value="hi">हिन्दी</option>
           <option value="kn">ಕನ್ನಡ</option>
+          <option value="ta">தமிழ்</option>
+          <option value="ml">മലയാളം</option>
         </select>
       </div>
       <a href="/api/login" class="login-btn" id="header-login-btn" data-testid="button-header-login">Login</a>
@@ -396,7 +398,7 @@
       (function() {
         const STORAGE_KEY = 'rentflo_language';
         const DEFAULT_LANG = 'en';
-        const SUPPORTED_LANGS = ['en', 'hi', 'kn'];
+        const SUPPORTED_LANGS = ['en', 'hi', 'kn', 'ta', 'ml'];
 
         // ── Route-aware header visibility ────────────────────────────────────
         var PUBLIC_PATHS = ['/', '/terms', '/privacy', '/refund', '/support'];
@@ -450,7 +452,9 @@
           return window.translations || {
             en: { change_language: 'Change Language' },
             hi: { change_language: 'भाषा बदलें' },
-            kn: { change_language: 'ಭಾಷೆ ಬದಲಾಯಿಸಿ' }
+            kn: { change_language: 'ಭಾಷೆ ಬದಲಾಯಿಸಿ' },
+            ta: { change_language: 'மொழியை மாற்று' },
+            ml: { change_language: 'ഭാഷ മാറ്റുക' }
           };
         }
 
