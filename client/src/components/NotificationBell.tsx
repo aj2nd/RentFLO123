@@ -15,8 +15,31 @@ const TYPE_LABELS: Record<string, string> = {
 
 export function NotificationBell() {
   const [open, setOpen] = useState(false);
+  const [pos, setPos] = useState<{ left: number; bottom: number } | null>(null);
   const ref = useRef<HTMLDivElement>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
   const { status, subscribe, unsubscribe } = usePushNotifications();
+
+  const updatePos = () => {
+    const r = btnRef.current?.getBoundingClientRect();
+    if (!r) return;
+    setPos({
+      left: Math.min(r.right + 8, window.innerWidth - 340),
+      bottom: window.innerHeight - r.top - r.height / 2 - 20,
+    });
+  };
+
+  useEffect(() => {
+    if (!open) return;
+    updatePos();
+    window.addEventListener("resize", updatePos);
+    window.addEventListener("scroll", updatePos, true);
+    return () => {
+      window.removeEventListener("resize", updatePos);
+      window.removeEventListener("scroll", updatePos, true);
+    };
+  }, [open]);
 
   const { data: notifs = [] } = useQuery<Notification[]>({
     queryKey: ["/api/notifications"],
@@ -36,7 +59,13 @@ export function NotificationBell() {
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      const target = e.target as Node;
+      if (
+        ref.current && !ref.current.contains(target) &&
+        panelRef.current && !panelRef.current.contains(target)
+      ) {
+        setOpen(false);
+      }
     }
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
@@ -45,6 +74,7 @@ export function NotificationBell() {
   return (
     <div ref={ref} className="relative">
       <button
+        ref={btnRef}
         onClick={() => setOpen(o => !o)}
         className="relative flex items-center justify-center w-9 h-9 rounded-none transition-all"
         style={{ color: "var(--nav-text-dim)" }}
@@ -66,11 +96,15 @@ export function NotificationBell() {
 
       {open && (
         <div
-          className="absolute left-full top-0 ml-2 w-80 shadow-2xl z-50"
+          ref={panelRef}
+          className="fixed w-80 shadow-2xl z-[100]"
           style={{
+            left: pos?.left ?? 80,
+            bottom: pos?.bottom ?? 80,
             background: "var(--surface-card)",
             border: "1px solid var(--nav-border)",
             minWidth: 300,
+            maxWidth: "calc(100vw - 32px)",
           }}
         >
           {/* Header */}
