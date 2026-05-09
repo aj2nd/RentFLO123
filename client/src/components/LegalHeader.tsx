@@ -20,7 +20,7 @@ export function LegalHeader() {
         <img
           src="/logo-icon.png"
           alt="RentFLO"
-          style={{ width: 40, height: 40, objectFit: "contain" }}
+          style={{ width: 36, height: 36, objectFit: "contain" }}
         />
         <img
           src="/logo-wordmark-transparent.png"

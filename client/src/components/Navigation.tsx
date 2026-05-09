@@ -88,7 +88,7 @@ export function Navigation() {
 
         {/* Center: wordmark — absolutely centered so it's always in the middle */}
         <div className="absolute inset-x-0 flex items-center justify-center gap-2 pointer-events-none" style={{ height: "60px" }}>
-          <img src="/logo-icon.png" alt="RentFLO" style={{ height: 32, width: 50, objectFit: "contain" }} />
+          <img src="/logo-icon.png" alt="RentFLO" style={{ height: 36, width: 36, objectFit: "contain" }} />
           <img src="/logo-wordmark-transparent.png" alt="RentFLO" style={{ height: 20, objectFit: "contain" }} />
         </div>
 
@@ -129,7 +129,7 @@ export function Navigation() {
           className="w-64 px-5 py-5 flex items-center gap-3 flex-shrink-0"
           style={{ borderBottom: "1px solid var(--nav-border)" }}
         >
-          <img src="/logo-icon.png" alt="RentFLO" style={{ height: 36, width: 56, objectFit: "contain", flexShrink: 0 }} />
+          <img src="/logo-icon.png" alt="RentFLO" style={{ height: 36, width: 36, objectFit: "contain", flexShrink: 0 }} />
           <div className="flex flex-col gap-0.5">
             <img src="/logo-wordmark-transparent.png" alt="RentFLO" style={{ height: 18, objectFit: "contain", objectPosition: "left" }} />
             {user?.role && (
