@@ -142,6 +142,11 @@ export const agreements = pgTable("agreements", {
   status: text("status", {
     enum: ['PENDING', 'OWNER_SIGNED', 'TENANT_SIGNED', 'FULLY_SIGNED'],
   }).default('PENDING').notNull(),
+  // Leegality e-sign fields
+  leegalityDocumentId: text("leegality_document_id"),
+  leegalitySignedUrl: text("leegality_signed_url"),
+  leegalitySentAt: timestamp("leegality_sent_at"),
+  leegalityCompletedAt: timestamp("leegality_completed_at"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

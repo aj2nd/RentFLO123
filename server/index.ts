@@ -24,8 +24,8 @@ app.use(
         styleSrc:       ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         imgSrc:         ["'self'", "data:", "blob:", "https:"],
         fontSrc:        ["'self'", "data:", "https://fonts.gstatic.com"],
-        connectSrc:     ["'self'", "https://*.cashfree.com", "https://*.didit.me", "wss:", "ws:"],
-        frameSrc:       ["'self'", "https://*.cashfree.com", "https://*.didit.me", "https://verify.didit.me"],
+        connectSrc:     ["'self'", "https://*.cashfree.com", "https://*.didit.me", "https://api.leegality.com", "wss:", "ws:"],
+        frameSrc:       ["'self'", "https://*.cashfree.com", "https://*.didit.me", "https://verify.didit.me", "https://*.leegality.com"],
         objectSrc:      ["'none'"],
         baseUri:        ["'self'"],
         formAction:     ["'self'"],
@@ -108,6 +108,8 @@ app.use("/api/kyc", sensitiveLimiter);
 app.use("/api/payments", sensitiveLimiter);
 app.use("/api/advances", sensitiveLimiter);
 app.use("/api/ledgers", sensitiveLimiter);
+app.use("/api/agreements/leegality/send", sensitiveLimiter);
+app.use("/api/agreements/leegality/webhook", webhookLimiter);
 app.use("/api/agreements", sensitiveLimiter);
 app.use("/api/push", sensitiveLimiter);
 app.use("/api/notifications/rent-due-check", sensitiveLimiter);

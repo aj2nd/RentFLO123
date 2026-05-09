@@ -50,3 +50,8 @@ stack = "FULLSTACK_JS"
 [postMerge]
 path = "scripts/post-merge.sh"
 timeoutMs = 20000
+
+[userenv]
+
+[userenv.shared]
+LEEGALITY_WORKFLOW_ID = "by7ABcp"

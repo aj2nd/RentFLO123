@@ -1,11 +1,11 @@
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/use-auth";
-import { CheckCircle, FileText, PenLine, RotateCcw, Download } from "lucide-react";
+import { CheckCircle, FileText, ExternalLink, Clock, Download, Send } from "lucide-react";
 import type { Property, Agreement } from "@shared/schema";
 
 type AgreementData = { property: Property | null; agreement: Agreement | null };
@@ -19,139 +19,6 @@ function escapeHtml(s: string): string {
     .replace(/'/g, "&#039;");
 }
 
-// ─── Canvas Signature Pad ───────────────────────────────────────────────────
-function SignaturePad({ onSave }: { onSave: (dataUrl: string) => void }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const drawing = useRef(false);
-  const [hasStrokes, setHasStrokes] = useState(false);
-
-  const getPos = (e: MouseEvent | Touch, rect: DOMRect) => ({
-    x: (e.clientX - rect.left) * (canvasRef.current!.width / rect.width),
-    y: (e.clientY - rect.top) * (canvasRef.current!.height / rect.height),
-  });
-
-  const startDraw = useCallback((clientX: number, clientY: number) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    drawing.current = true;
-    const ctx = canvas.getContext("2d")!;
-    const rect = canvas.getBoundingClientRect();
-    const pos = getPos({ clientX, clientY } as MouseEvent, rect);
-    ctx.beginPath();
-    ctx.moveTo(pos.x, pos.y);
-  }, []);
-
-  const draw = useCallback((clientX: number, clientY: number) => {
-    if (!drawing.current) return;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d")!;
-    const rect = canvas.getBoundingClientRect();
-    const pos = getPos({ clientX, clientY } as MouseEvent, rect);
-    ctx.lineTo(pos.x, pos.y);
-    ctx.stroke();
-    setHasStrokes(true);
-  }, []);
-
-  const endDraw = useCallback(() => { drawing.current = false; }, []);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d")!;
-    ctx.strokeStyle = "#C8C8C8";
-    ctx.lineWidth = 2.5;
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-
-    const onMouseDown = (e: MouseEvent) => startDraw(e.clientX, e.clientY);
-    const onMouseMove = (e: MouseEvent) => draw(e.clientX, e.clientY);
-    const onMouseUp = () => endDraw();
-    const onTouchStart = (e: TouchEvent) => { e.preventDefault(); startDraw(e.touches[0].clientX, e.touches[0].clientY); };
-    const onTouchMove = (e: TouchEvent) => { e.preventDefault(); draw(e.touches[0].clientX, e.touches[0].clientY); };
-    const onTouchEnd = () => endDraw();
-
-    canvas.addEventListener("mousedown", onMouseDown);
-    canvas.addEventListener("mousemove", onMouseMove);
-    canvas.addEventListener("mouseup", onMouseUp);
-    canvas.addEventListener("mouseleave", onMouseUp);
-    canvas.addEventListener("touchstart", onTouchStart, { passive: false });
-    canvas.addEventListener("touchmove", onTouchMove, { passive: false });
-    canvas.addEventListener("touchend", onTouchEnd);
-
-    return () => {
-      canvas.removeEventListener("mousedown", onMouseDown);
-      canvas.removeEventListener("mousemove", onMouseMove);
-      canvas.removeEventListener("mouseup", onMouseUp);
-      canvas.removeEventListener("mouseleave", onMouseUp);
-      canvas.removeEventListener("touchstart", onTouchStart);
-      canvas.removeEventListener("touchmove", onTouchMove);
-      canvas.removeEventListener("touchend", onTouchEnd);
-    };
-  }, [startDraw, draw, endDraw]);
-
-  const clear = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    canvas.getContext("2d")!.clearRect(0, 0, canvas.width, canvas.height);
-    setHasStrokes(false);
-  };
-
-  const save = () => {
-    const canvas = canvasRef.current;
-    if (!canvas || !hasStrokes) return;
-    // Export on black background
-    const offscreen = document.createElement("canvas");
-    offscreen.width = canvas.width;
-    offscreen.height = canvas.height;
-    const ctx = offscreen.getContext("2d")!;
-    ctx.fillStyle = "#000000";
-    ctx.fillRect(0, 0, offscreen.width, offscreen.height);
-    ctx.drawImage(canvas, 0, 0);
-    onSave(offscreen.toDataURL("image/png"));
-  };
-
-  return (
-    <div className="space-y-3">
-      <div className="relative border border-[#6FFFE9]/30 bg-black touch-none">
-        <canvas
-          ref={canvasRef}
-          width={700}
-          height={180}
-          className="w-full h-[140px] sm:h-[160px] cursor-crosshair block"
-          data-testid="canvas-signature"
-        />
-        <div className="absolute inset-0 flex items-end pointer-events-none p-3">
-          <span className="text-[#6FFFE9]/20 text-xs uppercase tracking-widest select-none">
-            Draw your signature here
-          </span>
-        </div>
-      </div>
-      <div className="flex gap-3">
-        <button
-          type="button"
-          onClick={clear}
-          className="flex items-center gap-2 px-4 py-2 border border-[#6FFFE9]/20 text-[#9DEFE4] text-sm hover:border-[#6FFFE9]/50 transition-colors"
-          data-testid="button-clear-signature"
-        >
-          <RotateCcw size={14} />
-          Clear
-        </button>
-        <Button
-          type="button"
-          onClick={save}
-          disabled={!hasStrokes}
-          className="flex-1 h-10 font-bold rounded-none disabled:opacity-30 border-0"
-          style={{ background: 'linear-gradient(135deg, #7A7A7A 0%, #C8C8C8 35%, #EFEFEF 50%, #B4B4B4 70%, #7A7A7A 100%)', color: '#000' }}
-          data-testid="button-confirm-signature"
-        >
-          <PenLine size={15} className="mr-2" />
-          Confirm Signature
-        </Button>
-      </div>
-    </div>
-  );
-}
 
 // ─── Agreement Text ─────────────────────────────────────────────────────────
 function AgreementBody({ property, userName }: { property: Property; userName: string }) {
@@ -229,34 +96,53 @@ export default function AgreementPage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
-  const [signed, setSigned] = useState(false);
   const [scrolledToBottom, setScrolledToBottom] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const { data, isLoading } = useQuery<AgreementData>({
+  const { data, isLoading, refetch } = useQuery<AgreementData>({
     queryKey: ["/api/agreements/mine"],
   });
 
-  const signMutation = useMutation({
-    mutationFn: async (signatureUrl: string) => {
-      if (!data?.property) throw new Error("No property found");
-      const res = await apiRequest("POST", "/api/agreements/sign", {
-        signatureUrl,
-        propertyId: data.property.id,
-      });
+  // Handle redirect back from Leegality after signing
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("esign") === "done") {
+      window.history.replaceState({}, "", "/agreement");
+      toast({ title: "E-sign complete", description: "Your signature has been submitted. Agreement will update shortly." });
+      // Poll for the status update
+      const interval = setInterval(() => {
+        refetch();
+      }, 3000);
+      setTimeout(() => clearInterval(interval), 30000);
+    }
+  }, []);
+
+  const sendMutation = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest("POST", "/api/agreements/leegality/send");
       if (!res.ok) {
         const err = await res.json();
-        throw new Error(err.message || "Failed to sign");
+        throw new Error(err.message || "Failed to send for e-sign");
       }
       return res.json();
     },
-    onSuccess: () => {
-      setSigned(true);
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ["/api/agreements/mine"] });
-      toast({ title: "Agreement Signed", description: "Your digital signature has been recorded." });
+      if (result.alreadySent) {
+        toast({ title: "Already sent", description: "Your agreement is already out for e-signing." });
+        return;
+      }
+      // If Leegality returns a direct signing URL for the first invitee, open it
+      const signingUrl = result.inviteeLinks?.[0]?.signingUrl;
+      if (signingUrl) {
+        toast({ title: "Agreement sent!", description: "Opening Leegality e-sign now…" });
+        window.location.assign(signingUrl);
+      } else {
+        toast({ title: "Agreement sent!", description: "You'll receive a signing link on your registered email/phone." });
+      }
     },
     onError: (e: Error) => {
-      toast({ title: "Signing Failed", description: e.message, variant: "destructive" });
+      toast({ title: "Failed to send", description: e.message, variant: "destructive" });
     },
   });
 
@@ -268,10 +154,12 @@ export default function AgreementPage() {
     }
   };
 
-  const alreadySigned =
-    data?.agreement &&
-    ((user?.role === "OWNER" && data.agreement.ownerSignatureUrl) ||
-      (user?.role === "TENANT" && data.agreement.tenantSignatureUrl));
+  const leegalitySent = !!(data?.agreement?.leegalityDocumentId);
+  const leegalityDone = !!(data?.agreement?.leegalityCompletedAt);
+  const alreadySigned = leegalityDone ||
+    (data?.agreement &&
+      ((user?.role === "OWNER" && data.agreement.ownerSignatureUrl) ||
+        (user?.role === "TENANT" && data.agreement.tenantSignatureUrl)));
 
   const dashboardPath = user?.role === "OWNER" ? "/owner" : "/tenant";
   const userName = [user?.firstName, user?.lastName].filter(Boolean).join(" ") || user?.email || "User";
@@ -300,7 +188,7 @@ export default function AgreementPage() {
               Sign Your Agreement
             </h1>
             <p className="text-[#9DEFE4] text-sm sm:text-base">
-              Read the full agreement below, then draw your signature to execute it digitally.
+              Read the full agreement below, then execute it with a legally valid Aadhaar e-sign via Leegality.
             </p>
           </div>
 
@@ -318,7 +206,7 @@ export default function AgreementPage() {
           )}
 
           {/* Already signed / success */}
-          {(signed || alreadySigned) && data?.property && (
+          {alreadySigned && data?.property && (
             <div className="border-2 border-[#6FFFE9] p-6 sm:p-8 space-y-4">
               <div className="flex items-start gap-4">
                 <CheckCircle className="w-10 h-10 text-[#6FFFE9] shrink-0 mt-0.5" />
@@ -400,8 +288,8 @@ export default function AgreementPage() {
             </div>
           )}
 
-          {/* Agreement + signature form */}
-          {!signed && !alreadySigned && data?.property && (
+          {/* Agreement text + Leegality e-sign */}
+          {!alreadySigned && data?.property && (
             <div className="space-y-6">
               {/* Scrollable agreement text */}
               <div className="border border-[#6FFFE9]/28 bg-black">
@@ -426,40 +314,78 @@ export default function AgreementPage() {
                 )}
               </div>
 
-              {/* Signature section */}
-              <div className="border border-[#6FFFE9]/28 bg-black p-5 sm:p-6 space-y-4">
-                <div className="flex items-center gap-2 mb-1">
-                  <PenLine size={15} className="text-[#9DEFE4]" />
-                  <h2 className="text-xs font-semibold uppercase tracking-wider text-[#9DEFE4]">
-                    Your Digital Signature — {userName}
-                  </h2>
-                </div>
-
-                {!scrolledToBottom ? (
-                  <div className="h-[140px] sm:h-[160px] border border-[#6FFFE9]/22 flex items-center justify-center text-[#9DEFE4]/50 text-sm text-center px-4">
-                    Read the full agreement above to unlock the signature pad.
+              {/* Leegality e-sign CTA */}
+              {leegalitySent ? (
+                /* Already sent — waiting for signer */
+                <div className="border border-yellow-500/50 bg-yellow-500/5 p-5 sm:p-6 flex items-start gap-4">
+                  <Clock className="w-9 h-9 text-yellow-400 shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <h2 className="text-base font-semibold text-yellow-400">Awaiting E-Signature</h2>
+                    <p className="text-zinc-400 text-sm mt-1">
+                      The agreement has been sent for e-signing via Leegality. Check your email or phone for the signing link.
+                    </p>
+                    <p className="text-zinc-600 text-xs mt-2">
+                      This page will update automatically once all parties have signed.
+                    </p>
                   </div>
-                ) : (
-                  <SignaturePad onSave={(dataUrl) => signMutation.mutate(dataUrl)} />
-                )}
+                </div>
+              ) : (
+                /* Send for e-sign */
+                <div className="border border-[#6FFFE9]/45 bg-[#6FFFE9]/[0.04] p-5 sm:p-6 space-y-4">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 flex items-center justify-center bg-[#6FFFE9]/15 border border-[#6FFFE9]/30 shrink-0">
+                      <Send size={18} className="text-[#6FFFE9]" />
+                    </div>
+                    <div className="flex-1">
+                      <h2 className="text-base font-semibold uppercase tracking-wider text-[#9DEFE4]">
+                        E-Sign via Leegality
+                      </h2>
+                      <p className="text-sm text-zinc-400 mt-1">
+                        Read the full agreement above, then click below to execute it with a legally valid Aadhaar e-sign through Leegality.
+                      </p>
+                    </div>
+                  </div>
 
-                {signMutation.isPending && (
-                  <p className="text-xs text-[#9DEFE4] animate-pulse">Recording your signature…</p>
-                )}
-              </div>
+                  <Button
+                    type="button"
+                    onClick={() => sendMutation.mutate()}
+                    disabled={sendMutation.isPending || !scrolledToBottom}
+                    className="w-full h-12 rounded-none border-0 text-sm font-bold uppercase tracking-widest bg-[#6FFFE9] hover:bg-[#6FFFE9]/90 text-black flex items-center justify-center gap-2 disabled:opacity-40"
+                    data-testid="button-leegality-send"
+                  >
+                    {sendMutation.isPending ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-black/30 border-t-black animate-spin" />
+                        Sending…
+                      </>
+                    ) : (
+                      <>
+                        <ExternalLink size={16} />
+                        {scrolledToBottom ? "Send for E-Sign" : "Scroll to Read Agreement First"}
+                      </>
+                    )}
+                  </Button>
+
+                  {/* Leegality branding */}
+                  <div className="flex items-center justify-center gap-2 pt-1">
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 border border-white/[0.07] bg-white/[0.03]">
+                      <svg width="14" height="14" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="4" y="4" width="24" height="24" rx="3" stroke="#22C55E" strokeWidth="3" fill="none" />
+                        <path d="M10 16l4 4 8-8" stroke="#22C55E" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                      <span className="text-[11px] font-semibold tracking-wide text-zinc-300">Leegality</span>
+                      <span className="text-[10px] text-zinc-600 ml-0.5">· Legally Valid E-Sign · IT Act 2000</span>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Party status pills */}
               <div className="grid grid-cols-3 gap-3">
                 {[
                   { label: "RentFLO", signed: true },
-                  {
-                    label: "Landlord",
-                    signed: !!(data.agreement?.ownerSignatureUrl),
-                  },
-                  {
-                    label: "Tenant",
-                    signed: !!(data.agreement?.tenantSignatureUrl),
-                  },
+                  { label: "Landlord", signed: !!(data.agreement?.ownerSignatureUrl) || leegalityDone },
+                  { label: "Tenant", signed: !!(data.agreement?.tenantSignatureUrl) || leegalityDone },
                 ].map(({ label, signed: s }) => (
                   <div
                     key={label}
