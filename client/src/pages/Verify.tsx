@@ -206,7 +206,7 @@ export default function Verify() {
 
               <div className="flex items-center gap-3">
                 <div className="flex-1 h-px bg-white/[0.08]" />
-                <span className="text-[10px] uppercase tracking-widest text-zinc-600">Or verify manually</span>
+                <span className="text-[10px] uppercase tracking-widest text-zinc-600">{t("verify_or_manual")}</span>
                 <div className="flex-1 h-px bg-white/[0.08]" />
               </div>
 

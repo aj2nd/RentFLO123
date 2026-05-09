@@ -3,23 +3,25 @@ import { useState, useRef, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { usePushNotifications } from "@/hooks/use-push-notifications";
+import { useI18n } from "@/hooks/use-i18n";
 import type { Notification } from "@shared/schema";
 
-const TYPE_LABELS: Record<string, string> = {
-  RENT_ADVANCED: "Rent Advanced",
-  RENT_COLLECTED: "Payment Received",
-  MAINTENANCE_CREATED: "Maintenance Request",
-  MAINTENANCE_RESOLVED: "Issue Resolved",
-  RENT_DUE: "Rent Due",
-};
-
 export function NotificationBell() {
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState<{ left: number; bottom: number } | null>(null);
   const ref = useRef<HTMLDivElement>(null);
   const btnRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const { status, subscribe, unsubscribe } = usePushNotifications();
+
+  const TYPE_LABELS: Record<string, string> = {
+    RENT_ADVANCED: t("bell_type_rent_advanced"),
+    RENT_COLLECTED: t("bell_type_rent_collected"),
+    MAINTENANCE_CREATED: t("bell_type_maint_created"),
+    MAINTENANCE_RESOLVED: t("bell_type_maint_resolved"),
+    RENT_DUE: t("bell_type_rent_due"),
+  };
 
   const updatePos = () => {
     const r = btnRef.current?.getBoundingClientRect();
@@ -71,6 +73,12 @@ export function NotificationBell() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
+  const pushStatusLabel =
+    status === "subscribed"   ? t("bell_push_on") :
+    status === "unsupported"  ? t("bell_push_na") :
+    status === "denied"       ? t("bell_push_blocked") :
+    t("bell_push_off");
+
   return (
     <div ref={ref} className="relative">
       <button
@@ -79,7 +87,7 @@ export function NotificationBell() {
         className="relative flex items-center justify-center w-9 h-9 rounded-none transition-all"
         style={{ color: "var(--nav-text-dim)" }}
         data-testid="button-notification-bell"
-        title="Notifications"
+        title={t("bell_notifications")}
       >
         {unread > 0 ? (
           <BellRing size={18} style={{ color: "var(--tiffany)" }} />
@@ -116,7 +124,7 @@ export function NotificationBell() {
               className="text-xs font-semibold uppercase tracking-widest"
               style={{ color: "var(--tiffany)", opacity: 0.8 }}
             >
-              Notifications
+              {t("bell_notifications")}
             </span>
             <div className="flex items-center gap-2">
               <button
@@ -136,7 +144,7 @@ export function NotificationBell() {
                 data-testid="button-toggle-push"
               >
                 {status === "subscribed" ? <BellRing size={10} /> : <BellOff size={10} />}
-                {status === "subscribed" ? "On" : status === "unsupported" ? "N/A" : status === "denied" ? "Blocked" : "Off"}
+                {pushStatusLabel}
               </button>
               <button
                 onClick={() => setOpen(false)}
@@ -155,7 +163,7 @@ export function NotificationBell() {
                 className="py-8 text-center text-xs"
                 style={{ color: "var(--nav-text-dim)", opacity: 0.5 }}
               >
-                No notifications yet
+                {t("bell_no_notifications")}
               </div>
             ) : (
               notifs.map((n) => (
@@ -207,7 +215,7 @@ export function NotificationBell() {
                 style={{ color: "var(--nav-text-dim)" }}
                 data-testid="button-mark-all-read"
               >
-                <CheckCheck size={11} /> Mark all read
+                <CheckCheck size={11} /> {t("bell_mark_all_read")}
               </button>
             </div>
           )}

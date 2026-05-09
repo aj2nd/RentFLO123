@@ -48,9 +48,9 @@ export function Navigation() {
     { href: "/ledger",            icon: <Receipt size={18} />,         label: t("nav_ledger"),           roles: ["ADMIN", "OWNER", "TENANT"] },
     { href: "/verify",            icon: <ShieldCheck size={18} />,     label: t("nav_kyc"),              roles: ["OWNER", "TENANT"] },
     { href: "/agreement",         icon: <FileSignature size={18} />,   label: t("nav_agreement"),        roles: ["OWNER", "TENANT"] },
-    { href: "/maintenance",       icon: <Wrench size={18} />,          label: "Maintenance",             roles: ["OWNER", "TENANT", "ADMIN"] },
-    { href: "/admin/messages",    icon: <MessageSquare size={18} />,   label: "Messages",                roles: ["ADMIN"] },
-    { href: "/messages",          icon: <MessageSquare size={18} />,   label: "Messages",                roles: ["OWNER", "TENANT"], badge: unreadCount },
+    { href: "/maintenance",       icon: <Wrench size={18} />,          label: t("nav_maintenance"),      roles: ["OWNER", "TENANT", "ADMIN"] },
+    { href: "/admin/messages",    icon: <MessageSquare size={18} />,   label: t("nav_messages"),          roles: ["ADMIN"] },
+    { href: "/messages",          icon: <MessageSquare size={18} />,   label: t("nav_messages"),          roles: ["OWNER", "TENANT"], badge: unreadCount },
   ];
 
   const visibleItems = navItems.filter(item => role && item.roles.includes(role));
@@ -182,7 +182,7 @@ export function Navigation() {
               className="text-[10px] font-semibold uppercase tracking-widest flex-1"
               style={{ color: "var(--nav-text-dim)" }}
             >
-              Alerts
+              {t("nav_alerts")}
             </span>
             <ThemeToggle />
           </div>
@@ -214,10 +214,10 @@ export function Navigation() {
           <div className="px-3 pt-3 mt-1" style={{ borderTop: "1px solid var(--nav-border)" }}>
             <div className="flex flex-wrap gap-x-4 gap-y-2 mb-2">
               {[
-                { label: "Terms", href: "/terms" },
-                { label: "Privacy", href: "/privacy" },
-                { label: "Refund", href: "/refund" },
-                { label: "Support", href: "/support" },
+                { label: t("nav_terms_short"),   href: "/terms" },
+                { label: t("nav_privacy_short"), href: "/privacy" },
+                { label: t("nav_refund_short"),  href: "/refund" },
+                { label: t("nav_support_short"), href: "/support" },
               ].map(({ label, href }) => (
                 <Link
                   key={href}

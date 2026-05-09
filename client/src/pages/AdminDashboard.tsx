@@ -62,7 +62,7 @@ function FileUpload({ onFileChange, currentValue }: { onFileChange: (dataUrl: st
         <Button type="button" onClick={() => fileInputRef.current?.click()} disabled={isUploading}
           className="w-full h-20 bg-zinc-900 border-2 border-dashed border-[#6FFFE9]/20 hover:border-[#6FFFE9]/50 hover:bg-zinc-800 text-zinc-400 hover:text-[#6FFFE9] rounded-none flex flex-col gap-2 transition-all"
           data-testid="button-upload-receipt">
-          {isUploading ? <Loader2 className="animate-spin" size={24} /> : <><Upload size={24} /><span className="text-sm">Click to upload bank transfer screenshot</span></>}
+          {isUploading ? <Loader2 className="animate-spin" size={24} /> : <><Upload size={24} /><span className="text-sm">{t('admin_upload_screenshot')}</span></>}
         </Button>
       )}
     </div>
@@ -223,7 +223,7 @@ export default function AdminDashboard() {
               className={`pb-3 px-1 text-sm font-medium transition-colors flex items-center gap-2 ${activeTab === 'verifications' ? 'text-[#6FFFE9] border-b-2 border-[#6FFFE9]' : 'text-zinc-500 hover:text-[#9DEFE4]'}`}
               data-testid="tab-verifications">
               <Receipt size={14} />
-              Verifications
+              {t('admin_verif_tab')}
               {pendingVerifs && pendingVerifs.length > 0 && (
                 <span className="bg-blue-500/20 text-blue-300 border border-blue-400/40 text-xs px-2 py-0.5">{pendingVerifs.length}</span>
               )}
@@ -294,8 +294,8 @@ export default function AdminDashboard() {
           <div className="mt-8">
             <div className="flex items-center gap-3 mb-6">
               <Receipt className="text-[#6FFFE9]" size={24} />
-              <h2 className="text-2xl font-semibold tracking-tight">Manual Payment Verifications</h2>
-              <span className="text-xs text-zinc-500 ml-2">Match the UTR against your bank statement before approving.</span>
+              <h2 className="text-2xl font-semibold tracking-tight">{t('admin_verif_heading')}</h2>
+              <span className="text-xs text-zinc-500 ml-2">{t('admin_verif_subtitle')}</span>
             </div>
             {verifsLoading ? (
               <div className="flex items-center justify-center p-12"><Loader2 className="w-8 h-8 animate-spin" /></div>
@@ -307,20 +307,20 @@ export default function AdminDashboard() {
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2 flex-wrap">
                           <h3 className="text-lg font-medium">{p.ledger?.property?.address}</h3>
-                          <span className="text-xs bg-blue-500/20 text-blue-300 border border-blue-400/30 px-2 py-0.5">PENDING VERIFICATION</span>
+                          <span className="text-xs bg-blue-500/20 text-blue-300 border border-blue-400/30 px-2 py-0.5">{t('admin_verif_pending')}</span>
                           <span className="text-xs bg-zinc-800 px-2 py-0.5">{p.ledger?.monthYear}</span>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm mt-3">
                           <div>
-                            <p className="text-zinc-500 text-[10px] uppercase tracking-widest">Amount</p>
+                            <p className="text-zinc-500 text-[10px] uppercase tracking-widest">{t('admin_verif_amount')}</p>
                             <p className="font-mono text-2xl font-semibold text-white">₹{p.amount.toLocaleString("en-IN")}</p>
                           </div>
                           <div>
-                            <p className="text-zinc-500 text-[10px] uppercase tracking-widest">UTR / Reference</p>
+                            <p className="text-zinc-500 text-[10px] uppercase tracking-widest">{t('admin_verif_utr')}</p>
                             <p className="font-mono text-base text-[#6FFFE9]" data-testid={`text-utr-${p.id}`}>{p.transactionRef || "—"}</p>
                           </div>
                           <div>
-                            <p className="text-zinc-500 text-[10px] uppercase tracking-widest">Submitted</p>
+                            <p className="text-zinc-500 text-[10px] uppercase tracking-widest">{t('admin_verif_submitted')}</p>
                             <p className="font-mono text-sm text-zinc-300">{new Date(p.createdAt).toLocaleString("en-IN")}</p>
                           </div>
                         </div>
@@ -328,7 +328,7 @@ export default function AdminDashboard() {
                           <a href={p.proofScreenshotUrl} target="_blank" rel="noopener noreferrer"
                             className="inline-flex items-center gap-2 mt-4 text-sm text-[#9DEFE4] hover:text-[#6FFFE9] underline"
                             data-testid={`link-proof-${p.id}`}>
-                            <ExternalLink size={14} /> View screenshot
+                            <ExternalLink size={14} /> {t('admin_verif_view_screenshot')}
                           </a>
                         )}
                       </div>
@@ -338,7 +338,7 @@ export default function AdminDashboard() {
                           disabled={verifyPaymentMutation.isPending}
                           className="bg-white text-black hover:bg-zinc-200 gap-2"
                           data-testid={`button-verify-payment-${p.id}`}>
-                          <CheckCircle size={16} /> Verify
+                          <CheckCircle size={16} /> {t('admin_verif_verify')}
                         </Button>
                         <Button
                           variant="outline"
@@ -351,7 +351,7 @@ export default function AdminDashboard() {
                           disabled={rejectPaymentMutation.isPending}
                           className="border-red-500/40 text-red-400 hover:bg-red-500/10 hover:text-red-300 gap-2"
                           data-testid={`button-reject-payment-${p.id}`}>
-                          <X size={16} /> Reject
+                          <X size={16} /> {t('admin_verif_reject')}
                         </Button>
                       </div>
                     </div>
@@ -361,7 +361,7 @@ export default function AdminDashboard() {
             ) : (
               <div className="p-12 border border-[#6FFFE9]/15 bg-[#6FFFE9]/3 text-center">
                 <Receipt className="w-12 h-12 mx-auto mb-4 text-[#6FFFE9]/40" />
-                <p className="text-zinc-500">No payments awaiting verification.</p>
+                <p className="text-zinc-500">{t('admin_verif_no_payments')}</p>
               </div>
             )}
           </div>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useI18n } from "@/hooks/use-i18n";
 import { MessageSquare, Building2, User, ChevronRight, ArrowLeft, ShieldAlert } from "lucide-react";
 import type { Message, Property } from "@shared/schema";
 
@@ -25,6 +26,7 @@ function formatTime(date: string | Date | null | undefined) {
 }
 
 export default function AdminMessages() {
+  const { t } = useI18n();
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
   const [showConversation, setShowConversation] = useState(false);
 
@@ -55,9 +57,9 @@ export default function AdminMessages() {
         <div className="px-5 py-4 border-b border-white/[0.07] shrink-0">
           <div className="flex items-center gap-2.5">
             <MessageSquare size={18} className="text-[#6FFFE9]" />
-            <h1 className="text-white font-semibold tracking-tight text-sm">All Conversations</h1>
+            <h1 className="text-white font-semibold tracking-tight text-sm">{t("admin_conv_heading")}</h1>
           </div>
-          <p className="text-[11px] text-zinc-600 mt-0.5 uppercase tracking-widest">Admin oversight</p>
+          <p className="text-[11px] text-zinc-600 mt-0.5 uppercase tracking-widest">{t("admin_conv_subtitle")}</p>
         </div>
 
         <div className="flex-1 overflow-y-auto">
@@ -68,8 +70,8 @@ export default function AdminMessages() {
           ) : conversations.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-40 gap-3 px-6 text-center">
               <MessageSquare size={32} className="text-zinc-700" />
-              <p className="text-zinc-500 text-sm">No conversations yet</p>
-              <p className="text-zinc-700 text-xs">Messages between owners and tenants will appear here.</p>
+              <p className="text-zinc-500 text-sm">{t("admin_conv_no_convs")}</p>
+              <p className="text-zinc-700 text-xs">{t("admin_conv_no_convs_desc")}</p>
             </div>
           ) : (
             conversations.map((conv) => (
@@ -127,7 +129,7 @@ export default function AdminMessages() {
         {!selectedPropertyId ? (
           <div className="flex flex-col items-center justify-center h-full gap-4 text-center px-6">
             <MessageSquare size={40} className="text-zinc-800" />
-            <p className="text-zinc-500 text-sm">Select a conversation to view</p>
+            <p className="text-zinc-500 text-sm">{t("admin_conv_select")}</p>
           </div>
         ) : detailLoading || !detail ? (
           <div className="flex items-center justify-center h-full">
@@ -154,7 +156,7 @@ export default function AdminMessages() {
                 </p>
               </div>
               <span className="text-[10px] text-zinc-600 uppercase tracking-widest font-medium border border-white/[0.08] px-2 py-0.5 shrink-0">
-                Read Only
+                {t("admin_conv_read_only")}
               </span>
             </div>
 
@@ -162,7 +164,7 @@ export default function AdminMessages() {
             <div className="px-5 py-2.5 bg-amber-500/[0.07] border-b border-amber-500/[0.12] flex items-center gap-2 shrink-0">
               <ShieldAlert size={13} className="text-amber-400/70 shrink-0" />
               <p className="text-[11px] text-amber-400/70">
-                Admin view — visible for compliance and dispute resolution only.
+                {t("admin_conv_compliance")}
               </p>
             </div>
 
@@ -170,12 +172,12 @@ export default function AdminMessages() {
             <div className="flex-1 overflow-y-auto px-5 py-5 space-y-4">
               {detail.messages.length === 0 ? (
                 <div className="flex items-center justify-center h-24">
-                  <p className="text-zinc-600 text-sm">No messages in this conversation yet.</p>
+                  <p className="text-zinc-600 text-sm">{t("admin_conv_no_msgs")}</p>
                 </div>
               ) : (
                 detail.messages.map((msg) => {
                   const isOwner = msg.senderId === detail.property.ownerId;
-                  const senderLabel = isOwner ? "Owner" : "Tenant";
+                  const senderLabel = isOwner ? t("admin_conv_owner") : t("admin_conv_tenant");
 
                   return (
                     <div
@@ -195,7 +197,7 @@ export default function AdminMessages() {
                         {msg.read && (
                           <>
                             <span className="text-[10px] text-zinc-700">·</span>
-                            <span className="text-[10px] text-zinc-700">Read</span>
+                            <span className="text-[10px] text-zinc-700">{t("admin_conv_read")}</span>
                           </>
                         )}
                       </div>

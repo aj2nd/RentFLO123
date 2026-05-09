@@ -4,6 +4,7 @@ import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/use-auth";
 import { useProperties } from "@/hooks/use-properties";
 import { useToast } from "@/hooks/use-toast";
+import { useI18n } from "@/hooks/use-i18n";
 import {
   Wrench, Plus, X, CheckCircle, Clock, AlertCircle,
   Upload, Image as ImageIcon, Building2, Loader2, ChevronDown
@@ -31,6 +32,7 @@ function StatusBadge({ status }: { status: keyof typeof STATUS_CONFIG }) {
 export default function Maintenance() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { t } = useI18n();
   const { data: properties = [] } = useProperties();
   const role = user?.role;
 
@@ -38,7 +40,6 @@ export default function Maintenance() {
   const [showForm, setShowForm] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  // Form state
   const [formPropertyId, setFormPropertyId] = useState("");
   const [formTitle, setFormTitle] = useState("");
   const [formDesc, setFormDesc] = useState("");
@@ -54,7 +55,7 @@ export default function Maintenance() {
       apiRequest("POST", "/api/tickets", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/tickets"] });
-      toast({ title: "Ticket submitted", description: "Your maintenance request has been sent." });
+      toast({ title: t("maint_ticket_submitted"), description: t("maint_ticket_sent") });
       setShowForm(false);
       setFormTitle(""); setFormDesc(""); setFormPhoto(""); setFormPropertyId("");
     },
@@ -65,7 +66,7 @@ export default function Maintenance() {
     mutationFn: (id: string) => apiRequest("POST", `/api/tickets/${id}/resolve`, {}),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/tickets"] });
-      toast({ title: "Ticket resolved", description: "The maintenance request has been marked resolved." });
+      toast({ title: t("maint_resolved"), description: t("maint_resolved_desc") });
     },
     onError: (e: any) => toast({ title: "Failed", description: e.message, variant: "destructive" }),
   });
@@ -74,7 +75,7 @@ export default function Maintenance() {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) {
-      toast({ title: "File too large", description: "Max photo size is 5MB.", variant: "destructive" });
+      toast({ title: t("maint_file_too_large"), description: t("maint_file_max"), variant: "destructive" });
       return;
     }
     const reader = new FileReader();
@@ -83,9 +84,9 @@ export default function Maintenance() {
   };
 
   const handleSubmit = () => {
-    if (!formPropertyId) { toast({ title: "Select a property", variant: "destructive" }); return; }
-    if (!formTitle.trim()) { toast({ title: "Enter a title", variant: "destructive" }); return; }
-    if (!formDesc.trim()) { toast({ title: "Describe the issue", variant: "destructive" }); return; }
+    if (!formPropertyId) { toast({ title: t("maint_select_property_toast"), variant: "destructive" }); return; }
+    if (!formTitle.trim()) { toast({ title: t("maint_enter_title_toast"), variant: "destructive" }); return; }
+    if (!formDesc.trim()) { toast({ title: t("maint_describe_issue_toast"), variant: "destructive" }); return; }
     if (!user?.id) return;
     createMutation.mutate({
       propertyId: formPropertyId,
@@ -109,15 +110,15 @@ export default function Maintenance() {
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 border border-white/10 mb-4">
               <Wrench size={11} className="text-white/30" />
-              <span className="text-[10px] font-bold uppercase tracking-[2px] text-white/30">Maintenance</span>
+              <span className="text-[10px] font-bold uppercase tracking-[2px] text-white/30">{t("maint_badge")}</span>
             </div>
             <h1 className="text-3xl md:text-4xl font-bold tracking-[-1.5px] text-white leading-tight">
-              Repairs &amp; Maintenance
+              {t("maint_page_title")}
             </h1>
             <p className="text-sm text-white/30 mt-2 font-light">
-              {role === "TENANT" ? "Report issues and track repair progress." :
-               role === "OWNER"  ? "View maintenance requests for your properties." :
-               "Manage all maintenance tickets across properties."}
+              {role === "TENANT" ? t("maint_tenant_subtitle") :
+               role === "OWNER"  ? t("maint_owner_subtitle") :
+               t("maint_admin_subtitle")}
             </p>
           </div>
 
@@ -128,7 +129,7 @@ export default function Maintenance() {
               className="flex-shrink-0 flex items-center gap-2 px-5 py-3 border border-white/15 text-white/60 hover:text-white hover:border-white/30 hover:bg-white/[0.04] transition-all duration-200 text-sm font-semibold uppercase tracking-[1px]"
             >
               {showForm ? <X size={14} /> : <Plus size={14} />}
-              {showForm ? "Cancel" : "New Request"}
+              {showForm ? t("maint_cancel_btn") : t("maint_new_request")}
             </button>
           )}
         </div>
@@ -136,9 +137,9 @@ export default function Maintenance() {
         {/* ── Stat bar ────────────────────────────────────── */}
         <div className="grid grid-cols-3 gap-px bg-white/[0.05] mb-8">
           {[
-            { label: "Total",       value: tickets.length,  dim: false },
-            { label: "Open",        value: open.length,     dim: false },
-            { label: "Resolved",    value: resolved.length, dim: true  },
+            { label: t("maint_total"),    value: tickets.length,  dim: false },
+            { label: t("maint_open"),     value: open.length,     dim: false },
+            { label: t("maint_resolved"), value: resolved.length, dim: true  },
           ].map(s => (
             <div key={s.label} className={`px-6 py-5 ${s.dim ? "bg-zinc-950/60" : "bg-zinc-950"}`}>
               <p className="text-[10px] font-bold uppercase tracking-[2px] text-white/25 mb-1">{s.label}</p>
@@ -153,12 +154,11 @@ export default function Maintenance() {
         {showForm && role === "TENANT" && (
           <div className="border border-white/[0.08] bg-zinc-950 p-6 md:p-8 mb-8 space-y-5">
             <h2 className="text-sm font-bold uppercase tracking-[2px] text-white/50 border-b border-white/[0.06] pb-4">
-              New Maintenance Request
+              {t("maint_form_heading")}
             </h2>
 
-            {/* Property selector */}
             <div className="space-y-2">
-              <label className="text-[10px] font-bold uppercase tracking-[1.5px] text-white/30">Property</label>
+              <label className="text-[10px] font-bold uppercase tracking-[1.5px] text-white/30">{t("maint_property_label")}</label>
               <div className="relative">
                 <select
                   value={formPropertyId}
@@ -166,7 +166,7 @@ export default function Maintenance() {
                   data-testid="select-ticket-property"
                   className="w-full appearance-none bg-white/[0.04] border border-white/[0.08] focus:border-[#6FFFE9]/30 outline-none px-4 py-3 pr-10 text-sm text-white/70 transition-colors duration-200"
                 >
-                  <option value="">Select a property…</option>
+                  <option value="">{t("maint_select_property")}</option>
                   {properties.map(p => (
                     <option key={p.id} value={p.id}>{p.address}</option>
                   ))}
@@ -175,9 +175,8 @@ export default function Maintenance() {
               </div>
             </div>
 
-            {/* Title */}
             <div className="space-y-2">
-              <label className="text-[10px] font-bold uppercase tracking-[1.5px] text-white/30">Issue Title</label>
+              <label className="text-[10px] font-bold uppercase tracking-[1.5px] text-white/30">{t("maint_issue_title_label")}</label>
               <input
                 value={formTitle}
                 onChange={e => setFormTitle(e.target.value)}
@@ -188,9 +187,8 @@ export default function Maintenance() {
               />
             </div>
 
-            {/* Description */}
             <div className="space-y-2">
-              <label className="text-[10px] font-bold uppercase tracking-[1.5px] text-white/30">Description</label>
+              <label className="text-[10px] font-bold uppercase tracking-[1.5px] text-white/30">{t("maint_description_label")}</label>
               <textarea
                 value={formDesc}
                 onChange={e => setFormDesc(e.target.value)}
@@ -202,9 +200,8 @@ export default function Maintenance() {
               />
             </div>
 
-            {/* Photo upload */}
             <div className="space-y-2">
-              <label className="text-[10px] font-bold uppercase tracking-[1.5px] text-white/30">Photo (optional)</label>
+              <label className="text-[10px] font-bold uppercase tracking-[1.5px] text-white/30">{t("maint_photo_optional")}</label>
               <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
               {formPhoto ? (
                 <div className="relative inline-block">
@@ -221,7 +218,7 @@ export default function Maintenance() {
                   className="flex items-center gap-2.5 px-4 py-3 border border-dashed border-white/[0.12] text-white/30 hover:text-white/55 hover:border-white/25 transition-all duration-200 text-sm"
                 >
                   <Upload size={14} />
-                  <span>Upload photo</span>
+                  <span>{t("maint_upload_photo_btn")}</span>
                 </button>
               )}
             </div>
@@ -234,10 +231,10 @@ export default function Maintenance() {
                 className="flex items-center gap-2 px-8 py-3 bg-white text-black text-sm font-bold uppercase tracking-[1px] hover:bg-zinc-200 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200"
               >
                 {createMutation.isPending ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
-                Submit Request
+                {t("maint_submit_request")}
               </button>
               <button onClick={() => setShowForm(false)} className="px-4 py-3 text-sm text-white/30 hover:text-white/60 transition-colors">
-                Cancel
+                {t("maint_cancel_btn")}
               </button>
             </div>
           </div>
@@ -246,22 +243,22 @@ export default function Maintenance() {
         {/* ── Tab bar ─────────────────────────────────────── */}
         <div className="flex items-center gap-0 border-b border-white/[0.06] mb-8">
           {([
-            { key: "open",     label: "Active",   count: open.length },
-            { key: "resolved", label: "Resolved", count: resolved.length },
-          ] as const).map(t => (
+            { key: "open",     label: t("maint_tab_active"),  count: open.length },
+            { key: "resolved", label: t("maint_resolved"),    count: resolved.length },
+          ] as const).map(tb => (
             <button
-              key={t.key}
-              onClick={() => setTab(t.key)}
-              data-testid={`tab-${t.key}`}
+              key={tb.key}
+              onClick={() => setTab(tb.key)}
+              data-testid={`tab-${tb.key}`}
               className={`flex items-center gap-2 px-5 py-3 text-xs font-bold uppercase tracking-[1.5px] border-b-2 transition-all duration-150 ${
-                tab === t.key
+                tab === tb.key
                   ? "border-[#6FFFE9] text-white"
                   : "border-transparent text-white/30 hover:text-white/55"
               }`}
             >
-              {t.label}
-              <span className={`px-1.5 py-0.5 text-[9px] font-bold ${tab === t.key ? "bg-[#6FFFE9]/15 text-[#6FFFE9]" : "bg-white/[0.05] text-white/25"}`}>
-                {t.count}
+              {tb.label}
+              <span className={`px-1.5 py-0.5 text-[9px] font-bold ${tab === tb.key ? "bg-[#6FFFE9]/15 text-[#6FFFE9]" : "bg-white/[0.05] text-white/25"}`}>
+                {tb.count}
               </span>
             </button>
           ))}
@@ -278,7 +275,7 @@ export default function Maintenance() {
               ? <CheckCircle size={32} className="text-white/[0.08]" />
               : <Wrench size={32} className="text-white/[0.08]" />}
             <p className="text-sm text-white/25 font-medium">
-              {tab === "open" ? "No active requests — all clear." : "No resolved tickets yet."}
+              {tab === "open" ? t("maint_no_active") : t("maint_no_resolved")}
             </p>
           </div>
         ) : (
@@ -328,6 +325,7 @@ function TicketCard({
   isResolving: boolean;
   onViewPhoto: () => void;
 }) {
+  const { t } = useI18n();
   const canResolve = role === "ADMIN" && ticket.status !== "RESOLVED";
 
   return (
@@ -337,7 +335,6 @@ function TicketCard({
     >
       <div className="flex flex-col sm:flex-row sm:items-start gap-4 justify-between">
         <div className="flex-1 min-w-0 space-y-2.5">
-          {/* Status + date row */}
           <div className="flex flex-wrap items-center gap-2.5">
             <StatusBadge status={ticket.status as keyof typeof STATUS_CONFIG} />
             <span className="text-[10px] text-white/20 font-mono tracking-wide">
@@ -345,30 +342,24 @@ function TicketCard({
             </span>
           </div>
 
-          {/* Title */}
           <h3 className="text-base font-semibold text-white/85 leading-snug tracking-tight">{ticket.title}</h3>
-
-          {/* Description */}
           <p className="text-sm text-white/35 leading-relaxed font-light line-clamp-2">{ticket.description}</p>
 
-          {/* Property */}
           <div className="flex items-center gap-2 pt-1">
             <Building2 size={11} className="text-white/20 flex-shrink-0" />
             <span className="text-[10px] text-white/25 uppercase tracking-[1px] truncate font-medium">{ticket.property.address}</span>
           </div>
 
-          {/* Resolved date */}
           {ticket.status === "RESOLVED" && ticket.resolvedAt && (
             <div className="flex items-center gap-2">
               <CheckCircle size={11} className="text-white/20 flex-shrink-0" />
               <span className="text-[10px] text-white/20 font-mono">
-                Resolved {new Date(ticket.resolvedAt).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}
+                {t("maint_resolved_on")} {new Date(ticket.resolvedAt).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}
               </span>
             </div>
           )}
         </div>
 
-        {/* Actions */}
         <div className="flex sm:flex-col items-center sm:items-end gap-2.5 flex-shrink-0">
           {ticket.photoUrl && (
             <button
@@ -377,7 +368,7 @@ function TicketCard({
               className="flex items-center gap-1.5 px-3 py-2 border border-white/[0.08] text-white/30 hover:text-white/60 hover:border-white/20 transition-all duration-150 text-xs font-medium"
             >
               <ImageIcon size={12} />
-              <span>Photo</span>
+              <span>{t("maint_photo_btn")}</span>
             </button>
           )}
           {canResolve && (
@@ -388,7 +379,7 @@ function TicketCard({
               className="flex items-center gap-1.5 px-4 py-2 bg-white text-black text-xs font-bold uppercase tracking-[1px] hover:bg-zinc-200 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200"
             >
               {isResolving ? <Loader2 size={12} className="animate-spin" /> : <CheckCircle size={12} />}
-              Resolve
+              {t("maint_resolve_btn")}
             </button>
           )}
         </div>

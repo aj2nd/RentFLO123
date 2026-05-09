@@ -36,7 +36,7 @@ export default function LandingPage() {
           <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full border border-[#6FFFE9]/20 bg-[#6FFFE9]/[0.04]">
             <span className="w-1.5 h-1.5 rounded-full bg-[#6FFFE9] animate-pulse" />
             <span className="text-[10px] font-semibold uppercase tracking-[2px]" style={{ color: "var(--tiffany)", opacity: 0.7 }}>
-              Rent Payment Platform
+              {t("landing_rent_platform")}
             </span>
           </div>
 
@@ -92,7 +92,7 @@ export default function LandingPage() {
               }}
               data-testid="button-login"
             >
-              Log In <ArrowRight size={14} className="ml-2" />
+              {t("landing_log_in")} <ArrowRight size={14} className="ml-2" />
             </a>
           </div>
 
@@ -100,12 +100,12 @@ export default function LandingPage() {
           <div className="flex items-center gap-6 pt-2">
             <div className="flex items-center gap-2" style={{ color: "var(--nav-text-dim)" }}>
               <ShieldCheck size={13} />
-              <span className="text-[11px] font-medium tracking-wide uppercase">Bank-Grade Security</span>
+              <span className="text-[11px] font-medium tracking-wide uppercase">{t("landing_bank_grade")}</span>
             </div>
             <div className="w-px h-4 bg-border" />
             <div className="flex items-center gap-2" style={{ color: "var(--nav-text-dim)" }}>
               <Zap size={13} />
-              <span className="text-[11px] font-medium tracking-wide uppercase">Instant Payout</span>
+              <span className="text-[11px] font-medium tracking-wide uppercase">{t("landing_instant_payout")}</span>
             </div>
           </div>
         </div>
@@ -129,15 +129,15 @@ export default function LandingPage() {
             </div>
             <div className="flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: "var(--tiffany)" }} />
-              <span className="text-[10px] font-semibold uppercase tracking-[1.5px]" style={{ color: "var(--tiffany)", opacity: 0.6 }}>Live</span>
+              <span className="text-[10px] font-semibold uppercase tracking-[1.5px]" style={{ color: "var(--tiffany)", opacity: 0.6 }}>{t("landing_live")}</span>
             </div>
           </div>
 
           <div className="relative z-10 flex flex-col gap-3 flex-1">
             {[
-              { label: 'Monthly Rent', value: '₹50,000', accent: true },
-              { label: 'Guaranteed Payout', value: '1st of Month', accent: false },
-              { label: 'Settlement', value: '0% → 100%', accent: false },
+              { label: t("landing_monthly_rent_label"), value: '₹50,000', accent: true },
+              { label: t("landing_guaranteed_payout"), value: '1st of Month', accent: false },
+              { label: t("landing_settlement_label"), value: '0% → 100%', accent: false },
             ].map((row, i) => (
               <div
                 key={i}
@@ -152,8 +152,8 @@ export default function LandingPage() {
 
           <div className="relative z-10 space-y-2 pt-2">
             <div className="flex justify-between text-[10px] font-semibold uppercase tracking-[1px] text-muted-foreground">
-              <span>Settlement Progress</span>
-              <span>0% Settled</span>
+              <span>{t("landing_settlement_progress")}</span>
+              <span>{t("landing_0_settled")}</span>
             </div>
             <div className="w-full h-1 rounded-full bg-foreground/[0.06]">
               <div className="h-full w-0 bg-gradient-to-r from-[#6FFFE9]/40 to-[#6FFFE9] rounded-full" />
@@ -172,7 +172,7 @@ export default function LandingPage() {
                 color: '#000',
               }}
             >
-              Rent Guaranteed
+              {t("landing_rent_guaranteed")}
             </div>
           </div>
         </div>
@@ -189,11 +189,11 @@ export default function LandingPage() {
           {/* Eyebrow */}
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#6FFFE9]/20 bg-[#6FFFE9]/[0.04] mb-10">
             <ArrowRight size={11} style={{ color: "var(--tiffany)" }} />
-            <span className="text-[10px] font-semibold uppercase tracking-[2px]" style={{ color: "var(--tiffany)", opacity: 0.7 }}>How it works</span>
+            <span className="text-[10px] font-semibold uppercase tracking-[2px]" style={{ color: "var(--tiffany)", opacity: 0.7 }}>{t("landing_how_it_works")}</span>
           </div>
 
           <h2 className="text-4xl md:text-5xl font-bold tracking-[-2px] silver-text mb-20 leading-tight">
-            Rent Now,<br />Pay Later.
+            {t("landing_rent_now")}<br />{t("landing_pay_later")}
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-16">
@@ -217,7 +217,7 @@ export default function LandingPage() {
                   }}
                 >
                   <Home size={10} />
-                  For Owners
+                  {t("landing_for_owners")}
                 </span>
               </div>
               {/* Number + illustration row */}
@@ -272,7 +272,7 @@ export default function LandingPage() {
                 </div>
               </div>
               <p className="text-base md:text-lg font-light leading-relaxed text-muted-foreground">
-                We pay your <span className="font-semibold" style={{ color: "var(--tiffany)", opacity: 0.85 }}>full rent upfront</span> in a lump sum — and collect from your tenants ourselves.
+                {t("landing_owner_pay_full")}
               </p>
             </div>
 
@@ -296,7 +296,7 @@ export default function LandingPage() {
                   }}
                 >
                   <Users size={10} />
-                  For Tenants
+                  {t("landing_for_tenants")}
                 </span>
               </div>
               {/* Number + illustration row */}
@@ -347,7 +347,7 @@ export default function LandingPage() {
                 </div>
               </div>
               <p className="text-base md:text-lg font-light leading-relaxed text-muted-foreground">
-                Tenants pay us back in <span className="font-semibold" style={{ color: "var(--tiffany)", opacity: 0.85 }}>flexible monthly or weekly</span> payments — on their schedule.
+                {t("landing_tenant_pay_back")}
               </p>
             </div>
           </div>
@@ -363,9 +363,9 @@ export default function LandingPage() {
       <section id="features-section" className="py-28 px-8 md:px-16" style={isLight ? { background: "var(--section-violet)" } : {}}>
         <div className="max-w-screen-xl mx-auto">
           <div className="mb-16">
-            <p className="text-[10px] font-semibold uppercase tracking-[2.5px] mb-4" style={{ color: "var(--tiffany)", opacity: 0.55 }}>Why RentFLO</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[2.5px] mb-4" style={{ color: "var(--tiffany)", opacity: 0.55 }}>{t("landing_why_rentflo")}</p>
             <h2 className="text-4xl md:text-5xl font-bold tracking-[-2px] silver-text max-w-lg leading-tight">
-              Built for landlords who demand certainty.
+              {t("landing_built_for_landlords")}
             </h2>
           </div>
 
@@ -421,7 +421,7 @@ export default function LandingPage() {
 
           {/* Eyebrow + toggle pill */}
           <div className="flex flex-col items-center gap-8 mb-14">
-            <p className="text-[10px] font-semibold uppercase tracking-[2.5px]" style={{ color: "var(--tiffany)", opacity: 0.55 }}>Who it's for</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[2.5px]" style={{ color: "var(--tiffany)", opacity: 0.55 }}>{t("landing_who_its_for")}</p>
             <div
               className="inline-flex p-1 gap-1"
               style={{ background: "rgba(255,255,255,0.04)", border: "1px solid var(--border-subtle)" }}
@@ -439,7 +439,7 @@ export default function LandingPage() {
                     color: "var(--muted-foreground)",
                   }}
                 >
-                  {tab === "owners" ? "For Owners" : "For Tenants"}
+                  {tab === "owners" ? t("landing_for_owners") : t("landing_for_tenants")}
                 </button>
               ))}
             </div>
@@ -498,8 +498,8 @@ export default function LandingPage() {
                   </div>
                   <h3 className="text-4xl md:text-5xl font-black tracking-[-2px] silver-text leading-tight mb-6">
                     {audienceTab === "owners"
-                      ? <>Full rent.<br />Zero chasing.</>
-                      : <>Pay your way.<br />No pressure.</>
+                      ? <>{t("landing_owner_tagline")}</>
+                      : <>{t("landing_tenant_tagline")}</>
                     }
                   </h3>
                   <p className="text-base font-light leading-relaxed text-muted-foreground max-w-sm">
@@ -572,20 +572,20 @@ export default function LandingPage() {
               {/* Right: benefit bullets */}
               <div className="p-10 md:p-14">
                 <p className="text-[10px] font-semibold uppercase tracking-[2px] mb-8" style={{ color: "var(--tiffany)", opacity: 0.5 }}>
-                  {audienceTab === "owners" ? "What you get" : "How it helps you"}
+                  {audienceTab === "owners" ? t("landing_what_you_get") : t("landing_how_helps")}
                 </p>
                 <ul className="space-y-6">
                   {(audienceTab === "owners" ? [
-                    { title: "Lump-sum on the 1st", desc: "Full month's rent hits your account on the first — every month, on time." },
-                    { title: "We collect from tenants", desc: "RentFLO handles all tenant follow-ups, reminders, and repayment collection." },
-                    { title: "Zero vacancy risk", desc: "Rent keeps flowing even during tenant transitions or late payments." },
-                    { title: "Real-time dashboard", desc: "Track every property's status, payouts, and settlement progress in one place." },
+                    { title: t("landing_owner_b1_title"), desc: t("landing_owner_b1_desc") },
+                    { title: t("landing_owner_b2_title"), desc: t("landing_owner_b2_desc") },
+                    { title: t("landing_owner_b3_title"), desc: t("landing_owner_b3_desc") },
+                    { title: t("landing_owner_b4_title"), desc: t("landing_owner_b4_desc") },
                   ] : [
-                    { title: "Rent paid on your behalf", desc: "Your landlord gets paid in full — no late fees, no awkward conversations." },
-                    { title: "Weekly or monthly plans", desc: "Split your rent into manageable instalments that match your pay cycle." },
-                    { title: "No large lump sum needed", desc: "Move in without draining your savings — spread the cost over time." },
-                    { title: "Build a payment history", desc: "Consistent repayments help you build a reliable financial track record." },
-                  ]).map((item, i) => (
+                    { title: t("landing_tenant_b1_title"), desc: t("landing_tenant_b1_desc") },
+                    { title: t("landing_tenant_b2_title"), desc: t("landing_tenant_b2_desc") },
+                    { title: t("landing_tenant_b3_title"), desc: t("landing_tenant_b3_desc") },
+                    { title: t("landing_tenant_b4_title"), desc: t("landing_tenant_b4_desc") },
+                  ]).map((item: { title: string; desc: string }, i) => (
                     <li key={i} className="flex gap-4">
                       <div
                         className="mt-1 flex-shrink-0 w-5 h-5 flex items-center justify-center"
@@ -619,16 +619,22 @@ export default function LandingPage() {
           {/* Eyebrow */}
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#6FFFE9]/20 bg-[#6FFFE9]/[0.04] mb-10">
             <ArrowRight size={11} style={{ color: "var(--tiffany)" }} />
-            <span className="text-[10px] font-semibold uppercase tracking-[2px]" style={{ color: "var(--tiffany)", opacity: 0.7 }}>FAQ</span>
+            <span className="text-[10px] font-semibold uppercase tracking-[2px]" style={{ color: "var(--tiffany)", opacity: 0.7 }}>{t("landing_faq_eyebrow")}</span>
           </div>
 
           <h2 className="text-4xl md:text-5xl font-bold tracking-[-2px] silver-text mb-16 leading-tight max-w-lg">
-            Frequently Asked Questions
+            {t("landing_faq_title")}
           </h2>
 
           <div className="max-w-3xl space-y-0" style={{ borderTop: "1px solid var(--border-subtle)" }}>
-            {FAQ_ITEMS.map((item, i) => (
-              <FAQItem key={i} question={item.question} answer={item.answer} />
+            {[
+              { q: t("landing_faq_q1"), a: t("landing_faq_a1") },
+              { q: t("landing_faq_q2"), a: t("landing_faq_a2") },
+              { q: t("landing_faq_q3"), a: t("landing_faq_a3") },
+              { q: t("landing_faq_q4"), a: t("landing_faq_a4") },
+              { q: t("landing_faq_q5"), a: t("landing_faq_a5") },
+            ].map((item, i) => (
+              <FAQItem key={i} question={item.q} answer={item.a} />
             ))}
           </div>
         </div>
@@ -642,14 +648,14 @@ export default function LandingPage() {
             © {new Date().getFullYear()} RentFLO Technologies Pvt. Ltd.
           </p>
           <div className="flex items-center gap-6 text-[10px] font-semibold uppercase tracking-[1.5px] text-muted-foreground">
-            <a href="/terms" className="hover:text-foreground transition-colors">Terms</a>
-            <a href="/privacy" className="hover:text-foreground transition-colors">Privacy</a>
-            <a href="/refund" className="hover:text-foreground transition-colors">Refund</a>
-            <a href="/support" className="hover:text-foreground transition-colors">Support</a>
+            <a href="/terms" className="hover:text-foreground transition-colors">{t("nav_terms_short")}</a>
+            <a href="/privacy" className="hover:text-foreground transition-colors">{t("nav_privacy_short")}</a>
+            <a href="/refund" className="hover:text-foreground transition-colors">{t("nav_refund_short")}</a>
+            <a href="/support" className="hover:text-foreground transition-colors">{t("nav_support_short")}</a>
           </div>
           <div className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[1.5px] text-muted-foreground">
             <ShieldCheck size={11} />
-            <span>Bank-Grade Encryption</span>
+            <span>{t("landing_bank_grade")}</span>
           </div>
         </div>
       </div>
@@ -657,30 +663,7 @@ export default function LandingPage() {
   );
 }
 
-// ── FAQ Data ───────────────────────────────────────────────────────────────────
-
-const FAQ_ITEMS = [
-  {
-    question: "What does it mean to split rent payments?",
-    answer: "RentFLO advances the full rent to your landlord on the 1st of each month. You then repay that amount in smaller instalments across the month — weekly or bi-weekly — so your cash flow stays healthy.",
-  },
-  {
-    question: "How can I pay my rent using flexible payment options?",
-    answer: "Once you're onboarded as a tenant on RentFLO, you can choose how many instalments to split your rent into. Payments are made securely via Cashfree using UPI, cards, or net banking.",
-  },
-  {
-    question: "Are there extra fees when I split my rent?",
-    answer: "RentFLO charges a small platform fee for the advance service. There are no hidden charges. The fee is shown clearly before you confirm your payment plan.",
-  },
-  {
-    question: "Can I use credit to cover rent payments?",
-    answer: "Yes. RentFLO acts as the credit bridge between you and your landlord. We advance the full rent on your behalf, so you can pay it back when it suits you during the month.",
-  },
-  {
-    question: "Why choose flexible payment plans instead of traditional rent terms?",
-    answer: "Traditional rent is due in one lump sum — often right after payday gaps. RentFLO's flexible plans align your rent payments with your income schedule, reducing financial stress without involving your landlord.",
-  },
-];
+// ── FAQ Data is now loaded inside the component via useI18n ──────────────────
 
 // ── FAQ Item ───────────────────────────────────────────────────────────────────
 

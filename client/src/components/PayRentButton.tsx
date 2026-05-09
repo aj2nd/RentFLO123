@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useI18n } from "@/hooks/use-i18n";
 
 const SILVER_BTN = {
   background: 'linear-gradient(135deg, #7A7A7A 0%, #C8C8C8 35%, #EFEFEF 50%, #B4B4B4 70%, #7A7A7A 100%)',
@@ -14,6 +15,7 @@ const SILVER_BTN = {
 type PayRentButtonProps = { amount: number; vpa: string; ledgerId?: string };
 
 export function PayRentButton({ amount, vpa, ledgerId }: PayRentButtonProps) {
+  const { t } = useI18n();
   const [isProcessing, setIsProcessing] = useState(false);
   const [showFallback, setShowFallback] = useState(false);
   const [showProofForm, setShowProofForm] = useState(false);
@@ -152,7 +154,7 @@ export function PayRentButton({ amount, vpa, ledgerId }: PayRentButtonProps) {
           <div className="flex items-start gap-3">
             <CheckCircle className="h-5 w-5 text-[#6FFFE9] flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-semibold text-white">Did you complete the payment?</p>
+              <p className="text-sm font-semibold text-white">{t("pay_rent_did_complete")}</p>
               <p className="text-xs text-zinc-400 mt-1">
                 Enter the UPI transaction ID (UTR) so we can verify it against our bank statement.
                 You'll find it in your UPI app's transaction history.

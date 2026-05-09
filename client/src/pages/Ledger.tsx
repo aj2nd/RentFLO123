@@ -183,7 +183,7 @@ export default function LedgerPage() {
                   data-testid="button-export-csv"
                 >
                   <Download size={14} />
-                  Export
+                  {t("ledger_export")}
                 </button>
               )}
             </div>

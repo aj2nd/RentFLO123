@@ -197,7 +197,7 @@ function PropertyCard({ property }: { property: { id: string; address: string; p
             </h4>
             <div className="flex items-center gap-3 mt-1.5">
               <span style={{ fontSize: 11, color: "var(--nav-text-dim)", display: "flex", alignItems: "center", gap: 4 }}>
-                <Clock size={10} /> Due day {property.payoutDay}
+                <Clock size={10} /> {t("owner_due_day")} {property.payoutDay}
               </span>
               <span style={{ fontSize: 11, color: "var(--nav-text-dim)", display: "flex", alignItems: "center", gap: 4 }}>
                 <CreditCard size={10} /> ₹{property.monthlyRent.toLocaleString()}
@@ -222,19 +222,19 @@ function PropertyCard({ property }: { property: { id: string; address: string; p
             <AlertCircle size={13} style={{ color: ticketCounts?.open ? "#f97316" : "var(--nav-text-dim)" }} />
             <span style={{ fontSize: 12 }}>
               <span style={{ fontWeight: 700, fontFamily: "monospace" }}>{ticketCounts?.open || 0}</span>
-              <span style={{ color: "var(--nav-text-dim)", marginLeft: 4 }}>open</span>
+              <span style={{ color: "var(--nav-text-dim)", marginLeft: 4 }}>{t("owner_open")}</span>
             </span>
           </div>
           <div className="flex items-center gap-1.5" data-testid={`stat-resolved-tickets-${property.id}`}>
             <CheckCircle size={13} style={{ color: "var(--nav-text-dim)" }} />
             <span style={{ fontSize: 12 }}>
               <span style={{ fontWeight: 700, fontFamily: "monospace" }}>{ticketCounts?.resolved || 0}</span>
-              <span style={{ color: "var(--nav-text-dim)", marginLeft: 4 }}>resolved</span>
+              <span style={{ color: "var(--nav-text-dim)", marginLeft: 4 }}>{t("owner_resolved")}</span>
             </span>
           </div>
         </div>
         <Link href="/maintenance" style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 11, color: "rgba(111,255,233,0.65)", textDecoration: "none" }}>
-          <Wrench size={11} /> Manage
+          <Wrench size={11} /> {t("owner_manage")}
         </Link>
       </div>
     </div>
@@ -338,7 +338,7 @@ function AddPropertyModal({ isVerified }: { isVerified?: boolean }) {
             <DialogTitle style={{ fontFamily: "'Inter', sans-serif", fontSize: "1.4rem", fontWeight: 700, letterSpacing: "-0.03em" }}>
               {t('modal_add_property')}
             </DialogTitle>
-            <p style={{ fontSize: 12, color: "var(--nav-text-dim)", marginTop: 4 }}>Add a new property to your portfolio</p>
+            <p style={{ fontSize: 12, color: "var(--nav-text-dim)", marginTop: 4 }}>{t("modal_add_property_subtitle")}</p>
           </DialogHeader>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 mt-6">
             <div className="space-y-1.5">
@@ -406,7 +406,7 @@ function AddPropertyModal({ isVerified }: { isVerified?: boolean }) {
               }}
             >
               {createProperty.isPending || isLookingUpTenant
-                ? <><Loader2 size={16} className="animate-spin" /> Processing…</>
+                ? <><Loader2 size={16} className="animate-spin" /> {t("processing_text")}</>
                 : t('modal_submit_property')
               }
             </button>
@@ -499,7 +499,7 @@ export default function OwnerDashboard() {
           <div className="flex items-center justify-between gap-4">
             <div>
               <p style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--nav-text-dim)", marginBottom: 4 }}>
-                OWNER PORTAL
+                {t("owner_portal_label")}
               </p>
               <h1
                 style={{
@@ -552,7 +552,7 @@ export default function OwnerDashboard() {
                     fontSize: 10, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 10,
                     color: isDark ? "rgba(111,255,233,0.65)" : "var(--tiffany)",
                   }}>
-                    LAST PAYOUT
+                    {t("owner_last_payout")}
                   </p>
                   <p
                     className="font-display"
@@ -596,7 +596,7 @@ export default function OwnerDashboard() {
                 }}>
                   <StatusPill status={latestPayment.status} isDark={isDark} />
                   <p style={{ fontSize: 11, color: "var(--nav-text-dim)", marginTop: 8 }}>
-                    Collected: <span style={{ color: isDark ? "#6FFFE9" : "#007a6e", fontWeight: 700 }}>₹{latestPayment.amountCollected.toLocaleString()}</span>
+                    {t("owner_kpi_collected")}: <span style={{ color: isDark ? "#6FFFE9" : "#007a6e", fontWeight: 700 }}>₹{latestPayment.amountCollected.toLocaleString()}</span>
                   </p>
                 </div>
               </div>
@@ -604,7 +604,7 @@ export default function OwnerDashboard() {
           ) : (
             <div>
               <p style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--nav-text-dim)", marginBottom: 10 }}>
-                PAYOUT STATUS
+                {t("owner_payout_status")}
               </p>
               <h2
                 className="font-display"
@@ -613,7 +613,7 @@ export default function OwnerDashboard() {
                 {t('owner_awaiting_payout')}
               </h2>
               <p style={{ fontSize: 12, color: "var(--nav-text-dim)", marginTop: 8 }}>
-                Add a property and complete verification to start receiving payouts.
+                {t("owner_awaiting_desc")}
               </p>
             </div>
           )}
@@ -622,33 +622,33 @@ export default function OwnerDashboard() {
         {/* ── KPI Row ── */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
           <KpiCard
-            label="Total Advanced"
+            label={t("owner_kpi_total_advanced")}
             value={`₹${totalAdvanced.toLocaleString()}`}
-            sub="lifetime"
+            sub={t("owner_kpi_lifetime")}
             icon={<ArrowUpRight size={14} />}
             colorScheme="violet"
             testId="stat-total-advanced"
           />
           <KpiCard
-            label="Collected"
+            label={t("owner_kpi_collected")}
             value={`₹${totalCollected.toLocaleString()}`}
-            sub="from tenants"
+            sub={t("owner_kpi_from_tenants")}
             accent
             icon={<TrendingUp size={14} />}
             colorScheme="sage"
             testId="stat-total-collected"
           />
           <KpiCard
-            label="Net Exposure"
+            label={t("owner_kpi_net_exposure")}
             value={`₹${totalExposure.toLocaleString()}`}
-            sub="outstanding"
+            sub={t("owner_kpi_outstanding")}
             icon={<Activity size={14} />}
             colorScheme={totalExposure > 0 ? "rose" : "sage"}
           />
           <KpiCard
-            label="Collection Rate"
+            label={t("owner_kpi_collection_rate")}
             value={`${collectionRate}%`}
-            sub={collectionRate >= 90 ? "Excellent" : collectionRate >= 70 ? "Good" : "Needs attention"}
+            sub={collectionRate >= 90 ? t("owner_kpi_excellent") : collectionRate >= 70 ? t("owner_kpi_good") : t("owner_kpi_needs_attention")}
             accent={collectionRate >= 90}
             icon={<BarChart2 size={14} />}
             colorScheme={collectionRate >= 90 ? "sage" : collectionRate >= 70 ? "gold" : "rose"}
@@ -668,16 +668,16 @@ export default function OwnerDashboard() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <BarChart2 size={16} style={{ color: "#6FFFE9" }} />
-                  <span style={{ fontWeight: 600, fontSize: "0.9rem", letterSpacing: "-0.02em" }}>Monthly Collection History</span>
+                  <span style={{ fontWeight: 600, fontSize: "0.9rem", letterSpacing: "-0.02em" }}>{t("owner_chart_title")}</span>
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-1.5">
                     <span style={{ width: 8, height: 8, background: isDark ? "#27272a" : "#e5e7eb", display: "inline-block" }} />
-                    <span style={{ fontSize: 10, color: "var(--nav-text-dim)", letterSpacing: "0.04em" }}>ADVANCED</span>
+                    <span style={{ fontSize: 10, color: "var(--nav-text-dim)", letterSpacing: "0.04em" }}>{t("owner_chart_advanced")}</span>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <span style={{ width: 8, height: 8, background: "#6FFFE9", display: "inline-block" }} />
-                    <span style={{ fontSize: 10, color: "var(--nav-text-dim)", letterSpacing: "0.04em" }}>COLLECTED</span>
+                    <span style={{ fontSize: 10, color: "var(--nav-text-dim)", letterSpacing: "0.04em" }}>{t("owner_chart_collected")}</span>
                   </div>
                 </div>
               </div>
@@ -748,9 +748,9 @@ export default function OwnerDashboard() {
                   background: "var(--surface-card)", border: "1px dashed rgba(255,255,255,0.10)",
                 }}>
                   <Building2 size={28} style={{ color: "rgba(255,255,255,0.12)", margin: "0 auto 12px" }} />
-                  <p style={{ fontSize: 13, color: "var(--nav-text-dim)" }}>No properties yet</p>
+                  <p style={{ fontSize: 13, color: "var(--nav-text-dim)" }}>{t("owner_no_properties_yet")}</p>
                   <p style={{ fontSize: 11, color: "var(--nav-text-dim)", opacity: 0.6, marginTop: 4 }}>
-                    Add your first property to get started
+                    {t("owner_add_first_property")}
                   </p>
                 </div>
               )}

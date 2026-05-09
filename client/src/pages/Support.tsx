@@ -1,7 +1,9 @@
 import { Mail, Phone, Clock } from "lucide-react";
 import { LegalHeader } from "@/components/LegalHeader";
+import { useI18n } from "@/hooks/use-i18n";
 
 export default function Support() {
+  const { t } = useI18n();
   return (
     <div className="min-h-screen bg-background text-foreground p-8 pb-24" style={{ fontFamily: 'Inter, sans-serif' }}>
       <div className="max-w-3xl mx-auto">
@@ -25,7 +27,7 @@ export default function Support() {
               <div className="flex items-center gap-4">
                 <Mail className="w-6 h-6 text-white" />
                 <div>
-                  <p className="text-white font-medium">Email Support</p>
+                  <p className="text-white font-medium">{t("support_email_label")}</p>
                   <a 
                     href="mailto:support@rentflo.com" 
                     className="text-zinc-400 hover:text-white transition-colors"
@@ -39,7 +41,7 @@ export default function Support() {
               <div className="flex items-center gap-4">
                 <Phone className="w-6 h-6 text-white" />
                 <div>
-                  <p className="text-white font-medium">Phone Support</p>
+                  <p className="text-white font-medium">{t("support_phone_label")}</p>
                   <a 
                     href="tel:+911234567890" 
                     className="text-zinc-400 hover:text-white transition-colors"
@@ -53,7 +55,7 @@ export default function Support() {
               <div className="flex items-center gap-4">
                 <Clock className="w-6 h-6 text-white" />
                 <div>
-                  <p className="text-white font-medium">Business Hours</p>
+                  <p className="text-white font-medium">{t("support_hours_label")}</p>
                   <p className="text-zinc-400">Monday - Friday: 9:00 AM - 6:00 PM IST</p>
                   <p className="text-zinc-400">Saturday: 10:00 AM - 2:00 PM IST</p>
                 </div>
@@ -88,7 +90,7 @@ export default function Support() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold mb-4 text-white">Escalation</h2>
+            <h2 className="text-xl font-semibold mb-4 text-white">{t("support_escalation")}</h2>
             <p>
               If your issue remains unresolved after 48 hours, please escalate to our senior support team at{" "}
               <a href="mailto:escalation@rentflo.com" className="text-white underline">escalation@rentflo.com</a>

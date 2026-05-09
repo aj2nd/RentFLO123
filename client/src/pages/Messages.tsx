@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/use-auth";
+import { useI18n } from "@/hooks/use-i18n";
 import { MessageSquare, Send, Building2, Loader2, AlertCircle, ArrowLeft } from "lucide-react";
 import type { Property, Message } from "@shared/schema";
 
@@ -24,6 +25,7 @@ function formatDate(ts: string | Date | null) {
 
 export default function Messages() {
   const { user } = useAuth();
+  const { t } = useI18n();
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
   const [showChat, setShowChat] = useState(false);
@@ -103,7 +105,7 @@ export default function Messages() {
         }`}
       >
         <div className="px-5 py-5 border-b border-white/[0.06]">
-          <h1 className="text-xs font-bold uppercase tracking-[2px] text-white/40">Messages</h1>
+          <h1 className="text-xs font-bold uppercase tracking-[2px] text-white/40">{t("messages_heading")}</h1>
         </div>
 
         <div className="flex-1 overflow-y-auto">
@@ -114,7 +116,7 @@ export default function Messages() {
           ) : properties.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 px-6 text-center gap-3">
               <Building2 size={28} className="text-white/10" />
-              <p className="text-xs text-white/25 leading-relaxed">No properties linked to your account yet.</p>
+              <p className="text-xs text-white/25 leading-relaxed">{t("messages_no_properties")}</p>
             </div>
           ) : (
             properties.map(p => (
@@ -135,7 +137,7 @@ export default function Messages() {
                   <div className="min-w-0">
                     <p className="text-xs font-semibold text-white/70 truncate leading-tight">{p.address}</p>
                     <p className="text-[10px] text-white/25 mt-0.5 font-medium tracking-wide uppercase">
-                      {user?.role === "OWNER" ? "Tenant thread" : "Landlord thread"}
+                      {user?.role === "OWNER" ? t("messages_tenant_thread") : t("messages_landlord_thread")}
                     </p>
                   </div>
                 </div>
@@ -153,8 +155,10 @@ export default function Messages() {
               <MessageSquare size={24} className="text-white/10" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-white/30">Select a property to start messaging</p>
-              <p className="text-xs text-white/15 mt-1">Direct communication with your {user?.role === "OWNER" ? "tenant" : "landlord"}</p>
+              <p className="text-sm font-semibold text-white/30">{t("messages_select_property")}</p>
+              <p className="text-xs text-white/15 mt-1">
+                {t("messages_private_thread")} · {user?.role === "OWNER" ? t("messages_role_tenant") : t("messages_role_landlord")}
+              </p>
             </div>
           </div>
         ) : (
@@ -175,7 +179,7 @@ export default function Messages() {
               <div className="min-w-0">
                 <p className="text-sm font-semibold text-white/80 leading-tight truncate">{selectedProperty.address}</p>
                 <p className="text-[10px] text-white/25 uppercase tracking-[1.5px] font-medium mt-0.5">
-                  {user?.role === "OWNER" ? "Tenant" : "Landlord"} · Private thread
+                  {user?.role === "OWNER" ? t("messages_role_tenant") : t("messages_role_landlord")} · {t("messages_private_thread")}
                 </p>
               </div>
             </div>
@@ -190,7 +194,7 @@ export default function Messages() {
                 <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
                   <MessageSquare size={28} className="text-white/10" />
                   <p className="text-xs text-white/25 leading-relaxed">
-                    No messages yet.<br />Say hello to your {user?.role === "OWNER" ? "tenant" : "landlord"}.
+                    {user?.role === "OWNER" ? t("messages_no_msgs_tenant") : t("messages_no_msgs_landlord")}
                   </p>
                 </div>
               ) : (
@@ -241,7 +245,7 @@ export default function Messages() {
               {sendMutation.isError && (
                 <div className="flex items-center gap-2 text-red-400/70 text-xs mb-3">
                   <AlertCircle size={12} />
-                  <span>Failed to send. Please try again.</span>
+                  <span>{t("messages_failed_send")}</span>
                 </div>
               )}
               <div className="flex items-end gap-2 sm:gap-3">
@@ -249,7 +253,7 @@ export default function Messages() {
                   value={draft}
                   onChange={e => setDraft(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder={`Message your ${user?.role === "OWNER" ? "tenant" : "landlord"}…`}
+                  placeholder={user?.role === "OWNER" ? t("messages_placeholder_tenant") : t("messages_placeholder_landlord")}
                   rows={1}
                   maxLength={2000}
                   data-testid="input-message"
@@ -272,7 +276,7 @@ export default function Messages() {
                     : <Send size={16} />}
                 </button>
               </div>
-              <p className="text-[9px] text-white/15 mt-2 text-right font-medium tracking-wide hidden sm:block">Enter to send · Shift+Enter for new line</p>
+              <p className="text-[9px] text-white/15 mt-2 text-right font-medium tracking-wide hidden sm:block">{t("messages_enter_hint")}</p>
             </div>
           </>
         )}

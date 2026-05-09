@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/use-auth";
+import { useI18n } from "@/hooks/use-i18n";
 import { CheckCircle, FileText, ExternalLink, Clock, Download, Send } from "lucide-react";
 import type { Property, Agreement } from "@shared/schema";
 
@@ -95,6 +96,7 @@ function ordinal(n: number) {
 export default function AgreementPage() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { t } = useI18n();
   const [, setLocation] = useLocation();
   const [scrolledToBottom, setScrolledToBottom] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -109,7 +111,6 @@ export default function AgreementPage() {
     if (params.get("esign") === "done") {
       window.history.replaceState({}, "", "/agreement");
       toast({ title: "E-sign complete", description: "Your signature has been submitted. Agreement will update shortly." });
-      // Poll for the status update
       const interval = setInterval(() => {
         refetch();
       }, 3000);
@@ -132,10 +133,9 @@ export default function AgreementPage() {
         toast({ title: "Already sent", description: "Your agreement is already out for e-signing." });
         return;
       }
-      // If Leegality returns a direct signing URL for the first invitee, open it
       const signingUrl = result.inviteeLinks?.[0]?.signingUrl;
       if (signingUrl) {
-        toast({ title: "Agreement sent!", description: "Opening Leegality e-sign now…" });
+        toast({ title: "Agreement sent!", description: "Opening Leegality e-sign now\u2026" });
         window.location.assign(signingUrl);
       } else {
         toast({ title: "Agreement sent!", description: "You'll receive a signing link on your registered email/phone." });
@@ -181,26 +181,26 @@ export default function AgreementPage() {
           <div className="mb-8 pt-2">
             <div className="inline-flex items-center gap-2 px-3 py-1 border border-[#6FFFE9]/35 mb-4">
               <FileText size={13} className="text-[#6FFFE9]" />
-              <span className="text-xs font-semibold uppercase tracking-wider text-[#9DEFE4]">Tripartite Agreement</span>
+              <span className="text-xs font-semibold uppercase tracking-wider text-[#9DEFE4]">{t("agr_badge")}</span>
             </div>
             <h1 className="text-3xl sm:text-4xl font-bold tracking-tighter mb-1 text-[#6FFFE9]"
               style={{ fontFamily: "Playfair Display, Georgia, serif" }}>
-              Sign Your Agreement
+              {t("agr_title")}
             </h1>
             <p className="text-[#9DEFE4] text-sm sm:text-base">
-              Read the full agreement below, then execute it with a legally valid Aadhaar e-sign via Leegality.
+              {t("agr_subtitle_leegality")}
             </p>
           </div>
 
           {/* No property */}
           {!data?.property && (
             <div className="border border-[#6FFFE9]/35 p-6 text-[#9DEFE4] text-sm">
-              No property found. Please complete your property setup first.
+              {t("agr_no_property")}
               <Button
                 className="mt-4 h-10 bg-[#6FFFE9] text-black hover:bg-[#6FFFE9]/85 font-bold rounded-none block"
                 onClick={() => setLocation("/setup")}
               >
-                Go to Setup
+                {t("agr_go_to_setup")}
               </Button>
             </div>
           )}
@@ -211,12 +211,12 @@ export default function AgreementPage() {
               <div className="flex items-start gap-4">
                 <CheckCircle className="w-10 h-10 text-[#6FFFE9] shrink-0 mt-0.5" />
                 <div>
-                  <h2 className="text-xl font-bold text-[#6FFFE9]">Agreement Signed</h2>
+                  <h2 className="text-xl font-bold text-[#6FFFE9]">{t("agr_signed_title")}</h2>
                   <p className="text-[#9DEFE4] text-sm mt-1">
-                    Your digital signature has been recorded on the RentFLO ledger.
+                    {t("agr_signed_desc")}
                     {data.agreement?.status === "FULLY_SIGNED"
-                      ? " Both parties have signed — the agreement is fully executed."
-                      : " Waiting for the other party to sign."}
+                      ? " " + t("agr_both_signed")
+                      : " " + t("agr_waiting_other")}
                   </p>
                 </div>
               </div>
@@ -226,7 +226,7 @@ export default function AgreementPage() {
                   onClick={() => setLocation(dashboardPath)}
                   data-testid="button-go-to-dashboard"
                 >
-                  Go to Dashboard
+                  {t("agr_go_to_dashboard")}
                 </Button>
                 <Button
                   variant="outline"
@@ -282,7 +282,7 @@ export default function AgreementPage() {
                   data-testid="button-download-agreement"
                 >
                   <Download size={15} className="mr-2" />
-                  Download PDF
+                  {t("agr_download_pdf")}
                 </Button>
               </div>
             </div>
@@ -296,7 +296,7 @@ export default function AgreementPage() {
                 <div className="px-5 py-3 border-b border-[#6FFFE9]/20 flex items-center gap-2">
                   <FileText size={14} className="text-[#9DEFE4]" />
                   <span className="text-xs uppercase tracking-wider text-[#9DEFE4] font-semibold">
-                    Rent Advance Agreement — {data.property.address}
+                    {t("agr_rent_advance")} — {data.property.address}
                   </span>
                 </div>
                 <div
@@ -309,28 +309,26 @@ export default function AgreementPage() {
                 </div>
                 {!scrolledToBottom && (
                   <div className="px-5 py-2 border-t border-[#6FFFE9]/20 text-[#9DEFE4]/60 text-xs text-center">
-                    ↓ Scroll to read the full agreement before signing
+                    {t("agr_scroll_hint")}
                   </div>
                 )}
               </div>
 
               {/* Leegality e-sign CTA */}
               {leegalitySent ? (
-                /* Already sent — waiting for signer */
                 <div className="border border-yellow-500/50 bg-yellow-500/5 p-5 sm:p-6 flex items-start gap-4">
                   <Clock className="w-9 h-9 text-yellow-400 shrink-0 mt-0.5" />
                   <div className="flex-1">
-                    <h2 className="text-base font-semibold text-yellow-400">Awaiting E-Signature</h2>
+                    <h2 className="text-base font-semibold text-yellow-400">{t("agr_awaiting_esign")}</h2>
                     <p className="text-zinc-400 text-sm mt-1">
-                      The agreement has been sent for e-signing via Leegality. Check your email or phone for the signing link.
+                      {t("agr_esign_sent_desc")}
                     </p>
                     <p className="text-zinc-600 text-xs mt-2">
-                      This page will update automatically once all parties have signed.
+                      {t("agr_esign_auto_update")}
                     </p>
                   </div>
                 </div>
               ) : (
-                /* Send for e-sign */
                 <div className="border border-[#6FFFE9]/45 bg-[#6FFFE9]/[0.04] p-5 sm:p-6 space-y-4">
                   <div className="flex items-start gap-3">
                     <div className="w-10 h-10 flex items-center justify-center bg-[#6FFFE9]/15 border border-[#6FFFE9]/30 shrink-0">
@@ -338,10 +336,10 @@ export default function AgreementPage() {
                     </div>
                     <div className="flex-1">
                       <h2 className="text-base font-semibold uppercase tracking-wider text-[#9DEFE4]">
-                        E-Sign via Leegality
+                        {t("agr_esign_via_leegality")}
                       </h2>
                       <p className="text-sm text-zinc-400 mt-1">
-                        Read the full agreement above, then click below to execute it with a legally valid Aadhaar e-sign through Leegality.
+                        {t("agr_esign_read_desc")}
                       </p>
                     </div>
                   </div>
@@ -356,12 +354,12 @@ export default function AgreementPage() {
                     {sendMutation.isPending ? (
                       <>
                         <div className="w-4 h-4 border-2 border-black/30 border-t-black animate-spin" />
-                        Sending…
+                        {t("agr_sending")}
                       </>
                     ) : (
                       <>
                         <ExternalLink size={16} />
-                        {scrolledToBottom ? "Send for E-Sign" : "Scroll to Read Agreement First"}
+                        {scrolledToBottom ? t("agr_send_for_esign") : t("agr_scroll_first")}
                       </>
                     )}
                   </Button>
@@ -374,7 +372,7 @@ export default function AgreementPage() {
                         <path d="M10 16l4 4 8-8" stroke="#22C55E" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                       <span className="text-[11px] font-semibold tracking-wide text-zinc-300">Leegality</span>
-                      <span className="text-[10px] text-zinc-600 ml-0.5">· Legally Valid E-Sign · IT Act 2000</span>
+                      <span className="text-[10px] text-zinc-600 ml-0.5">{t("agr_leegality_tagline")}</span>
                     </div>
                   </div>
                 </div>
@@ -383,9 +381,9 @@ export default function AgreementPage() {
               {/* Party status pills */}
               <div className="grid grid-cols-3 gap-3">
                 {[
-                  { label: "RentFLO", signed: true },
-                  { label: "Landlord", signed: !!(data.agreement?.ownerSignatureUrl) || leegalityDone },
-                  { label: "Tenant", signed: !!(data.agreement?.tenantSignatureUrl) || leegalityDone },
+                  { label: t("agr_rentflo_party"), signed: true },
+                  { label: t("agr_landlord_party"), signed: !!(data.agreement?.ownerSignatureUrl) || leegalityDone },
+                  { label: t("agr_tenant_party"), signed: !!(data.agreement?.tenantSignatureUrl) || leegalityDone },
                 ].map(({ label, signed: s }) => (
                   <div
                     key={label}
@@ -397,7 +395,7 @@ export default function AgreementPage() {
                       {label}
                     </span>
                     <span className={`text-[10px] mt-0.5 ${s ? "text-[#6FFFE9]" : "text-[#9DEFE4]/30"}`}>
-                      {s ? "✓ Signed" : "Pending"}
+                      {s ? t("agr_signed_tick") : t("agr_pending")}
                     </span>
                   </div>
                 ))}

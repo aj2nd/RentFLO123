@@ -1,5 +1,6 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
+import { useI18n } from "@/hooks/use-i18n";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Bell, CheckCheck, Loader2, Home, Wrench, CreditCard, AlertCircle, CalendarClock } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,7 @@ function timeAgo(date: string | Date | null) {
 
 export default function NotificationsPage() {
   const { user } = useAuth();
+  const { t } = useI18n();
 
   const { data: notifications, isLoading } = useQuery<Notification[]>({
     queryKey: ["/api/notifications"],
@@ -63,9 +65,9 @@ export default function NotificationsPage() {
 
         <header className="flex items-center justify-between mb-8">
           <div>
-            <p className="text-[10px] uppercase tracking-widest text-zinc-500 mb-1">Inbox</p>
+            <p className="text-[10px] uppercase tracking-widest text-zinc-500 mb-1">{t("notif_inbox")}</p>
             <h1 className="text-3xl sm:text-4xl font-bold tracking-tighter flex items-center gap-3">
-              Notifications
+              {t("notif_title")}
               {unreadCount > 0 && (
                 <span className="inline-flex items-center justify-center min-w-[22px] h-5 px-1.5 bg-[#6FFFE9] text-black text-[10px] font-bold rounded-full" data-testid="badge-unread-count">
                   {unreadCount}
@@ -83,7 +85,7 @@ export default function NotificationsPage() {
               data-testid="button-mark-all-read"
             >
               <CheckCheck size={13} />
-              Mark all read
+              {t("notif_mark_all_read")}
             </Button>
           )}
         </header>
@@ -91,8 +93,8 @@ export default function NotificationsPage() {
         {(!notifications || notifications.length === 0) && (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <Bell size={32} className="text-zinc-700 mb-3" />
-            <p className="text-zinc-500 text-sm">No notifications yet</p>
-            <p className="text-zinc-700 text-xs mt-1">We'll notify you about rent, repairs, and more</p>
+            <p className="text-zinc-500 text-sm">{t("notif_empty")}</p>
+            <p className="text-zinc-700 text-xs mt-1">{t("notif_empty_desc")}</p>
           </div>
         )}
 
