@@ -187,6 +187,21 @@ export default function Verify() {
                 <p className="text-[11px] text-zinc-500 text-center">
                   {t('didit_redirect_note')}
                 </p>
+
+                {/* Didit branding */}
+                <div className="flex items-center justify-center gap-2 pt-1">
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 border border-white/[0.07] bg-white/[0.03]">
+                    {/* Didit logo mark — partial-ring circle */}
+                    <svg width="16" height="16" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="16" cy="16" r="13" stroke="#4F8EF7" strokeWidth="4" strokeLinecap="round"
+                        strokeDasharray="62 20" strokeDashoffset="-5" />
+                    </svg>
+                    <span className="text-[11px] font-semibold tracking-wide text-zinc-300" style={{ fontFamily: "Inter, sans-serif" }}>
+                      Didit
+                    </span>
+                    <span className="text-[10px] text-zinc-600 ml-0.5">· Identity Verification</span>
+                  </div>
+                </div>
               </div>
 
               <div className="flex items-center gap-3">
