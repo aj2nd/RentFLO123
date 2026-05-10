@@ -145,3 +145,5 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
     return;
   }
 };
+export { registerAuthRoutes } from "./routes";
+
