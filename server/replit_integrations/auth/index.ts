@@ -19,7 +19,7 @@ const getOidcConfig = memoize(
 );
 
 export function getSession() {
-  const sessionTtl = 30 * 24 * 60 * 60 * 1000; // 30 days
+  const sessionTtl = 30 * 24 * 60 * 60 * 1000;
   const pgStore = connectPg(session);
   const sessionStore = new pgStore({
     conString: process.env.DATABASE_URL,
@@ -84,7 +84,7 @@ export async function setupAuth(app: Express) {
       name: "google",
       config,
       scope: "openid email profile",
-      callbackURL: `https://rentflo.in/api/auth/google/callback`,
+      callbackURL: "https://rentflo.in/api/auth/google/callback",
     },
     verify
   );
@@ -107,7 +107,7 @@ export async function setupAuth(app: Express) {
       res.send(`<!DOCTYPE html><html><head>
         <script>
           window.location.href = "rentflo://auth/callback?success=true";
-          setTimeout(() => { window.location.href = "/"; }, 1000);
+          setTimeout(function() { window.location.href = "/"; }, 1000);
         </script>
         </head><body>Login successful, returning to app...</body></html>`);
     });
