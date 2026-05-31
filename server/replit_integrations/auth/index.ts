@@ -9,7 +9,6 @@ import { authStorage } from "./storage";
 
 const getOidcConfig = memoize(
   async () => {
-    // UPDATED: Points to Google instead of Replit
     return await client.discovery(
       new URL("https://accounts.google.com"),
       process.env.GOOGLE_CLIENT_ID!,
@@ -39,7 +38,6 @@ export function getSession() {
       sameSite: "none",
       maxAge: sessionTtl,
     },
-    },
   });
 }
 
@@ -57,8 +55,8 @@ async function upsertUser(claims: any) {
   await authStorage.upsertUser({
     id: claims["sub"],
     email: claims["email"],
-    firstName: claims["given_name"] || claims["first_name"], // Google uses given_name
-    lastName: claims["family_name"] || claims["last_name"],   // Google uses family_name
+    firstName: claims["given_name"] || claims["first_name"],
+    lastName: claims["family_name"] || claims["last_name"],
     profileImageUrl: claims["picture"] || claims["profile_image_url"],
   });
 }
@@ -81,15 +79,12 @@ export async function setupAuth(app: Express) {
     verified(null, user);
   };
 
-  // UPDATED: Using a static Google strategy for Rentflo
-  const strategyName = "google";
   const strategy = new Strategy(
     {
-      name: strategyName,
+      name: "google",
       config,
       scope: "openid email profile",
-      // This must match your Google Console Redirect URI exactly
-      callbackURL: `https://rentflo.in/api/auth/google/callback`, 
+      callbackURL: `https://rentflo.in/api/auth/google/callback`,
     },
     verify
   );
@@ -109,10 +104,8 @@ export async function setupAuth(app: Express) {
     passport.authenticate("google", {
       failureRedirect: "/api/login",
     })(req, res, next, () => {
-      // After successful login, close the Chrome Custom Tab and return to app
       res.send(`<!DOCTYPE html><html><head>
         <script>
-          // Try deep link first (Android), fall back to web redirect
           window.location.href = "rentflo://auth/callback?success=true";
           setTimeout(() => { window.location.href = "/"; }, 1000);
         </script>
@@ -120,13 +113,11 @@ export async function setupAuth(app: Express) {
     });
   });
 
-  // Support both GET and POST logout
   const doLogout = (req: any, res: any) => {
     req.logout(() => { res.redirect("/"); });
   };
   app.get("/api/logout", doLogout);
   app.post("/api/logout", doLogout);
-  });
 }
 
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
@@ -153,5 +144,5 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
     return;
   }
 };
-export { registerAuthRoutes } from "./routes";
 
+export { registerAuthRoutes } from "./routes";
