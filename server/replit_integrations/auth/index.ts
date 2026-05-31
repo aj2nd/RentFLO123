@@ -99,26 +99,33 @@ export async function setupAuth(app: Express) {
   passport.deserializeUser((user: Express.User, cb) => cb(null, user));
 
   app.get("/api/login", (req, res, next) => {
-    if (req.isAuthenticated()) {
-      return res.redirect("/");
-    }
+    if (req.isAuthenticated()) return res.redirect("/");
     passport.authenticate("google", {
       scope: ["openid", "email", "profile"],
     })(req, res, next);
   });
 
-  // UPDATED: Matches the callback URL in your JSON file
   app.get("/api/auth/google/callback", (req, res, next) => {
     passport.authenticate("google", {
-      successReturnToOrRedirect: "/",
       failureRedirect: "/api/login",
-    })(req, res, next);
+    })(req, res, next, () => {
+      // After successful login, close the Chrome Custom Tab and return to app
+      res.send(`<!DOCTYPE html><html><head>
+        <script>
+          // Try deep link first (Android), fall back to web redirect
+          window.location.href = "rentflo://auth/callback?success=true";
+          setTimeout(() => { window.location.href = "/"; }, 1000);
+        </script>
+        </head><body>Login successful, returning to app...</body></html>`);
+    });
   });
 
-  app.get("/api/logout", (req, res) => {
-    req.logout(() => {
-      res.redirect("/");
-    });
+  // Support both GET and POST logout
+  const doLogout = (req: any, res: any) => {
+    req.logout(() => { res.redirect("/"); });
+  };
+  app.get("/api/logout", doLogout);
+  app.post("/api/logout", doLogout);
   });
 }
 
