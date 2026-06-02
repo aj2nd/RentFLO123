@@ -11,12 +11,12 @@ export function serveStatic(app: Express) {
     );
   }
 
-  // Serve static files first (this includes .well-known/, images, fonts, etc.)
+  // Serve static files first (.well-known, images, etc.)
   app.use(express.static(distPath));
 
-  // SPA fallback - only for GET requests
-  app.get("*", (req, res) => {
-    // Protect .well-known paths (assetlinks.json, etc.)
+  // SPA fallback using regex (required by newer path-to-regexp)
+  app.get(/.*/, (req, res) => {
+    // Protect .well-known paths (assetlinks.json)
     if (req.path.startsWith("/.well-known/")) {
       return res.status(404).json({ message: "Not found" });
     }
@@ -26,7 +26,6 @@ export function serveStatic(app: Express) {
       return res.status(404).json({ message: "Not found" });
     }
 
-    // Serve index.html for all other client routes
     res.sendFile(path.resolve(distPath, "index.html"));
   });
 }
