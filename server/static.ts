@@ -11,36 +11,28 @@ export function serveStatic(app: Express) {
     );
   }
 
-  // Serve static files first
   app.use(express.static(distPath));
 
-  // Explicitly serve assetlinks.json for Android App Links (Deep Linking)
+  // === ANDROID APP LINKS - SERVED DIRECTLY (RELIABLE) ===
   app.get("/.well-known/assetlinks.json", (_req, res) => {
     res.setHeader("Content-Type", "application/json");
     res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
     
-    const assetlinksPath = path.resolve(distPath, ".well-known/assetlinks.json");
-    
-    if (fs.existsSync(assetlinksPath)) {
-      res.sendFile(assetlinksPath);
-    } else {
-      // Fallback with correct JSON if file not found in build
-      res.status(200).json([
-        {
-          "relation": ["delegate_permission/common.handle_all_urls"],
-          "target": {
-            "namespace": "android_app",
-            "package_name": "co.median.android.krokxbl",
-            "sha256_cert_fingerprints": [
-              "5eeabb8165e21a01a7b6ebfffc4d741b7bb986a5df1361e01140748c3e379454"
-            ]
-          }
+    res.status(200).json([
+      {
+        "relation": ["delegate_permission/common.handle_all_urls"],
+        "target": {
+          "namespace": "android_app",
+          "package_name": "co.median.android.krokxbl",
+          "sha256_cert_fingerprints": [
+            "5eeabb8165e21a01a7b6ebfffc4d741b7bb986a5df1361e01140748c3e379454"
+          ]
         }
-      ]);
-    }
+      }
+    ]);
   });
 
-  // SPA fallback using regex (required by newer path-to-regexp)
+  // SPA fallback
   app.get(/.*/, (req, res) => {
     if (req.path.startsWith("/.well-known/")) {
       return res.status(404).json({ message: "Not found" });
