@@ -615,5 +615,5 @@ export default {
     ledger_pending: "लंबित",
     ledger_export: "निर्यात",
 
-};
+},
 };
