@@ -390,3 +390,4 @@ export default {
     didit_redirect_note: "ನಿಮ್ಮನ್ನು Didit ಗೆ ಕಳುಹಿಸಲಾಗುತ್ತದೆ ಮತ್ತು ಮುಗಿದ ಮೇಲೆ RentFLO ಗೆ ಮರಳಿ ತರಲಾಗುತ್ತದೆ.",
 
 };
+};
