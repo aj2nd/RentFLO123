@@ -1,5 +1,4 @@
 export default {
-  hi: {
     home: "होम",
     settings: "सेटिंग्स",
     welcome_message: "RentFLO में आपका स्वागत है",
@@ -615,5 +614,4 @@ export default {
     ledger_pending: "लंबित",
     ledger_export: "निर्यात",
 
-},
 };
