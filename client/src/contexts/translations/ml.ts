@@ -1,5 +1,4 @@
 export default {
-  ml: {
     home: "ഹോം",
     settings: "ക്രമീകരണങ്ങൾ",
     welcome_message: "RentFLO ലേക്ക് സ്വാഗതം",
@@ -404,5 +403,4 @@ export default {
     didit_button: "Didit ഉപയോഗിച്ച് പരിശോധിക്കുക",
     didit_opening: "Didit തുറക്കുന്നു…",
     didit_redirect_note: "നിങ്ങളെ Didit-ലേക്ക് അയയ്ക്കും, പൂർത്തിയായാൽ RentFLO-ലേക്ക് തിരികെ കൊണ്ടുവരും.",
-},
 };
