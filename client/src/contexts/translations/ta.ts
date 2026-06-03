@@ -1,5 +1,4 @@
 export default {
-  ta: {
     home: "முகப்பு",
     settings: "அமைப்புகள்",
     welcome_message: "RentFLO க்கு வரவேற்கிறோம்",
@@ -405,5 +404,4 @@ export default {
     didit_opening: "Didit திறக்கப்படுகிறது…",
     didit_redirect_note: "நீங்கள் Didit க்கு அனுப்பப்படுவீர்கள், முடிந்ததும் RentFLO க்கு திரும்பி அழைத்து வரப்படுவீர்கள்.",
 
-},
 };
