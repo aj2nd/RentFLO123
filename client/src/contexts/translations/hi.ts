@@ -616,3 +616,4 @@ export default {
     ledger_export: "निर्यात",
 
 };
+};
