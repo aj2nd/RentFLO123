@@ -1,5 +1,4 @@
 export default {
-  en: {
     // ── Existing landing page keys ──────────────────────────────────────────
     home: "Home",
     settings: "Settings",
@@ -662,5 +661,4 @@ export default {
     ledger_pending: "Pending",
     ledger_export: "Export",
 
-},
 };
