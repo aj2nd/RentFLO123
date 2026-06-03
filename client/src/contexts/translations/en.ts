@@ -662,5 +662,5 @@ export default {
     ledger_pending: "Pending",
     ledger_export: "Export",
 
-};
+},
 };
