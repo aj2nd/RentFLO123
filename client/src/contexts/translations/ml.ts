@@ -405,3 +405,4 @@ export default {
     didit_opening: "Didit തുറക്കുന്നു…",
     didit_redirect_note: "നിങ്ങളെ Didit-ലേക്ക് അയയ്ക്കും, പൂർത്തിയായാൽ RentFLO-ലേക്ക് തിരികെ കൊണ്ടുവരും.",
 };
+};
