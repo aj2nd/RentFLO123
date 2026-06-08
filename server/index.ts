@@ -158,6 +158,107 @@ app.use(
 
 app.use(express.urlencoded({ extended: false, limit: "2mb" }));
 
+// ── Public account-deletion page ────────────────────────────────────────────
+// Required by Google Play Store "Data Deletion URL" field. Must be a
+// publicly crawlable URL that explains how users can request account and
+// data deletion — including users who never installed the app. Rendered
+// inline so Google's policy crawler sees the content on first paint
+// instead of an empty SPA shell.
+const DELETE_ACCOUNT_HTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="index, follow">
+<title>Delete Your Account — RentFLO</title>
+<meta name="description" content="Request deletion of your RentFLO account and personal data.">
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#0F0F0F;color:#E5E5E5;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:720px;margin:0 auto;padding:48px 24px}
+  h1{font-size:32px;margin:0 0 8px;color:#fff;letter-spacing:-0.02em}
+  h2{font-size:20px;margin:32px 0 12px;color:#fff;letter-spacing:-0.01em}
+  p,li{font-size:16px;color:#B5B5B5}
+  ol,ul{padding-left:20px}
+  li{margin:6px 0}
+  a{color:#6FFFE9;text-decoration:none}
+  a:hover{text-decoration:underline}
+  .lede{font-size:18px;color:#D4D4D4;margin-bottom:32px}
+  .card{background:#1A1A1A;border:1px solid #2A2A2A;padding:24px;margin:16px 0}
+  .label{font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#6FFFE9;margin-bottom:4px}
+  footer{margin-top:48px;padding-top:24px;border-top:1px solid #2A2A2A;font-size:14px;color:#777}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Delete Your RentFLO Account</h1>
+  <p class="lede">You can permanently delete your RentFLO account and the personal data associated with it. Here's how.</p>
+
+  <h2>If you have the app installed</h2>
+  <ol>
+    <li>Open the RentFLO app and sign in.</li>
+    <li>Go to <strong>Profile</strong>.</li>
+    <li>Tap <strong>Delete Account</strong> and confirm.</li>
+  </ol>
+  <p>Your account is removed from our active systems immediately and you will be signed out.</p>
+
+  <h2>If you cannot access the app</h2>
+  <p>Email us from the address registered to your account:</p>
+  <div class="card">
+    <div class="label">Send to</div>
+    <a href="mailto:help@rentflo.in?subject=Account%20Deletion%20Request">help@rentflo.in</a>
+    <div class="label" style="margin-top:16px">Subject</div>
+    <div>Account Deletion Request</div>
+    <div class="label" style="margin-top:16px">Include</div>
+    <div>Your registered email and a brief confirmation that you wish to delete your account.</div>
+  </div>
+  <p>We will verify your identity, action your request within 7 business days, and confirm completion by email.</p>
+
+  <h2>What gets deleted</h2>
+  <ul>
+    <li>Your profile (name, email, phone, address)</li>
+    <li>KYC documents and identity verification records held by RentFLO</li>
+    <li>Property details, tenant/landlord relationships, and ledger entries linked to your account</li>
+    <li>Maintenance tickets, messages, and notifications</li>
+    <li>Push subscriptions and session data</li>
+  </ul>
+
+  <h2>What is retained, and why</h2>
+  <p>Some records must be retained to meet legal and regulatory obligations under Indian law:</p>
+  <ul>
+    <li><strong>Transaction records</strong> (rent advances, repayments, GST invoices) — retained for up to 8 years under the Income Tax Act, 1961 and applicable RBI guidelines.</li>
+    <li><strong>KYC records</strong> — retained for a minimum of 5 years after the last transaction under the Prevention of Money Laundering Act, 2002.</li>
+    <li><strong>Signed agreements</strong> processed by our e-signature partner are retained as required by the Indian Evidence Act and Information Technology Act.</li>
+  </ul>
+  <p>Retained records are anonymized where possible and cannot be linked to your active profile after deletion.</p>
+
+  <h2>Third-party processors</h2>
+  <p>RentFLO shares limited data with the processors below. Deletion requests are forwarded to each processor with which your data was shared:</p>
+  <ul>
+    <li><strong>Cashfree Payments</strong> — payment processing</li>
+    <li><strong>Didit</strong> — identity verification (KYC)</li>
+    <li><strong>Leegality</strong> — digital signatures and agreement storage</li>
+    <li><strong>Google</strong> — OAuth sign-in (no additional data shared beyond the OAuth token)</li>
+  </ul>
+  <p>Processor retention is governed by their own policies and applicable law; please refer to their privacy policies for details.</p>
+
+  <h2>Questions</h2>
+  <p>Contact our Grievance Officer at <a href="mailto:help@rentflo.in">help@rentflo.in</a>. We respond within 30 days as required under the Digital Personal Data Protection Act, 2023.</p>
+
+  <footer>
+    &copy; 2026 RentFLO Technologies Pvt. Ltd. &nbsp;·&nbsp;
+    <a href="/privacy">Privacy Policy</a> &nbsp;·&nbsp;
+    <a href="/terms">Terms of Service</a>
+  </footer>
+</div>
+</body>
+</html>`;
+
+app.get(["/delete-account", "/delete-account.html"], (_req, res) => {
+  res.set("Cache-Control", "public, max-age=3600");
+  res.type("html").send(DELETE_ACCOUNT_HTML);
+});
+
 // ── Request Logging (no sensitive response bodies) ───────────────────────────
 export function log(message: string, source = "express") {
   const formattedTime = new Date().toLocaleTimeString("en-US", {
