@@ -1,3 +1,6 @@
+// Must be first import: db.ts and other modules read process.env at
+// module-load time, so dotenv has to populate the env before they resolve.
+import "dotenv/config";
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
@@ -36,17 +39,31 @@ app.use(
     referrerPolicy: { policy: "strict-origin-when-cross-origin" },
   })
 ); 
-// CORS for Capacitor mobile app
-app.use((req, res, next) => {
-  const allowedOrigins = ['https://localhost', 'capacitor://localhost', 'http://localhost'];
-  const origin = req.headers.origin as string | undefined;
-  if (origin && allowedOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+// ── CORS for Capacitor Android app ──────────────────────────────────────────
+// The Android WebView origin is https://localhost (Capacitor 4+) or
+// capacitor://localhost (older); http://localhost is the dev fallback. The
+// web SPA is served same-origin so it doesn't need CORS — only allow the
+// native/dev origins here, scoped to /api/*.
+const CAPACITOR_ORIGINS = new Set([
+  "https://localhost",
+  "capacitor://localhost",
+  "http://localhost",
+]);
+
+app.use("/api", (req, res, next) => {
+  const origin = req.headers.origin;
+  const isCapacitor = !!origin && CAPACITOR_ORIGINS.has(origin);
+  if (isCapacitor) {
+    res.setHeader("Access-Control-Allow-Origin", origin!);
+    res.setHeader("Vary", "Origin");
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Authorization,Content-Type");
+    res.setHeader("Access-Control-Max-Age", "86400");
+    if (req.method === "OPTIONS") {
+      return res.status(204).end();
+    }
   }
-  if (req.method === 'OPTIONS') return res.sendStatus(200);
   next();
 });
 

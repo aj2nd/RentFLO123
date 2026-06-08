@@ -1,6 +1,6 @@
 import type { Express } from "express";
 import { authStorage } from "./storage";
-import { isAuthenticated } from "./replitAuth";
+import { isAuthenticated } from ".";
 import { db } from "../../db";
 import { properties } from "@shared/schema";
 import { eq, isNull } from "drizzle-orm";
@@ -104,6 +104,28 @@ export function registerAuthRoutes(app: Express): void {
     } catch (error) {
       console.error("Error looking up user:", error);
       res.status(500).json({ message: "Failed to look up user" });
+    }
+  });
+
+  // Delete own account (OWNER or TENANT only)
+  app.delete("/api/auth/account", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const user = await authStorage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      // Only allow owners or tenants to delete their own account
+      if (user.role !== "OWNER" && user.role !== "TENANT") {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      await authStorage.deleteUser(userId);
+      req.logout(() => {
+        res.json({ message: "Account deleted successfully" });
+      });
+    } catch (error) {
+      console.error("Error deleting account:", error);
+      res.status(500).json({ message: "Failed to delete account" });
     }
   });
 }
