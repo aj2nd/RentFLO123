@@ -11,7 +11,19 @@ export function serveStatic(app: Express) {
     );
   }
 
-  app.use(express.static(distPath));
+  app.use(
+    express.static(distPath, {
+      setHeaders: (res, filePath) => {
+        // Hashed bundles (Vite emits /assets/[name]-[hash].ext) never change → cache forever.
+        if (filePath.includes(`${path.sep}assets${path.sep}`)) {
+          res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+        } else if (filePath.endsWith("index.html") || filePath.endsWith("sw.js")) {
+          // HTML shell + service worker must always revalidate so deploys land immediately.
+          res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        }
+      },
+    }),
+  );
 
   // === ANDROID APP LINKS - SERVED DIRECTLY (RELIABLE) ===
   app.get("/.well-known/assetlinks.json", (_req, res) => {
@@ -40,6 +52,7 @@ export function serveStatic(app: Express) {
     if (req.path.startsWith("/api")) {
       return res.status(404).json({ message: "Not found" });
     }
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
     res.sendFile(path.resolve(distPath, "index.html"));
   });
 }
