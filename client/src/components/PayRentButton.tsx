@@ -116,37 +116,42 @@ export function PayRentButton({ amount, vpa, ledgerId }: PayRentButtonProps) {
         )}
       </Button>
 
-      {showFallback && (
-        <div className="rounded-none border border-white/10 bg-black p-4 space-y-3">
-          <p className="text-sm text-zinc-400" data-testid="text-upi-fallback">
-            If the payment app did not open, use the options below.
-          </p>
-          <div className="flex gap-3">
-            <Button
-              type="button"
-              onClick={handleCopy}
-              className="flex-1 rounded-none border-0"
-              style={SILVER_BTN}
-              data-testid="button-copy-upi"
-            >
-              <Copy className="h-4 w-4 mr-2" />
-              {copied ? "Copied" : "Copy UPI ID"}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="flex-1 rounded-none border-[#6FFFE9]/20 text-zinc-300 hover:bg-white/5 hover:border-[#6FFFE9]/40"
-              data-testid="button-show-qr"
-              onClick={() => {
-                const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(upiLink)}`;
-                window.open(qrUrl, "_blank", "noopener,noreferrer");
-              }}
-            >
-              <QrCode className="h-4 w-4 mr-2" />
-              Show QR
-            </Button>
-          </div>
+      {/* Manual UPI ID — always available to copy & paste into any UPI app */}
+      <div className="flex items-center justify-between gap-3 rounded-none border border-white/10 bg-black px-4 py-3">
+        <div className="min-w-0">
+          <p className="text-[10px] uppercase tracking-widest text-zinc-500">Or pay via UPI ID</p>
+          <p className="text-sm text-white font-mono truncate" data-testid="text-upi-id">{vpa}</p>
         </div>
+        <div className="flex gap-2 shrink-0">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleCopy}
+            className="rounded-none border-[#6FFFE9]/20 text-zinc-300 hover:bg-white/5 hover:border-[#6FFFE9]/40"
+            data-testid="button-copy-upi"
+          >
+            <Copy className="h-4 w-4 mr-2" />
+            {copied ? "Copied" : "Copy"}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            className="rounded-none border-[#6FFFE9]/20 text-zinc-300 hover:bg-white/5 hover:border-[#6FFFE9]/40"
+            data-testid="button-show-qr"
+            onClick={() => {
+              const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(upiLink)}`;
+              window.open(qrUrl, "_blank", "noopener,noreferrer");
+            }}
+          >
+            <QrCode className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+
+      {showFallback && (
+        <p className="text-xs text-zinc-500" data-testid="text-upi-fallback">
+          If your UPI app didn't open, copy the UPI ID above or scan the QR to pay ₹{amount.toLocaleString("en-IN")}.
+        </p>
       )}
 
       {showProofForm && ledgerId && (

@@ -1,5 +1,5 @@
 import { useProperties } from "@/hooks/use-properties";
-import { useLedgers, useCreatePartialPayment, usePaymentsByLedger, useTickets } from "@/hooks/use-ledgers";
+import { useLedgers, usePaymentsByLedger, useTickets } from "@/hooks/use-ledgers";
 import {
   Loader2, Home, ShieldCheck, Wrench, Upload,
   ToggleLeft, ToggleRight, Search, Building2,
@@ -26,17 +26,8 @@ import type { Property, User, Agreement } from "@shared/schema";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 
-// Cashfree JS SDK is loaded on demand inside the payment handler.
-type CashfreeInstance = { checkout: (opts: any) => Promise<any> };
-let cashfreePromise: Promise<CashfreeInstance> | null = null;
-async function getCashfree(): Promise<CashfreeInstance> {
-  if (!cashfreePromise) {
-    cashfreePromise = import("@cashfreepayments/cashfree-js").then(({ load }) =>
-      load({ mode: "sandbox" }) as Promise<CashfreeInstance>
-    );
-  }
-  return cashfreePromise;
-}
+// Rent is collected via UPI (deep link + manual UPI ID). No payment gateway.
+const RENTFLO_VPA = "8891266898-3@ybl";
 
 type Tab = "overview" | "payments" | "lease";
 
@@ -78,7 +69,6 @@ function StatusBadge({ status }: { status: string }) {
 export default function TenantDashboard() {
   const { data: properties, isLoading: propsLoading } = useProperties();
   const { data: ledgers, isLoading: ledgersLoading } = useLedgers();
-  const { mutate: createPartialPayment, isPending: isCreatingPayment } = useCreatePartialPayment();
   const { toast } = useToast();
   const { user } = useAuth();
   const { t } = useI18n();
@@ -142,11 +132,6 @@ export default function TenantDashboard() {
 
   const agreementStatus = agreementData?.agreement?.status ?? null;
 
-  useEffect(() => {
-    // Pre-warm the Cashfree SDK so the first checkout click feels instant.
-    getCashfree().catch(() => {});
-  }, []);
-
   // === Didit E-KYC return-trip handler ===
   // Didit redirects back with ?kyc=didit. Poll /api/kyc/didit/status until
   // verified or timeout (~36 s).
@@ -197,70 +182,6 @@ export default function TenantDashboard() {
     sessionStorage.setItem(key, "1");
     apiRequest("POST", "/api/notifications/rent-due-check", {}).catch(() => {});
   }, [property?.id]);
-
-  const handlePartialPayment = () => {
-    if (!unpaidLedger) return;
-    if (!isVerified) {
-      toast({ title: "KYC Required", description: "Please complete your KYC verification before making payments.", variant: "destructive" });
-      return;
-    }
-    const amountToUse = flexiblePaymentEnabled ? paymentAmount : String(remaining);
-    const amount = parseInt(amountToUse, 10);
-    if (isNaN(amount) || amount <= 0) {
-      toast({ title: "Invalid Amount", description: "Please enter a valid amount.", variant: "destructive" });
-      return;
-    }
-    createPartialPayment(
-      { ledgerId: unpaidLedger.id, amount },
-      {
-        onSuccess: async (orderData: any) => {
-          try {
-            const cashfree = await getCashfree();
-            if (!orderData.paymentSessionId) {
-              toast({ title: "Payment Error", description: "Payment session missing. Please try again.", variant: "destructive" });
-              return;
-            }
-            const result = await cashfree.checkout({
-              paymentSessionId: orderData.paymentSessionId,
-              redirectTarget: "_modal",
-            });
-            // Cashfree resolves with { error?, paymentDetails?, redirect? }
-            if (result?.error) {
-              toast({ title: "Payment Failed", description: result.error?.message ?? "Payment was not completed.", variant: "destructive" });
-              return;
-            }
-            // Belt-and-suspenders: ask the server to verify the payment with
-            // Cashfree directly (in case the webhook hasn't landed yet).
-            let verifiedPaymentId: string | undefined;
-            try {
-              const v = await apiRequest("POST", `/api/cashfree/verify/${orderData.orderId}`);
-              const vData = await v.json().catch(() => ({}));
-              verifiedPaymentId = vData?.paymentId;
-            } catch { /* webhook will reconcile if verify fails */ }
-
-            setShowSuccess(true); setPaymentAmount("");
-            queryClient.invalidateQueries({ queryKey: ["/api/ledgers"] });
-            queryClient.invalidateQueries({ queryKey: ["/api/payments"] });
-            setReceiptData({
-              amount: parseInt(amountToUse, 10),
-              paymentId: verifiedPaymentId ?? result?.paymentDetails?.paymentMessage ?? orderData.orderId,
-              orderId: orderData.orderId,
-              date: new Date(),
-              property: property?.address ?? "Your Property",
-              tenantName: currentUser?.fullLegalName ?? currentUser?.email ?? "Tenant",
-              monthYear: unpaidLedger?.monthYear,
-            });
-            setTimeout(() => setShowSuccess(false), 3000);
-          } catch (err: any) {
-            toast({ title: "Payment Error", description: err?.message ?? "Could not open payment.", variant: "destructive" });
-          }
-        },
-        onError: (error: any) => {
-          toast({ title: "Payment Setup Failed", description: error.message ?? "Could not create payment order.", variant: "destructive" });
-        },
-      }
-    );
-  };
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -709,7 +630,7 @@ export default function TenantDashboard() {
 
                     <PayRentButton
                       amount={flexiblePaymentEnabled ? Number(paymentAmount || 0) : remaining}
-                      vpa="rentflo@ybl"
+                      vpa={RENTFLO_VPA}
                       ledgerId={unpaidLedger?.id}
                     />
 
@@ -718,7 +639,7 @@ export default function TenantDashboard() {
                       const upiAmount = flexiblePaymentEnabled ? Number(paymentAmount || 0) : remaining;
                       const upiNote = encodeURIComponent(`Rent for ${property?.address ?? ""}`);
                       const upiPayee = encodeURIComponent("RentFLO");
-                      const upiVpa = encodeURIComponent("rentflo@ybl");
+                      const upiVpa = encodeURIComponent(RENTFLO_VPA);
                       const upiLink = `upi://pay?pa=${upiVpa}&pn=${upiPayee}&am=${upiAmount}&cu=INR&tn=${upiNote}`;
                       if (upiAmount <= 0) return null;
                       return (
