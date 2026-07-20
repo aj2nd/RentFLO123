@@ -261,27 +261,35 @@ export default function AgreementPage() {
               </div>
 
               {/* Party status pills */}
-              <div className="grid grid-cols-3 gap-3">
-                {[
+              {(() => {
+                const status = data?.agreement?.status ?? 'PENDING';
+                const ownerSigned = status === 'OWNER_SIGNED' || status === 'FULLY_SIGNED';
+                const tenantSigned = status === 'TENANT_SIGNED' || status === 'FULLY_SIGNED';
+                const pills = [
                   { label: t("agr_rentflo_party"), signed: true },
-                  { label: t("agr_landlord_party"), signed: false },
-                  { label: t("agr_tenant_party"),   signed: false },
-                ].map(({ label, signed: s }) => (
-                  <div
-                    key={label}
-                    className={`flex flex-col items-center justify-center p-3 border text-center ${
-                      s ? "border-[#6FFFE9] bg-[#6FFFE9]/8" : "border-[#6FFFE9]/25"
-                    }`}
-                  >
-                    <span className={`text-xs font-semibold uppercase tracking-wider ${s ? "text-[#6FFFE9]" : "text-[#9DEFE4]/50"}`}>
-                      {label}
-                    </span>
-                    <span className={`text-[10px] mt-0.5 ${s ? "text-[#6FFFE9]" : "text-[#9DEFE4]/30"}`}>
-                      {s ? t("agr_signed_tick") : t("agr_pending")}
-                    </span>
+                  { label: t("agr_landlord_party"), signed: ownerSigned },
+                  { label: t("agr_tenant_party"),   signed: tenantSigned },
+                ];
+                return (
+                  <div className="grid grid-cols-3 gap-3">
+                    {pills.map(({ label, signed: s }) => (
+                      <div
+                        key={label}
+                        className={`flex flex-col items-center justify-center p-3 border text-center ${
+                          s ? "border-[#6FFFE9] bg-[#6FFFE9]/8" : "border-[#6FFFE9]/25"
+                        }`}
+                      >
+                        <span className={`text-xs font-semibold uppercase tracking-wider ${s ? "text-[#6FFFE9]" : "text-[#9DEFE4]/50"}`}>
+                          {label}
+                        </span>
+                        <span className={`text-[10px] mt-0.5 ${s ? "text-[#6FFFE9]" : "text-[#9DEFE4]/30"}`}>
+                          {s ? t("agr_signed_tick") : t("agr_pending")}
+                        </span>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                );
+              })()}
 
             </div>
           )}

@@ -97,6 +97,24 @@ export default function AdminDashboard() {
     onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
   });
 
+  const markOwnerSignedMutation = useMutation({
+    mutationFn: async (propertyId: string) => apiRequest("POST", `/api/agreements/${propertyId}/mark-owner-signed`),
+    onSuccess: () => {
+      toast({ title: "Owner marked as signed", description: "Parties have been notified." });
+      queryClient.invalidateQueries({ queryKey: ["/api/agreements/all"] });
+    },
+    onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+  });
+
+  const markTenantSignedMutation = useMutation({
+    mutationFn: async (propertyId: string) => apiRequest("POST", `/api/agreements/${propertyId}/mark-tenant-signed`),
+    onSuccess: () => {
+      toast({ title: "Tenant marked as signed", description: "Parties have been notified." });
+      queryClient.invalidateQueries({ queryKey: ["/api/agreements/all"] });
+    },
+    onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+  });
+
   const verifyPaymentMutation = useMutation({
     mutationFn: async (paymentId: string) => apiRequest("POST", `/api/payments/${paymentId}/verify`),
     onSuccess: () => {
@@ -452,57 +470,89 @@ export default function AdminDashboard() {
                       className={`p-6 border bg-zinc-950 flex flex-col md:flex-row md:items-center justify-between gap-4 ${isSigned ? 'border-[#6FFFE9]/30' : 'border-yellow-500/30'}`}
                       data-testid={`agreement-row-${agr.propertyId}`}
                     >
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2 flex-wrap">
-                          <h3 className="text-base font-semibold text-white">{agr.property?.address ?? agr.propertyId}</h3>
-                          {isSigned ? (
-                            <span className="inline-flex items-center gap-1 text-xs bg-[#6FFFE9]/15 text-[#6FFFE9] border border-[#6FFFE9]/35 px-2 py-0.5">
-                              <CheckCircle size={11} /> Signed
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1 text-xs bg-yellow-500/15 text-yellow-400 border border-yellow-500/35 px-2 py-0.5">
-                              <PenLine size={11} /> Pending
-                            </span>
-                          )}
-                        </div>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-1 text-sm mt-2">
-                          <div>
-                            <p className="text-[10px] uppercase tracking-widest text-zinc-500">Owner</p>
-                            <p className="text-zinc-300 font-medium">{ownerName}</p>
-                            {agr.owner?.email && <p className="text-zinc-600 text-xs">{agr.owner.email}</p>}
-                          </div>
-                          <div>
-                            <p className="text-[10px] uppercase tracking-widest text-zinc-500">Tenant</p>
-                            <p className="text-zinc-300 font-medium">{tenantName}</p>
-                            {agr.tenant?.email && <p className="text-zinc-600 text-xs">{agr.tenant.email}</p>}
-                          </div>
-                          {agr.property?.monthlyRent && (
-                            <div>
-                              <p className="text-[10px] uppercase tracking-widest text-zinc-500">Monthly Rent</p>
-                              <p className="text-zinc-300 font-mono">₹{agr.property.monthlyRent.toLocaleString('en-IN')}</p>
+                      {(() => {
+                        const ownerSigned = agr.status === 'OWNER_SIGNED' || agr.status === 'FULLY_SIGNED';
+                        const tenantSigned = agr.status === 'TENANT_SIGNED' || agr.status === 'FULLY_SIGNED';
+                        return (
+                          <>
+                            <div className="flex-1">
+                              <div className="flex items-center gap-3 mb-2 flex-wrap">
+                                <h3 className="text-base font-semibold text-white">{agr.property?.address ?? agr.propertyId}</h3>
+                                {isSigned ? (
+                                  <span className="inline-flex items-center gap-1 text-xs bg-[#6FFFE9]/15 text-[#6FFFE9] border border-[#6FFFE9]/35 px-2 py-0.5">
+                                    <CheckCircle size={11} /> Fully Signed
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1 text-xs bg-yellow-500/15 text-yellow-400 border border-yellow-500/35 px-2 py-0.5">
+                                    <PenLine size={11} /> Pending
+                                  </span>
+                                )}
+                              </div>
+                              <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-1 text-sm mt-2">
+                                <div>
+                                  <p className="text-[10px] uppercase tracking-widest text-zinc-500">Owner</p>
+                                  <p className="text-zinc-300 font-medium">{ownerName}</p>
+                                  {agr.owner?.email && <p className="text-zinc-600 text-xs">{agr.owner.email}</p>}
+                                  <p className={`text-[10px] mt-0.5 font-semibold ${ownerSigned ? 'text-[#6FFFE9]' : 'text-yellow-500'}`}>
+                                    {ownerSigned ? '✓ Signed' : '○ Pending'}
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-[10px] uppercase tracking-widest text-zinc-500">Tenant</p>
+                                  <p className="text-zinc-300 font-medium">{tenantName}</p>
+                                  {agr.tenant?.email && <p className="text-zinc-600 text-xs">{agr.tenant.email}</p>}
+                                  <p className={`text-[10px] mt-0.5 font-semibold ${tenantSigned ? 'text-[#6FFFE9]' : 'text-yellow-500'}`}>
+                                    {tenantSigned ? '✓ Signed' : '○ Pending'}
+                                  </p>
+                                </div>
+                                {agr.property?.monthlyRent && (
+                                  <div>
+                                    <p className="text-[10px] uppercase tracking-widest text-zinc-500">Monthly Rent</p>
+                                    <p className="text-zinc-300 font-mono">₹{agr.property.monthlyRent.toLocaleString('en-IN')}</p>
+                                  </div>
+                                )}
+                              </div>
+                              {isSigned && agr.tenantSignedAt && (
+                                <p className="text-[10px] text-zinc-600 mt-2">
+                                  Fully signed on {new Date(agr.tenantSignedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                </p>
+                              )}
                             </div>
-                          )}
-                        </div>
-                        {isSigned && agr.tenantSignedAt && (
-                          <p className="text-[10px] text-zinc-600 mt-2">
-                            Signed on {new Date(agr.tenantSignedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
-                          </p>
-                        )}
-                      </div>
-                      {!isSigned && (
-                        <Button
-                          onClick={() => markSignedMutation.mutate(agr.propertyId)}
-                          disabled={markSignedMutation.isPending}
-                          className="bg-white text-black hover:bg-zinc-200 gap-2 shrink-0"
-                          data-testid={`button-mark-signed-${agr.propertyId}`}
-                        >
-                          {markSignedMutation.isPending
-                            ? <Loader2 size={16} className="animate-spin" />
-                            : <CheckCircle size={16} />
-                          }
-                          Mark as Signed
-                        </Button>
-                      )}
+                            {!isSigned && (
+                              <div className="flex flex-col gap-2 shrink-0">
+                                {!ownerSigned && (
+                                  <Button
+                                    onClick={() => markOwnerSignedMutation.mutate(agr.propertyId)}
+                                    disabled={markOwnerSignedMutation.isPending}
+                                    className="bg-zinc-800 text-white hover:bg-zinc-700 border border-zinc-600 gap-2 text-xs h-9"
+                                    data-testid={`button-mark-owner-signed-${agr.propertyId}`}
+                                  >
+                                    {markOwnerSignedMutation.isPending
+                                      ? <Loader2 size={14} className="animate-spin" />
+                                      : <CheckCircle size={14} />
+                                    }
+                                    Mark Owner Signed
+                                  </Button>
+                                )}
+                                {!tenantSigned && (
+                                  <Button
+                                    onClick={() => markTenantSignedMutation.mutate(agr.propertyId)}
+                                    disabled={markTenantSignedMutation.isPending}
+                                    className="bg-zinc-800 text-white hover:bg-zinc-700 border border-zinc-600 gap-2 text-xs h-9"
+                                    data-testid={`button-mark-tenant-signed-${agr.propertyId}`}
+                                  >
+                                    {markTenantSignedMutation.isPending
+                                      ? <Loader2 size={14} className="animate-spin" />
+                                      : <CheckCircle size={14} />
+                                    }
+                                    Mark Tenant Signed
+                                  </Button>
+                                )}
+                              </div>
+                            )}
+                          </>
+                        );
+                      })()}
                     </div>
                   );
                 })}

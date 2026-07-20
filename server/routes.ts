@@ -1287,12 +1287,61 @@ export async function registerRoutes(
     if (property) {
       const notifyUsers = [property.ownerId, property.tenantId].filter(Boolean) as string[];
       for (const uid of notifyUsers) {
-        await createNotification(uid, {
-          title: 'Agreement Signed',
-          body: 'Your rental agreement has been confirmed as physically signed by RentFLO.',
-          type: 'RENT_ADVANCED',
-          url: '/agreement',
-        }).catch(() => {});
+        await createNotification(
+          uid,
+          'Agreement Signed',
+          'Your rental agreement has been confirmed as physically signed by RentFLO.',
+          'RENT_ADVANCED',
+          '/agreement'
+        ).catch(() => {});
+      }
+    }
+    return res.json(agreement);
+  });
+
+  // POST /api/agreements/:propertyId/mark-owner-signed — admin: mark owner as having signed
+  app.post("/api/agreements/:propertyId/mark-owner-signed", isAuthenticated, requireRole('ADMIN'), async (req: any, res) => {
+    const { propertyId } = req.params;
+    const agreement = await storage.markOwnerSigned(propertyId);
+
+    const property = await storage.getProperty(propertyId);
+    if (property) {
+      const notifyUsers = [property.ownerId, property.tenantId].filter(Boolean) as string[];
+      const isFullySigned = agreement.status === 'FULLY_SIGNED';
+      for (const uid of notifyUsers) {
+        await createNotification(
+          uid,
+          isFullySigned ? 'Agreement Fully Signed' : 'Owner Signed the Agreement',
+          isFullySigned
+            ? 'Both parties have signed — the rental agreement is now fully executed.'
+            : 'The owner has signed the rental agreement. Awaiting tenant signature.',
+          'RENT_ADVANCED',
+          '/agreement'
+        ).catch(() => {});
+      }
+    }
+    return res.json(agreement);
+  });
+
+  // POST /api/agreements/:propertyId/mark-tenant-signed — admin: mark tenant as having signed
+  app.post("/api/agreements/:propertyId/mark-tenant-signed", isAuthenticated, requireRole('ADMIN'), async (req: any, res) => {
+    const { propertyId } = req.params;
+    const agreement = await storage.markTenantSigned(propertyId);
+
+    const property = await storage.getProperty(propertyId);
+    if (property) {
+      const notifyUsers = [property.ownerId, property.tenantId].filter(Boolean) as string[];
+      const isFullySigned = agreement.status === 'FULLY_SIGNED';
+      for (const uid of notifyUsers) {
+        await createNotification(
+          uid,
+          isFullySigned ? 'Agreement Fully Signed' : 'Tenant Signed the Agreement',
+          isFullySigned
+            ? 'Both parties have signed — the rental agreement is now fully executed.'
+            : 'The tenant has signed the rental agreement. Awaiting owner signature.',
+          'RENT_ADVANCED',
+          '/agreement'
+        ).catch(() => {});
       }
     }
     return res.json(agreement);

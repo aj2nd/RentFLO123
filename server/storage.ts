@@ -376,6 +376,38 @@ export class DatabaseStorage implements IStorage {
     return updated;
   }
 
+  async markOwnerSigned(propertyId: string): Promise<Agreement> {
+    const agreement = await this.getOrCreateAgreement(propertyId);
+    const now = new Date();
+    const alreadyTenantSigned = agreement.status === 'TENANT_SIGNED' || agreement.status === 'FULLY_SIGNED';
+    const newStatus = alreadyTenantSigned ? 'FULLY_SIGNED' : 'OWNER_SIGNED';
+    const [updated] = await db.update(agreements)
+      .set({
+        status: newStatus,
+        ownerSignedAt: now,
+        ...(alreadyTenantSigned && !agreement.tenantSignedAt ? { tenantSignedAt: now } : {}),
+      })
+      .where(eq(agreements.id, agreement.id))
+      .returning();
+    return updated;
+  }
+
+  async markTenantSigned(propertyId: string): Promise<Agreement> {
+    const agreement = await this.getOrCreateAgreement(propertyId);
+    const now = new Date();
+    const alreadyOwnerSigned = agreement.status === 'OWNER_SIGNED' || agreement.status === 'FULLY_SIGNED';
+    const newStatus = alreadyOwnerSigned ? 'FULLY_SIGNED' : 'TENANT_SIGNED';
+    const [updated] = await db.update(agreements)
+      .set({
+        status: newStatus,
+        tenantSignedAt: now,
+        ...(alreadyOwnerSigned && !agreement.ownerSignedAt ? { ownerSignedAt: now } : {}),
+      })
+      .where(eq(agreements.id, agreement.id))
+      .returning();
+    return updated;
+  }
+
   // Push Subscriptions
   // SECURITY: Atomic ownership-preserving upsert. The ON CONFLICT update only
   // fires when the existing row already belongs to the same user — this closes
