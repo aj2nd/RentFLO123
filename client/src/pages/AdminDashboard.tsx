@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import { useState, useRef, useEffect } from "react";
-import { Loader2, AlertCircle, Upload, Check, X, Image, Building2, Users, Download, Shield, CheckCircle, Receipt, ExternalLink } from "lucide-react";
+import { Loader2, AlertCircle, Upload, Check, X, Image, Building2, Users, Download, Shield, CheckCircle, Receipt, ExternalLink, FileText, PenLine } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { motion } from "framer-motion";
@@ -73,7 +73,7 @@ export default function AdminDashboard() {
   const { data: stats, isLoading: statsLoading } = useAdminDashboard();
   const { data: ledgers, isLoading: ledgersLoading } = useLedgers({ status: 'ARREARS' });
   const { data: properties, isLoading: propsLoading } = useProperties();
-  const [activeTab, setActiveTab] = useState<'overview' | 'kyc' | 'verifications' | 'users'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'kyc' | 'verifications' | 'users' | 'agreements'>('overview');
   const { t } = useI18n();
 
   const { data: pendingKyc, isLoading: kycLoading } = useQuery<User[]>({ queryKey: ["/api/kyc/pending"] });
@@ -82,6 +82,19 @@ export default function AdminDashboard() {
   const { data: pendingVerifs, isLoading: verifsLoading } = useQuery<any[]>({
     queryKey: ["/api/admin/payments/pending-verification"],
     refetchInterval: 30000,
+  });
+
+  const { data: allAgreements, isLoading: agreementsLoading } = useQuery<any[]>({
+    queryKey: ["/api/agreements/all"],
+  });
+
+  const markSignedMutation = useMutation({
+    mutationFn: async (propertyId: string) => apiRequest("POST", `/api/agreements/${propertyId}/mark-signed`),
+    onSuccess: () => {
+      toast({ title: "Agreement marked as signed", description: "Both parties have been notified." });
+      queryClient.invalidateQueries({ queryKey: ["/api/agreements/all"] });
+    },
+    onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
   });
 
   const verifyPaymentMutation = useMutation({
@@ -233,6 +246,17 @@ export default function AdminDashboard() {
               data-testid="tab-users">
               <Users size={14} />
               {t('admin_tab_users')}
+            </button>
+            <button onClick={() => setActiveTab('agreements')}
+              className={`pb-3 px-1 text-sm font-medium transition-colors flex items-center gap-2 ${activeTab === 'agreements' ? 'text-[#6FFFE9] border-b-2 border-[#6FFFE9]' : 'text-zinc-500 hover:text-[#9DEFE4]'}`}
+              data-testid="tab-agreements">
+              <FileText size={14} />
+              Agreements
+              {allAgreements && allAgreements.filter((a: any) => a.status !== 'FULLY_SIGNED').length > 0 && (
+                <span className="bg-yellow-500/20 text-yellow-400 border border-yellow-500/40 text-xs px-2 py-0.5">
+                  {allAgreements.filter((a: any) => a.status !== 'FULLY_SIGNED').length}
+                </span>
+              )}
             </button>
           </div>
         </header>
@@ -404,6 +428,91 @@ export default function AdminDashboard() {
                 </tbody>
               </table>
             </div>
+          </div>
+        )}
+
+        {activeTab === 'agreements' && (
+          <div className="mt-8">
+            <div className="flex items-center gap-3 mb-6">
+              <FileText className="text-[#6FFFE9]" size={24} />
+              <h2 className="text-2xl font-semibold tracking-tight">Agreements</h2>
+              <span className="text-xs text-zinc-500 ml-2">Physical signing — mark as signed once both parties have signed in person</span>
+            </div>
+            {agreementsLoading ? (
+              <div className="flex items-center justify-center p-12"><Loader2 className="w-8 h-8 animate-spin" /></div>
+            ) : allAgreements && allAgreements.length > 0 ? (
+              <div className="space-y-4">
+                {allAgreements.map((agr: any) => {
+                  const isSigned = agr.status === 'FULLY_SIGNED';
+                  const ownerName = [agr.owner?.firstName, agr.owner?.lastName].filter(Boolean).join(' ') || agr.owner?.email || '—';
+                  const tenantName = [agr.tenant?.firstName, agr.tenant?.lastName].filter(Boolean).join(' ') || agr.tenant?.email || '—';
+                  return (
+                    <div
+                      key={agr.id}
+                      className={`p-6 border bg-zinc-950 flex flex-col md:flex-row md:items-center justify-between gap-4 ${isSigned ? 'border-[#6FFFE9]/30' : 'border-yellow-500/30'}`}
+                      data-testid={`agreement-row-${agr.propertyId}`}
+                    >
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2 flex-wrap">
+                          <h3 className="text-base font-semibold text-white">{agr.property?.address ?? agr.propertyId}</h3>
+                          {isSigned ? (
+                            <span className="inline-flex items-center gap-1 text-xs bg-[#6FFFE9]/15 text-[#6FFFE9] border border-[#6FFFE9]/35 px-2 py-0.5">
+                              <CheckCircle size={11} /> Signed
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-xs bg-yellow-500/15 text-yellow-400 border border-yellow-500/35 px-2 py-0.5">
+                              <PenLine size={11} /> Pending
+                            </span>
+                          )}
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-1 text-sm mt-2">
+                          <div>
+                            <p className="text-[10px] uppercase tracking-widest text-zinc-500">Owner</p>
+                            <p className="text-zinc-300 font-medium">{ownerName}</p>
+                            {agr.owner?.email && <p className="text-zinc-600 text-xs">{agr.owner.email}</p>}
+                          </div>
+                          <div>
+                            <p className="text-[10px] uppercase tracking-widest text-zinc-500">Tenant</p>
+                            <p className="text-zinc-300 font-medium">{tenantName}</p>
+                            {agr.tenant?.email && <p className="text-zinc-600 text-xs">{agr.tenant.email}</p>}
+                          </div>
+                          {agr.property?.monthlyRent && (
+                            <div>
+                              <p className="text-[10px] uppercase tracking-widest text-zinc-500">Monthly Rent</p>
+                              <p className="text-zinc-300 font-mono">₹{agr.property.monthlyRent.toLocaleString('en-IN')}</p>
+                            </div>
+                          )}
+                        </div>
+                        {isSigned && agr.tenantSignedAt && (
+                          <p className="text-[10px] text-zinc-600 mt-2">
+                            Signed on {new Date(agr.tenantSignedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
+                          </p>
+                        )}
+                      </div>
+                      {!isSigned && (
+                        <Button
+                          onClick={() => markSignedMutation.mutate(agr.propertyId)}
+                          disabled={markSignedMutation.isPending}
+                          className="bg-white text-black hover:bg-zinc-200 gap-2 shrink-0"
+                          data-testid={`button-mark-signed-${agr.propertyId}`}
+                        >
+                          {markSignedMutation.isPending
+                            ? <Loader2 size={16} className="animate-spin" />
+                            : <CheckCircle size={16} />
+                          }
+                          Mark as Signed
+                        </Button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="p-12 border border-[#6FFFE9]/15 bg-[#6FFFE9]/3 text-center">
+                <FileText className="w-12 h-12 mx-auto mb-4 text-[#6FFFE9]/40" />
+                <p className="text-zinc-500">No agreements yet</p>
+              </div>
+            )}
           </div>
         )}
 

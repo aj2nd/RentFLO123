@@ -54,10 +54,8 @@ export interface IStorage {
   // Agreements
   getAgreementByProperty(propertyId: string): Promise<Agreement | undefined>;
   getOrCreateAgreement(propertyId: string): Promise<Agreement>;
-  signAgreement(propertyId: string, role: 'OWNER' | 'TENANT', signatureUrl: string): Promise<Agreement>;
-  setAgreementLeegalityData(propertyId: string, data: { leegalityDocumentId: string; leegalitySentAt: Date }): Promise<Agreement>;
-  finalizeLeegalityAgreement(leegalityDocumentId: string, data: { leegalitySignedUrl?: string; leegalityCompletedAt: Date }): Promise<Agreement | undefined>;
-  getAgreementByLeegalityDocumentId(leegalityDocumentId: string): Promise<Agreement | undefined>;
+  getAllAgreements(): Promise<Agreement[]>;
+  markAgreementSigned(propertyId: string): Promise<Agreement>;
 
   // Push Subscriptions
   savePushSubscription(sub: InsertPushSubscription): Promise<PushSubscription>;
@@ -364,57 +362,15 @@ export class DatabaseStorage implements IStorage {
     return created;
   }
 
-  async signAgreement(propertyId: string, role: 'OWNER' | 'TENANT', signatureUrl: string): Promise<Agreement> {
+  async getAllAgreements(): Promise<Agreement[]> {
+    return db.select().from(agreements).orderBy(desc(agreements.id));
+  }
+
+  async markAgreementSigned(propertyId: string): Promise<Agreement> {
     const agreement = await this.getOrCreateAgreement(propertyId);
     const now = new Date();
-    const updates: Partial<typeof agreement> = role === 'OWNER'
-      ? { ownerSignatureUrl: signatureUrl, ownerSignedAt: now }
-      : { tenantSignatureUrl: signatureUrl, tenantSignedAt: now };
-
-    const current = { ...agreement, ...updates };
-    const newStatus = current.ownerSignatureUrl && current.tenantSignatureUrl
-      ? 'FULLY_SIGNED'
-      : role === 'OWNER' ? 'OWNER_SIGNED' : 'TENANT_SIGNED';
-
     const [updated] = await db.update(agreements)
-      .set({ ...updates, status: newStatus } as Partial<Agreement>)
-      .where(eq(agreements.id, agreement.id))
-      .returning();
-    return updated;
-  }
-
-  async setAgreementLeegalityData(
-    propertyId: string,
-    data: { leegalityDocumentId: string; leegalitySentAt: Date }
-  ): Promise<Agreement> {
-    const agreement = await this.getOrCreateAgreement(propertyId);
-    const [updated] = await db.update(agreements)
-      .set({ leegalityDocumentId: data.leegalityDocumentId, leegalitySentAt: data.leegalitySentAt })
-      .where(eq(agreements.id, agreement.id))
-      .returning();
-    return updated;
-  }
-
-  async getAgreementByLeegalityDocumentId(leegalityDocumentId: string): Promise<Agreement | undefined> {
-    const [agreement] = await db.select().from(agreements)
-      .where(eq(agreements.leegalityDocumentId, leegalityDocumentId));
-    return agreement;
-  }
-
-  async finalizeLeegalityAgreement(
-    leegalityDocumentId: string,
-    data: { leegalitySignedUrl?: string; leegalityCompletedAt: Date }
-  ): Promise<Agreement | undefined> {
-    const agreement = await this.getAgreementByLeegalityDocumentId(leegalityDocumentId);
-    if (!agreement) return undefined;
-    const [updated] = await db.update(agreements)
-      .set({
-        leegalitySignedUrl: data.leegalitySignedUrl || null,
-        leegalityCompletedAt: data.leegalityCompletedAt,
-        status: 'FULLY_SIGNED',
-        ownerSignedAt: data.leegalityCompletedAt,
-        tenantSignedAt: data.leegalityCompletedAt,
-      })
+      .set({ status: 'FULLY_SIGNED', ownerSignedAt: now, tenantSignedAt: now })
       .where(eq(agreements.id, agreement.id))
       .returning();
     return updated;

@@ -18,12 +18,7 @@ import {
   DIDIT_APPROVED_STATUSES,
   type DiditDecision,
 } from "./didit";
-import {
-  leegalityConfigured,
-  sendDocumentForESign,
-  verifyLeegalityWebhook,
-  getSignedDocumentUrl,
-} from "./leegality";
+// leegality removed — agreements are now signed physically
 import OpenAI from "openai";
 import {
   encryptPII,
@@ -1265,210 +1260,41 @@ export async function registerRoutes(
     return res.json({ property, agreement: agreement || null });
   });
 
-  // POST /api/agreements/leegality/send — generate agreement PDF and send for e-sign via Leegality
-  app.post("/api/agreements/leegality/send", isAuthenticated, async (req: any, res) => {
-    const userId = req.user?.claims?.sub;
-    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
-
-    if (!leegalityConfigured()) {
-      return res.status(503).json({ message: 'E-sign provider not configured' });
-    }
-
-    const dbUser = await authStorage.getUser(userId);
-    if (!dbUser?.role || dbUser.role === 'ADMIN') {
-      return res.status(403).json({ message: 'Forbidden' });
-    }
-
-    let userProperties: any[] = [];
-    if (dbUser.role === 'OWNER') {
-      userProperties = await storage.getPropertiesByOwnerId(userId);
-    } else {
-      userProperties = await storage.getPropertiesByTenantId(userId);
-    }
-    if (!userProperties.length) {
-      return res.status(404).json({ message: 'No property found' });
-    }
-    const property = userProperties[0];
-
-    // Check if already sent/signed
-    const existing = await storage.getAgreementByProperty(property.id);
-    if (existing?.leegalityDocumentId) {
-      return res.json({ alreadySent: true, leegalityDocumentId: existing.leegalityDocumentId });
-    }
-
-    // Build the agreement text as a simple HTML → we'll embed it as base64 text (Leegality accepts HTML too)
-    // We generate a minimal PDF-ready HTML string and base64-encode it.
-    const date = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
-    const userName = [dbUser.firstName, dbUser.lastName].filter(Boolean).join(' ') || dbUser.email || 'User';
-    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>
-      body{font-family:Arial,sans-serif;font-size:13px;color:#111;padding:40px;line-height:1.7}
-      h1{font-size:20px;margin-bottom:4px}h2{font-size:13px;margin:18px 0 6px;text-transform:uppercase;letter-spacing:1px}
-      .meta{border:1px solid #ccc;padding:16px;margin:20px 0;display:grid;grid-template-columns:1fr 1fr;gap:8px}
-      .ml{font-size:10px;text-transform:uppercase;color:#555}.mv{font-size:14px;font-weight:bold}
-      .sig{border:1px solid #ccc;padding:20px;margin-top:30px}
-      .footer{margin-top:40px;font-size:10px;color:#999;text-align:center}
-    </style></head><body>
-    <h1>Tripartite Rent Advance Agreement</h1>
-    <p>This Agreement is entered into on <strong>${date}</strong> between RentFLO Technologies Pvt. Ltd. ("RentFLO"), the Landlord (Owner), and the Tenant.</p>
-    <div class="meta">
-      <div><div class="ml">Property</div><div class="mv">${property.address}</div></div>
-      <div><div class="ml">Monthly Rent</div><div class="mv">₹${property.monthlyRent.toLocaleString('en-IN')}</div></div>
-      <div><div class="ml">Payout Day</div><div class="mv">${property.payoutDay}${['st','nd','rd'][property.payoutDay-1]||'th'} of Month</div></div>
-      <div><div class="ml">Signatory</div><div class="mv">${userName}</div></div>
-    </div>
-    <h2>1. Purpose</h2>
-    <p>RentFLO advances the monthly rent of ₹${property.monthlyRent.toLocaleString('en-IN')} to the Landlord on or before the ${property.payoutDay}${['st','nd','rd'][property.payoutDay-1]||'th'} of each calendar month, regardless of whether the Tenant has remitted payment. The Tenant agrees to repay the same amount to RentFLO within the same calendar month.</p>
-    <h2>2. Landlord Obligations</h2>
-    <p>The Landlord agrees to: (a) maintain the property in a habitable condition; (b) not seek rent directly from the Tenant for months in which RentFLO has advanced funds; (c) repay to RentFLO any advanced amount if tenancy ends before Tenant repays.</p>
-    <h2>3. Tenant Obligations</h2>
-    <p>The Tenant agrees to: (a) repay advanced rent to RentFLO in full within the calendar month; (b) not pay rent directly to the Landlord for covered months; (c) notify RentFLO immediately of tenancy changes.</p>
-    <h2>4. Default</h2>
-    <p>If the Tenant fails to repay within the stipulated period, RentFLO reserves the right to report the default to credit bureaus, initiate recovery proceedings, and suspend platform access.</p>
-    <h2>5. Digital Execution</h2>
-    <p>The parties agree that an electronic signature captured via Leegality constitutes a valid and legally binding signature under the Information Technology Act, 2000 (India).</p>
-    <h2>6. Governing Law</h2>
-    <p>This Agreement is governed by the laws of India. Disputes are subject to exclusive jurisdiction of courts in Mumbai, Maharashtra.</p>
-    <div class="sig"><strong>Signature area — to be signed electronically via Leegality</strong><br><br>${userName} · ${date}</div>
-    <div class="footer">RentFLO Technologies Pvt. Ltd. · This is a legally binding digital agreement · Keep for your records</div>
-    </body></html>`;
-
-    const pdfBase64 = Buffer.from(html).toString('base64');
-
-    // Build invitee list — current user + if they're owner, also add tenant if linked
-    const proto = (req.headers['x-forwarded-proto'] as string)?.split(',')[0] || req.protocol;
-    const host = (req.headers['x-forwarded-host'] as string)?.split(',')[0] || req.get('host');
-    const webhookUrl = `${proto}://${host}/api/agreements/leegality/webhook`;
-    const redirectUrl = `${proto}://${host}/agreement?esign=done`;
-
-    const invitees: any[] = [];
-    invitees.push({
-      name: userName,
-      email: dbUser.email || '',
-      signType: 'AADHAAR',
-      sequenceOrder: 1,
-      webhook: webhookUrl,
-      redirectUrl,
-    });
-
-    // If owner is sending, optionally add tenant as second signatory
-    if (dbUser.role === 'OWNER' && property.tenantId) {
-      const tenant = await authStorage.getUser(property.tenantId);
-      if (tenant?.email) {
-        const tenantName = [tenant.firstName, tenant.lastName].filter(Boolean).join(' ') || tenant.email;
-        invitees.push({
-          name: tenantName,
-          email: tenant.email,
-          signType: 'AADHAAR',
-          sequenceOrder: 2,
-          webhook: webhookUrl,
-          redirectUrl,
-        });
-      }
-    }
-
-    try {
-      const result = await sendDocumentForESign(
-        pdfBase64,
-        `RentFLO_Agreement_${property.address.replace(/[^a-z0-9]/gi, '_').slice(0, 40)}.html`,
-        invitees
-      );
-
-      await storage.setAgreementLeegalityData(property.id, {
-        leegalityDocumentId: result.documentId,
-        leegalitySentAt: new Date(),
-      });
-
-      return res.json({
-        documentId: result.documentId,
-        inviteeLinks: result.inviteeLinks,
-      });
-    } catch (err: any) {
-      console.error('[leegality] send failed:', err?.message || err);
-      return res.status(502).json({ message: err?.message || 'Failed to send for e-sign' });
-    }
+  // GET /api/agreements/all — admin: list all agreements enriched with property + party info
+  app.get("/api/agreements/all", isAuthenticated, requireRole('ADMIN'), async (req: any, res) => {
+    const allAgreements = await storage.getAllAgreements();
+    const enriched = await Promise.all(allAgreements.map(async (agr) => {
+      const property = await storage.getProperty(agr.propertyId);
+      const owner  = property?.ownerId  ? await authStorage.getUser(property.ownerId)  : null;
+      const tenant = property?.tenantId ? await authStorage.getUser(property.tenantId) : null;
+      return {
+        ...agr,
+        property: property ? { address: property.address, monthlyRent: property.monthlyRent } : null,
+        owner:  owner  ? { firstName: owner.firstName,  lastName: owner.lastName,  email: owner.email  } : null,
+        tenant: tenant ? { firstName: tenant.firstName, lastName: tenant.lastName, email: tenant.email } : null,
+      };
+    }));
+    return res.json(enriched);
   });
 
-  // POST /api/agreements/leegality/webhook — Leegality event callback (public, verified by MAC)
-  app.post("/api/agreements/leegality/webhook", async (req: any, res) => {
-    const body = req.body;
-    if (!body || typeof body !== 'object') {
-      return res.status(400).json({ message: 'Invalid payload' });
-    }
+  // POST /api/agreements/:propertyId/mark-signed — admin: mark agreement as FULLY_SIGNED
+  app.post("/api/agreements/:propertyId/mark-signed", isAuthenticated, requireRole('ADMIN'), async (req: any, res) => {
+    const { propertyId } = req.params;
+    const agreement = await storage.markAgreementSigned(propertyId);
 
-    if (!verifyLeegalityWebhook(body)) {
-      console.warn('[leegality] webhook rejected — invalid MAC');
-      return res.status(401).json({ message: 'Invalid MAC' });
-    }
-
-    const { event, documentId, signedDocumentUrl, auditTrailUrl } = body;
-    console.log(`[leegality] webhook event=${event} documentId=${documentId}`);
-
-    if (event === 'COMPLETED' && documentId) {
-      // Try to get the signed URL — use what's in the payload, or fetch from API
-      let signedUrl = signedDocumentUrl || auditTrailUrl || null;
-      if (!signedUrl) {
-        signedUrl = await getSignedDocumentUrl(documentId).catch(() => null);
-      }
-
-      const updated = await storage.finalizeLeegalityAgreement(documentId, {
-        leegalitySignedUrl: signedUrl || undefined,
-        leegalityCompletedAt: new Date(),
-      });
-
-      if (updated) {
-        // Find the property and notify both parties
-        const property = await storage.getProperty(updated.propertyId);
-        if (property) {
-          const notifyUsers = [property.ownerId, property.tenantId].filter(Boolean) as string[];
-          for (const uid of notifyUsers) {
-            await createNotification(uid, {
-              title: 'Agreement Fully Signed',
-              body: 'Your tripartite rent advance agreement has been executed via Leegality e-sign.',
-              type: 'RENT_ADVANCED',
-              url: '/agreement',
-            }).catch(() => {});
-          }
-        }
-      }
-    }
-
-    return res.status(200).json({ received: true });
-  });
-
-  // POST /api/agreements/sign — submit digital signature for the tripartite agreement
-  app.post("/api/agreements/sign", isAuthenticated, async (req: any, res) => {
-    const userId = req.user?.claims?.sub;
-    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
-
-    const dbUser = await authStorage.getUser(userId);
-    if (!dbUser?.role || dbUser.role === 'ADMIN') {
-      return res.status(403).json({ message: 'Forbidden' });
-    }
-
-    const signSchema = z.object({
-      signatureUrl: z.string().min(1).max(2_000_000),
-      propertyId: z.string().min(1).max(100),
-    });
-    let parsed: z.infer<typeof signSchema>;
-    try {
-      parsed = signSchema.parse(req.body);
-    } catch (err: any) {
-      if (err instanceof z.ZodError) return res.status(400).json({ message: err.errors[0].message });
-      throw err;
-    }
-    const { signatureUrl, propertyId } = parsed;
-
-    // Verify the user owns or rents this property
+    // Notify both parties
     const property = await storage.getProperty(propertyId);
-    if (!property) return res.status(404).json({ message: 'Property not found' });
-
-    const isOwner = property.ownerId === userId;
-    const isTenant = property.tenantId === userId;
-    if (!isOwner && !isTenant) {
-      return res.status(403).json({ message: 'You are not associated with this property' });
+    if (property) {
+      const notifyUsers = [property.ownerId, property.tenantId].filter(Boolean) as string[];
+      for (const uid of notifyUsers) {
+        await createNotification(uid, {
+          title: 'Agreement Signed',
+          body: 'Your rental agreement has been confirmed as physically signed by RentFLO.',
+          type: 'RENT_ADVANCED',
+          url: '/agreement',
+        }).catch(() => {});
+      }
     }
-
-    const agreement = await storage.signAgreement(propertyId, isOwner ? 'OWNER' : 'TENANT', signatureUrl);
     return res.json(agreement);
   });
 
