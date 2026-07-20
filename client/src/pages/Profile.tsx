@@ -7,17 +7,24 @@ import { useI18n } from "@/hooks/use-i18n";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { User, Mail, Phone, Shield, CheckCircle, Loader2, Edit2, Save, X } from "lucide-react";
+import {
+  User, Mail, Shield, CheckCircle, Loader2,
+  Edit2, Save, X, LogOut, Trash2, AlertTriangle,
+} from "lucide-react";
 import type { User as UserType } from "@shared/schema";
 
 export default function ProfilePage() {
-  const { user } = useAuth();
+  const { logout, isLoggingOut } = useAuth();
   const { toast } = useToast();
   const { t } = useI18n();
   const { data: currentUser, isLoading } = useQuery<UserType>({ queryKey: ["/api/auth/user"] });
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ firstName: "", lastName: "" });
+
+  // Delete account state
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const startEdit = () => {
     setForm({
@@ -43,6 +50,24 @@ export default function ProfilePage() {
     setSaving(false);
   };
 
+  const handleDeleteAccount = async () => {
+    setIsDeleting(true);
+    try {
+      const res = await apiRequest("DELETE", "/api/auth/account");
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message ?? "Failed to delete account");
+      }
+      // Server destroys the session; clear client cache and redirect
+      queryClient.clear();
+      window.location.replace("/");
+    } catch (e: any) {
+      toast({ title: "Could not delete account", description: e.message, variant: "destructive" });
+      setIsDeleting(false);
+      setConfirmingDelete(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -61,7 +86,7 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground" style={{ fontFamily: "Inter, sans-serif" }}>
-      <div className="p-4 sm:p-6 md:p-10 pb-24 max-w-lg">
+      <div className="p-4 sm:p-6 md:p-10 pb-28 max-w-lg">
 
         <header className="mb-8">
           <p className="text-[10px] uppercase tracking-widest text-zinc-500 mb-1">{t("profile_account_label")}</p>
@@ -184,7 +209,73 @@ export default function ProfilePage() {
           )}
         </div>
 
-        <div className="border-t border-white/[0.06] pt-6">
+        {/* ── Account actions ── */}
+        <div className="space-y-3 pt-2 border-t border-white/[0.06]">
+          <p className="text-[10px] uppercase tracking-widest text-zinc-600 pt-4 pb-1">Account</p>
+
+          {/* Sign out */}
+          <button
+            onClick={() => logout()}
+            disabled={isLoggingOut}
+            data-testid="button-sign-out-profile"
+            className="w-full flex items-center gap-3 px-4 py-3.5 border border-white/[0.07] bg-zinc-950 hover:bg-zinc-900 hover:border-white/[0.13] transition-all text-left"
+          >
+            {isLoggingOut
+              ? <Loader2 size={16} className="text-zinc-400 animate-spin flex-shrink-0" />
+              : <LogOut size={16} className="text-zinc-400 flex-shrink-0" />
+            }
+            <span className="text-sm font-medium text-zinc-300">
+              {isLoggingOut ? "Signing out…" : "Sign out"}
+            </span>
+          </button>
+
+          {/* Delete account */}
+          {!confirmingDelete ? (
+            <button
+              onClick={() => setConfirmingDelete(true)}
+              data-testid="button-delete-account-trigger"
+              className="w-full flex items-center gap-3 px-4 py-3.5 border border-red-500/20 bg-red-500/[0.04] hover:bg-red-500/[0.08] hover:border-red-500/35 transition-all text-left"
+            >
+              <Trash2 size={16} className="text-red-400/70 flex-shrink-0" />
+              <span className="text-sm font-medium text-red-400/80">Delete account</span>
+            </button>
+          ) : (
+            <div className="border border-red-500/40 bg-red-500/[0.06] p-4 space-y-3">
+              <div className="flex items-start gap-2.5">
+                <AlertTriangle size={15} className="text-red-400 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-semibold text-red-300">This is permanent</p>
+                  <p className="text-xs text-zinc-500 mt-0.5 leading-relaxed">
+                    Your account, KYC data, and all associated records will be deleted immediately and cannot be recovered.
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleDeleteAccount}
+                  disabled={isDeleting}
+                  data-testid="button-delete-account-confirm"
+                  className="flex-1 h-9 flex items-center justify-center gap-2 bg-red-600 hover:bg-red-500 disabled:opacity-60 text-white text-xs font-bold uppercase tracking-wider transition-colors"
+                >
+                  {isDeleting
+                    ? <><Loader2 size={12} className="animate-spin" /> Deleting…</>
+                    : <><Trash2 size={12} /> Yes, delete</>
+                  }
+                </button>
+                <button
+                  onClick={() => setConfirmingDelete(false)}
+                  disabled={isDeleting}
+                  data-testid="button-delete-account-cancel"
+                  className="flex-1 h-9 flex items-center justify-center border border-white/[0.08] text-zinc-400 hover:text-white hover:border-white/[0.18] text-xs font-medium transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="border-t border-white/[0.06] pt-6 mt-6">
           <p className="text-[10px] uppercase tracking-widest text-zinc-600 text-center">
             {t("profile_footer")}
           </p>

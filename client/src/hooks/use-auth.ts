@@ -102,8 +102,10 @@ export function useAuth() {
       }
     },
     onSuccess: () => {
-      queryClient.setQueryData(["/api/auth/user"], null);
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      // Clear all cached data then hard-navigate to root so protected
+      // routes unmount cleanly and no stale user data lingers in memory.
+      queryClient.clear();
+      window.location.replace("/");
     },
   });
 

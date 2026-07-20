@@ -149,13 +149,19 @@ export async function setupAuth(app: Express) {
 
   app.get("/api/logout", (req, res) => {
     req.logout(() => {
-      res.redirect("/");
+      req.session.destroy(() => {
+        res.clearCookie("connect.sid");
+        res.redirect("/");
+      });
     });
   });
 
   app.post("/api/logout", (req, res) => {
     req.logout(() => {
-      res.status(204).end();
+      req.session.destroy(() => {
+        res.clearCookie("connect.sid");
+        res.status(204).end();
+      });
     });
   });
 }
