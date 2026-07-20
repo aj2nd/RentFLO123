@@ -87,8 +87,7 @@ export function Navigation() {
         </button>
 
         {/* Center: wordmark — absolutely centered so it's always in the middle */}
-        <div className="absolute inset-x-0 flex items-center justify-center gap-2 pointer-events-none" style={{ height: "60px" }}>
-          <img src="/logo-icon.png" alt="RentFLO" style={{ height: 36, width: 36, objectFit: "contain" }} />
+        <div className="absolute inset-x-0 flex items-center justify-center pointer-events-none" style={{ height: "60px" }}>
           <img src="/logo-wordmark-transparent.png" alt="RentFLO" style={{ height: 20, objectFit: "contain" }} />
         </div>
 
