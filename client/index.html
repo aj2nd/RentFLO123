@@ -43,7 +43,17 @@
       /* ── Global reset ─────────────────────────────────── */
       *, *::before, *::after { box-sizing: border-box; }
       body { margin: 0; padding: 0; background: #000; }
-      html.light body { background: #FAFAF7; }
+      html.light body {
+        background:
+          radial-gradient(ellipse 55% 45% at 8%  4%,  rgba(255,  0, 110, 0.28) 0%, transparent 68%),
+          radial-gradient(ellipse 45% 35% at 92%  6%,  rgba(255, 107,  0, 0.26) 0%, transparent 65%),
+          radial-gradient(ellipse 40% 50% at 94% 55%,  rgba(131, 56, 236, 0.22) 0%, transparent 65%),
+          radial-gradient(ellipse 38% 45% at  2% 68%,  rgba(  4, 231, 98, 0.20) 0%, transparent 65%),
+          radial-gradient(ellipse 42% 35% at 55% 95%,  rgba( 58, 134,255, 0.24) 0%, transparent 65%),
+          radial-gradient(ellipse 32% 28% at 30% 82%,  rgba(255, 209,  0, 0.22) 0%, transparent 65%),
+          radial-gradient(ellipse 28% 22% at 48% 18%,  rgba(  0, 201,255, 0.18) 0%, transparent 65%),
+          #FFFFFF;
+      }
 
       /* ── Main header bar ──────────────────────────────── */
       .i18n-header {
@@ -68,7 +78,7 @@
                     border-radius 0.4s ease, padding 0.4s ease;
       }
 
-      html.light .i18n-header { background: #FAFAF7; }
+      html.light .i18n-header { background: rgba(255, 255, 255, 0.82); }
 
       .i18n-header.glass {
         height: 72px;
@@ -85,13 +95,13 @@
         box-shadow: 0 1px 0 rgba(255,255,255,0.05), 0 8px 40px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05);
       }
 
-      /* Scrolled glass header on warm-white canvas — premium frosted pill */
+      /* Scrolled glass header on Holi canvas — vivid frosted pill */
       html.light .i18n-header.glass {
-        background: rgba(255, 255, 255, 0.85);
-        backdrop-filter: blur(36px) saturate(180%) brightness(1.02);
-        -webkit-backdrop-filter: blur(36px) saturate(180%) brightness(1.02);
-        border-bottom: 1px solid rgba(15, 23, 42, 0.06);
-        box-shadow: 0 1px 2px rgba(15,23,42,0.04), 0 8px 32px rgba(15,23,42,0.08), inset 0 1px 0 rgba(255,255,255,0.90);
+        background: rgba(255, 255, 255, 0.80);
+        backdrop-filter: blur(36px) saturate(220%) brightness(1.04);
+        -webkit-backdrop-filter: blur(36px) saturate(220%) brightness(1.04);
+        border-bottom: 1px solid rgba(255, 0, 110, 0.18);
+        box-shadow: 0 4px 24px rgba(255, 0, 110, 0.14), 0 2px 8px rgba(131, 56, 236, 0.10), inset 0 1px 0 rgba(255,255,255,0.95);
       }
 
       .i18n-header .logo-left {
@@ -130,7 +140,7 @@
       }
 
       html.light .i18n-header .logo-wordmark {
-        filter: invert(1) drop-shadow(0 0 8px rgba(0, 0, 0, 0.08));
+        filter: invert(1) drop-shadow(0 0 12px rgba(255, 0, 110, 0.20));
       }
 
       .i18n-header.glass .logo-wordmark {
@@ -157,7 +167,7 @@
         gap: 12px;
       }
 
-      html.light .i18n-login-bar { background: #FAFAF7; }
+      html.light .i18n-login-bar { background: rgba(255, 255, 255, 0.75); }
 
       /* ── Language switcher (now in login bar) ─────────── */
       .language-switcher {
@@ -189,17 +199,17 @@
         background-size: 12px;
       }
 
-      /* Language select on tiffany canvas — black glass frosted */
+      /* Language select on Holi canvas — frosted white with pink tint */
       html.light .language-select {
-        background-color: rgba(0, 0, 0, 0.08);
-        border-color: rgba(0, 0, 0, 0.15);
-        color: rgba(0, 0, 0, 0.75);
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(0,0,0,0.5)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        background-color: rgba(255, 255, 255, 0.72);
+        border-color: rgba(255, 0, 110, 0.28);
+        color: rgba(26, 5, 51, 0.82);
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(255,0,110,0.55)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
       }
 
       html.light .language-select option {
         background: #FFFFFF;
-        color: #0a0a0a;
+        color: #1A0533;
       }
 
       .language-select:hover {
@@ -208,8 +218,8 @@
       }
 
       html.light .language-select:hover {
-        border-color: rgba(0, 0, 0, 0.25);
-        background-color: rgba(0, 0, 0, 0.12);
+        border-color: rgba(255, 0, 110, 0.50);
+        background-color: rgba(255, 255, 255, 0.88);
       }
 
       .language-select:focus {
@@ -217,7 +227,8 @@
       }
 
       html.light .language-select:focus {
-        border-color: rgba(0, 150, 136, 0.45);
+        border-color: rgba(255, 0, 110, 0.65);
+        box-shadow: 0 0 0 3px rgba(255, 0, 110, 0.12);
       }
 
       .language-select option {
@@ -250,16 +261,16 @@
         border-color: rgba(192, 192, 192, 0.28);
       }
 
-      /* Theme toggle on tiffany canvas — dark ink glass pill */
+      /* Theme toggle on Holi canvas — hot pink glass pill */
       html.light .theme-toggle-btn {
-        border-color: rgba(0, 0, 0, 0.18);
-        background: rgba(0, 0, 0, 0.08);
-        color: rgba(0, 0, 0, 0.80);
+        border-color: rgba(255, 0, 110, 0.32);
+        background: rgba(255, 255, 255, 0.72);
+        color: rgba(26, 5, 51, 0.82);
       }
 
       html.light .theme-toggle-btn:hover {
-        background: rgba(0, 0, 0, 0.14);
-        border-color: rgba(0, 0, 0, 0.30);
+        background: rgba(255, 0, 110, 0.10);
+        border-color: rgba(255, 0, 110, 0.55);
       }
 
       /* ── Login button ─────────────────────────────────── */
@@ -305,16 +316,16 @@
         opacity: 1;
       }
 
-      /* Login button on warm-white canvas — solid ink, refined teal text */
+      /* Login button on Holi canvas — vivid rainbow gradient */
       html.light .login-btn {
-        background: #1A1D24;
-        color: #5EEAD4;
-        box-shadow: 0 1px 2px rgba(15,23,42,0.08), 0 4px 12px rgba(15,23,42,0.10), 0 0 0 1px rgba(15,23,42,0.10);
+        background: linear-gradient(135deg, #FF006E 0%, #FF6B00 40%, #8338EC 100%);
+        color: #FFFFFF;
+        box-shadow: 0 4px 20px rgba(255, 0, 110, 0.40), 0 2px 8px rgba(131, 56, 236, 0.25);
       }
       html.light .login-btn:hover {
         opacity: 1;
-        background: #1a1a1a;
-        box-shadow: 0 6px 28px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(0, 0, 0, 0.12);
+        background: linear-gradient(135deg, #FF2D7A 0%, #FF8C00 40%, #9B59EC 100%);
+        box-shadow: 0 8px 32px rgba(255, 0, 110, 0.50), 0 4px 16px rgba(131, 56, 236, 0.35);
       }
 
       /* ── Responsive ───────────────────────────────────── */
