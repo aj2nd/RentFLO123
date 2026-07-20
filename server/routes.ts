@@ -1111,8 +1111,12 @@ export async function registerRoutes(
     try {
       const proto = (req.headers['x-forwarded-proto'] as string)?.split(',')[0] || req.protocol;
       const host = (req.headers['x-forwarded-host'] as string)?.split(',')[0] || req.get('host');
-      const callback = `${proto}://${host}/tenant?kyc=didit`;
-      console.log(`[didit] creating session with callback=${callback}`);
+      // Owners start KYC from the /verify page and should return there.
+      // Tenants start from their dashboard and should return to /tenant.
+      const me = await authStorage.getUser(userId);
+      const returnPath = me?.role === 'OWNER' ? '/verify?kyc=didit' : '/tenant?kyc=didit';
+      const callback = `${proto}://${host}${returnPath}`;
+      console.log(`[didit] creating session for role=${me?.role} with callback=${callback}`);
       const session = await createDiditSession({
         callback,
         vendor_data: userId,

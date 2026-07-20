@@ -35,9 +35,56 @@ export default function Verify() {
   const { data: currentUser, isLoading } = useQuery<User>({ queryKey: ["/api/auth/user"] });
 
   // === Didit E-KYC ===
-  // Didit redirects back to /tenant?kyc=didit after verification.
-  // TenantDashboard polls /api/kyc/didit/status to finalize.
   const [diditLoading, setDiditLoading] = useState(false);
+  const [diditPolling, setDiditPolling] = useState(false);
+
+  // Return-trip handler: Didit redirects owners back to /verify?kyc=didit.
+  // Poll /api/kyc/didit/status until verified or timeout (~36 s).
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const isDidit = params.get("kyc") === "didit" || sessionStorage.getItem("didit:in_progress") === "1";
+    if (!isDidit) return;
+
+    setDiditPolling(true);
+    let cancelled = false;
+    let attempts = 0;
+
+    const finalize = async () => {
+      while (!cancelled && attempts < 12) {
+        attempts += 1;
+        try {
+          const r = await apiRequest("GET", "/api/kyc/didit/status");
+          const data = await r.json().catch(() => ({}));
+          if (data?.verified) {
+            sessionStorage.removeItem("didit:in_progress");
+            if (!cancelled) {
+              setDiditPolling(false);
+              toast({ title: "Identity Verified!", description: "Your KYC is complete." });
+              queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+              window.history.replaceState({}, "", "/verify");
+            }
+            return;
+          }
+        } catch {
+          // transient error — retry
+        }
+        if (!cancelled) await new Promise((resolve) => setTimeout(resolve, 3000));
+      }
+      if (!cancelled) {
+        sessionStorage.removeItem("didit:in_progress");
+        setDiditPolling(false);
+        toast({
+          title: "Verification not completed",
+          description: "Please try again or finish the flow on Didit.",
+          variant: "destructive",
+        });
+        window.history.replaceState({}, "", "/verify");
+      }
+    };
+
+    void finalize();
+    return () => { cancelled = true; };
+  }, [toast]);
 
   const handleDiditStart = async () => {
     setDiditLoading(true);
@@ -94,6 +141,19 @@ export default function Verify() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-zinc-600 border-t-zinc-200 animate-spin" />
+      </div>
+    );
+  }
+
+  // Shown while polling Didit status after returning from their hosted flow
+  if (diditPolling) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-5 px-6">
+        <Loader2 className="w-12 h-12 text-[#6FFFE9] animate-spin" />
+        <div className="text-center space-y-1">
+          <p className="text-base font-semibold text-zinc-200">Checking verification status…</p>
+          <p className="text-sm text-zinc-500">This takes a few seconds. Please don't close the page.</p>
+        </div>
       </div>
     );
   }
