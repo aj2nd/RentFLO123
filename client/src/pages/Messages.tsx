@@ -56,7 +56,7 @@ export default function Messages() {
       apiRequest("POST", `/api/messages/${selectedPropertyId}`, { body }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/messages", selectedPropertyId] });
-      queryClient.invalidateQueries({ queryKey: ["/api/messages/unread/count"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/user/badge-counts"] });
       setDraft("");
     },
   });

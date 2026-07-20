@@ -1514,6 +1514,17 @@ export async function registerRoutes(
     res.json({ ok: true });
   });
 
+  // Consolidated badge counts — single request replaces separate unread-count polls
+  app.get("/api/user/badge-counts", isAuthenticated, async (req: any, res) => {
+    const userId = req.user?.claims?.sub;
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
+    const [notifications, messages] = await Promise.all([
+      storage.getUnreadCount(userId),
+      storage.getUnreadMessageCount(userId),
+    ]);
+    res.json({ notifications, messages });
+  });
+
   // List notifications for current user
   app.get("/api/notifications", isAuthenticated, async (req: any, res) => {
     const userId = req.user?.claims?.sub;

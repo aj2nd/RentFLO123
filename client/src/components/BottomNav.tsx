@@ -57,19 +57,13 @@ export function BottomNav() {
   const { t } = useI18n();
   const [location] = useLocation();
 
-  const { data: unreadData } = useQuery<{ count: number }>({
-    queryKey: ["/api/messages/unread/count"],
+  const { data: badgeCounts } = useQuery<{ notifications: number; messages: number }>({
+    queryKey: ["/api/user/badge-counts"],
     refetchInterval: 60000,
     enabled: !!user,
   });
-  const unreadCount = unreadData?.count ?? 0;
-
-  const { data: unreadNotifsData } = useQuery<{ count: number }>({
-    queryKey: ["/api/notifications/unread-count"],
-    refetchInterval: 60000,
-    enabled: !!user,
-  });
-  const unreadNotifCount = unreadNotifsData?.count ?? 0;
+  const unreadCount = badgeCounts?.messages ?? 0;
+  const unreadNotifCount = badgeCounts?.notifications ?? 0;
 
   if (!user?.role) return null;
 

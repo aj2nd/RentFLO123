@@ -7,6 +7,7 @@ import memoize from "memoizee";
 import connectPg from "connect-pg-simple";
 import { authStorage } from "./storage";
 import { signAuthToken, verifyAuthToken } from "./token";
+import { pool } from "../../db";
 
 const ANDROID_DEEP_LINK = "rentflo://auth/callback";
 
@@ -25,7 +26,7 @@ export function getSession() {
   const sessionTtl = 30 * 24 * 60 * 60 * 1000; // 30 days
   const pgStore = connectPg(session);
   const sessionStore = new pgStore({
-    conString: process.env.DATABASE_URL || process.env.RAILWAY_DATABASE_URL,
+    pool,
     createTableIfMissing: false,
     ttl: sessionTtl,
     tableName: "sessions",

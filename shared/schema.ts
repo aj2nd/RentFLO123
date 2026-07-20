@@ -1,4 +1,4 @@
-import { pgTable, text, integer, timestamp, varchar, boolean, uniqueIndex } from "drizzle-orm/pg-core";
+import { pgTable, text, integer, timestamp, varchar, boolean, uniqueIndex, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations, sql } from "drizzle-orm";
@@ -18,7 +18,10 @@ export const properties = pgTable("properties", {
   monthlyRent: integer("monthly_rent").notNull(),
   payoutDay: integer("payout_day").notNull().default(1),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => ({
+  ownerIdIdx:  index("properties_owner_id_idx").on(table.ownerId),
+  tenantIdIdx: index("properties_tenant_id_idx").on(table.tenantId),
+}));
 
 export const ledgers = pgTable("ledgers", {
   id: varchar("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
@@ -31,7 +34,11 @@ export const ledgers = pgTable("ledgers", {
   processedBy: varchar("processed_by").references(() => users.id), // Admin who processed it
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => ({
+  propertyIdIdx:    index("ledgers_property_id_idx").on(table.propertyId),
+  statusIdx:        index("ledgers_status_idx").on(table.status),
+  propertyMonthIdx: index("ledgers_property_month_idx").on(table.propertyId, table.monthYear),
+}));
 
 // === PAYMENTS TABLE - Multiple installments per ledger ===
 // Flow for UPI manual-verification payments:
@@ -177,7 +184,10 @@ export const notifications = pgTable("notifications", {
   read: boolean("read").default(false).notNull(),
   url: text("url"),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => ({
+  userIdIdx:   index("notifications_user_id_idx").on(table.userId),
+  userReadIdx: index("notifications_user_read_idx").on(table.userId, table.read),
+}));
 
 export type PushSubscription = typeof pushSubscriptions.$inferSelect;
 export type InsertPushSubscription = typeof pushSubscriptions.$inferInsert;
@@ -193,7 +203,10 @@ export const messages = pgTable("messages", {
   body: text("body").notNull(),
   read: boolean("read").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => ({
+  propertyIdIdx:    index("messages_property_id_idx").on(table.propertyId),
+  receiverReadIdx:  index("messages_receiver_read_idx").on(table.receiverId, table.read),
+}));
 
 export const messagesRelations = relations(messages, ({ one }) => ({
   property: one(properties, {

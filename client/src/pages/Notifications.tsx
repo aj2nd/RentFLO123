@@ -45,7 +45,7 @@ export default function NotificationsPage() {
     mutationFn: () => apiRequest("POST", "/api/notifications/read", {}),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/notifications/unread-count"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/user/badge-counts"] });
     },
   });
 

@@ -33,12 +33,12 @@ export function Navigation() {
   const isActive = (path: string) => location === path;
   const role = user?.role;
 
-  const { data: unreadData } = useQuery<{ count: number }>({
-    queryKey: ["/api/messages/unread/count"],
+  const { data: badgeCounts } = useQuery<{ notifications: number; messages: number }>({
+    queryKey: ["/api/user/badge-counts"],
     refetchInterval: 60000,
     enabled: !!user,
   });
-  const unreadCount = unreadData?.count ?? 0;
+  const unreadCount = badgeCounts?.messages ?? 0;
 
   const navItems: { href: string; icon: React.ReactNode; label: string; roles: string[]; badge?: number }[] = [
     { href: "/admin",             icon: <LayoutDashboard size={18} />, label: t("nav_admin_console"),    roles: ["ADMIN"] },
