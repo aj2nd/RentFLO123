@@ -62,99 +62,136 @@
   :root { --topbar-h: 0px; }
 }
 
-/* ── Light mode — HOLI FESTIVAL ──────────────────────────────────────── */
-/* Vivid powder-burst colors on white. Pink, saffron, violet, lime, sky. */
+/* ── Light mode — HOLI FESTIVAL ULTRA ────────────────────────────────── */
+/* Precision powder-burst: pure white canvas, maximum-saturation palette  */
+/* Every color has a semantic role. Every surface carries the festival.   */
 .light {
-  --background: 340 100% 99%;        /* near-white pinkish canvas */
-  --foreground: 270 60% 12%;         /* deep violet-black text */
+  --background: 338 100% 99%;        /* barely-blush white — warm, not sterile */
+  --foreground: 262 62% 9%;          /* deep aubergine — richer than pure black */
 
   --card: 0 0% 100%;
-  --card-foreground: 270 60% 12%;
+  --card-foreground: 262 62% 9%;
 
   --popover: 0 0% 100%;
-  --popover-foreground: 270 60% 12%;
+  --popover-foreground: 262 62% 9%;
 
-  --primary: 333 100% 50%;           /* hot pink — primary buttons */
+  --primary: 333 100% 48%;           /* electric magenta #F5006A */
   --primary-foreground: 0 0% 100%;
 
-  --secondary: 38 100% 53%;          /* saffron orange */
-  --secondary-foreground: 270 60% 12%;
+  --secondary: 28 100% 52%;          /* saffron-gold #FF8400 */
+  --secondary-foreground: 0 0% 100%;
 
-  --muted: 300 50% 96%;              /* pale pink surface */
-  --muted-foreground: 270 25% 42%;
+  --muted: 310 80% 96%;              /* vivid lavender-rose surface */
+  --muted-foreground: 268 35% 40%;   /* medium violet — readable, colorful */
 
-  --accent: 265 85% 58%;             /* electric violet */
+  --accent: 272 100% 60%;            /* electric violet #7B00FF */
   --accent-foreground: 0 0% 100%;
 
-  --destructive: 0 85% 55%;
+  --destructive: 345 100% 52%;       /* vivid crimson #FF0042 */
   --destructive-foreground: 0 0% 100%;
 
-  --border: 310 60% 85%;             /* pink-tinted hairline */
+  --border: 318 70% 83%;             /* rose-pink hairline */
   --input: 0 0% 100%;
-  --ring: 333 100% 50%;              /* hot pink focus ring */
+  --ring: 333 100% 48%;              /* magenta focus ring */
 
   --radius: 0px;
 
-  /* Named tokens — Holi palette */
-  --silver: #1A0533;                 /* deep violet text */
-  --silver-light: #4A1870;
-  --silver-dim: #9B59B6;
-  --tiffany: #FF006E;                /* hot pink as the primary accent */
-  --tiffany-dim: #FF4499;
+  /* ── Named accent tokens ── */
+  --silver: #1A0430;                 /* aubergine text */
+  --silver-light: #4C0D99;           /* deep violet */
+  --silver-dim: #A040CC;             /* bright amethyst mid-tone */
+  --tiffany: #FF006E;                /* hot pink — primary accent used throughout */
+  --tiffany-dim: #FF4499;            /* lighter pink */
   --tiffany-badge-text: #ffffff;
 
-  /* Holi powder-burst palette */
-  --holi-pink:   #FF006E;
-  --holi-orange: #FF6B00;
-  --holi-yellow: #FFD100;
-  --holi-green:  #04E762;
-  --holi-blue:   #3A86FF;
-  --holi-purple: #8338EC;
-  --holi-cyan:   #00C9FF;
-  --holi-rose:   #FF2D55;
+  /* ── Full Holi powder palette ── */
+  /* Every color is maximally saturated and precisely tuned.             */
+  --holi-pink:    #FF006E;   /* magenta-rose  — primary */
+  --holi-crimson: #FF0044;   /* electric red  — danger / error */
+  --holi-orange:  #FF6600;   /* deep saffron  — secondary / warning */
+  --holi-gold:    #FFC800;   /* pure gold     — caution / highlight */
+  --holi-lime:    #00E87A;   /* electric lime — success */
+  --holi-teal:    #00D4CC;   /* teal-cyan     — info-cool */
+  --holi-cyan:    #00C4FF;   /* sky cyan      — info-bright */
+  --holi-blue:    #3A86FF;   /* royal blue    — links / info */
+  --holi-indigo:  #5C4EFF;   /* vivid indigo  — accent-2 */
+  --holi-purple:  #8338EC;   /* violet-purple — accent-1 */
+  --holi-rose:    #FF2D6E;   /* deep rose     — alt primary */
+  --holi-fuchsia: #D400FF;   /* pure fuchsia  — ultra-accent */
 
-  /* Secondary palette — maximum saturation */
-  --color-gold: #CC4400;
-  --color-gold-mid: #FF6B00;
-  --color-gold-bg: #FFF3E0;
-  --color-gold-border: rgba(255, 107, 0, 0.30);
+  /* ── Semantic status palette — decisive, vivid, unambiguous ── */
+  --status-success:        #00C85A;
+  --status-success-bg:     rgba(0,  200, 90, 0.11);
+  --status-success-border: rgba(0,  200, 90, 0.32);
 
-  --color-violet: #4A00B4;
-  --color-violet-mid: #8338EC;
-  --color-violet-bg: #F0E6FF;
-  --color-violet-border: rgba(131, 56, 236, 0.30);
+  --status-warning:        #FF8400;
+  --status-warning-bg:     rgba(255, 132, 0, 0.10);
+  --status-warning-border: rgba(255, 132, 0, 0.32);
 
-  --color-rose: #CC0050;
-  --color-rose-mid: #FF006E;
-  --color-rose-bg: #FFE0EE;
-  --color-rose-border: rgba(255, 0, 110, 0.30);
+  --status-error:          #FF006E;
+  --status-error-bg:       rgba(255,  0, 110, 0.09);
+  --status-error-border:   rgba(255,  0, 110, 0.30);
 
-  --color-sage: #007A30;
-  --color-sage-mid: #04E762;
-  --color-sage-bg: #D6FFE8;
-  --color-sage-border: rgba(4, 231, 98, 0.30);
+  --status-info:           #3A86FF;
+  --status-info-bg:        rgba(58,  134, 255, 0.09);
+  --status-info-border:    rgba(58,  134, 255, 0.28);
 
-  /* Section zone backgrounds — vivid pastel splashes */
-  --section-cream:  #FFF0F5;
-  --section-violet: #F0E6FF;
-  --section-amber:  #FFF3E0;
-  --section-sage:   #D6FFE8;
+  /* ── Extended semantic palette (contextual zones) ── */
+  --color-gold:         #CC4400;
+  --color-gold-mid:     #FF6600;
+  --color-gold-bg:      rgba(255, 102, 0, 0.09);
+  --color-gold-border:  rgba(255, 102, 0, 0.30);
 
-  /* Surface tokens — white glass over colorful background */
-  --nav-bg: rgba(255, 255, 255, 0.88);
-  --nav-border: rgba(255, 0, 110, 0.22);
-  --nav-text: rgba(26, 5, 51, 0.82);
-  --nav-text-dim: rgba(26, 5, 51, 0.48);
-  --surface-overlay: rgba(255, 0, 110, 0.05);
-  --surface-modal: #FFFFFF;
-  --surface-card: #FFFFFF;
-  --border-subtle: rgba(255, 0, 110, 0.12);
-  --border-accent-dim: rgba(131, 56, 236, 0.28);
+  --color-violet:       #5500AA;
+  --color-violet-mid:   #8338EC;
+  --color-violet-bg:    rgba(131, 56, 236, 0.09);
+  --color-violet-border:rgba(131, 56, 236, 0.30);
 
-  /* Colorful shadows */
-  --shadow-card:       0 1px 3px rgba(255, 0, 110, 0.10), 0 2px 8px rgba(131, 56, 236, 0.08);
-  --shadow-card-hover: 0 8px 28px rgba(255, 0, 110, 0.18), 0 3px 10px rgba(255, 107, 0, 0.12);
-  --shadow-modal:      0 24px 64px rgba(255, 0, 110, 0.24), 0 8px 24px rgba(131, 56, 236, 0.20);
+  --color-rose:         #CC0044;
+  --color-rose-mid:     #FF006E;
+  --color-rose-bg:      rgba(255, 0, 110, 0.09);
+  --color-rose-border:  rgba(255, 0, 110, 0.28);
+
+  --color-sage:         #006B38;
+  --color-sage-mid:     #00C85A;
+  --color-sage-bg:      rgba(0, 200, 90, 0.09);
+  --color-sage-border:  rgba(0, 200, 90, 0.28);
+
+  --color-sky:          #0055BB;
+  --color-sky-mid:      #00C4FF;
+  --color-sky-bg:       rgba(0, 196, 255, 0.09);
+  --color-sky-border:   rgba(0, 196, 255, 0.28);
+
+  /* ── Section zone backgrounds — vivid, breathable tints ── */
+  --section-cream:  #FFF0F6;   /* rose-blush */
+  --section-violet: #F4EAFF;   /* soft violet */
+  --section-amber:  #FFF5E0;   /* warm amber */
+  --section-sage:   #E2FFEE;   /* cool mint */
+  --section-sky:    #E0F6FF;   /* sky */
+
+  /* ── Surface tokens ── */
+  --nav-bg:             rgba(255, 255, 255, 0.88);
+  --nav-border:         rgba(255, 0, 110, 0.20);
+  --nav-text:           rgba(26, 4, 48, 0.78);
+  --nav-text-dim:       rgba(26, 4, 48, 0.40);
+  --surface-overlay:    rgba(255, 0, 110, 0.04);
+  --surface-modal:      #FFFFFF;
+  --surface-card:       #FFFFFF;
+  --border-subtle:      rgba(255, 0, 110, 0.10);
+  --border-accent-dim:  rgba(131, 56, 236, 0.24);
+
+  /* ── Multi-color vivid shadows — each carries festival pigment ── */
+  --shadow-card:
+    0 1px 3px  rgba(255,   0, 110, 0.09),
+    0 3px 10px rgba(131,  56, 236, 0.07);
+  --shadow-card-hover:
+    0 8px 32px  rgba(255,   0, 110, 0.20),
+    0 4px 14px  rgba(255, 102,   0, 0.13),
+    0 1px 4px   rgba(131,  56, 236, 0.10);
+  --shadow-modal:
+    0 24px 80px rgba(255,   0, 110, 0.24),
+    0  8px 32px rgba(131,  56, 236, 0.18),
+    0  2px  8px rgba(255, 200,   0, 0.10);
 }
 
 @layer base {
@@ -243,20 +280,20 @@
     pointer-events: none;
   }
 
-  /* Light mode liquid glass — frosted white, lets Holi color bleed through */
+  /* Light mode liquid glass — brilliant frosted white, Holi-tinted borders */
   .light .liquid-glass {
-    background: rgba(255, 255, 255, 0.68);
-    backdrop-filter: blur(40px) saturate(220%) brightness(1.06);
-    -webkit-backdrop-filter: blur(40px) saturate(220%) brightness(1.06);
-    border-top: 1px solid rgba(255, 255, 255, 0.95);
-    border-left: 1px solid rgba(255, 255, 255, 0.82);
-    border-right: 1px solid rgba(255, 255, 255, 0.55);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.55);
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(48px) saturate(240%) brightness(1.04);
+    -webkit-backdrop-filter: blur(48px) saturate(240%) brightness(1.04);
+    border-top:    1px solid rgba(255, 255, 255, 0.98);
+    border-left:   1px solid rgba(255, 255, 255, 0.88);
+    border-right:  1px solid rgba(255, 100, 180, 0.18);
+    border-bottom: 1px solid rgba(131,  56, 236, 0.16);
     box-shadow:
-      0 8px 32px rgba(255, 0, 110, 0.14),
-      0 4px 14px rgba(131, 56, 236, 0.10),
-      inset 0 1.5px 0 rgba(255, 255, 255, 0.98),
-      inset 1.5px 0 0 rgba(255, 255, 255, 0.72);
+      0  8px 32px rgba(255,   0, 110, 0.13),
+      0  3px 12px rgba(131,  56, 236, 0.09),
+      inset 0 1.5px 0 rgba(255, 255, 255, 1),
+      inset 1.5px 0 0 rgba(255, 255, 255, 0.80);
   }
 
   /* ── Teal / Tiffany tint variant ── */
@@ -291,18 +328,20 @@
     pointer-events: none;
   }
 
-  /* Holi teal variant — pink-tinted frosted glass */
+  /* Light mode teal variant — Holi canvas frosted glass, hot-pink accent */
   .light .liquid-glass-teal {
-    background: rgba(255, 255, 255, 0.65);
-    border-top: 1px solid rgba(255, 255, 255, 0.95);
-    border-left: 1px solid rgba(255, 255, 255, 0.80);
-    border-right: 1px solid rgba(255, 0, 110, 0.18);
-    border-bottom: 1px solid rgba(255, 0, 110, 0.18);
+    background: rgba(255, 255, 255, 0.70);
+    backdrop-filter: blur(48px) saturate(240%) brightness(1.04);
+    -webkit-backdrop-filter: blur(48px) saturate(240%) brightness(1.04);
+    border-top:    1px solid rgba(255, 255, 255, 0.98);
+    border-left:   1px solid rgba(255, 255, 255, 0.85);
+    border-right:  1px solid rgba(255,   0, 110, 0.20);
+    border-bottom: 1px solid rgba(255,   0, 110, 0.16);
     box-shadow:
-      0 10px 36px rgba(255, 0, 110, 0.16),
-      0 4px 12px rgba(131, 56, 236, 0.10),
-      inset 0 1.5px 0 rgba(255, 255, 255, 0.95),
-      0 0 32px rgba(255, 0, 110, 0.08);
+      0 10px 40px rgba(255,   0, 110, 0.16),
+      0  4px 14px rgba(131,  56, 236, 0.10),
+      inset 0 1.5px 0 rgba(255, 255, 255, 1),
+      0 0 36px rgba(255, 0, 110, 0.07);
   }
 
   /* ── Micro glass — for small inline chips/pills ── */
@@ -314,11 +353,14 @@
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
   }
 
-  /* Chip on Holi canvas — frosted white micro pill */
+  /* Chip on Holi canvas — vivid frosted micro pill */
   .light .liquid-glass-chip {
-    background: rgba(255, 255, 255, 0.72);
-    border: 1px solid rgba(255, 255, 255, 0.92);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.98), 0 2px 8px rgba(255, 0, 110, 0.12);
+    background: rgba(255, 255, 255, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.95);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 1),
+      0 2px 8px rgba(255, 0, 110, 0.11),
+      0 1px 3px rgba(131, 56, 236, 0.07);
   }
 
   /* ── Silver liquid metal gradient text ── */
@@ -332,11 +374,17 @@
     background-clip: text;
   }
 
-  /* On Holi canvas — vivid rainbow gradient wordmark */
+  /* On Holi canvas — full festival spectrum, vivid & seamless */
   .light .silver-text {
     background: linear-gradient(
       135deg,
-      #FF006E 0%, #FF6B00 22%, #FFD100 42%, #04E762 60%, #3A86FF 78%, #8338EC 100%
+      #FF006E  0%,
+      #FF5500 18%,
+      #FFC800 34%,
+      #00E87A 50%,
+      #00C4FF 66%,
+      #5C4EFF 82%,
+      #D400FF 100%
     );
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -357,42 +405,53 @@
   .glass-panel {
     @apply bg-black/80 backdrop-blur-xl border border-[#6FFFE9]/25;
   }
-  /* Glass panel — frosted white on Holi canvas */
+  /* Glass panel — vivid frosted white on Holi canvas */
   .light .glass-panel {
-    background: rgba(255, 255, 255, 0.78);
-    border-color: rgba(255, 255, 255, 0.88);
-    backdrop-filter: blur(32px) saturate(180%);
-    -webkit-backdrop-filter: blur(32px) saturate(180%);
-    box-shadow: 0 8px 32px rgba(255, 0, 110, 0.14), 0 2px 8px rgba(131, 56, 236, 0.10);
+    background: rgba(255, 255, 255, 0.82);
+    border-color: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(40px) saturate(220%) brightness(1.04);
+    -webkit-backdrop-filter: blur(40px) saturate(220%) brightness(1.04);
+    box-shadow:
+      0  8px 36px rgba(255,   0, 110, 0.14),
+      0  3px 12px rgba(131,  56, 236, 0.10),
+      inset 0 1px 0 rgba(255, 255, 255, 1);
   }
 
   .high-contrast-border {
     @apply border border-[#6FFFE9]/30 hover:border-[#6FFFE9]/65 transition-colors duration-300;
   }
-  /* On Holi canvas — white with pink hover */
+  /* On Holi canvas — frosted white resting, hot-pink hover */
   .light .high-contrast-border {
-    border-color: rgba(255, 255, 255, 0.72);
+    border-color: rgba(255, 255, 255, 0.78);
   }
   .light .high-contrast-border:hover {
-    border-color: rgba(255, 0, 110, 0.50);
+    border-color: rgba(255, 0, 110, 0.52);
+    box-shadow: 0 0 0 1px rgba(255, 0, 110, 0.14);
   }
 
   /* Tiffany glow */
   .glow-tiffany {
     text-shadow: 0 0 24px rgba(111, 255, 233, 0.55);
   }
-  /* On Holi canvas — hot pink glow */
+  /* On Holi canvas — hot pink + violet halo */
   .light .glow-tiffany {
-    text-shadow: 0 0 24px rgba(255, 0, 110, 0.45), 0 0 48px rgba(131, 56, 236, 0.25);
+    text-shadow:
+      0 0 20px rgba(255,   0, 110, 0.55),
+      0 0 48px rgba(131,  56, 236, 0.28),
+      0 0 80px rgba(255, 102,   0, 0.14);
   }
 
   /* Silver glow on hero text */
   .glow-text {
     text-shadow: 0 0 30px rgba(192, 192, 192, 0.45), 0 0 60px rgba(111, 255, 233, 0.12);
   }
-  /* On Holi canvas — vivid rainbow glow */
+  /* On Holi canvas — full festival spectrum halo */
   .light .glow-text {
-    text-shadow: 0 0 32px rgba(255, 0, 110, 0.40), 0 0 64px rgba(131, 56, 236, 0.25), 0 0 96px rgba(255, 107, 0, 0.15);
+    text-shadow:
+      0 0  28px rgba(255,   0, 110, 0.42),
+      0 0  56px rgba(131,  56, 236, 0.26),
+      0 0  90px rgba(255, 102,   0, 0.16),
+      0 0 120px rgba( 58, 134, 255, 0.10);
   }
 
   /* Tiffany accent line */
@@ -403,11 +462,12 @@
   /* On Holi canvas — hot pink accent line */
   .light .tiffany-accent {
     border-left-color: #FF006E;
+    border-left-width: 3px;
   }
 
-  /* ── Light mode global surface overrides — Holi World ────────────────
-     bg-black / bg-zinc-* → semi-transparent white over Holi canvas.
-     Lets the colorful background bleed through glass surfaces.
+  /* ── Light mode global surface overrides — Holi Ultra ────────────────
+     bg-black / bg-zinc-* → vivid frosted white over the Holi canvas.
+     Color bleeds through every surface. Glass is brilliant, not flat.
   ─────────────────────────────────────────────────────────────────── */
 
   /* Primary page backgrounds — semi-transparent so color shows through */
@@ -418,7 +478,7 @@
     background-color: rgba(255, 255, 255, 0.88) !important;
   }
   .light .bg-zinc-900 {
-    background-color: rgba(255, 255, 255, 0.75) !important;
+    background-color: rgba(255, 255, 255, 0.76) !important;
   }
   .light .text-white {
     color: hsl(var(--foreground)) !important;
@@ -430,28 +490,28 @@
     color: hsl(var(--foreground) / 0.85) !important;
   }
 
-  /* Border overrides — pink-tinted white borders on Holi canvas */
+  /* Border overrides — frosted white with subtle rose tint */
   .light .border-white\/\[0\.06\] {
-    border-color: rgba(255, 255, 255, 0.70) !important;
+    border-color: rgba(255, 255, 255, 0.72) !important;
   }
   .light .border-white\/\[0\.05\] {
-    border-color: rgba(255, 255, 255, 0.60) !important;
+    border-color: rgba(255, 255, 255, 0.62) !important;
   }
   .light .border-white\/\[0\.08\] {
-    border-color: rgba(255, 255, 255, 0.75) !important;
-  }
-  .light .border-white\/10 {
     border-color: rgba(255, 255, 255, 0.78) !important;
   }
+  .light .border-white\/10 {
+    border-color: rgba(255, 255, 255, 0.82) !important;
+  }
 
-  /* Input fields — white with pink focus ring */
+  /* Input fields — pure white with hot-pink focus */
   .light input, .light textarea, .light select {
     background-color: hsl(var(--card)) !important;
     color: hsl(var(--foreground)) !important;
-    border-color: rgba(255, 0, 110, 0.25) !important;
+    border-color: rgba(255, 0, 110, 0.24) !important;
   }
   .light input:focus, .light textarea:focus, .light select:focus {
-    border-color: rgba(255, 0, 110, 0.55) !important;
+    border-color: rgba(255, 0, 110, 0.58) !important;
     box-shadow: 0 0 0 3px rgba(255, 0, 110, 0.12) !important;
   }
   .light input::placeholder, .light textarea::placeholder {
@@ -639,17 +699,25 @@
   /* Applied with high specificity to override bg-background utility   */
 }
 
-/* Holi body background — vivid radial color blobs on white canvas */
+/* ── Holi Ultra body — maximum-saturation powder-burst on white canvas ── */
+/* 13 precision-tuned color zones. Every corner explodes with pigment.     */
 .light body {
   background:
-    radial-gradient(ellipse 55% 45% at 8%  4%,  rgba(255,  0, 110, 0.28) 0%, transparent 68%),
-    radial-gradient(ellipse 45% 35% at 92%  6%,  rgba(255, 107,  0, 0.26) 0%, transparent 65%),
-    radial-gradient(ellipse 40% 50% at 94% 55%,  rgba(131, 56, 236, 0.22) 0%, transparent 65%),
-    radial-gradient(ellipse 38% 45% at 2%  68%,  rgba(  4,231, 98, 0.20) 0%, transparent 65%),
-    radial-gradient(ellipse 42% 35% at 55% 95%,  rgba( 58,134,255, 0.24) 0%, transparent 65%),
-    radial-gradient(ellipse 32% 28% at 30% 82%,  rgba(255,209,  0, 0.22) 0%, transparent 65%),
-    radial-gradient(ellipse 38% 30% at 72% 38%,  rgba(255,  0, 110, 0.14) 0%, transparent 65%),
-    radial-gradient(ellipse 28% 22% at 48% 18%,  rgba(  0,201,255, 0.18) 0%, transparent 65%),
-    radial-gradient(ellipse 25% 20% at 20% 45%,  rgba(255,107,  0, 0.12) 0%, transparent 65%),
+    /* ── Corners: four anchor bursts ── */
+    radial-gradient(ellipse 62% 52% at  5%  2%,  rgba(255,   0, 110, 0.36) 0%, transparent 66%),
+    radial-gradient(ellipse 52% 40% at 97%  2%,  rgba(255, 102,   0, 0.34) 0%, transparent 63%),
+    radial-gradient(ellipse 45% 55% at 98% 62%,  rgba(131,  56, 236, 0.30) 0%, transparent 65%),
+    radial-gradient(ellipse 44% 52% at  2% 75%,  rgba(  0, 232,  90, 0.28) 0%, transparent 65%),
+    /* ── Edges: four mid-point blooms ── */
+    radial-gradient(ellipse 48% 36% at 50% 100%, rgba( 58, 134, 255, 0.32) 0%, transparent 65%),
+    radial-gradient(ellipse 36% 30% at 28%  88%, rgba(255, 200,   0, 0.30) 0%, transparent 63%),
+    radial-gradient(ellipse 30% 26% at  0% 38%,  rgba(255, 102,   0, 0.20) 0%, transparent 65%),
+    radial-gradient(ellipse 28% 24% at 100% 34%, rgba(212,   0, 255, 0.18) 0%, transparent 65%),
+    /* ── Interior: five accent clouds ── */
+    radial-gradient(ellipse 42% 32% at 76% 40%,  rgba(255,   0, 110, 0.16) 0%, transparent 65%),
+    radial-gradient(ellipse 32% 26% at 50% 16%,  rgba(  0, 196, 255, 0.22) 0%, transparent 65%),
+    radial-gradient(ellipse 28% 22% at 22% 50%,  rgba(255, 102,   0, 0.14) 0%, transparent 65%),
+    radial-gradient(ellipse 24% 20% at 68% 72%,  rgba( 92,  78, 255, 0.18) 0%, transparent 65%),
+    radial-gradient(ellipse 20% 18% at 40% 52%,  rgba(  0, 232, 122, 0.12) 0%, transparent 65%),
     #FFFFFF !important;
 }
