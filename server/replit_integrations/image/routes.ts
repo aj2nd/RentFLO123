@@ -1,13 +1,21 @@
 import type { Express, Request, Response } from "express";
 import { openai } from "./client";
+import { isAuthenticated } from "../auth";
 
 export function registerImageRoutes(app: Express): void {
-  app.post("/api/generate-image", async (req: Request, res: Response) => {
+  app.post("/api/generate-image", isAuthenticated, async (req: Request, res: Response) => {
     try {
       const { prompt, size = "1024x1024" } = req.body;
 
-      if (!prompt) {
+      if (!prompt || typeof prompt !== "string") {
         return res.status(400).json({ error: "Prompt is required" });
+      }
+      if (prompt.length > 1000) {
+        return res.status(400).json({ error: "Prompt must be under 1000 characters" });
+      }
+      const ALLOWED_SIZES = ["256x256", "512x512", "1024x1024"];
+      if (!ALLOWED_SIZES.includes(size)) {
+        return res.status(400).json({ error: "Invalid size" });
       }
 
       const response = await openai.images.generate({
