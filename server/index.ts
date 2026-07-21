@@ -7,6 +7,7 @@ import { serveStatic } from "./static";
 import { createServer } from "http";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
+import { pool } from "./db";
 
 const app = express();
 const httpServer = createServer(app);
@@ -297,10 +298,58 @@ app.use((req, res, next) => {
   next();
 });
 
-(async () => {
-  await registerRoutes(httpServer, app);
+// ── Graceful shutdown & process resilience ───────────────────────────────────
+process.on("unhandledRejection", (reason) => {
+  console.error("[unhandledRejection]", reason);
+});
 
+process.on("uncaughtException", (err) => {
+  console.error("[uncaughtException]", err);
+  // Don't exit — let Railway restart if it becomes truly unrecoverable
+});
+
+async function shutdown() {
+  log("shutting down...");
+  httpServer.close();
+  try { await pool.end(); } catch { /* ignore */ }
+  process.exit(0);
+}
+process.on("SIGTERM", shutdown);
+process.on("SIGINT", shutdown);
+
+(async () => {
+  // ── Health check (no DB needed — must respond before routes are registered) ─
+  app.get("/health", (_req, res) => {
+    res.status(200).json({ status: "ok" });
+  });
+
+  // ── API routes + session/auth (DB-dependent) ─────────────────────────────
+  // Wrapped in try-catch so a momentary DB connection issue during startup
+  // doesn't prevent the SPA and health-check from being served.
+  try {
+    await registerRoutes(httpServer, app);
+  } catch (err) {
+    console.error("[startup] Failed to initialize routes/database — API routes may be unavailable:", err);
+  }
+
+  // ── Static / SPA serving ─────────────────────────────────────────────────
+  // Always attempted, even when DB init failed above.
+  if (process.env.NODE_ENV === "production") {
+    try {
+      serveStatic(app);
+    } catch (err) {
+      console.error("[startup] serveStatic failed:", err);
+    }
+  } else {
+    const { setupVite } = await import("./vite");
+    await setupVite(httpServer, app);
+  }
+
+  // ── Global error handler (must be last middleware) ────────────────────────
+  // Logs the full error object so Railway shows the complete stack trace.
   app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
+    console.error(err); // full stack visible in Railway logs
+
     const status = err.status || err.statusCode || 500;
 
     // Never leak internal error details to clients
@@ -309,23 +358,12 @@ app.use((req, res, next) => {
         ? err.message || "Bad Request"
         : "Internal Server Error";
 
-    if (status >= 500) {
-      console.error("Server error:", err.message, err.stack?.split("\n")[1] || "");
-    }
-
     if (res.headersSent) {
       return next(err);
     }
 
     return res.status(status).json({ message });
   });
-
-  if (process.env.NODE_ENV === "production") {
-    serveStatic(app);
-  } else {
-    const { setupVite } = await import("./vite");
-    await setupVite(httpServer, app);
-  }
 
   const port = parseInt(process.env.PORT || "5000", 10);
   httpServer.listen(
