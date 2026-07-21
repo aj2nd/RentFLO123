@@ -12,5 +12,24 @@ if (!connectionString) {
   );
 }
 
-export const pool = new Pool({ connectionString, max: 10 });
+// SSL: required on Railway and most managed Postgres providers.
+// Set DATABASE_SSL=false explicitly to disable (e.g. local dev with no SSL).
+const sslConfig =
+  process.env.DATABASE_SSL === "false"
+    ? false
+    : { rejectUnauthorized: false };
+
+export const pool = new Pool({
+  connectionString,
+  max: 10,
+  idleTimeoutMillis: 30_000,      // release idle connections after 30s
+  connectionTimeoutMillis: 5_000, // fail fast if the pool is exhausted
+  ssl: sslConfig,
+});
+
+// Surface pool errors so they don't silently crash the process.
+pool.on("error", (err) => {
+  console.error("[pg-pool] unexpected client error", err.message);
+});
+
 export const db = drizzle(pool, { schema });

@@ -346,7 +346,8 @@ export async function registerRoutes(
           customer_name: (u as any)?.fullLegalName || u?.email || "Tenant",
         },
         order_meta: {
-          notify_url: `${req.protocol}://${req.get("host")}/api/cashfree/webhook`,
+          // Use X-Forwarded-Proto so the URL is https when behind Railway's proxy.
+          notify_url: `${(req.headers["x-forwarded-proto"] as string)?.split(",")[0]?.trim() || req.protocol}://${req.get("host")}/api/cashfree/webhook`,
         },
         order_note: `Rent for ${ledger.monthYear}`,
         order_tags: { ledgerId: id, propertyId: property.id, monthYear: ledger.monthYear },
@@ -419,8 +420,7 @@ export async function registerRoutes(
 
       // Look up the original ledger via our pre-created payment row, or fall
       // back to fetching the order from Cashfree to read order_tags.ledgerId.
-      const allPaymentsForLookup = await storage.getAllPayments();
-      const matchingRow = allPaymentsForLookup.find((p) => p.razorpayOrderId === cf_order_id);
+      const matchingRow = await storage.getPaymentByOrderId(cf_order_id);
       let ledgerId: string | undefined = matchingRow?.ledgerId;
 
       if (!ledgerId) {
@@ -534,8 +534,7 @@ export async function registerRoutes(
       const amount = Number(successPayment.payment_amount || 0);
 
       // Look up ledger via pre-created payment row, or via order_tags.
-      const allRows = await storage.getAllPayments();
-      const matching = allRows.find((p) => p.razorpayOrderId === orderId);
+      const matching = await storage.getPaymentByOrderId(orderId);
       let ledgerId: string | undefined = matching?.ledgerId;
       if (!ledgerId) {
         try {
@@ -664,17 +663,8 @@ export async function registerRoutes(
     const userId = req.user?.claims?.sub;
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
     const u = await authStorage.getUser(userId);
-    const all = await storage.getAllPayments();
-    if (u?.role === "ADMIN") return res.json(all);
-
-    // Build allowed ledger set for this user.
-    const ledgers = await storage.getLedgers();
-    const allowedLedgerIds = new Set(
-      ledgers
-        .filter((l) => l.property.ownerId === userId || l.property.tenantId === userId)
-        .map((l) => l.id),
-    );
-    res.json(all.filter((p) => allowedLedgerIds.has(p.ledgerId)));
+    if (u?.role === "ADMIN") return res.json(await storage.getAllPayments());
+    res.json(await storage.getPaymentsByUserProperties(userId));
   });
 
   // Get payments for a ledger — must own/rent the property.
@@ -729,7 +719,8 @@ export async function registerRoutes(
           customer_name: (u as any)?.fullLegalName || u?.email || "Tenant",
         },
         order_meta: {
-          notify_url: `${req.protocol}://${req.get("host")}/api/cashfree/webhook`,
+          // Use X-Forwarded-Proto so the URL is https when behind Railway's proxy.
+          notify_url: `${(req.headers["x-forwarded-proto"] as string)?.split(",")[0]?.trim() || req.protocol}://${req.get("host")}/api/cashfree/webhook`,
         },
         order_note: `Partial rent for ${ledger.monthYear}`,
         order_tags: {
@@ -798,15 +789,9 @@ export async function registerRoutes(
     }
 
     // Reject duplicate UTRs across the entire system (prevents reusing the same
-    // reference number for multiple ledgers).
-    const dupSearch = await storage.getAllPayments();
-    const dup = dupSearch.find(
-      (p) =>
-        p.transactionRef &&
-        p.transactionRef.toUpperCase() === input.transactionRef.toUpperCase() &&
-        p.status !== "FAILED",
-    );
-    if (dup) {
+    // reference number for multiple ledgers). Use indexed lookup instead of full scan.
+    const dup = await storage.getPaymentByTransactionRef(input.transactionRef);
+    if (dup && dup.status !== "FAILED") {
       return res.status(409).json({ message: "This transaction reference has already been submitted" });
     }
 
@@ -830,8 +815,7 @@ export async function registerRoutes(
     }
 
     // Notify all admins so they can verify quickly.
-    const allUsers = await authStorage.getAllUsers();
-    const admins = allUsers.filter((u: any) => u.role === "ADMIN");
+    const admins = await authStorage.getAdminUsers();
     for (const admin of admins) {
       createNotification(
         admin.id,
@@ -968,8 +952,7 @@ export async function registerRoutes(
       const ticket = await storage.createTicket(input);
 
       // Notify all admins about new maintenance request
-      const allUsers = await authStorage.getAllUsers();
-      const admins = allUsers.filter((u: any) => u.role === 'ADMIN');
+      const admins = await authStorage.getAdminUsers();
       for (const admin of admins) {
         createNotification(
           admin.id,
@@ -1263,17 +1246,29 @@ export async function registerRoutes(
   // GET /api/agreements/all — admin: list all agreements enriched with property + party info
   app.get("/api/agreements/all", isAuthenticated, requireRole('ADMIN'), async (req: any, res) => {
     const allAgreements = await storage.getAllAgreements();
-    const enriched = await Promise.all(allAgreements.map(async (agr) => {
-      const property = await storage.getProperty(agr.propertyId);
-      const owner  = property?.ownerId  ? await authStorage.getUser(property.ownerId)  : null;
-      const tenant = property?.tenantId ? await authStorage.getUser(property.tenantId) : null;
+
+    // Batch-fetch all properties and users in 3 queries instead of 3×N.
+    const propertyIds = Array.from(new Set(allAgreements.map((a) => a.propertyId)));
+    const propList = await storage.getPropertiesByIds(propertyIds);
+    const propMap = new Map(propList.map((p) => [p.id, p]));
+
+    const userIds = Array.from(new Set(
+      propList.flatMap((p) => [p.ownerId, p.tenantId]).filter(Boolean) as string[],
+    ));
+    const userList = await authStorage.getUsersByIds(userIds);
+    const userMap = new Map(userList.map((u) => [u.id, u]));
+
+    const enriched = allAgreements.map((agr) => {
+      const property = propMap.get(agr.propertyId);
+      const owner  = property?.ownerId  ? userMap.get(property.ownerId)  : undefined;
+      const tenant = property?.tenantId ? userMap.get(property.tenantId) : undefined;
       return {
         ...agr,
         property: property ? { address: property.address, monthlyRent: property.monthlyRent } : null,
         owner:  owner  ? { firstName: owner.firstName,  lastName: owner.lastName,  email: owner.email  } : null,
         tenant: tenant ? { firstName: tenant.firstName, lastName: tenant.lastName, email: tenant.email } : null,
       };
-    }));
+    });
     return res.json(enriched);
   });
 
@@ -1757,7 +1752,7 @@ Keep answers concise, friendly, and specific to rent/property management in Indi
       res.flushHeaders?.();
 
       const stream = await getOpenAI().chat.completions.create({
-        model: "gpt-5-mini",
+        model: "gpt-4o-mini",
         messages: [
           { role: "system", content: systemPrompt },
           ...safeMessages.map((m) => ({ role: m.role, content: m.content })),

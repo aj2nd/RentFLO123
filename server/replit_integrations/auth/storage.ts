@@ -1,6 +1,6 @@
 import { users, type User, type UpsertUser } from "@shared/models/auth";
 import { db } from "../../db";
-import { eq, isNotNull, and } from "drizzle-orm";
+import { eq, isNotNull, and, inArray } from "drizzle-orm";
 
 // Interface for auth storage operations
 // (IMPORTANT) These user operations are mandatory for Replit Auth.
@@ -11,6 +11,8 @@ export interface IAuthStorage {
   updateUserRole(id: string, role: 'TENANT' | 'OWNER' | 'ADMIN'): Promise<User | undefined>;
   updateUser(id: string, updates: Partial<UpsertUser>): Promise<User | undefined>;
   getAllUsers(): Promise<User[]>;
+  getAdminUsers(): Promise<User[]>;
+  getUsersByIds(ids: string[]): Promise<User[]>;
   getUsersPendingVerification(): Promise<User[]>;
   getUserByDiditSessionId(sessionId: string): Promise<User | undefined>;
 }
@@ -61,6 +63,15 @@ class AuthStorage implements IAuthStorage {
 
   async getAllUsers(): Promise<User[]> {
     return await db.select().from(users);
+  }
+
+  async getAdminUsers(): Promise<User[]> {
+    return await db.select().from(users).where(eq(users.role, 'ADMIN'));
+  }
+
+  async getUsersByIds(ids: string[]): Promise<User[]> {
+    if (!ids.length) return [];
+    return db.select().from(users).where(inArray(users.id, ids));
   }
 
   async getUsersPendingVerification(): Promise<User[]> {

@@ -259,6 +259,14 @@ app.get(["/delete-account", "/delete-account.html"], (_req, res) => {
   res.type("html").send(DELETE_ACCOUNT_HTML);
 });
 
+// ── API Cache-Control ────────────────────────────────────────────────────────
+// Prevent browsers and intermediate caches from storing sensitive API responses.
+// Static assets are handled separately by serveStatic with long-lived headers.
+app.use("/api", (_req, res, next) => {
+  res.setHeader("Cache-Control", "no-store");
+  next();
+});
+
 // ── Request Logging (no sensitive response bodies) ───────────────────────────
 export function log(message: string, source = "express") {
   const formattedTime = new Date().toLocaleTimeString("en-US", {

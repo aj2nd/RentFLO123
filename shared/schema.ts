@@ -74,6 +74,10 @@ export const payments = pgTable("payments", {
   uniqueTxnRef: uniqueIndex("payments_transaction_ref_unique")
     .on(table.transactionRef)
     .where(sql`${table.transactionRef} IS NOT NULL`),
+  // Indexes for high-frequency lookups by gateway order ID and ledger ID.
+  ledgerIdIdx: index("payments_ledger_id_idx").on(table.ledgerId),
+  orderIdIdx:  index("payments_order_id_idx").on(table.razorpayOrderId),
+  statusIdx:   index("payments_status_idx").on(table.status),
 }));
 
 // === MAINTENANCE TICKETS TABLE ===

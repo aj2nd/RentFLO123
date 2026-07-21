@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { eq, desc, sql, or, and, count } from "drizzle-orm";
+import { eq, desc, sql, or, and, count, inArray } from "drizzle-orm";
 import {
   properties, ledgers, payments, maintenanceTickets, agreements,
   pushSubscriptions, notifications, messages,
@@ -51,11 +51,21 @@ export interface IStorage {
   updateTicket(id: string, updates: Partial<InsertMaintenanceTicket>): Promise<MaintenanceTicket>;
   getTicketCountsByProperty(propertyId: string): Promise<{ open: number; resolved: number }>;
 
+  // Batch property lookup
+  getPropertiesByIds(ids: string[]): Promise<Property[]>;
+
+  // Payments — indexed lookups
+  getPaymentByOrderId(orderId: string): Promise<Payment | undefined>;
+  getPaymentByTransactionRef(ref: string): Promise<Payment | undefined>;
+  getPaymentsByUserProperties(userId: string): Promise<Payment[]>;
+
   // Agreements
   getAgreementByProperty(propertyId: string): Promise<Agreement | undefined>;
   getOrCreateAgreement(propertyId: string): Promise<Agreement>;
   getAllAgreements(): Promise<Agreement[]>;
   markAgreementSigned(propertyId: string): Promise<Agreement>;
+  markOwnerSigned(propertyId: string): Promise<Agreement>;
+  markTenantSigned(propertyId: string): Promise<Agreement>;
 
   // Push Subscriptions
   savePushSubscription(sub: InsertPushSubscription): Promise<PushSubscription>;
@@ -83,6 +93,11 @@ export class DatabaseStorage implements IStorage {
   async getProperty(id: string): Promise<Property | undefined> {
     const [property] = await db.select().from(properties).where(eq(properties.id, id));
     return property;
+  }
+
+  async getPropertiesByIds(ids: string[]): Promise<Property[]> {
+    if (!ids.length) return [];
+    return db.select().from(properties).where(inArray(properties.id, ids));
   }
 
   async createProperty(insertProperty: CreatePropertyRequest): Promise<Property> {
@@ -119,8 +134,11 @@ export class DatabaseStorage implements IStorage {
 
   // Ledgers
   async getLedgers(propertyId?: string, status?: string): Promise<(Ledger & { property: Property })[]> {
-    let query = db.select({
-        // Spread all ledger fields
+    const conditions = [];
+    if (propertyId) conditions.push(eq(ledgers.propertyId, propertyId));
+    if (status) conditions.push(eq(ledgers.status, status as 'ARREARS' | 'SETTLED' | 'EXPOSED'));
+
+    const baseQuery = db.select({
         id: ledgers.id,
         propertyId: ledgers.propertyId,
         amountAdvanced: ledgers.amountAdvanced,
@@ -131,25 +149,15 @@ export class DatabaseStorage implements IStorage {
         processedBy: ledgers.processedBy,
         createdAt: ledgers.createdAt,
         updatedAt: ledgers.updatedAt,
-        // Include property relation
-        property: properties
+        property: properties,
     })
     .from(ledgers)
-    .innerJoin(properties, eq(ledgers.propertyId, properties.id))
-    .$dynamic();
+    .innerJoin(properties, eq(ledgers.propertyId, properties.id));
 
-    if (propertyId) {
-      query = query.where(eq(ledgers.propertyId, propertyId));
-    }
-    
-    // Simple client-side filtering for status if needed, or add .where() dynamically
-    // Drizzle dynamic where is a bit verbose, letting basic query run for now.
-    const results = await query.orderBy(desc(ledgers.createdAt));
-    
-    if (status) {
-        return results.filter(r => r.status === status);
-    }
-    
+    const results = conditions.length > 0
+      ? await baseQuery.where(and(...conditions)).orderBy(desc(ledgers.createdAt))
+      : await baseQuery.orderBy(desc(ledgers.createdAt));
+
     return results;
   }
 
@@ -198,6 +206,36 @@ export class DatabaseStorage implements IStorage {
   async getPayment(id: string): Promise<Payment | undefined> {
     const [p] = await db.select().from(payments).where(eq(payments.id, id));
     return p;
+  }
+
+  async getPaymentByOrderId(orderId: string): Promise<Payment | undefined> {
+    const [p] = await db.select().from(payments).where(eq(payments.razorpayOrderId, orderId));
+    return p;
+  }
+
+  async getPaymentByTransactionRef(ref: string): Promise<Payment | undefined> {
+    const [p] = await db.select().from(payments)
+      .where(eq(payments.transactionRef, ref.toUpperCase()));
+    return p;
+  }
+
+  // Return payments scoped to properties this user owns or rents — avoids
+  // loading the entire payments table for non-admin users.
+  async getPaymentsByUserProperties(userId: string): Promise<Payment[]> {
+    const userProperties = await db
+      .select({ id: properties.id })
+      .from(properties)
+      .where(or(eq(properties.ownerId, userId), eq(properties.tenantId, userId)));
+    if (!userProperties.length) return [];
+    const propertyIds = userProperties.map((p) => p.id);
+
+    const rows = await db
+      .select({ payment: payments })
+      .from(payments)
+      .innerJoin(ledgers, eq(payments.ledgerId, ledgers.id))
+      .where(inArray(ledgers.propertyId, propertyIds))
+      .orderBy(desc(payments.createdAt));
+    return rows.map((r) => r.payment);
   }
 
   async getPendingVerificationPayments(): Promise<(Payment & { ledger: Ledger & { property: Property } })[]> {
@@ -358,8 +396,17 @@ export class DatabaseStorage implements IStorage {
   async getOrCreateAgreement(propertyId: string): Promise<Agreement> {
     const existing = await this.getAgreementByProperty(propertyId);
     if (existing) return existing;
-    const [created] = await db.insert(agreements).values({ propertyId, status: 'PENDING' }).returning();
-    return created;
+    // Use ON CONFLICT to handle the race where two requests arrive simultaneously.
+    // The unique index on propertyId guarantees at most one row.
+    const [created] = await db
+      .insert(agreements)
+      .values({ propertyId, status: 'PENDING' })
+      .onConflictDoNothing()
+      .returning();
+    if (created) return created;
+    // Another concurrent request won the race — fetch the row it inserted.
+    const [fetched] = await db.select().from(agreements).where(eq(agreements.propertyId, propertyId));
+    return fetched;
   }
 
   async getAllAgreements(): Promise<Agreement[]> {
