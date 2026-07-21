@@ -30,6 +30,10 @@ export function getSession() {
     createTableIfMissing: false,
     ttl: sessionTtl,
     tableName: "sessions",
+    // Default prune interval is every 60 s, which opens an extra DB connection
+    // on each cycle and contributes to pool exhaustion during request bursts.
+    // Pruning hourly is sufficient for a 30-day session TTL.
+    pruneSessionInterval: 60 * 60, // seconds — prune once per hour
   });
   return session({
     secret: process.env.SESSION_SECRET!,

@@ -264,7 +264,13 @@ app.get(["/delete-account", "/delete-account.html"], (_req, res) => {
 // Prevent browsers and intermediate caches from storing sensitive API responses.
 // Static assets are handled separately by serveStatic with long-lived headers.
 app.use("/api", (_req, res, next) => {
+  // no-store: browser and all intermediate caches must not store the response.
+  // Pragma: no-cache covers HTTP/1.0 proxies that don't understand Cache-Control.
+  // Vary: Cookie: tells shared proxy caches that the response differs per
+  // session cookie — prevents User A's response from being served to User B.
   res.setHeader("Cache-Control", "no-store");
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Vary", "Cookie");
   next();
 });
 

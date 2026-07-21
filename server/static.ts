@@ -16,13 +16,24 @@ export function serveStatic(app: Express) {
 
   app.use(
     express.static(distPath, {
+      // Disable Express's automatic ETag and Last-Modified generation.
+      // We own all caching semantics via explicit Cache-Control headers below;
+      // having both ETags and Cache-Control in play can confuse CDN/proxy layers
+      // into serving stale conditional responses after a new deploy.
+      etag: false,
+      lastModified: false,
       setHeaders: (res, filePath) => {
         // Hashed bundles (Vite emits /assets/[name]-[hash].ext) never change → cache forever.
         if (filePath.includes(`${path.sep}assets${path.sep}`)) {
           res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
         } else if (filePath.endsWith("index.html") || filePath.endsWith("sw.js")) {
           // HTML shell + service worker must always revalidate so deploys land immediately.
+          // Pragma covers HTTP/1.0 proxies.
           res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+          res.setHeader("Pragma", "no-cache");
+        } else {
+          // Any other static asset (fonts, favicons, manifests etc.) — revalidate.
+          res.setHeader("Cache-Control", "no-cache, must-revalidate");
         }
       },
     }),
@@ -56,6 +67,7 @@ export function serveStatic(app: Express) {
       return res.status(404).json({ message: "Not found" });
     }
     res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    res.setHeader("Pragma", "no-cache");
     res.sendFile(path.resolve(distPath, "index.html"));
   });
 }
