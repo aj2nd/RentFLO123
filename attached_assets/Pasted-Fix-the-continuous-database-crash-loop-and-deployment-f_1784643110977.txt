@@ -1,0 +1,20 @@
+Fix the continuous database crash loop and deployment failure on Railway caused by request bursts, slow queries, session-store connection issues, and container shutdowns.
+
+Apply these changes systematically across the codebase:
+
+1. DATABASE POOL & SESSION MANAGEMENT:
+- Update our PostgreSQL connection setup (e.g., pg/Prisma/TypeORM) to explicitly cap `max_connections` (or `connection_limit`) to 5 or 10 to avoid hitting RAM and connection limits.
+- Ensure our session store (e.g., connect-pg-simple) strictly reuses our main database connection pool rather than opening its own independent client or connection strings, preventing `FATAL: 57P03` errors during session pruning.
+
+2. HEALTH CHECK ROUTE & DEFERRED STARTUP:
+- Add a lightweight `GET /health` route in Express that immediately returns `200 OK` (e.g., `res.status(200).json({ status: 'ok' })`) WITHOUT executing any database queries or session checks.
+- Register this `/health` route above all database and auth middleware so Railway's health checks succeed instantly.
+- Wrap the database pool initialization in an async function with retry logic (retry 5 times with a 3-second delay) so Express can listen on port 8080 immediately without crashing if the database is momentarily starting up.
+
+3. GRACEFUL PROCESS SHUTDOWN:
+- Add global error listeners (`process.on('unhandledRejection')` and `process.on('uncaughtException')`) to log errors without instantly crashing the Node process.
+- Handle termination signals (`process.on('SIGTERM')` and `process.on('SIGINT')`) to cleanly close the database pool and Express server when Railway deploys or restarts.
+
+4. ENDPOINT CONSOLIDATION & SLOW QUERY INDEXING:
+- Combine the separate frontend unread count endpoints (`/api/notifications/unread-count` and `/api/messages/unread/count`) into a single `GET /api/user/badge-counts` route to stop duplicate API bursts.
+- Inspect the database queries for `/api/ledgers`, `/api/notifications`, and `/api/properties/mine` (which currently take 500ms-900ms) and provide a migration script to add missing indexes on foreign keys (such as `user_id`, `property_id`) used in their WHERE/JOIN clauses.

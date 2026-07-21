@@ -93,7 +93,11 @@ export const maintenanceTickets = pgTable("maintenance_tickets", {
   resolvedAt: timestamp("resolved_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => ({
+  propertyIdIdx: index("maintenance_tickets_property_id_idx").on(table.propertyId),
+  tenantIdIdx:   index("maintenance_tickets_tenant_id_idx").on(table.tenantId),
+  statusIdx:     index("maintenance_tickets_status_idx").on(table.status),
+}));
 
 // === RELATIONS ===
 export const propertiesRelations = relations(properties, ({ one, many }) => ({
@@ -176,7 +180,9 @@ export const pushSubscriptions = pgTable("push_subscriptions", {
   p256dh: text("p256dh").notNull(),
   auth: text("auth").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => ({
+  userIdIdx: index("push_subscriptions_user_id_idx").on(table.userId),
+}));
 
 // === IN-APP NOTIFICATIONS TABLE ===
 export const notifications = pgTable("notifications", {

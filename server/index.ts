@@ -7,7 +7,7 @@ import { serveStatic } from "./static";
 import { createServer } from "http";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
-import { pool } from "./db";
+import { pool, connectWithRetry } from "./db";
 
 const app = express();
 const httpServer = createServer(app);
@@ -324,9 +324,12 @@ process.on("SIGINT", shutdown);
   });
 
   // ── API routes + session/auth (DB-dependent) ─────────────────────────────
-  // Wrapped in try-catch so a momentary DB connection issue during startup
-  // doesn't prevent the SPA and health-check from being served.
+  // connectWithRetry probes the pool up to 5×(3 s apart) so the session store
+  // isn't set up against a DB that isn't ready yet (avoids FATAL: 57P03).
+  // Wrapped in try-catch so any remaining failure only disables API routes —
+  // the health check and SPA continue to serve.
   try {
+    await connectWithRetry();
     await registerRoutes(httpServer, app);
   } catch (err) {
     console.error("[startup] Failed to initialize routes/database — API routes may be unavailable:", err);

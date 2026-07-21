@@ -1407,7 +1407,24 @@ export async function registerRoutes(
     res.json(notifs);
   });
 
-  // Unread notification count
+  // Combined badge-counts — single round-trip replaces the two separate polling calls.
+  // Clients should migrate to this endpoint; the old ones are kept for backward compat.
+  app.get("/api/user/badge-counts", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      if (!userId) return res.status(401).json({ message: "Unauthorized" });
+      const [notifications, messages] = await Promise.all([
+        storage.getUnreadCount(userId),
+        storage.getUnreadMessageCount(userId),
+      ]);
+      res.json({ notifications, messages });
+    } catch (e) {
+      console.error("[badge-counts]", e);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Unread notification count (kept for backward compat — prefer /api/user/badge-counts)
   app.get("/api/notifications/unread-count", isAuthenticated, async (req: any, res) => {
     const userId = req.user?.claims?.sub;
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
