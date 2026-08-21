@@ -37,7 +37,7 @@ export default function LandingPage() {
         />
         <div className="rentflo-hero-scrim" />
         <div className="rentflo-hero-hotspots" aria-label="RentFLO navigation">
-          <a href="/support" className="rentflo-hero-hotspot rentflo-hero-hotspot-about" aria-label="About RentFLO" />
+          <a href="/about" className="rentflo-hero-hotspot rentflo-hero-hotspot-about" aria-label="About RentFLO" />
           <a href="#how-it-works" className="rentflo-hero-hotspot rentflo-hero-hotspot-how" aria-label="How RentFLO works" />
           <a href="/support" className="rentflo-hero-hotspot rentflo-hero-hotspot-contact" aria-label="Contact RentFLO" />
           <a href="/api/login" className="rentflo-hero-hotspot rentflo-hero-hotspot-login" aria-label="Log in to RentFLO" data-testid="button-hero-login" />

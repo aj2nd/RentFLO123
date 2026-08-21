@@ -22,6 +22,7 @@ import Terms from "@/pages/Terms";
 import Privacy from "@/pages/Privacy";
 import Refund from "@/pages/Refund";
 import Support from "@/pages/Support";
+import About from "@/pages/About";
 import Verify from "@/pages/Verify";
 import AgreementPage from "@/pages/Agreement";
 import Messages from "@/pages/Messages";
@@ -194,6 +195,7 @@ function Router() {
       <Route path="/privacy" component={Privacy} />
       <Route path="/refund" component={Refund} />
       <Route path="/support" component={Support} />
+      <Route path="/about" component={About} />
 
       <Route component={NotFound} />
     </Switch>
