@@ -67,13 +67,41 @@
 }
 
 .rentflo-hero-hotspot-tenant {
-  top: 12.4%;
+  top: 22.8%;
   left: 10%;
 }
 
 .rentflo-hero-hotspot-owner {
-  top: 12.4%;
+  top: 22.8%;
   right: 10%;
+}
+
+.rentflo-hero-hotspot-about,
+.rentflo-hero-hotspot-how,
+.rentflo-hero-hotspot-contact,
+.rentflo-hero-hotspot-login {
+  top: 4%;
+  height: 4%;
+}
+
+.rentflo-hero-hotspot-about {
+  left: 28%;
+  width: 14%;
+}
+
+.rentflo-hero-hotspot-how {
+  left: 45%;
+  width: 15%;
+}
+
+.rentflo-hero-hotspot-contact {
+  left: 62%;
+  width: 13%;
+}
+
+.rentflo-hero-hotspot-login {
+  right: 4%;
+  width: 16%;
 }
 
 .rentflo-hero-hotspot:focus-visible {

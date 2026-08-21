@@ -361,8 +361,10 @@
           var loginBar = document.getElementById('login-bar');
 
           // Only show the header on public (non-authenticated) pages
-          var isPublic = PUBLIC_PATHS.includes(path);
-          if (headerEl) headerEl.style.display = isPublic ? '' : 'none';
+           var isPublic = PUBLIC_PATHS.includes(path);
+           // The landing artwork contains its own navigation and login control.
+           // Keep the global header for legal/support pages only.
+           if (headerEl) headerEl.style.display = (isPublic && path !== '/') ? '' : 'none';
 
           // Show the login sub-bar only on the exact landing page
           if (loginBar) loginBar.style.display = (path === '/') ? 'flex' : 'none';

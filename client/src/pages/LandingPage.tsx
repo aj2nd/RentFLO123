@@ -31,12 +31,16 @@ export default function LandingPage() {
       {/* ── New cinematic hero ───────────────────────────────────────────── */}
       <main className="rentflo-hero">
         <img
-          src="/rentflo-home-hero.jpeg"
+          src="/rentflo-home-hero.png"
           alt="RentFLO flexible rent payments for tenants and upfront rent collection for owners"
           className="rentflo-hero-image"
         />
         <div className="rentflo-hero-scrim" />
-        <div className="rentflo-hero-hotspots" aria-label="Choose your RentFLO experience">
+        <div className="rentflo-hero-hotspots" aria-label="RentFLO navigation">
+          <a href="/support" className="rentflo-hero-hotspot rentflo-hero-hotspot-about" aria-label="About RentFLO" />
+          <a href="#how-it-works" className="rentflo-hero-hotspot rentflo-hero-hotspot-how" aria-label="How RentFLO works" />
+          <a href="/support" className="rentflo-hero-hotspot rentflo-hero-hotspot-contact" aria-label="Contact RentFLO" />
+          <a href="/api/login" className="rentflo-hero-hotspot rentflo-hero-hotspot-login" aria-label="Log in to RentFLO" data-testid="button-hero-login" />
           <a href="/onboarding?role=TENANT" className="rentflo-hero-hotspot rentflo-hero-hotspot-tenant" aria-label="Continue as a tenant" data-testid="button-hero-tenant" />
           <a href="/onboarding?role=OWNER" className="rentflo-hero-hotspot rentflo-hero-hotspot-owner" aria-label="Continue as an owner" data-testid="button-hero-owner" />
         </div>
@@ -48,7 +52,7 @@ export default function LandingPage() {
       </div>
 
       {/* ── How It Works ──────────────────────────────────────────────────── */}
-      <section className="py-28 px-8 md:px-16" style={isLight ? { background: "var(--section-sage)" } : {}}>
+      <section id="how-it-works" className="py-28 px-8 md:px-16" style={isLight ? { background: "var(--section-sage)" } : {}}>
         <div className="max-w-screen-xl mx-auto">
           {/* Eyebrow */}
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#6FFFE9]/20 bg-[#6FFFE9]/[0.04] mb-10">
