@@ -109,6 +109,20 @@
   outline-offset: 4px;
 }
 
+.audience-panel[data-audience="owners"] {
+  --audience-accent: var(--owner-accent);
+  --audience-accent-soft: var(--owner-accent-soft);
+  --audience-accent-border: var(--owner-accent-border);
+  --audience-accent-glow: var(--owner-accent-glow);
+}
+
+.audience-panel[data-audience="tenants"] {
+  --audience-accent: var(--tenant-accent);
+  --audience-accent-soft: var(--tenant-accent-soft);
+  --audience-accent-border: var(--tenant-accent-border);
+  --audience-accent-glow: var(--tenant-accent-glow);
+}
+
 /* Kept as a reusable style for future hero variants. */
 .rentflo-hero-cta {
   display: inline-flex;
@@ -224,8 +238,16 @@
   --silver: #C0C0C0;
   --silver-light: #E8E8E8;
   --silver-dim: #888888;
-  --tiffany: #6FFFE9;
-  --tiffany-dim: #9DEFE4;
+  --tiffany: #4DA3FF;
+  --tiffany-dim: #9CCBFF;
+  --owner-accent: #4DA3FF;
+  --owner-accent-soft: rgba(77, 163, 255, 0.12);
+  --owner-accent-border: rgba(77, 163, 255, 0.34);
+  --owner-accent-glow: rgba(77, 163, 255, 0.26);
+  --tenant-accent: #FFD43B;
+  --tenant-accent-soft: rgba(255, 212, 59, 0.13);
+  --tenant-accent-border: rgba(255, 212, 59, 0.38);
+  --tenant-accent-glow: rgba(255, 212, 59, 0.28);
 
   /* Surface tokens used in inline styles */
   --nav-bg: rgba(0, 0, 0, 0.92);
@@ -284,8 +306,16 @@
   --silver: #1A0430;                 /* aubergine text */
   --silver-light: #4C0D99;           /* deep violet */
   --silver-dim: #A040CC;             /* bright amethyst mid-tone */
-  --tiffany: #FF006E;                /* hot pink — primary accent used throughout */
-  --tiffany-dim: #FF4499;            /* lighter pink */
+  --tiffany: #2563EB;                /* electric blue — shared accent */
+  --tiffany-dim: #60A5FA;            /* lighter blue */
+  --owner-accent: #2563EB;
+  --owner-accent-soft: rgba(37, 99, 235, 0.12);
+  --owner-accent-border: rgba(37, 99, 235, 0.34);
+  --owner-accent-glow: rgba(37, 99, 235, 0.24);
+  --tenant-accent: #F59E0B;
+  --tenant-accent-soft: rgba(245, 158, 11, 0.13);
+  --tenant-accent-border: rgba(245, 158, 11, 0.36);
+  --tenant-accent-glow: rgba(245, 158, 11, 0.24);
   --tiffany-badge-text: #ffffff;
 
   /* ── Full Holi powder palette ── */

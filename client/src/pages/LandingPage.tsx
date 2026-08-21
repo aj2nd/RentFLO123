@@ -79,9 +79,9 @@ export default function LandingPage() {
                     border: "1px solid var(--color-violet-border)",
                     color: "var(--color-violet)",
                   } : {
-                    background: "rgba(111,255,233,0.1)",
-                    border: "1px solid rgba(111,255,233,0.25)",
-                    color: "var(--tiffany)",
+                    background: "var(--owner-accent-soft)",
+                    border: "1px solid var(--owner-accent-border)",
+                    color: "var(--owner-accent)",
                   }}
                 >
                   <Home size={10} />
@@ -98,7 +98,7 @@ export default function LandingPage() {
                     WebkitTextFillColor: 'transparent',
                     backgroundClip: 'text',
                   } : {
-                    background: 'linear-gradient(160deg, rgba(111,255,233,0.25) 0%, rgba(111,255,233,0.7) 100%)',
+                    background: 'linear-gradient(160deg, color-mix(in srgb, var(--owner-accent) 28%, transparent) 0%, var(--owner-accent) 100%)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
                     backgroundClip: 'text',
@@ -110,32 +110,32 @@ export default function LandingPage() {
                 <div className="flex-1 flex items-center justify-center gap-4">
                   {/* Property building */}
                   <svg width="90" height="90" viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="8" y="28" width="54" height="54" rx="4" fill="rgba(111,255,233,0.08)" stroke="rgba(111,255,233,0.3)" strokeWidth="1.5"/>
+                    <rect x="8" y="28" width="54" height="54" rx="4" fill="var(--owner-accent-soft)" stroke="var(--owner-accent-border)" strokeWidth="1.5"/>
                     {/* Awning stripes */}
-                    <rect x="8" y="28" width="54" height="14" rx="4" fill="rgba(111,255,233,0.15)" stroke="rgba(111,255,233,0.35)" strokeWidth="1.5"/>
-                    <line x1="18" y1="28" x2="18" y2="42" stroke="rgba(111,255,233,0.2)" strokeWidth="4"/>
-                    <line x1="30" y1="28" x2="30" y2="42" stroke="rgba(111,255,233,0.2)" strokeWidth="4"/>
-                    <line x1="42" y1="28" x2="42" y2="42" stroke="rgba(111,255,233,0.2)" strokeWidth="4"/>
+                    <rect x="8" y="28" width="54" height="14" rx="4" fill="var(--owner-accent-soft)" stroke="var(--owner-accent-border)" strokeWidth="1.5"/>
+                    <line x1="18" y1="28" x2="18" y2="42" stroke="var(--owner-accent-border)" strokeWidth="4"/>
+                    <line x1="30" y1="28" x2="30" y2="42" stroke="var(--owner-accent-border)" strokeWidth="4"/>
+                    <line x1="42" y1="28" x2="42" y2="42" stroke="var(--owner-accent-border)" strokeWidth="4"/>
                     {/* Windows */}
-                    <rect x="16" y="50" width="12" height="10" rx="1.5" fill="rgba(111,255,233,0.18)" stroke="rgba(111,255,233,0.3)" strokeWidth="1"/>
-                    <rect x="36" y="50" width="12" height="10" rx="1.5" fill="rgba(111,255,233,0.18)" stroke="rgba(111,255,233,0.3)" strokeWidth="1"/>
+                    <rect x="16" y="50" width="12" height="10" rx="1.5" fill="var(--owner-accent-soft)" stroke="var(--owner-accent-border)" strokeWidth="1"/>
+                    <rect x="36" y="50" width="12" height="10" rx="1.5" fill="var(--owner-accent-soft)" stroke="var(--owner-accent-border)" strokeWidth="1"/>
                     {/* Door */}
-                    <rect x="23" y="65" width="14" height="17" rx="2" fill="rgba(111,255,233,0.12)" stroke="rgba(111,255,233,0.28)" strokeWidth="1.2"/>
+                    <rect x="23" y="65" width="14" height="17" rx="2" fill="var(--owner-accent-soft)" stroke="var(--owner-accent-border)" strokeWidth="1.2"/>
                     {/* Sign */}
-                    <rect x="14" y="20" width="42" height="10" rx="2" fill="rgba(111,255,233,0.12)" stroke="rgba(111,255,233,0.25)" strokeWidth="1"/>
-                    <text x="35" y="28" textAnchor="middle" fontSize="6" fontWeight="700" fill="rgba(111,255,233,0.7)" fontFamily="Inter, sans-serif">STORE</text>
+                    <rect x="14" y="20" width="42" height="10" rx="2" fill="var(--owner-accent-soft)" stroke="var(--owner-accent-border)" strokeWidth="1"/>
+                    <text x="35" y="28" textAnchor="middle" fontSize="6" fontWeight="700" fill="var(--owner-accent)" fontFamily="Inter, sans-serif">STORE</text>
                   </svg>
                   {/* Calendar */}
                   <svg width="72" height="72" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="6" y="12" width="60" height="54" rx="6" fill="rgba(111,255,233,0.06)" stroke="rgba(111,255,233,0.25)" strokeWidth="1.5"/>
+                    <rect x="6" y="12" width="60" height="54" rx="6" fill="var(--owner-accent-soft)" stroke="var(--owner-accent-border)" strokeWidth="1.5"/>
                     {/* Header bar */}
-                    <rect x="6" y="12" width="60" height="18" rx="6" fill="rgba(111,255,233,0.14)" stroke="rgba(111,255,233,0.28)" strokeWidth="1.5"/>
+                    <rect x="6" y="12" width="60" height="18" rx="6" fill="var(--owner-accent-soft)" stroke="var(--owner-accent-border)" strokeWidth="1.5"/>
                     {/* Calendar rings */}
-                    <rect x="20" y="6" width="5" height="14" rx="2.5" fill="rgba(111,255,233,0.45)"/>
-                    <rect x="47" y="6" width="5" height="14" rx="2.5" fill="rgba(111,255,233,0.45)"/>
+                    <rect x="20" y="6" width="5" height="14" rx="2.5" fill="var(--owner-accent)"/>
+                    <rect x="47" y="6" width="5" height="14" rx="2.5" fill="var(--owner-accent)"/>
                     {/* Big "1" date */}
-                    <text x="36" y="56" textAnchor="middle" fontSize="28" fontWeight="900" fill="rgba(111,255,233,0.85)" fontFamily="Inter, sans-serif">1</text>
-                    <text x="36" y="24" textAnchor="middle" fontSize="7" fontWeight="700" fill="rgba(111,255,233,0.55)" fontFamily="Inter, sans-serif" letterSpacing="1">1ST</text>
+                    <text x="36" y="56" textAnchor="middle" fontSize="28" fontWeight="900" fill="var(--owner-accent)" fontFamily="Inter, sans-serif">1</text>
+                    <text x="36" y="24" textAnchor="middle" fontSize="7" fontWeight="700" fill="var(--owner-accent)" fontFamily="Inter, sans-serif" letterSpacing="1">1ST</text>
                   </svg>
                 </div>
               </div>
@@ -158,9 +158,9 @@ export default function LandingPage() {
                     border: "1px solid var(--color-gold-border)",
                     color: "var(--color-gold)",
                   } : {
-                    background: "rgba(111,255,233,0.1)",
-                    border: "1px solid rgba(111,255,233,0.25)",
-                    color: "var(--tiffany)",
+                    background: "var(--tenant-accent-soft)",
+                    border: "1px solid var(--tenant-accent-border)",
+                    color: "var(--tenant-accent)",
                   }}
                 >
                   <Users size={10} />
@@ -177,7 +177,7 @@ export default function LandingPage() {
                     WebkitTextFillColor: 'transparent',
                     backgroundClip: 'text',
                   } : {
-                    background: 'linear-gradient(160deg, rgba(111,255,233,0.25) 0%, rgba(111,255,233,0.7) 100%)',
+                    background: 'linear-gradient(160deg, color-mix(in srgb, var(--tenant-accent) 28%, transparent) 0%, var(--tenant-accent) 100%)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
                     backgroundClip: 'text',
@@ -189,26 +189,26 @@ export default function LandingPage() {
                 <div className="flex-1 flex items-center justify-center gap-3">
                   {/* Long receipt */}
                   <svg width="72" height="90" viewBox="0 0 72 90" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="8" y="4" width="56" height="78" rx="4" fill="rgba(111,255,233,0.07)" stroke="rgba(111,255,233,0.28)" strokeWidth="1.5"/>
+                    <rect x="8" y="4" width="56" height="78" rx="4" fill="var(--tenant-accent-soft)" stroke="var(--tenant-accent-border)" strokeWidth="1.5"/>
                     {/* Receipt lines */}
                     {[18, 30, 42, 54, 66].map((y, i) => (
-                      <rect key={i} x="16" y={y} width={i % 2 === 0 ? 40 : 28} height="5" rx="2" fill="rgba(111,255,233,0.2)"/>
+                      <rect key={i} x="16" y={y} width={i % 2 === 0 ? 40 : 28} height="5" rx="2" fill="var(--tenant-accent-border)"/>
                     ))}
                     {/* Zigzag bottom */}
-                    <path d="M8 82 L14 86 L20 82 L26 86 L32 82 L38 86 L44 82 L50 86 L56 82 L62 86 L64 82" stroke="rgba(111,255,233,0.3)" strokeWidth="1.5" fill="none"/>
+                    <path d="M8 82 L14 86 L20 82 L26 86 L32 82 L38 86 L44 82 L50 86 L56 82 L62 86 L64 82" stroke="var(--tenant-accent-border)" strokeWidth="1.5" fill="none"/>
                   </svg>
 
                   {/* Arrow */}
-                  <ArrowRight size={20} style={{ color: "var(--tiffany,#6FFFE9)", opacity: 0.5, flexShrink: 0 }} />
+                  <ArrowRight size={20} style={{ color: "var(--tenant-accent)", opacity: 0.75, flexShrink: 0 }} />
 
                   {/* 3 smaller receipts */}
                   <div className="flex flex-col gap-2">
                     {[62, 48, 36].map((w, i) => (
                       <svg key={i} width={w} height="26" viewBox={`0 0 ${w} 26`} fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="1" y="1" width={w - 2} height="20" rx="3" fill="rgba(111,255,233,0.06)" stroke="rgba(111,255,233,0.25)" strokeWidth="1.2"/>
-                        <rect x="6" y="7" width={w - 22} height="4" rx="1.5" fill={`rgba(111,255,233,${0.25 - i * 0.05})`}/>
-                        <rect x="6" y="14" width={w - 30} height="3" rx="1.5" fill="rgba(111,255,233,0.12)"/>
-                        <path d={`M1 21 L4 25 L8 21 L12 25 L16 21 L20 25 L24 21 L${w - 1} 21`} stroke="rgba(111,255,233,0.2)" strokeWidth="1" fill="none"/>
+                        <rect x="1" y="1" width={w - 2} height="20" rx="3" fill="var(--tenant-accent-soft)" stroke="var(--tenant-accent-border)" strokeWidth="1.2"/>
+                        <rect x="6" y="7" width={w - 22} height="4" rx="1.5" fill="var(--tenant-accent-border)"/>
+                        <rect x="6" y="14" width={w - 30} height="3" rx="1.5" fill="var(--tenant-accent-soft)"/>
+                        <path d={`M1 21 L4 25 L8 21 L12 25 L16 21 L20 25 L24 21 L${w - 1} 21`} stroke="var(--tenant-accent-border)" strokeWidth="1" fill="none"/>
                       </svg>
                     ))}
                   </div>
@@ -300,8 +300,9 @@ export default function LandingPage() {
                   onClick={() => setAudienceTab(tab)}
                   className="px-7 py-2.5 text-sm font-semibold uppercase tracking-[1.5px] transition-all duration-200"
                   style={audienceTab === tab ? {
-                    background: "var(--tiffany)",
-                    color: "#000",
+                    background: tab === "owners" ? "var(--owner-accent)" : "var(--tenant-accent)",
+                    color: "#07111F",
+                    boxShadow: `0 0 22px ${tab === "owners" ? "var(--owner-accent-glow)" : "var(--tenant-accent-glow)"}`,
                   } : {
                     background: "transparent",
                     color: "var(--muted-foreground)",
@@ -315,14 +316,15 @@ export default function LandingPage() {
 
           {/* Card */}
           <div
-            className="relative overflow-hidden"
+            className="audience-panel relative overflow-hidden"
+            data-audience={audienceTab}
             style={isLight ? {
               background: "var(--surface-card)",
               border: "1px solid var(--border-subtle)",
               boxShadow: "var(--shadow-card)",
             } : {
               background: "var(--surface-card)",
-              border: "1px solid rgba(111,255,233,0.12)",
+              border: "1px solid color-mix(in srgb, var(--audience-accent) 24%, transparent)",
             }}
           >
             {/* Grid bg */}
@@ -331,7 +333,7 @@ export default function LandingPage() {
               style={{
                 backgroundImage: isLight
                   ? "linear-gradient(rgba(15,118,110,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(15,118,110,0.04) 1px, transparent 1px)"
-                  : "linear-gradient(rgba(111,255,233,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(111,255,233,0.03) 1px, transparent 1px)",
+                  : "linear-gradient(color-mix(in srgb, var(--audience-accent) 10%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in srgb, var(--audience-accent) 10%, transparent) 1px, transparent 1px)",
                 backgroundSize: "48px 48px",
               }}
             />
@@ -346,7 +348,7 @@ export default function LandingPage() {
                 height: "320px",
                 borderRadius: "50%",
                 filter: "blur(80px)",
-                background: isLight ? "rgba(15,118,110,0.08)" : "rgba(111,255,233,0.07)",
+                 background: isLight ? "color-mix(in srgb, var(--audience-accent) 12%, transparent)" : "var(--audience-accent-glow)",
               }}
             />
 
@@ -355,13 +357,13 @@ export default function LandingPage() {
               {/* Left: big headline */}
               <div
                 className="p-10 md:p-14 flex flex-col justify-between"
-                style={{ borderRight: isLight ? "1px solid var(--border-subtle)" : "1px solid rgba(111,255,233,0.08)" }}
+                 style={{ borderRight: isLight ? "1px solid var(--border-subtle)" : "1px solid color-mix(in srgb, var(--audience-accent) 16%, transparent)" }}
               >
                 <div>
                   <div className="mb-6">
                     {audienceTab === "owners"
-                      ? <Home size={40} strokeWidth={1.2} style={{ color: "var(--tiffany,#6FFFE9)", opacity: isLight ? 0.9 : 0.6 }} />
-                      : <Users size={40} strokeWidth={1.2} style={{ color: "var(--tiffany,#6FFFE9)", opacity: isLight ? 0.9 : 0.6 }} />
+                       ? <Home size={40} strokeWidth={1.2} style={{ color: "var(--audience-accent)", opacity: isLight ? 0.95 : 0.9, filter: "drop-shadow(0 0 10px var(--audience-accent-glow))" }} />
+                       : <Users size={40} strokeWidth={1.2} style={{ color: "var(--audience-accent)", opacity: isLight ? 0.95 : 0.9, filter: "drop-shadow(0 0 10px var(--audience-accent-glow))" }} />
                     }
                   </div>
                   <h3 className="text-4xl md:text-5xl font-black tracking-[-2px] silver-text leading-tight mb-6">
@@ -381,7 +383,7 @@ export default function LandingPage() {
                   <div className="mt-10">
                     <p
                       className="text-[10px] font-semibold uppercase tracking-[2px] mb-4"
-                      style={{ color: "var(--tiffany)", opacity: isLight ? 0.8 : 0.5 }}
+                       style={{ color: "var(--audience-accent)", opacity: isLight ? 0.9 : 0.75 }}
                     >
                       How it works
                     </p>
@@ -395,20 +397,20 @@ export default function LandingPage() {
                           <div
                             className="flex items-center gap-2 px-3 py-2"
                             style={{
-                              background: isLight ? "rgba(15,118,110,0.06)" : "rgba(111,255,233,0.06)",
-                              border: isLight ? "1px solid rgba(15,118,110,0.20)" : "1px solid rgba(111,255,233,0.20)",
+                               background: "var(--audience-accent-soft)",
+                               border: "1px solid var(--audience-accent-border)",
                             }}
                           >
                             <span
                               className="flex items-center justify-center text-[10px] font-bold w-4 h-4"
                               style={{
-                                background: "var(--tiffany)",
+                                 background: "var(--audience-accent)",
                                 color: isLight ? "#FFFFFF" : "#000000",
                               }}
                             >
                               {n}
                             </span>
-                            <Icon size={14} style={{ color: "var(--tiffany)" }} />
+                             <Icon size={14} style={{ color: "var(--audience-accent)" }} />
                             <span
                               className="text-xs font-semibold uppercase tracking-[1px]"
                               style={{ color: "var(--foreground)" }}
@@ -417,7 +419,7 @@ export default function LandingPage() {
                             </span>
                           </div>
                           {idx < arr.length - 1 && (
-                            <ArrowRight size={14} style={{ color: "var(--tiffany)", opacity: 0.6, flexShrink: 0 }} />
+                             <ArrowRight size={14} style={{ color: "var(--audience-accent)", opacity: 0.8, flexShrink: 0 }} />
                           )}
                         </li>
                       ))}
@@ -428,7 +430,7 @@ export default function LandingPage() {
                   <a
                     href="/api/login"
                     className="inline-flex items-center gap-2 px-7 py-3 font-bold text-sm uppercase tracking-[1.5px] transition-all duration-200"
-                    style={{ background: "var(--tiffany)", color: isLight ? "#FFFFFF" : "#000" }}
+                     style={{ background: "var(--audience-accent)", color: "#07111F", boxShadow: "0 0 24px var(--audience-accent-glow)" }}
                     onMouseEnter={e => { e.currentTarget.style.opacity = "0.85" }}
                     onMouseLeave={e => { e.currentTarget.style.opacity = "1" }}
                   >
@@ -439,7 +441,7 @@ export default function LandingPage() {
 
               {/* Right: benefit bullets */}
               <div className="p-10 md:p-14">
-                <p className="text-[10px] font-semibold uppercase tracking-[2px] mb-8" style={{ color: "var(--tiffany)", opacity: 0.5 }}>
+                 <p className="text-[10px] font-semibold uppercase tracking-[2px] mb-8" style={{ color: "var(--audience-accent)", opacity: 0.8 }}>
                   {audienceTab === "owners" ? t("landing_what_you_get") : t("landing_how_helps")}
                 </p>
                 <ul className="space-y-6">
@@ -457,9 +459,9 @@ export default function LandingPage() {
                     <li key={i} className="flex gap-4">
                       <div
                         className="mt-1 flex-shrink-0 w-5 h-5 flex items-center justify-center"
-                        style={{ border: "1px solid rgba(111,255,233,0.3)", background: "rgba(111,255,233,0.06)" }}
+                         style={{ border: "1px solid var(--audience-accent-border)", background: "var(--audience-accent-soft)", boxShadow: "0 0 14px var(--audience-accent-glow)" }}
                       >
-                        <div className="w-1.5 h-1.5" style={{ background: "var(--tiffany)" }} />
+                         <div className="w-1.5 h-1.5" style={{ background: "var(--audience-accent)", boxShadow: "0 0 8px var(--audience-accent)" }} />
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-foreground mb-1">{item.title}</p>
