@@ -28,153 +28,17 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
 
-      {/* ── Hero ──────────────────────────────────────────────────────────── */}
-      <main className="px-8 md:px-16 max-w-screen-xl mx-auto grid grid-cols-1 lg:grid-cols-[1.3fr_0.85fr] gap-14 items-center min-h-[82vh] pt-16 pb-24">
-
-        <div className="space-y-10">
-          {/* Eyebrow label */}
-          <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full border border-[#6FFFE9]/20 bg-[#6FFFE9]/[0.04]">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#6FFFE9] animate-pulse" />
-            <span className="text-[10px] font-semibold uppercase tracking-[2px]" style={{ color: "var(--tiffany)", opacity: 0.7 }}>
-              {t("landing_rent_platform")}
-            </span>
-          </div>
-
-          {/* Hero headline */}
-          <div className="space-y-1">
-            <h1 className="text-[40px] sm:text-[60px] md:text-[72px] lg:text-[96px] font-bold tracking-[-2px] sm:tracking-[-3px] md:tracking-[-4px] leading-[0.88] silver-text glow-text select-none">
-              NEVER
-            </h1>
-            <h1 className="text-[40px] sm:text-[60px] md:text-[72px] lg:text-[96px] font-bold tracking-[-2px] sm:tracking-[-3px] md:tracking-[-4px] leading-[0.88] silver-text glow-text select-none">
-              CHASE
-            </h1>
-            <h1 className="text-[40px] sm:text-[60px] md:text-[72px] lg:text-[96px] font-bold tracking-[-2px] sm:tracking-[-3px] md:tracking-[-4px] leading-[0.88] silver-text glow-text select-none">
-              RENT
-            </h1>
-          </div>
-
-          {/* Subheadline */}
-          <p className="text-lg md:text-xl font-light leading-relaxed max-w-sm pl-5 tiffany-accent" style={{ color: "var(--nav-text)", borderLeftWidth: '2px' }}>
-            <span data-i18n="we_pay_your_rent">{t("we_pay_your_rent")}</span><br />
-            <span data-i18n="your_tenant_pays_later">{t("your_tenant_pays_later")}</span><br />
-            <span style={{ color: "var(--tiffany)", opacity: 0.7 }} data-i18n="zero_friction">{t("zero_friction")}</span>
-          </p>
-
-          {/* CTAs */}
-          <div className="flex flex-col sm:flex-row gap-3 pt-2">
-            <a
-              href="/onboarding"
-              className="inline-flex items-center justify-center px-8 rounded-xl font-bold text-sm tracking-[0.06em] uppercase transition-all duration-200 group"
-              style={isLight ? {
-                background: '#1A1D24',
-                color: '#5EEAD4',
-                height: '52px',
-                boxShadow: '0 1px 2px rgba(15,23,42,0.08), 0 8px 24px rgba(15,23,42,0.12)',
-              } : {
-                background: 'linear-gradient(135deg, #8A8A8A 0%, #D4D4D4 28%, #F2F2F2 48%, #E0E0E0 58%, #C0C0C0 72%, #8A8A8A 100%)',
-                color: '#000',
-                height: '52px',
-                boxShadow: '0 2px 16px rgba(192,192,192,0.15), inset 0 1px 0 rgba(255,255,255,0.4)',
-              }}
-              data-testid="button-get-started"
-            >
-              <span data-i18n="get_started">{t("get_started")}</span>
-              <ArrowRight size={16} className="ml-2 group-hover:translate-x-1 transition-transform duration-200" />
-            </a>
-            <a
-              href="/api/login"
-              className="inline-flex items-center justify-center px-8 rounded-xl transition-all duration-200 font-medium text-sm tracking-[0.04em] uppercase"
-              style={{
-                height: '52px',
-                border: "1px solid var(--nav-border)",
-                color: "var(--nav-text)",
-                background: "transparent",
-              }}
-              data-testid="button-login"
-            >
-              {t("landing_log_in")} <ArrowRight size={14} className="ml-2" />
-            </a>
-          </div>
-
-          {/* Trust indicators */}
-          <div className="flex items-center gap-6 pt-2">
-            <div className="flex items-center gap-2" style={{ color: "var(--nav-text-dim)" }}>
-              <ShieldCheck size={13} />
-              <span className="text-[11px] font-medium tracking-wide uppercase">{t("landing_bank_grade")}</span>
-            </div>
-            <div className="w-px h-4 bg-border" />
-            <div className="flex items-center gap-2" style={{ color: "var(--nav-text-dim)" }}>
-              <Zap size={13} />
-              <span className="text-[11px] font-medium tracking-wide uppercase">{t("landing_instant_payout")}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* ── Dashboard preview card ─────────────────────── */}
-        <div
-          className="relative hidden lg:flex flex-col gap-4 p-8 rounded-2xl overflow-hidden"
-          style={{
-            minHeight: '540px',
-            background: "var(--surface-card)",
-            border: "1px solid var(--border-subtle)",
-          }}
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-[#6FFFE9]/[0.03] via-transparent to-transparent pointer-events-none" />
-          <div className="absolute top-0 right-0 w-64 h-64 bg-[#6FFFE9]/[0.025] rounded-full blur-3xl pointer-events-none" />
-
-          <div className="relative z-10 flex items-center justify-between pb-4" style={{ borderBottom: "1px solid var(--border-subtle)" }}>
-            <div>
-              <div className="h-2 w-24 rounded-full bg-foreground/10 mb-2" />
-              <div className="h-1.5 w-16 rounded-full bg-foreground/[0.06]" />
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: "var(--tiffany)" }} />
-              <span className="text-[10px] font-semibold uppercase tracking-[1.5px]" style={{ color: "var(--tiffany)", opacity: 0.6 }}>{t("landing_live")}</span>
-            </div>
-          </div>
-
-          <div className="relative z-10 flex flex-col gap-3 flex-1">
-            {[
-              { label: t("landing_monthly_rent_label"), value: '₹50,000', accent: true },
-              { label: t("landing_guaranteed_payout"), value: '1st of Month', accent: false },
-              { label: t("landing_settlement_label"), value: '0% → 100%', accent: false },
-            ].map((row, i) => (
-              <div
-                key={i}
-                className="flex items-center justify-between px-5 py-4 rounded-xl"
-                style={{ border: "1px solid var(--border-subtle)", background: "rgba(128,128,128,0.04)" }}
-              >
-                <span className="text-[11px] font-semibold uppercase tracking-[1.5px] text-muted-foreground">{row.label}</span>
-                <span className={`text-sm font-bold tracking-tight ${row.accent ? 'text-foreground' : 'text-muted-foreground'}`}>{row.value}</span>
-              </div>
-            ))}
-          </div>
-
-          <div className="relative z-10 space-y-2 pt-2">
-            <div className="flex justify-between text-[10px] font-semibold uppercase tracking-[1px] text-muted-foreground">
-              <span>{t("landing_settlement_progress")}</span>
-              <span>{t("landing_0_settled")}</span>
-            </div>
-            <div className="w-full h-1 rounded-full bg-foreground/[0.06]">
-              <div className="h-full w-0 bg-gradient-to-r from-[#6FFFE9]/40 to-[#6FFFE9] rounded-full" />
-            </div>
-          </div>
-
-          <div className="absolute bottom-7 right-7 z-10">
-            <div
-              className="px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-[2px]"
-              style={isLight ? {
-                background: '#1A1D24',
-                color: '#5EEAD4',
-                boxShadow: '0 2px 8px rgba(15,23,42,0.10), 0 1px 2px rgba(15,23,42,0.06)',
-              } : {
-                background: 'linear-gradient(135deg, #888 0%, #D0D0D0 40%, #F0F0F0 55%, #B8B8B8 70%, #888 100%)',
-                color: '#000',
-              }}
-            >
-              {t("landing_rent_guaranteed")}
-            </div>
-          </div>
+      {/* ── New cinematic hero ───────────────────────────────────────────── */}
+      <main className="rentflo-hero">
+        <img
+          src="/rentflo-home-hero.jpeg"
+          alt="RentFLO flexible rent payments for tenants and upfront rent collection for owners"
+          className="rentflo-hero-image"
+        />
+        <div className="rentflo-hero-scrim" />
+        <div className="rentflo-hero-hotspots" aria-label="Choose your RentFLO experience">
+          <a href="/onboarding?role=TENANT" className="rentflo-hero-hotspot rentflo-hero-hotspot-tenant" aria-label="Continue as a tenant" data-testid="button-hero-tenant" />
+          <a href="/onboarding?role=OWNER" className="rentflo-hero-hotspot rentflo-hero-hotspot-owner" aria-label="Continue as an owner" data-testid="button-hero-owner" />
         </div>
       </main>
 

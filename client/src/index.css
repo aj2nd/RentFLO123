@@ -4,6 +4,162 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── RentFLO cinematic landing hero ───────────────────────────────────── */
+.rentflo-hero {
+  position: relative;
+  height: 100svh;
+  min-height: 620px;
+  flex-shrink: 0;
+  overflow: hidden;
+  isolation: isolate;
+  background: #050812;
+}
+
+.rentflo-hero-image {
+  position: absolute;
+  inset: 0;
+  z-index: -3;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+}
+
+@media (min-width: 768px) {
+  .rentflo-hero {
+    background: #050812;
+  }
+
+  .rentflo-hero-image {
+    width: auto;
+    max-width: 100%;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    object-fit: contain;
+    object-position: center center;
+  }
+}
+
+.rentflo-hero-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(3, 7, 17, 0.05) 0%, rgba(3, 7, 17, 0.02) 42%, rgba(3, 7, 17, 0.52) 100%),
+    linear-gradient(90deg, rgba(3, 7, 17, 0.10), transparent 48%, rgba(3, 7, 17, 0.10));
+}
+
+.rentflo-hero-hotspots {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+}
+
+.rentflo-hero-hotspot {
+  position: absolute;
+  display: block;
+  width: 27%;
+  height: 5.2%;
+  border-radius: 999px;
+  text-decoration: none;
+}
+
+.rentflo-hero-hotspot-tenant {
+  top: 12.4%;
+  left: 10%;
+}
+
+.rentflo-hero-hotspot-owner {
+  top: 12.4%;
+  right: 10%;
+}
+
+.rentflo-hero-hotspot:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 4px;
+}
+
+/* Kept as a reusable style for future hero variants. */
+.rentflo-hero-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-width: 150px;
+  min-height: 48px;
+  padding: 11px 22px;
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  border-radius: 999px;
+  color: #fff;
+  font-family: Inter, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255,255,255,0.22);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: transform 180ms ease, filter 180ms ease, box-shadow 180ms ease;
+}
+
+.rentflo-hero-cta:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255,255,255,0.28);
+}
+
+.rentflo-hero-cta:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 4px;
+}
+
+.rentflo-hero-cta-tenant {
+  background: linear-gradient(135deg, rgba(255, 170, 18, 0.96), rgba(255, 113, 6, 0.92));
+}
+
+.rentflo-hero-cta-owner {
+  background: linear-gradient(135deg, rgba(0, 119, 213, 0.96), rgba(0, 70, 170, 0.95));
+}
+
+.rentflo-hero-caption {
+  position: absolute;
+  z-index: 2;
+  right: 7%;
+  bottom: max(32px, env(safe-area-inset-bottom));
+  color: rgba(255, 255, 255, 0.88);
+  font-family: Inter, sans-serif;
+  text-align: right;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.6);
+}
+
+.rentflo-hero-caption p {
+  margin: 0 0 5px;
+  font-size: clamp(0.75rem, 1.2vw, 1rem);
+  font-weight: 500;
+}
+
+.rentflo-hero-caption span {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 640px) {
+  .rentflo-hero-image {
+    object-position: 50% center;
+  }
+
+  .rentflo-hero-hotspot {
+    width: 29%;
+    height: 5.6%;
+  }
+}
+
 /* ── Dark mode (default) ─────────────────────────────────────────────── */
 :root {
   --background: 0 0% 0%;            /* OLED Black */
