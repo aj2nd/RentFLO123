@@ -104,9 +104,14 @@
       }
 
       .i18n-header .logo-left {
+        position: absolute;
+        top: clamp(82px, 10svh, 112px);
+        left: 50%;
+        transform: translateX(-50%);
         display: flex;
         align-items: center;
         text-decoration: none;
+        transition: top 0.3s ease, transform 0.3s ease;
       }
 
       .i18n-header .logo-center {
