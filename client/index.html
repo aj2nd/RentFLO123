@@ -318,7 +318,7 @@
   <body>
     <!-- Global public header: minimal wordmark + login -->
     <header class="i18n-header" data-testid="header-i18n">
-      <a href="/" class="logo-center">
+      <a href="/" class="logo-left">
         <img src="/rentflo-wordmark.png" alt="RentFLO" class="logo-wordmark" data-testid="logo-wordmark" />
       </a>
       <div class="right-controls">
@@ -362,8 +362,8 @@
 
           // Only show the header on public (non-authenticated) pages
            var isPublic = PUBLIC_PATHS.includes(path);
-           // The landing artwork contains its own navigation and login control.
-           // Keep the global header for legal/support pages only.
+           // The landing artwork contains the complete header/navigation.
+           // Keep the global header for the other public pages only.
            if (headerEl) headerEl.style.display = (isPublic && path !== '/') ? '' : 'none';
 
           // Show the login sub-bar only on the exact landing page
