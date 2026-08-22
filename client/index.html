@@ -149,6 +149,12 @@
         }
       }
 
+      /* Public inner pages have no hero navigation, so keep the single
+         global wordmark in the normal top-header position. */
+      .i18n-header:not(.landing-header) .logo-left {
+        top: max(20px, env(safe-area-inset-top));
+      }
+
       html.light .i18n-header .logo-wordmark {
         filter: brightness(0) drop-shadow(0 0 12px rgba(0, 0, 0, 0.18));
       }
@@ -389,7 +395,10 @@
            var isPublic = PUBLIC_PATHS.includes(path);
            // Keep the minimal wordmark header visible on all public pages,
            // including the landing page.
-           if (headerEl) headerEl.style.display = isPublic ? '' : 'none';
+            if (headerEl) {
+              headerEl.style.display = isPublic ? '' : 'none';
+              headerEl.classList.toggle('landing-header', path === '/');
+            }
 
           // Show the login sub-bar only on the exact landing page
           if (loginBar) loginBar.style.display = (path === '/') ? 'flex' : 'none';
