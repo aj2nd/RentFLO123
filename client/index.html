@@ -164,6 +164,12 @@
         filter: brightness(0) invert(1) drop-shadow(0 0 10px rgba(255, 255, 255, 0.22));
       }
 
+      /* On scroll, dock the wordmark to the top edge without changing its
+         initial position on public pages. */
+      .i18n-header.glass .logo-left {
+        top: max(0px, env(safe-area-inset-top));
+      }
+
       .i18n-header .right-controls {
         display: flex;
         flex-direction: row;
