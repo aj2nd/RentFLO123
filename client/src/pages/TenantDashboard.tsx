@@ -256,7 +256,7 @@ export default function TenantDashboard() {
 
   if (propsLoading || ledgersLoading) {
     return (
-      <div className="min-h-screen bg-background p-4 sm:p-6 md:p-10 pb-24 max-w-4xl mx-auto" data-testid="loader-tenant">
+      <div className="dashboard-tenant min-h-screen bg-background p-4 sm:p-6 md:p-10 pb-24 max-w-4xl mx-auto" data-testid="loader-tenant">
         <div className="grid grid-cols-3 gap-3 mb-8">
           {[1,2,3].map(i => <div key={i} className="h-20 bg-white/[0.04] animate-pulse rounded-2xl" />)}
         </div>
@@ -290,7 +290,7 @@ export default function TenantDashboard() {
   const allOnboardingDone = onboardingSteps.every(s => s.done);
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
+    <div className="dashboard-tenant min-h-screen bg-background text-foreground flex flex-col">
       <SuccessAnimation show={showSuccess} message={t("payment_successful")} />
       {receiptData && (
         <ReceiptModal data={receiptData} onClose={() => setReceiptData(null)} />

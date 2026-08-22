@@ -24,7 +24,7 @@ import { SetupProgress } from "@/components/SetupProgress";
 /* ─── Skeleton loader ─── */
 function OwnerSkeleton() {
   return (
-    <div className="min-h-screen bg-background p-4 sm:p-6 md:p-10 pb-24" data-testid="loader-owner">
+    <div className="dashboard-owner min-h-screen bg-background p-4 sm:p-6 md:p-10 pb-24" data-testid="loader-owner">
       <div className="h-6 w-28 bg-zinc-900 animate-pulse mb-1" />
       <div className="h-10 w-56 bg-zinc-900 animate-pulse mb-8" />
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
@@ -476,7 +476,7 @@ export default function OwnerDashboard() {
 
   /* ─────────────────────────── RENDER ─────────────────────────────── */
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="dashboard-owner min-h-screen bg-background text-foreground">
       <div className="p-4 sm:p-6 md:p-10 pb-24 max-w-[1280px] mx-auto">
 
         {/* Setup progress card */}

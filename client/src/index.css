@@ -169,6 +169,63 @@
   --audience-accent-glow: var(--tenant-accent-glow);
 }
 
+/* Dashboard role accents mirror the homepage audience treatments. The
+   scoped utility overrides let the existing dashboard surfaces inherit the
+   correct role color without changing their layout or interaction states. */
+.dashboard-owner {
+  --dashboard-accent: var(--owner-accent);
+  --dashboard-accent-soft: var(--owner-accent-soft);
+  --dashboard-accent-border: var(--owner-accent-border);
+  --dashboard-accent-glow: var(--owner-accent-glow);
+  --dashboard-accent-dim: var(--tiffany-dim);
+}
+
+.dashboard-tenant {
+  --dashboard-accent: var(--tenant-accent);
+  --dashboard-accent-soft: var(--tenant-accent-soft);
+  --dashboard-accent-border: var(--tenant-accent-border);
+  --dashboard-accent-glow: var(--tenant-accent-glow);
+  --dashboard-accent-dim: var(--tenant-accent);
+}
+
+.dashboard-owner [class*="text-[#6FFFE9]"],
+.dashboard-tenant [class*="text-[#6FFFE9]"] {
+  color: var(--dashboard-accent) !important;
+}
+
+.dashboard-owner [class*="text-[#9DEFE4]"],
+.dashboard-tenant [class*="text-[#9DEFE4]"] {
+  color: var(--dashboard-accent-dim) !important;
+}
+
+.dashboard-owner [class~="bg-[#6FFFE9]"],
+.dashboard-tenant [class~="bg-[#6FFFE9]"] {
+  background-color: var(--dashboard-accent) !important;
+}
+
+.dashboard-owner [class*="border-[#6FFFE9]"],
+.dashboard-tenant [class*="border-[#6FFFE9]"] {
+  border-color: var(--dashboard-accent-border) !important;
+}
+
+/* Owner dashboard accents are mostly inline styles so they can adapt to
+   light/dark mode. Remap those existing accent declarations by scope. */
+.dashboard-owner [style*="#6FFFE9"] {
+  color: var(--dashboard-accent) !important;
+}
+
+.dashboard-owner [style*="rgba(111,255,233"] {
+  border-color: var(--dashboard-accent-border) !important;
+  background-color: var(--dashboard-accent-soft) !important;
+  box-shadow: 0 0 8px var(--dashboard-accent-glow) !important;
+}
+
+.dashboard-owner [data-testid="button-add-property"],
+.dashboard-owner [data-testid="button-submit-property"] {
+  background: var(--dashboard-accent) !important;
+  border-color: var(--dashboard-accent) !important;
+}
+
 /* Kept as a reusable style for future hero variants. */
 .rentflo-hero-cta {
   display: inline-flex;
