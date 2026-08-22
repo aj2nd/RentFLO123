@@ -39,6 +39,14 @@
     object-fit: contain;
     object-position: center center;
   }
+
+  /* Keep the invisible links aligned with the centered portrait artwork. */
+  .rentflo-hero-hotspots {
+    width: min(calc(100svh * 941 / 1672), 100vw);
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+  }
 }
 
 .rentflo-hero-scrim {
