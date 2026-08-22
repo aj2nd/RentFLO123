@@ -1,4 +1,4 @@
-import { Mail, Phone, Clock } from "lucide-react";
+import { Instagram, Mail, Phone, Clock } from "lucide-react";
 import { LegalHeader } from "@/components/LegalHeader";
 import { useI18n } from "@/hooks/use-i18n";
 
@@ -29,11 +29,11 @@ export default function Support() {
                 <div>
                   <p className="text-white font-medium">{t("support_email_label")}</p>
                   <a 
-                    href="mailto:support@rentflo.com" 
+                    href="mailto:anandhu@rentflo.in" 
                     className="text-zinc-400 hover:text-white transition-colors"
                     data-testid="support-email"
                   >
-                    support@rentflo.com
+                    anandhu@rentflo.in
                   </a>
                 </div>
               </div>
@@ -43,11 +43,27 @@ export default function Support() {
                 <div>
                   <p className="text-white font-medium">{t("support_phone_label")}</p>
                   <a 
-                    href="tel:+911234567890" 
+                    href="tel:+9194446000300" 
                     className="text-zinc-400 hover:text-white transition-colors"
                     data-testid="support-phone"
                   >
-                    +91 123 456 7890
+                    +9194446000300
+                  </a>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4">
+                <Instagram className="w-6 h-6 text-white" />
+                <div>
+                  <p className="text-white font-medium">Instagram</p>
+                  <a
+                    href="https://instagram.com/rentflo_india"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-zinc-400 hover:text-white transition-colors"
+                    data-testid="support-instagram"
+                  >
+                    @rentflo_india
                   </a>
                 </div>
               </div>
