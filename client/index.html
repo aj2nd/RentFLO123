@@ -141,6 +141,12 @@
         transition: height 0.3s ease, filter 0.3s ease;
       }
 
+      @media (min-width: 768px) {
+        .i18n-header .logo-left {
+          top: clamp(120px, 11.5vw, 190px);
+        }
+      }
+
       html.light .i18n-header .logo-wordmark {
         filter: brightness(0) drop-shadow(0 0 12px rgba(0, 0, 0, 0.18));
       }
@@ -370,7 +376,7 @@
         const SUPPORTED_LANGS = ['en', 'hi', 'kn', 'ta', 'ml'];
 
         // ── Route-aware header visibility ────────────────────────────────────
-        var PUBLIC_PATHS = ['/', '/terms', '/privacy', '/refund', '/support'];
+        var PUBLIC_PATHS = ['/', '/about', '/terms', '/privacy', '/refund', '/support'];
 
         function updateHeaderForRoute() {
           var path = window.location.pathname;

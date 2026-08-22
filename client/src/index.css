@@ -31,21 +31,59 @@
   }
 
   .rentflo-hero-image {
-    width: auto;
-    max-width: 100%;
-    left: 50%;
-    right: auto;
-    transform: translateX(-50%);
-    object-fit: contain;
-    object-position: center center;
+    width: 100%;
+    max-width: none;
+    left: 0;
+    right: 0;
+    transform: none;
+    object-fit: cover;
+    object-position: center top;
   }
 
-  /* Keep the invisible links aligned with the centered portrait artwork. */
-  .rentflo-hero-hotspots {
-    width: min(calc(100svh * 941 / 1672), 100vw);
-    left: 50%;
-    right: auto;
-    transform: translateX(-50%);
+  /* The source artwork scales from its width on desktop, so these controls
+     follow the artwork instead of using the mobile percentage positions. */
+  .rentflo-hero-hotspot-about,
+  .rentflo-hero-hotspot-how,
+  .rentflo-hero-hotspot-contact,
+  .rentflo-hero-hotspot-login {
+    top: clamp(70px, 7.9vw, 150px);
+    height: clamp(42px, 4.8vw, 78px);
+  }
+
+  .rentflo-hero-hotspot-about {
+    left: 31%;
+    width: 13%;
+  }
+
+  .rentflo-hero-hotspot-how {
+    left: 46%;
+    width: 16%;
+  }
+
+  .rentflo-hero-hotspot-contact {
+    left: 66%;
+    width: 14%;
+  }
+
+  .rentflo-hero-hotspot-login {
+    right: 3%;
+    width: 17%;
+  }
+
+  .rentflo-hero-hotspot-tenant,
+  .rentflo-hero-hotspot-owner {
+    top: clamp(360px, 40.9vw, 760px);
+    height: clamp(78px, 10vw, 150px);
+  }
+
+  .rentflo-hero-hotspot-tenant {
+    left: 10%;
+    width: 30%;
+  }
+
+  .rentflo-hero-hotspot-owner {
+    right: 10%;
+    width: 32%;
   }
 }
 
