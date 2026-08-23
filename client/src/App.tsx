@@ -223,7 +223,8 @@ function Router() {
 function ConditionalLegalFooter() {
   const [location] = useLocation();
   const tenantPaths = ["/tenant", "/ledger", "/verify", "/agreement", "/messages", "/maintenance", "/profile", "/notifications"];
-  return tenantPaths.includes(location) ? null : <LegalFooter />;
+  const pathname = location.split("?")[0];
+  return tenantPaths.includes(pathname) ? null : <LegalFooter />;
 }
 
 function App() {
