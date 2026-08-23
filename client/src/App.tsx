@@ -1,6 +1,7 @@
 /**
  * Design integration: the supplied tenant dashboard image owns its full-screen
- * canvas, so shared shell navigation is intentionally suppressed on /tenant.
+ * canvas, so only the top shell navigation is suppressed on /tenant while the
+ * shared tenant bottom navigation remains available across every tenant page.
  */
 import { Switch, Route, Redirect, useLocation } from "wouter";
 import { useEffect } from "react";
@@ -88,7 +89,7 @@ function PrivateRoute({ component: Component, allowedRoles }: { component: React
     <>
       {!isImageLedTenantDashboard && <Navigation />}
       {isImageLedTenantDashboard ? <Component /> : <SidebarContent><Component /></SidebarContent>}
-      {!isImageLedTenantDashboard && <BottomNav />}
+      <BottomNav />
       <AIChatBot />
     </>
   );
@@ -219,6 +220,12 @@ function Router() {
   );
 }
 
+function ConditionalLegalFooter() {
+  const [location] = useLocation();
+  const tenantPaths = ["/tenant", "/ledger", "/verify", "/agreement", "/messages", "/maintenance", "/profile", "/notifications"];
+  return tenantPaths.includes(location) ? null : <LegalFooter />;
+}
+
 function App() {
   return (
     <ThemeProvider attribute="class" defaultTheme="dark" disableTransitionOnChange>
@@ -228,7 +235,7 @@ function App() {
             <TooltipProvider>
               <Toaster />
               <Router />
-              <LegalFooter />
+              <ConditionalLegalFooter />
             </TooltipProvider>
           </SidebarProvider>
         </LanguageProvider>
