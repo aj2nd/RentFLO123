@@ -1,3 +1,4 @@
+/** Design: Ledger keeps its original accounting flow while using RentFLO violet accents. */
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { Receipt, TrendingUp, TrendingDown, Minus, Download } from "lucide-react";
@@ -53,7 +54,7 @@ function getActionLabel(action: TransactionType): string {
 function ActionBadge({ action }: { action: TransactionType }) {
   const config = {
     CAPITAL_ADVANCED: { icon: TrendingUp, bg: 'bg-white', text: 'text-black' },
-    RENT_COLLECTED: { icon: TrendingDown, bg: 'bg-[#6FFFE9]/15', text: 'text-[#6FFFE9]' },
+    RENT_COLLECTED: { icon: TrendingDown, bg: 'bg-[#8B5CF6]/15', text: 'text-[#8B5CF6]' },
     PENDING: { icon: Minus, bg: 'bg-zinc-900', text: 'text-zinc-400' },
   };
   const { icon: Icon, bg, text } = config[action] || config.PENDING;
@@ -108,7 +109,7 @@ export default function LedgerPage() {
           <div className="h-9 w-36 bg-zinc-900 animate-pulse" />
           <div className="h-9 w-32 bg-zinc-900 animate-pulse" />
         </div>
-        <div className="space-y-px border border-[#6FFFE9]/10">
+        <div className="space-y-px border border-[#8B5CF6]/10">
           {[1,2,3,4,5,6].map(i => (
             <div key={i} className="flex items-center gap-4 px-4 py-4 border-b border-white/[0.04]">
               <div className="h-3 w-20 bg-zinc-900 animate-pulse" />
@@ -164,14 +165,14 @@ export default function LedgerPage() {
             }}
           >
             <div className="flex items-center gap-3">
-              <Receipt className="w-6 h-6 sm:w-8 sm:h-8 shrink-0 text-[#6FFFE9]" />
+              <Receipt className="w-6 h-6 sm:w-8 sm:h-8 shrink-0 text-[#8B5CF6]" />
               <h1 className="text-2xl sm:text-4xl font-bold tracking-tighter" style={{ fontFamily: 'Playfair Display, Georgia, serif' }}>
                 {t('ledger_title')}
               </h1>
             </div>
             <div className="flex items-center gap-4">
               <div className="sm:text-right">
-                <p className="text-xs text-[#9DEFE4]/60 uppercase tracking-widest mb-1">{t('ledger_current_exposure')}</p>
+                <p className="text-xs text-[#DDD6FE]/60 uppercase tracking-widest mb-1">{t('ledger_current_exposure')}</p>
                 <p className="text-2xl sm:text-3xl font-bold font-mono" style={{ fontFamily: 'Playfair Display, Georgia, serif' }} data-testid="text-ledger-exposure">
                   ₹{totalExposure.toLocaleString()}
                 </p>
@@ -179,7 +180,7 @@ export default function LedgerPage() {
               {transactions.length > 0 && (
                 <button
                   onClick={() => downloadCSV(transactions, user)}
-                  className="flex items-center gap-2 px-3 py-2 border border-[#6FFFE9]/25 text-[#6FFFE9]/70 hover:border-[#6FFFE9]/60 hover:text-[#6FFFE9] transition-colors text-xs uppercase tracking-widest shrink-0"
+                  className="flex items-center gap-2 px-3 py-2 border border-[#8B5CF6]/25 text-[#8B5CF6]/70 hover:border-[#8B5CF6]/60 hover:text-[#8B5CF6] transition-colors text-xs uppercase tracking-widest shrink-0"
                   data-testid="button-export-csv"
                 >
                   <Download size={14} />
@@ -191,9 +192,9 @@ export default function LedgerPage() {
 
           {/* Desktop table */}
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2, duration: 0.4 }}
-            className="hidden sm:block border-2 border-[#6FFFE9]/25 overflow-x-auto">
+            className="hidden sm:block border-2 border-[#8B5CF6]/25 overflow-x-auto">
             <table className="w-full text-left min-w-[640px]" data-testid="table-ledger">
-              <thead className="bg-zinc-900/80 text-[#9DEFE4]/60 text-xs uppercase tracking-wider">
+              <thead className="bg-zinc-900/80 text-[#DDD6FE]/60 text-xs uppercase tracking-wider">
                 <tr>
                   <th className="p-4 font-medium">{t('ledger_date')}</th>
                   <th className="p-4 font-medium">{t('ledger_txn_id')}</th>
@@ -203,11 +204,11 @@ export default function LedgerPage() {
                   <th className="p-4 font-medium text-right">{t('ledger_balance')}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#6FFFE9]/10">
+              <tbody className="divide-y divide-[#8B5CF6]/10">
                 {transactions.map((txn, index) => (
                   <motion.tr key={txn.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.05 * index, duration: 0.3 }}
-                    className="hover:bg-[#6FFFE9]/5 transition-colors" data-testid={`row-transaction-${txn.id}`}>
+                    className="hover:bg-[#8B5CF6]/[0.07] transition-colors" data-testid={`row-transaction-${txn.id}`}>
                     <td className="p-4 text-zinc-400 font-mono text-sm whitespace-nowrap">
                       {new Date(txn.date).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' })}
                     </td>
@@ -239,7 +240,7 @@ export default function LedgerPage() {
             {transactions.map((txn, index) => (
               <motion.div key={txn.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.05 * index, duration: 0.3 }}
-                className="border border-[#6FFFE9]/20 bg-zinc-950/50 p-4 space-y-3" data-testid={`card-transaction-${txn.id}`}>
+                className="border border-[#8B5CF6]/20 bg-zinc-950/50 p-4 space-y-3" data-testid={`card-transaction-${txn.id}`}>
                 <div className="flex items-start justify-between gap-2">
                   <ActionBadge action={txn.action} />
                   <span className={`font-mono font-bold text-base ${txn.amount >= 0 ? 'text-white' : 'text-zinc-400'}`}>
@@ -258,7 +259,7 @@ export default function LedgerPage() {
             ))}
           </div>
 
-          <div className="mt-6 text-center text-[#9DEFE4]/30 text-xs uppercase tracking-widest">
+          <div className="mt-6 text-center text-[#DDD6FE]/30 text-xs uppercase tracking-widest">
             {t('ledger_footer')}
           </div>
         </motion.div>

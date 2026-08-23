@@ -105,11 +105,11 @@ export function BottomNav() {
 
   return (
     <div
-      className={`fixed left-0 right-0 z-50 flex ${isTenant ? "bottom-4 px-5 sm:px-8" : "bottom-0"}`}
-      style={{ paddingBottom: isTenant ? "env(safe-area-inset-bottom)" : "env(safe-area-inset-bottom)" }}
+      className={`fixed left-0 right-0 z-50 flex ${isTenant ? "bottom-0 px-0" : "bottom-0"}`}
+      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       <div
-        className={`w-full flex ${isTenant ? "max-w-[640px] mx-auto rounded-[34px] border p-1.5" : "border-t"}`}
+        className={`w-full flex ${isTenant ? "max-w-none rounded-t-[34px] border-x border-t px-2 pt-1.5" : "border-t"}`}
         style={{
           background: isTenant ? "rgba(8,13,24,0.42)" : "var(--nav-bg)",
           backdropFilter: isTenant ? "blur(30px) saturate(135%)" : "blur(28px) saturate(180%)",

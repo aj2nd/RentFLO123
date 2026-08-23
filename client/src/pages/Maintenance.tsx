@@ -1,3 +1,4 @@
+/** Design: Repairs keeps its original ticket workflow while using RentFLO violet accent states. */
 import { useState, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
@@ -15,7 +16,7 @@ type TicketWithProperty = MaintenanceTicket & { property: Property };
 
 const STATUS_CONFIG = {
   OPEN:        { label: "Open",        color: "text-white/70",     border: "border-white/20",       dot: "bg-white/50" },
-  IN_PROGRESS: { label: "In Progress", color: "text-[#6FFFE9]/80", border: "border-[#6FFFE9]/30",   dot: "bg-[#6FFFE9]" },
+  IN_PROGRESS: { label: "In Progress", color: "text-[#8B5CF6]/80", border: "border-[#8B5CF6]/30",   dot: "bg-[#8B5CF6]" },
   RESOLVED:    { label: "Resolved",    color: "text-white/30",     border: "border-white/[0.06]",   dot: "bg-white/20" },
 };
 
@@ -164,7 +165,7 @@ export default function Maintenance() {
                   value={formPropertyId}
                   onChange={e => setFormPropertyId(e.target.value)}
                   data-testid="select-ticket-property"
-                  className="w-full appearance-none bg-white/[0.04] border border-white/[0.08] focus:border-[#6FFFE9]/30 outline-none px-4 py-3 pr-10 text-sm text-white/70 transition-colors duration-200"
+                  className="w-full appearance-none bg-white/[0.04] border border-white/[0.08] focus:border-[#8B5CF6]/30 outline-none px-4 py-3 pr-10 text-sm text-white/70 transition-colors duration-200"
                 >
                   <option value="">{t("maint_select_property")}</option>
                   {properties.map(p => (
@@ -183,7 +184,7 @@ export default function Maintenance() {
                 placeholder="e.g. Leaking bathroom tap"
                 maxLength={120}
                 data-testid="input-ticket-title"
-                className="w-full bg-white/[0.04] border border-white/[0.08] focus:border-[#6FFFE9]/30 outline-none px-4 py-3 text-sm text-white/75 placeholder:text-white/20 transition-colors duration-200"
+                className="w-full bg-white/[0.04] border border-white/[0.08] focus:border-[#8B5CF6]/30 outline-none px-4 py-3 text-sm text-white/75 placeholder:text-white/20 transition-colors duration-200"
               />
             </div>
 
@@ -196,7 +197,7 @@ export default function Maintenance() {
                 rows={4}
                 maxLength={1000}
                 data-testid="input-ticket-description"
-                className="w-full bg-white/[0.04] border border-white/[0.08] focus:border-[#6FFFE9]/30 outline-none px-4 py-3 text-sm text-white/75 placeholder:text-white/20 resize-none transition-colors duration-200"
+                className="w-full bg-white/[0.04] border border-white/[0.08] focus:border-[#8B5CF6]/30 outline-none px-4 py-3 text-sm text-white/75 placeholder:text-white/20 resize-none transition-colors duration-200"
               />
             </div>
 
@@ -252,12 +253,12 @@ export default function Maintenance() {
               data-testid={`tab-${tb.key}`}
               className={`flex items-center gap-2 px-5 py-3 text-xs font-bold uppercase tracking-[1.5px] border-b-2 transition-all duration-150 ${
                 tab === tb.key
-                  ? "border-[#6FFFE9] text-white"
+                  ? "border-[#8B5CF6] text-white"
                   : "border-transparent text-white/30 hover:text-white/55"
               }`}
             >
               {tb.label}
-              <span className={`px-1.5 py-0.5 text-[9px] font-bold ${tab === tb.key ? "bg-[#6FFFE9]/15 text-[#6FFFE9]" : "bg-white/[0.05] text-white/25"}`}>
+              <span className={`px-1.5 py-0.5 text-[9px] font-bold ${tab === tb.key ? "bg-[#8B5CF6]/15 text-[#8B5CF6]" : "bg-white/[0.05] text-white/25"}`}>
                 {tb.count}
               </span>
             </button>
