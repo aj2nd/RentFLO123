@@ -226,6 +226,39 @@
   border-color: var(--dashboard-accent) !important;
 }
 
+/* The imported header asset is black on transparent. Invert it only for the
+   dark dashboard chrome; light mode keeps the original black wordmark. */
+.dashboard-brand-header {
+  min-height: 76px;
+}
+
+.dashboard-header-wordmark {
+  display: block;
+  width: auto;
+  object-fit: contain;
+}
+
+.dashboard-header-wordmark-desktop {
+  width: 168px;
+  height: auto;
+  max-height: 34px;
+}
+
+.dashboard-header-wordmark-mobile {
+  width: 142px;
+  height: auto;
+  max-height: 28px;
+}
+
+.dark .dashboard-header-wordmark {
+  filter: invert(1) brightness(1.7) drop-shadow(0 0 10px var(--dashboard-accent-glow, rgba(255,255,255,0.16)));
+}
+
+.dashboard-owner .dashboard-brand-header,
+.dashboard-tenant .dashboard-brand-header {
+  border-bottom-color: var(--dashboard-accent-border) !important;
+}
+
 /* Replace the legacy teal utility classes inside each role's dashboard.
    These selectors intentionally stay scoped so the public landing page and
    admin screens keep their existing palette. */

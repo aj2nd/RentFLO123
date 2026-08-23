@@ -12,6 +12,7 @@ import { NotificationBell } from "@/components/NotificationBell";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useQuery } from "@tanstack/react-query";
 import { useTheme } from "next-themes";
+import newHeaderWordmark from "@assets/IMG_8383_1787480222056.png";
 
 export function Navigation() {
   const [location] = useLocation();
@@ -88,7 +89,7 @@ export function Navigation() {
 
         {/* Center: wordmark — absolutely centered so it's always in the middle */}
         <div className="absolute inset-x-0 flex items-center justify-center pointer-events-none" style={{ height: "60px" }}>
-          <img src="/logo-wordmark-transparent.png" alt="RentFLO" style={{ height: 20, objectFit: "contain" }} />
+          <img src={newHeaderWordmark} alt="RentFLO" className="dashboard-header-wordmark dashboard-header-wordmark-mobile" />
         </div>
 
         <div className="flex-1" />
@@ -125,12 +126,11 @@ export function Navigation() {
       >
         {/* ── Brand header ── */}
         <div
-          className="w-64 px-5 py-5 flex items-center gap-3 flex-shrink-0"
+          className="w-64 px-5 py-5 flex items-center gap-3 flex-shrink-0 dashboard-brand-header"
           style={{ borderBottom: "1px solid var(--nav-border)" }}
         >
-          <img src="/logo-icon.png" alt="RentFLO" style={{ height: 36, width: 36, objectFit: "contain", flexShrink: 0 }} />
           <div className="flex flex-col gap-0.5">
-            <img src="/logo-wordmark-transparent.png" alt="RentFLO" style={{ height: 18, objectFit: "contain", objectPosition: "left" }} />
+            <img src={newHeaderWordmark} alt="RentFLO" className="dashboard-header-wordmark dashboard-header-wordmark-desktop" />
             {user?.role && (
               <p className="text-[9px] uppercase tracking-[2px] leading-none" style={{ color: "var(--tiffany)", opacity: 0.6 }}>
                 {user.role.charAt(0) + user.role.slice(1).toLowerCase()} Portal
