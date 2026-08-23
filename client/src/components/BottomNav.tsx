@@ -88,8 +88,8 @@ export function BottomNav() {
     OWNER: [
       { href: "/owner",          icon: <WalletMinimal size={22} strokeWidth={1.75} />,   label: t("nav_home") },
       { href: "/ledger",         icon: <BookOpenText size={22} strokeWidth={1.75} />,    label: t("nav_ledger") },
+      { href: "/maintenance",    icon: <Hammer size={22} strokeWidth={1.75} />,           label: t("nav_repairs") },
       { href: "/messages",       icon: <MessagesSquare size={22} strokeWidth={1.75} />,  label: t("nav_messages") },
-      { href: "/notifications",  icon: <BellRing size={22} strokeWidth={1.75} />,        label: t("nav_inbox") },
       { href: "/profile",        icon: <CircleUserRound size={22} strokeWidth={1.75} />, label: t("nav_profile") },
     ],
     ADMIN: [
