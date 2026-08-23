@@ -32,6 +32,7 @@ export default defineConfig({
     emptyOutDir: true,
   },
   server: {
+    allowedHosts: [".manus.computer"],
     fs: {
       strict: true,
       deny: ["**/.*"],
