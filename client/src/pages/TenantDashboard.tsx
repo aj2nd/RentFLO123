@@ -9,6 +9,7 @@ import { BookOpen, MessageSquare, UserRound, Wrench, X } from "lucide-react";
 import { useLedgers } from "@/hooks/use-ledgers";
 import { useAuth } from "@/hooks/use-auth";
 import { PayRentButton } from "@/components/PayRentButton";
+import { LegalFooter } from "@/components/LegalFooter";
 import type { Agreement, User } from "@shared/schema";
 import tenantDashboardArtwork from "@assets/rentflo-tenant-dashboard-reference.png";
 
@@ -104,6 +105,7 @@ export default function TenantDashboard() {
             <button type="button" aria-label="Close menu" className="absolute right-0 top-0 h-full w-[22%]" onClick={() => setMenuOpen(false)} />
           </div>}
         </section>
+        <LegalFooter embedded forceVisible />
       </div>
     </main>
   );
