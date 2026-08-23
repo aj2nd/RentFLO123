@@ -177,7 +177,7 @@
   --dashboard-accent-soft: var(--owner-accent-soft);
   --dashboard-accent-border: var(--owner-accent-border);
   --dashboard-accent-glow: var(--owner-accent-glow);
-  --dashboard-accent-dim: var(--tiffany-dim);
+  --dashboard-accent-dim: var(--owner-accent-dim);
 }
 
 .dashboard-tenant {
@@ -185,7 +185,7 @@
   --dashboard-accent-soft: var(--tenant-accent-soft);
   --dashboard-accent-border: var(--tenant-accent-border);
   --dashboard-accent-glow: var(--tenant-accent-glow);
-  --dashboard-accent-dim: var(--tenant-accent);
+  --dashboard-accent-dim: var(--tenant-accent-dim);
 }
 
 .dashboard-owner [class*="text-[#6FFFE9]"],
@@ -224,6 +224,67 @@
 .dashboard-owner [data-testid="button-submit-property"] {
   background: var(--dashboard-accent) !important;
   border-color: var(--dashboard-accent) !important;
+}
+
+/* Replace the legacy teal utility classes inside each role's dashboard.
+   These selectors intentionally stay scoped so the public landing page and
+   admin screens keep their existing palette. */
+.dashboard-owner [class*="text-[#6FFFE9]"],
+.dashboard-tenant [class*="text-[#6FFFE9]"] {
+  color: var(--dashboard-accent) !important;
+}
+
+.dashboard-owner [class*="text-[#9DEFE4]"],
+.dashboard-tenant [class*="text-[#9DEFE4]"] {
+  color: var(--dashboard-accent-dim) !important;
+}
+
+.dashboard-owner [class*="bg-[#6FFFE9]"],
+.dashboard-tenant [class*="bg-[#6FFFE9]"] {
+  background-color: var(--dashboard-accent) !important;
+}
+
+.dashboard-owner [class*="border-[#6FFFE9]"],
+.dashboard-tenant [class*="border-[#6FFFE9]"] {
+  border-color: var(--dashboard-accent-border) !important;
+}
+
+.dashboard-owner .glow-tiffany,
+.dashboard-tenant .glow-tiffany {
+  text-shadow: 0 0 14px var(--dashboard-accent-glow) !important;
+}
+
+.dashboard-owner .liquid-glass-teal,
+.dashboard-tenant .liquid-glass-teal {
+  background: var(--dashboard-accent-soft);
+  border-top-color: var(--dashboard-accent-border);
+  border-left-color: var(--dashboard-accent-border);
+  border-right-color: var(--dashboard-accent-border);
+  border-bottom-color: var(--dashboard-accent-border);
+  box-shadow:
+    0 20px 56px rgba(0, 0, 0, 0.70),
+    0 4px 16px rgba(0, 0, 0, 0.40),
+    inset 0 1.5px 0 var(--dashboard-accent-border),
+    inset 1.5px 0 0 var(--dashboard-accent-soft),
+    0 0 48px var(--dashboard-accent-soft);
+}
+
+.dashboard-owner .liquid-glass-teal::before,
+.dashboard-tenant .liquid-glass-teal::before {
+  background:
+    radial-gradient(ellipse 55% 35% at 22% 18%, var(--dashboard-accent-dim) 0%, var(--dashboard-accent-soft) 45%, transparent 70%),
+    radial-gradient(ellipse 40% 25% at 78% 85%, var(--dashboard-accent-soft) 0%, transparent 65%);
+  opacity: 0.55;
+}
+
+.light .dashboard-owner .liquid-glass-teal,
+.light .dashboard-tenant .liquid-glass-teal {
+  background: color-mix(in srgb, white 70%, var(--dashboard-accent) 8%);
+  box-shadow:
+    0 10px 40px var(--dashboard-accent-soft),
+    0 4px 14px var(--dashboard-accent-soft),
+    inset 0 1.5px 0 rgba(255, 255, 255, 1),
+    0 0 36px var(--dashboard-accent-soft);
 }
 
 /* Kept as a reusable style for future hero variants. */
@@ -344,10 +405,12 @@
   --tiffany: #4DA3FF;
   --tiffany-dim: #9CCBFF;
   --owner-accent: #4DA3FF;
+  --owner-accent-dim: #9CCBFF;
   --owner-accent-soft: rgba(77, 163, 255, 0.12);
   --owner-accent-border: rgba(77, 163, 255, 0.34);
   --owner-accent-glow: rgba(77, 163, 255, 0.26);
   --tenant-accent: #FFD43B;
+  --tenant-accent-dim: #FFE38A;
   --tenant-accent-soft: rgba(255, 212, 59, 0.13);
   --tenant-accent-border: rgba(255, 212, 59, 0.38);
   --tenant-accent-glow: rgba(255, 212, 59, 0.28);
@@ -412,10 +475,12 @@
   --tiffany: #2563EB;                /* electric blue — shared accent */
   --tiffany-dim: #60A5FA;            /* lighter blue */
   --owner-accent: #2563EB;
+  --owner-accent-dim: #60A5FA;
   --owner-accent-soft: rgba(37, 99, 235, 0.12);
   --owner-accent-border: rgba(37, 99, 235, 0.34);
   --owner-accent-glow: rgba(37, 99, 235, 0.24);
   --tenant-accent: #F59E0B;
+  --tenant-accent-dim: #FBBF24;
   --tenant-accent-soft: rgba(245, 158, 11, 0.13);
   --tenant-accent-border: rgba(245, 158, 11, 0.36);
   --tenant-accent-glow: rgba(245, 158, 11, 0.24);
