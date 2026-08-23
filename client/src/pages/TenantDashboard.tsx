@@ -54,7 +54,7 @@ export default function TenantDashboard() {
   const tenantName = user?.firstName || currentUser?.firstName || "Tenant";
 
   return (
-    <main className="dashboard-tenant min-h-screen bg-[#061427] text-white">
+    <main className="dashboard-tenant bg-[#061427] text-white">
       <div className="mx-auto w-full max-w-[640px] px-0 sm:px-5 sm:py-5">
         <section className="relative aspect-[2/3] w-full overflow-hidden sm:rounded-[30px] sm:shadow-[0_28px_80px_rgba(0,0,0,0.55)]" aria-label={`RentFLO tenant payment dashboard for ${tenantName}`}>
           <img src={tenantDashboardArtwork} alt="RentFLO tenant payment dashboard" className="pointer-events-none absolute inset-0 h-full w-full select-none object-contain" draggable={false} />
