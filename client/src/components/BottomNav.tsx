@@ -17,12 +17,13 @@ interface NavItem {
 function NavTab({ href, icon, label, active, badge, tenantStyle = false }: {
   href: string; icon: React.ReactNode; label: string; active: boolean; badge?: number; tenantStyle?: boolean;
 }) {
-  const activeColor = tenantStyle ? "#8B5CF6" : "var(--tiffany)";
-  const inactiveColor = tenantStyle ? "rgba(203,213,225,0.58)" : "rgba(120,120,120,0.65)";
+  const activeColor = tenantStyle ? "#FFFFFF" : "var(--tiffany)";
+  const inactiveColor = tenantStyle ? "rgba(255,255,255,0.62)" : "rgba(120,120,120,0.65)";
   return (
     <Link
       href={href}
-      className={`flex flex-col items-center justify-center gap-1 flex-1 relative ${tenantStyle ? "min-h-[68px] py-1.5" : "py-2"}`}
+      className={`flex flex-col items-center justify-center gap-1 flex-1 relative transition-all duration-200 ${tenantStyle ? "min-h-[68px] py-1.5 rounded-[22px]" : "py-2"}`}
+      style={tenantStyle && active ? { background: "rgba(255,255,255,0.13)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.13), 0 6px 16px rgba(0,0,0,0.10)" } : undefined}
       data-testid={`bottom-nav-${label.toLowerCase()}`}
     >
       <span
@@ -41,7 +42,7 @@ function NavTab({ href, icon, label, active, badge, tenantStyle = false }: {
       </span>
       <span
         className="text-[9px] uppercase tracking-widest font-medium transition-colors duration-200 leading-none"
-        style={{ color: active ? activeColor : tenantStyle ? "rgba(203,213,225,0.48)" : "rgba(120,120,120,0.55)" }}
+        style={{ color: active ? activeColor : tenantStyle ? "rgba(255,255,255,0.56)" : "rgba(120,120,120,0.55)" }}
       >
         {label}
       </span>
@@ -104,17 +105,17 @@ export function BottomNav() {
 
   return (
     <div
-      className={`fixed left-0 right-0 z-50 flex ${isTenant ? "bottom-3 px-5 sm:px-8" : "bottom-0"}`}
+      className={`fixed left-0 right-0 z-50 flex ${isTenant ? "bottom-4 px-5 sm:px-8" : "bottom-0"}`}
       style={{ paddingBottom: isTenant ? "env(safe-area-inset-bottom)" : "env(safe-area-inset-bottom)" }}
     >
       <div
-        className={`w-full flex ${isTenant ? "max-w-[640px] mx-auto rounded-[30px] border px-2 shadow-[0_12px_34px_rgba(1,8,22,0.5)]" : "border-t"}`}
+        className={`w-full flex ${isTenant ? "max-w-[640px] mx-auto rounded-[34px] border p-1.5" : "border-t"}`}
         style={{
-          background: isTenant ? "rgba(9,29,53,0.94)" : "var(--nav-bg)",
-          backdropFilter: "blur(28px) saturate(180%)",
-          WebkitBackdropFilter: "blur(28px) saturate(180%)",
-          borderColor: isTenant ? "rgba(196,181,253,0.28)" : "var(--nav-border)",
-          boxShadow: isTenant ? "0 12px 34px rgba(1,8,22,0.5), inset 0 1px 0 rgba(255,255,255,0.08)" : "0 -1px 0 var(--border-subtle), 0 -8px 32px rgba(0,0,0,0.12)",
+          background: isTenant ? "rgba(8,13,24,0.42)" : "var(--nav-bg)",
+          backdropFilter: isTenant ? "blur(30px) saturate(135%)" : "blur(28px) saturate(180%)",
+          WebkitBackdropFilter: isTenant ? "blur(30px) saturate(135%)" : "blur(28px) saturate(180%)",
+          borderColor: isTenant ? "rgba(255,255,255,0.16)" : "var(--nav-border)",
+          boxShadow: isTenant ? "0 14px 32px rgba(0,0,0,0.20), inset 0 1px 0 rgba(255,255,255,0.14)" : "0 -1px 0 var(--border-subtle), 0 -8px 32px rgba(0,0,0,0.12)",
         }}
       >
         {items.map(item => (
