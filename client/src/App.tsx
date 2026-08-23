@@ -21,7 +21,7 @@ import Setup from "@/pages/Setup";
 import AdminDashboard from "@/pages/AdminDashboard";
 import AdminMaintenance from "@/pages/AdminMaintenance";
 import AdminMessages from "@/pages/AdminMessages";
-import OwnerDashboard from "@/pages/OwnerDashboard";
+import OwnerImageDashboard from "@/pages/OwnerImageDashboard";
 import TenantDashboard from "@/pages/TenantDashboard";
 import Ledger from "@/pages/Ledger";
 import Terms from "@/pages/Terms";
@@ -56,25 +56,34 @@ function SidebarContent({ children }: { children: React.ReactNode }) {
 function PrivateRoute({ component: Component, allowedRoles }: { component: React.ComponentType, allowedRoles?: string[] }) {
   const { isAuthenticated, isLoading, user } = useAuth();
   const [location] = useLocation();
-  const previewQueryEnabled = import.meta.env.DEV && new URLSearchParams(window.location.search).get("preview") === "tenant";
-  const previewTenantMode = import.meta.env.DEV && (previewQueryEnabled || sessionStorage.getItem("rentflo:tenant-preview") === "1");
+  const previewRole = import.meta.env.DEV ? new URLSearchParams(window.location.search).get("preview") : null;
+  const previewTenantMode = import.meta.env.DEV && (previewRole === "tenant" || (!previewRole && sessionStorage.getItem("rentflo:tenant-preview") === "1"));
+  const previewOwnerMode = import.meta.env.DEV && (previewRole === "owner" || (!previewRole && sessionStorage.getItem("rentflo:owner-preview") === "1"));
+  const previewMode = previewTenantMode || previewOwnerMode;
 
   useEffect(() => {
-    if (previewQueryEnabled) sessionStorage.setItem("rentflo:tenant-preview", "1");
-  }, [previewQueryEnabled]);
+    if (previewRole === "tenant") {
+      sessionStorage.setItem("rentflo:tenant-preview", "1");
+      sessionStorage.removeItem("rentflo:owner-preview");
+    }
+    if (previewRole === "owner") {
+      sessionStorage.setItem("rentflo:owner-preview", "1");
+      sessionStorage.removeItem("rentflo:tenant-preview");
+    }
+  }, [previewRole]);
 
-  if (isLoading && !previewTenantMode) return <LoadingScreen />;
+  if (isLoading && !previewMode) return <LoadingScreen />;
 
-  if (!isAuthenticated && !previewTenantMode) {
+  if (!isAuthenticated && !previewMode) {
     window.location.href = "/api/login";
     return null;
   }
 
-  if (!user?.role && !previewTenantMode) {
+  if (!user?.role && !previewMode) {
     return <Redirect to="/onboarding" />;
   }
 
-  if (allowedRoles && !previewTenantMode && !allowedRoles.includes(user!.role)) {
+  if (allowedRoles && !previewMode && !allowedRoles.includes(user!.role)) {
     const roleRedirects: Record<string, string> = {
       'ADMIN': '/admin',
       'OWNER': '/owner',
@@ -83,13 +92,13 @@ function PrivateRoute({ component: Component, allowedRoles }: { component: React
     return <Redirect to={roleRedirects[user.role] || '/'} />;
   }
 
-  const isImageLedTenantDashboard = location === "/tenant";
+  const isImageLedDashboard = location === "/tenant" || location === "/owner";
 
   return (
     <>
-      {!isImageLedTenantDashboard && <Navigation />}
-      {isImageLedTenantDashboard ? <Component /> : <SidebarContent><Component /></SidebarContent>}
-      {!isImageLedTenantDashboard && <BottomNav />}
+      {!isImageLedDashboard && <Navigation />}
+      {isImageLedDashboard ? <Component /> : <SidebarContent><Component /></SidebarContent>}
+      {!isImageLedDashboard && <BottomNav />}
       <AIChatBot />
     </>
   );
@@ -182,7 +191,7 @@ function Router() {
         <PrivateRoute component={AdminDashboard} allowedRoles={['ADMIN']} />
       </Route>
       <Route path="/owner">
-        <PrivateRoute component={OwnerDashboard} allowedRoles={['OWNER', 'ADMIN']} />
+        <PrivateRoute component={OwnerImageDashboard} allowedRoles={['OWNER', 'ADMIN']} />
       </Route>
       <Route path="/tenant">
         <PrivateRoute component={TenantDashboard} allowedRoles={['TENANT', 'ADMIN']} />
@@ -222,7 +231,7 @@ function Router() {
 
 function ConditionalLegalFooter() {
   const [location] = useLocation();
-  const tenantPaths = ["/tenant", "/ledger", "/verify", "/agreement", "/messages", "/maintenance", "/profile", "/notifications"];
+  const tenantPaths = ["/tenant", "/owner", "/ledger", "/verify", "/agreement", "/messages", "/maintenance", "/profile", "/notifications"];
   const pathname = location.split("?")[0];
   return tenantPaths.includes(pathname) ? null : <LegalFooter />;
 }

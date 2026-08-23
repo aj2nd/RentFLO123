@@ -1,4 +1,4 @@
-/** Design: role-aware sidebar navigation, including a development-only tenant fallback for previewing original tenant pages. */
+/** Design: role-aware sidebar navigation, including development-only owner and tenant fallbacks for previewing original pages. */
 import { Link, useLocation } from "wouter";
 import { useEffect } from "react";
 import {
@@ -33,11 +33,10 @@ export function Navigation() {
   }, [collapsed]);
 
   const isActive = (path: string) => location === path;
-  const previewTenantMode = import.meta.env.DEV && (
-    sessionStorage.getItem("rentflo:tenant-preview") === "1" ||
-    new URLSearchParams(window.location.search).get("preview") === "tenant"
-  );
-  const role = user?.role ?? (previewTenantMode ? "TENANT" : undefined);
+  const previewRole = new URLSearchParams(window.location.search).get("preview");
+  const previewTenantMode = import.meta.env.DEV && (previewRole === "tenant" || (!previewRole && sessionStorage.getItem("rentflo:tenant-preview") === "1"));
+  const previewOwnerMode = import.meta.env.DEV && (previewRole === "owner" || (!previewRole && sessionStorage.getItem("rentflo:owner-preview") === "1"));
+  const role = user?.role ?? (previewTenantMode ? "TENANT" : previewOwnerMode ? "OWNER" : undefined);
 
   const { data: badgeCounts } = useQuery<{ notifications: number; messages: number }>({
     queryKey: ["/api/user/badge-counts"],

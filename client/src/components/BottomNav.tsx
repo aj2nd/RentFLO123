@@ -1,4 +1,4 @@
-/** Design: tenant pages use a five-item, violet-accented floating bottom navigation matching the supplied reference. */
+/** Design: tenant and owner utility pages use a five-item, violet-accented smoky-glass navigation matching the supplied references. */
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
@@ -69,13 +69,13 @@ export function BottomNav() {
   const unreadCount = badgeCounts?.messages ?? 0;
   const unreadNotifCount = badgeCounts?.notifications ?? 0;
 
-  const previewTenantMode = import.meta.env.DEV && (
-    sessionStorage.getItem("rentflo:tenant-preview") === "1" ||
-    new URLSearchParams(window.location.search).get("preview") === "tenant"
-  );
-  const role = user?.role ?? (previewTenantMode ? "TENANT" : undefined);
+  const previewRole = new URLSearchParams(window.location.search).get("preview");
+  const previewTenantMode = import.meta.env.DEV && (previewRole === "tenant" || (!previewRole && sessionStorage.getItem("rentflo:tenant-preview") === "1"));
+  const previewOwnerMode = import.meta.env.DEV && (previewRole === "owner" || (!previewRole && sessionStorage.getItem("rentflo:owner-preview") === "1"));
+  const role = user?.role ?? (previewTenantMode ? "TENANT" : previewOwnerMode ? "OWNER" : undefined);
   if (!role) return null;
   const isTenant = role === "TENANT";
+  const isImageLedRole = isTenant || role === "OWNER";
 
   const itemsByRole: Record<string, NavItem[]> = {
     TENANT: [
@@ -105,17 +105,17 @@ export function BottomNav() {
 
   return (
     <div
-      className={`fixed left-0 right-0 z-50 flex ${isTenant ? "bottom-0 px-0" : "bottom-0"}`}
+      className={`fixed left-0 right-0 z-50 flex ${isImageLedRole ? "bottom-0 px-0" : "bottom-0"}`}
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       <div
-        className={`w-full flex ${isTenant ? "max-w-none rounded-t-[34px] border-x border-t px-2 pt-1.5" : "border-t"}`}
+        className={`w-full flex ${isImageLedRole ? "max-w-none rounded-t-[34px] border-x border-t px-2 pt-1.5" : "border-t"}`}
         style={{
-          background: isTenant ? "rgba(8,13,24,0.42)" : "var(--nav-bg)",
-          backdropFilter: isTenant ? "blur(30px) saturate(135%)" : "blur(28px) saturate(180%)",
-          WebkitBackdropFilter: isTenant ? "blur(30px) saturate(135%)" : "blur(28px) saturate(180%)",
-          borderColor: isTenant ? "rgba(255,255,255,0.16)" : "var(--nav-border)",
-          boxShadow: isTenant ? "0 14px 32px rgba(0,0,0,0.20), inset 0 1px 0 rgba(255,255,255,0.14)" : "0 -1px 0 var(--border-subtle), 0 -8px 32px rgba(0,0,0,0.12)",
+          background: isImageLedRole ? "rgba(8,13,24,0.42)" : "var(--nav-bg)",
+          backdropFilter: isImageLedRole ? "blur(30px) saturate(135%)" : "blur(28px) saturate(180%)",
+          WebkitBackdropFilter: isImageLedRole ? "blur(30px) saturate(135%)" : "blur(28px) saturate(180%)",
+          borderColor: isImageLedRole ? "rgba(255,255,255,0.16)" : "var(--nav-border)",
+          boxShadow: isImageLedRole ? "0 14px 32px rgba(0,0,0,0.20), inset 0 1px 0 rgba(255,255,255,0.14)" : "0 -1px 0 var(--border-subtle), 0 -8px 32px rgba(0,0,0,0.12)",
         }}
       >
         {items.map(item => (
@@ -125,7 +125,7 @@ export function BottomNav() {
             icon={item.icon}
             label={item.label}
             active={location === item.href || (item.href !== "/" && location.startsWith(item.href))}
-            tenantStyle={isTenant}
+            tenantStyle={isImageLedRole}
             badge={
               item.href === "/messages" ? unreadCount :
               item.href === "/notifications" ? unreadNotifCount :
