@@ -1,898 +1,217 @@
-import { useProperties } from "@/hooks/use-properties";
-import { useLedgers, usePaymentsByLedger, useTickets } from "@/hooks/use-ledgers";
+/**
+ * Design: Nightfall Waterfront Payment Journey.
+ * A reference-led, mobile-first tenant payment cockpit: cinematic waterfront
+ * atmosphere above a tightly sequenced, violet-accented payment surface.
+ */
+import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Link } from "wouter";
 import {
-  Loader2, Home, ShieldCheck, Wrench, Upload,
-  ToggleLeft, ToggleRight, Search, Building2,
-  CalendarDays, CheckCircle2,
-  AlertCircle, TrendingUp, ChevronRight, MapPin,
-  Banknote, CircleDot, CheckCircle, Circle,
+  Bell, CalendarDays, Check, CheckCircle2, ChevronRight, FilePenLine,
+  Home, Landmark, LockKeyhole, Menu, PencilLine, ShieldCheck, WalletCards,
 } from "lucide-react";
-import { SetupProgress } from "@/components/SetupProgress";
-import { ReceiptModal } from "@/components/ReceiptModal";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useLedgers } from "@/hooks/use-ledgers";
+import { useAuth } from "@/hooks/use-auth";
 import { PayRentButton } from "@/components/PayRentButton";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { useState, useEffect, useRef } from "react";
-import { SuccessAnimation } from "@/components/SuccessAnimation";
-import { useToast } from "@/hooks/use-toast";
-import { queryClient, apiRequest } from "@/lib/queryClient";
-import { useAuth } from "@/hooks/use-auth";
-import { useI18n } from "@/hooks/use-i18n";
-import type { Property, User, Agreement } from "@shared/schema";
-import { Link } from "wouter";
-import { useQuery } from "@tanstack/react-query";
+import type { Agreement, User } from "@shared/schema";
 
-// Rent is collected via UPI (deep link + manual UPI ID). No payment gateway.
 const RENTFLO_VPA = "8891266898-3@ybl";
+const HERO_IMAGE = "/manus-storage/rentflo-waterfront-hero_7a749f94.jpg";
 
-type Tab = "overview" | "payments" | "lease";
+type PaymentMethod = "apple" | "upi" | "phonepe" | "gpay" | "paytm";
+type AmountChoice = "full" | "half" | "custom" | "other";
 
-function StatusBadge({ status }: { status: string }) {
-  const { t } = useI18n();
-  const map: Record<string, { label: string; darkClasses: string; lightStyle: React.CSSProperties }> = {
-    SETTLED: {
-      label: t("status_settled"),
-      darkClasses: "bg-[#6FFFE9]/10 text-[#6FFFE9] border-[#6FFFE9]/25",
-      lightStyle: { background: "var(--color-sage-bg,#D1FAE5)", color: "var(--color-sage,#064E3B)", borderColor: "var(--color-sage-border,rgba(5,150,105,0.28))" },
-    },
-    EXPOSED: {
-      label: t("status_exposed"),
-      darkClasses: "bg-amber-500/10 text-amber-400 border-amber-500/25",
-      lightStyle: { background: "var(--color-gold-bg,#FEF3C7)", color: "var(--color-gold,#92400E)", borderColor: "var(--color-gold-border,rgba(217,119,6,0.30))" },
-    },
-    ARREARS: {
-      label: t("status_arrears"),
-      darkClasses: "bg-red-500/10 text-red-400 border-red-500/25",
-      lightStyle: { background: "var(--color-rose-bg,#FFE4E6)", color: "var(--color-rose,#9F1239)", borderColor: "var(--color-rose-border,rgba(225,29,72,0.28))" },
-    },
-  };
-  const s = map[status] ?? {
-    label: status,
-    darkClasses: "bg-white/[0.06] text-zinc-400 border-white/[0.10]",
-    lightStyle: {},
-  };
+function PaymentMethodTile({
+  id, label, detail, selected, onClick, children,
+}: {
+  id: PaymentMethod; label: string; detail: string; selected: boolean; onClick: () => void; children: React.ReactNode;
+}) {
   return (
-    <span
-      className={`inline-flex items-center px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-widest border rounded-full`}
-      style={s.lightStyle}
+    <button
+      type="button"
+      aria-pressed={selected}
+      onClick={onClick}
+      className={`relative flex h-[82px] min-w-0 flex-1 flex-col items-center justify-center rounded-xl border bg-white px-1 text-slate-900 transition-all duration-150 active:scale-[0.97] ${selected ? "border-violet-500 ring-2 ring-violet-500/55 shadow-[0_6px_16px_rgba(124,58,237,0.26)]" : "border-slate-200 hover:border-violet-200"}`}
+      data-testid={`payment-method-${id}`}
     >
-      {s.label}
-    </span>
+      <span className="mb-1 flex h-7 items-center justify-center text-[17px] font-bold leading-none">{children}</span>
+      <span className="truncate text-[10px] font-semibold leading-none">{label}</span>
+      <span className="mt-1 truncate text-[8px] text-slate-500">{detail}</span>
+      {selected && <span className="absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-violet-600 text-white"><Check size={10} strokeWidth={3} /></span>}
+    </button>
   );
 }
 
+function AmountChoiceTile({
+  id, title, caption, selected, onClick, icon,
+}: {
+  id: AmountChoice; title: string; caption: string; selected: boolean; onClick: () => void; icon?: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      aria-pressed={selected}
+      onClick={onClick}
+      className={`relative flex min-h-[106px] min-w-0 flex-1 flex-col items-center justify-center rounded-xl border px-2 text-center transition-all duration-150 active:scale-[0.98] ${selected ? "border-violet-500 bg-violet-500/[0.11] text-white ring-2 ring-violet-500/45" : "border-white/[0.07] bg-[#172b44]/75 text-slate-100 hover:border-violet-400/35 hover:bg-[#1d3450]"}`}
+      data-testid={`amount-choice-${id}`}
+    >
+      {icon && <span className="mb-1 text-violet-300">{icon}</span>}
+      <span className="text-[16px] font-bold leading-tight tracking-tight sm:text-[18px]">{title}</span>
+      <span className="mt-2 text-[9px] font-medium leading-tight text-slate-300">{caption}</span>
+      {selected && <span className="absolute bottom-2 right-2 flex h-5 w-5 items-center justify-center rounded-full bg-violet-500 text-white"><Check size={12} strokeWidth={3} /></span>}
+    </button>
+  );
+}
 
 export default function TenantDashboard() {
-  const { data: properties, isLoading: propsLoading } = useProperties();
-  const { data: ledgers, isLoading: ledgersLoading } = useLedgers();
-  const { toast } = useToast();
+  const { data: ledgers, isLoading } = useLedgers();
   const { user } = useAuth();
-  const { t } = useI18n();
-
   const { data: currentUser } = useQuery<User>({ queryKey: ["/api/auth/user"] });
-  const { data: agreementData } = useQuery<{ property: Property | null; agreement: Agreement | null }>({
-    queryKey: ["/api/agreements/mine"],
-  });
-  const { data: tickets } = useTickets();
+  const { data: agreementData } = useQuery<{ agreement: Agreement | null }>({ queryKey: ["/api/agreements/mine"] });
+  const [amountChoice, setAmountChoice] = useState<AmountChoice>("full");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("phonepe");
+  const [otherAmount, setOtherAmount] = useState("");
 
-  const isVerified = currentUser?.isVerified;
-  const hasPendingKyc = currentUser?.panNumber && !isVerified;
-
-  const [activeTab, setActiveTab] = useState<Tab>("overview");
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [paymentAmount, setPaymentAmount] = useState<string>("");
-  const [flexiblePaymentEnabled, setFlexiblePaymentEnabled] = useState(false);
-  const [showMaintenanceForm, setShowMaintenanceForm] = useState(false);
-  const [ticketTitle, setTicketTitle] = useState("");
-  const [ticketDescription, setTicketDescription] = useState("");
-  const [ticketPhoto, setTicketPhoto] = useState<string>("");
-
-  const [landlordEmail, setLandlordEmail] = useState("");
-  const [availableProperties, setAvailableProperties] = useState<Property[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [isJoining, setIsJoining] = useState(false);
-
-  const [receiptData, setReceiptData] = useState<{
-    amount: number; paymentId: string; orderId: string;
-    date: Date; property: string; tenantName: string; monthYear?: string;
-  } | null>(null);
-
-  const unpaidLedger = ledgers?.find(l => l.amountCollected < l.property.monthlyRent);
+  const unpaidLedger = ledgers?.find((ledger) => ledger.amountCollected < ledger.property.monthlyRent);
   const property = unpaidLedger?.property ?? ledgers?.[0]?.property ?? null;
-
-  const { data: paymentsData } = usePaymentsByLedger(unpaidLedger?.id ?? "");
-
-  const openTickets = tickets?.filter(t => t.status === "OPEN" || t.status === "IN_PROGRESS").length ?? 0;
-
-  const allLedgers = [...(ledgers ?? [])].sort((a, b) =>
-    b.monthYear.localeCompare(a.monthYear)
-  );
-
-  const thisYear = new Date().getFullYear().toString();
-  const totalPaidYTD = (ledgers ?? [])
-    .filter(l => l.monthYear.startsWith(thisYear))
-    .reduce((sum, l) => sum + l.amountCollected, 0);
-
-  const settledMonths = (ledgers ?? []).filter(l => l.status === "SETTLED").length;
-
-  const payoutDay = property?.payoutDay ?? 1;
-  const now = new Date();
-  let nextDue = new Date(now.getFullYear(), now.getMonth(), payoutDay);
-  if (nextDue <= now) nextDue = new Date(now.getFullYear(), now.getMonth() + 1, payoutDay);
-  const daysUntilDue = Math.ceil((nextDue.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-
   const totalDue = property?.monthlyRent ?? 0;
-  const amountPaid = unpaidLedger?.amountCollected ?? 0;
-  const remaining = totalDue - amountPaid;
-  const progressPercent = totalDue > 0 ? Math.min(100, Math.round((amountPaid / totalDue) * 100)) : 0;
+  const paid = unpaidLedger?.amountCollected ?? 0;
+  const remaining = Math.max(totalDue - paid, 0);
+  const payoutDay = property?.payoutDay ?? 17;
+  const hasFirstPayment = (ledgers ?? []).some((ledger) => ledger.amountCollected > 0);
+  const agreementSigned = agreementData?.agreement?.status === "FULLY_SIGNED" || agreementData?.agreement?.status === "TENANT_SIGNED";
+  const isVerified = Boolean(currentUser?.isVerified);
 
-  const agreementStatus = agreementData?.agreement?.status ?? null;
+  const dueDate = useMemo(() => {
+    const today = new Date();
+    const date = new Date(today.getFullYear(), today.getMonth(), payoutDay);
+    if (date < today) date.setMonth(date.getMonth() + 1);
+    return date.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+  }, [payoutDay]);
 
-  // === Didit E-KYC return-trip handler ===
-  // Didit redirects back with ?kyc=didit. Poll /api/kyc/didit/status until
-  // verified or timeout (~36 s).
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const isDidit = params.get("kyc") === "didit" || sessionStorage.getItem("didit:in_progress") === "1";
-    if (!isDidit) return;
+  const selectedAmount = useMemo(() => {
+    if (amountChoice === "half") return Math.min(Math.round(remaining / 2), remaining);
+    if (amountChoice === "custom") return Math.min(10000, remaining);
+    if (amountChoice === "other") return Math.min(Math.max(Number(otherAmount) || 0, 0), remaining);
+    return remaining;
+  }, [amountChoice, otherAmount, remaining]);
 
-    let cancelled = false;
-    let attempts = 0;
-    const finalize = async () => {
-      while (!cancelled && attempts < 12) {
-        attempts += 1;
-        try {
-          const r = await apiRequest("GET", "/api/kyc/didit/status");
-          const data = await r.json().catch(() => ({}));
-          if (data?.verified) {
-            sessionStorage.removeItem("didit:in_progress");
-            toast({ title: "Verified!", description: "Your identity has been verified via Didit." });
-            queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-            window.history.replaceState({}, "", "/tenant");
-            return;
-          }
-        } catch {
-          // retry
-        }
-        await new Promise((r) => setTimeout(r, 3000));
-      }
-      if (!cancelled) {
-        sessionStorage.removeItem("didit:in_progress");
-        toast({
-          title: "Verification not completed",
-          description: "Please try again or finish the flow on Didit.",
-          variant: "destructive",
-        });
-        window.history.replaceState({}, "", "/tenant");
-      }
-    };
-    void finalize();
-    return () => { cancelled = true; };
-  }, [toast]);
-
-  useEffect(() => {
-    if (!property) return;
-    // Only fire once per calendar day per property to avoid spamming the server
-    const key = `rent-due-check-${property.id}-${new Date().toDateString()}`;
-    if (sessionStorage.getItem(key)) return;
-    sessionStorage.setItem(key, "1");
-    apiRequest("POST", "/api/notifications/rent-due-check", {}).catch(() => {});
-  }, [property?.id]);
-
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (ev) => setTicketPhoto(ev.target?.result as string);
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleSearchProperties = async () => {
-    if (!landlordEmail.trim()) {
-      toast({ title: "Enter Email", description: "Please enter your landlord's email address.", variant: "destructive" });
-      return;
-    }
-    setIsSearching(true);
-    try {
-      const res = await fetch(`/api/properties/by-owner-email?email=${encodeURIComponent(landlordEmail)}`, { credentials: "include" });
-      if (res.ok) {
-        const props = await res.json();
-        const available = props.filter((p: Property) => !p.tenantId);
-        setAvailableProperties(available);
-        if (!available.length) toast({ title: "No Properties Found", description: "No available properties found for this landlord." });
-      } else {
-        toast({ title: "Error", description: "Failed to search properties.", variant: "destructive" });
-      }
-    } catch {
-      toast({ title: "Error", description: "Failed to search properties.", variant: "destructive" });
-    }
-    setIsSearching(false);
-  };
-
-  const handleJoinProperty = async (propertyId: string) => {
-    setIsJoining(true);
-    try {
-      const res = await apiRequest("POST", `/api/properties/${propertyId}/join`);
-      if (res.ok) {
-        toast({ title: "Success!", description: "You've been linked to this property." });
-        queryClient.invalidateQueries({ queryKey: ["/api/properties/mine"] });
-        queryClient.invalidateQueries({ queryKey: ["/api/ledgers"] });
-        setAvailableProperties([]); setLandlordEmail("");
-      } else {
-        const err = await res.json();
-        toast({ title: "Error", description: err.message ?? "Failed to join property.", variant: "destructive" });
-      }
-    } catch {
-      toast({ title: "Error", description: "Failed to join property.", variant: "destructive" });
-    }
-    setIsJoining(false);
-  };
-
-  const handleSubmitTicket = () => {
-    if (!property || !ticketTitle || !ticketDescription) {
-      toast({ title: "Missing Info", description: "Please fill in all fields.", variant: "destructive" });
-      return;
-    }
-    apiRequest("POST", "/api/tickets", {
-      propertyId: property.id, tenantId: user?.id ?? "",
-      title: ticketTitle, description: ticketDescription,
-      ...(ticketPhoto ? { photoUrl: ticketPhoto } : {}),
-    }).then(async (res) => {
-      if (res.ok) {
-        toast({ title: "Request Submitted", description: "Your maintenance request has been sent." });
-        setShowMaintenanceForm(false); setTicketTitle(""); setTicketDescription(""); setTicketPhoto("");
-        queryClient.invalidateQueries({ queryKey: ["/api/tickets"] });
-      } else {
-        const err = await res.json();
-        toast({ title: "Failed", description: err.message, variant: "destructive" });
-      }
-    });
-  };
-
-  if (propsLoading || ledgersLoading) {
-    return (
-      <div className="dashboard-tenant min-h-screen bg-background p-4 sm:p-6 md:p-10 pb-24 max-w-4xl mx-auto" data-testid="loader-tenant">
-        <div className="grid grid-cols-3 gap-3 mb-8">
-          {[1,2,3].map(i => <div key={i} className="h-20 bg-white/[0.04] animate-pulse rounded-2xl" />)}
-        </div>
-        <div className="flex gap-2 mb-6 p-1 bg-white/[0.04] rounded-full">
-          {[1,2,3].map(i => <div key={i} className="h-8 flex-1 bg-white/[0.06] animate-pulse rounded-full" />)}
-        </div>
-        <div className="space-y-4">
-          <div className="h-40 bg-white/[0.04] animate-pulse rounded-3xl" />
-          <div className="h-24 bg-white/[0.04] animate-pulse rounded-3xl" />
-          <div className="h-24 bg-white/[0.04] animate-pulse rounded-3xl" />
-        </div>
-      </div>
-    );
-  }
-
-  const hasProperty = !!property;
-
-  const tabs: { id: Tab; label: string }[] = [
-    { id: "overview", label: t("tab_overview") },
-    { id: "payments", label: t("tab_payments") },
-    { id: "lease", label: t("tab_lease") },
-  ];
-
-  const hasFirstPayment = (ledgers ?? []).some(l => l.amountCollected > 0);
-  const onboardingSteps = [
-    { label: t("step_join_property"), done: !!property },
-    { label: t("step_complete_kyc"), done: !!isVerified },
-    { label: t("step_sign_agreement"), done: agreementStatus === "FULLY_SIGNED" || agreementStatus === "TENANT_SIGNED" },
-    { label: t("step_first_payment"), done: hasFirstPayment },
-  ];
-  const allOnboardingDone = onboardingSteps.every(s => s.done);
+  const formatted = (value: number) => `₹${value.toLocaleString("en-IN")}`;
+  const displayName = user?.firstName || currentUser?.firstName || "Tenant";
 
   return (
-    <div className="dashboard-tenant min-h-screen bg-background text-foreground flex flex-col">
-      <SuccessAnimation show={showSuccess} message={t("payment_successful")} />
-      {receiptData && (
-        <ReceiptModal data={receiptData} onClose={() => setReceiptData(null)} />
-      )}
+    <main className="dashboard-tenant min-h-screen bg-[#071527] font-sans text-white">
+      <div className="relative mx-auto min-h-screen max-w-[480px] overflow-hidden bg-[#071527] shadow-[0_0_80px_rgba(0,0,0,0.5)]">
+        <div className="absolute inset-x-0 top-0 h-[810px] bg-cover bg-center" style={{ backgroundImage: `linear-gradient(180deg, rgba(5,18,38,0.78) 0%, rgba(5,18,38,0.24) 36%, rgba(5,18,38,0.08) 59%, #0b1a30 100%), url(${HERO_IMAGE})` }} aria-hidden />
+        <div className="absolute inset-x-0 top-0 h-[400px] bg-gradient-to-b from-[#06152a]/72 via-transparent to-transparent" aria-hidden />
 
-      {/* ── Ambient colour blobs — give liquid glass something to refract ── */}
-      <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10" aria-hidden>
-        <div className="absolute top-[10%] left-[15%] w-[420px] h-[420px] rounded-full bg-[#6FFFE9]/[0.07] blur-[140px]" />
-        <div className="absolute top-[50%] right-[10%] w-[320px] h-[320px] rounded-full bg-[#6FFFE9]/[0.045] blur-[120px]" />
-        <div className="absolute bottom-[15%] left-[40%] w-[260px] h-[260px] rounded-full bg-white/[0.025] blur-[100px]" />
-        <div className="absolute top-[30%] left-[55%] w-[280px] h-[280px] rounded-full bg-[#C0C0C0]/[0.025] blur-[110px]" />
-        <div className="absolute bottom-[35%] left-[5%] w-[200px] h-[200px] rounded-full bg-[#C0C0C0]/[0.018] blur-[90px]" />
-      </div>
+        <div className="relative z-10 px-4 pb-8 pt-5 sm:px-6">
+          <header className="flex items-center justify-between">
+            <button type="button" aria-label="Open navigation" className="flex h-12 w-12 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.075] text-white/90 backdrop-blur-md transition-colors hover:bg-white/[0.14]">
+              <Menu size={27} strokeWidth={2.2} />
+            </button>
+            <div className="flex items-center gap-2.5" aria-label="RentFLO">
+              <img src="/manus-storage/rentflo-orbit-home-mark_c4a2e574.png" alt="" className="h-8 w-8 object-contain" />
+              <span className="text-[25px] font-semibold tracking-[0.23em] text-slate-100">RENTFLO</span>
+            </div>
+            <button type="button" aria-label="Notifications" className="relative flex h-12 w-12 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.075] text-white/90 backdrop-blur-md transition-colors hover:bg-white/[0.14]">
+              <Bell size={26} strokeWidth={1.8} />
+              <span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full border-2 border-[#20354f] bg-amber-400" />
+            </button>
+          </header>
 
-      <div className="p-4 sm:p-6 md:p-10 pb-24 flex flex-col flex-1 max-w-4xl w-full mx-auto">
+          <section className="mt-10" aria-label="Tenant onboarding status">
+            <div className="flex items-start">
+              <Link href="/verify" className="group flex w-[30%] flex-col items-center text-center">
+                <span className={`flex h-10 w-10 items-center justify-center rounded-full border text-lg font-bold shadow-[0_0_15px_rgba(251,191,36,0.35)] ${isVerified ? "border-amber-200/55 bg-amber-400 text-[#30210b]" : "border-violet-300/45 bg-violet-600 text-white"}`}>{isVerified ? <Check size={20} /> : "1"}</span>
+                <ShieldCheck className="mt-2 h-4 w-4 text-amber-200/65" />
+                <span className="mt-1 text-[11px] font-semibold text-slate-100">KYC</span>
+                <span className="mt-1 text-[9px] text-slate-300/72">Verify your identity</span>
+              </Link>
+              <div className="mt-5 h-[2px] flex-1 bg-gradient-to-r from-slate-300/90 to-violet-300/80" />
+              <Link href="/agreement" className="group flex w-[34%] flex-col items-center text-center">
+                <span className={`flex h-10 w-10 items-center justify-center rounded-full border text-lg font-bold shadow-[0_0_16px_rgba(124,58,237,0.32)] ${agreementSigned ? "border-violet-200/60 bg-violet-500 text-white" : "border-violet-300/50 bg-violet-600 text-white"}`}>{agreementSigned ? <Check size={20} /> : "2"}</span>
+                <FilePenLine className="mt-2 h-4 w-4 text-violet-200/70" />
+                <span className="mt-1 text-[11px] font-semibold text-slate-100">Sign Agreement</span>
+                <span className="mt-1 text-[9px] text-slate-300/72">Review &amp; e-sign</span>
+              </Link>
+              <div className="mt-5 h-[2px] flex-1 bg-gradient-to-r from-violet-300/80 to-slate-400/45" />
+              <button type="button" onClick={() => document.getElementById("pay-rent-panel")?.scrollIntoView({ behavior: "smooth", block: "start" })} className="group flex w-[30%] flex-col items-center text-center">
+                <span className={`flex h-10 w-10 items-center justify-center rounded-full border text-lg font-bold shadow-[0_0_16px_rgba(124,58,237,0.32)] ${hasFirstPayment ? "border-violet-200/60 bg-violet-500 text-white" : "border-violet-300/50 bg-violet-600 text-white"}`}>{hasFirstPayment ? <Check size={20} /> : "3"}</span>
+                <WalletCards className="mt-2 h-4 w-4 text-violet-200/70" />
+                <span className="mt-1 text-[11px] font-semibold text-slate-100">Pay Rent</span>
+                <span className="mt-1 text-[9px] text-slate-300/72">Make secure payment</span>
+              </button>
+            </div>
+          </section>
 
-        {/* ── 3-Step Progress Tracker ── */}
-        <SetupProgress steps={[
-          { label: t("step_verify_identity"), done: !!isVerified,                                                                          href: "/verify"    },
-          { label: t("step_sign_agreement_short"),  done: agreementStatus === "FULLY_SIGNED" || agreementStatus === "TENANT_SIGNED",             href: "/agreement" },
-          { label: t("step_pay_rent"),        done: hasFirstPayment                                                                                           },
-        ]} />
+          <section className="mt-24 min-h-[298px] pl-2 sm:mt-28" aria-labelledby="tenant-welcome">
+            <p className="mb-2 text-[11px] font-medium uppercase tracking-[0.18em] text-white/65">Good to see you, {displayName}</p>
+            <h1 id="tenant-welcome" className="max-w-[280px] font-serif text-[55px] leading-[0.88] tracking-[-0.055em] text-[#132638] drop-shadow-[0_2px_12px_rgba(255,255,255,0.17)] sm:text-[63px]">
+              Rent <em className="block font-serif font-normal text-[#6152bf]">without</em> the worry.
+            </h1>
+            <div className="mt-6 flex items-center gap-2" aria-hidden>
+              <span className="h-[2px] w-16 bg-[#6954c7]/85" /><span className="h-2 w-2 rotate-45 bg-[#6954c7]" />
+            </div>
+          </section>
 
-        {/* ── Page Header ── */}
-        <header className="mb-4 pt-3 pb-2">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#6FFFE9]/25 bg-[#6FFFE9]/[0.06] backdrop-blur-sm mb-3">
-            <span className="w-1.5 h-1.5 bg-[#6FFFE9] animate-pulse rounded-full" />
-            <span className="text-[10px] font-medium uppercase tracking-wider text-[#9DEFE4]">
-              {t("tenant_secure_pay")}
-            </span>
-          </div>
-
-          <h1 className="text-[2rem] font-bold tracking-tighter silver-text glow-text leading-tight mb-1">
-            {t("tenant_title")}
-          </h1>
-
-          {property && (
-            <p className="text-[#9DEFE4]/70 text-sm flex items-center gap-1.5">
-              <MapPin size={12} className="text-[#6FFFE9]/60" />
-              {property.address}
-            </p>
-          )}
-        </header>
-
-        {/* Stats bar, tabs, and tab content always render — even when no
-            property is joined yet. The Overview tab shows the "Join My Home"
-            card in that empty state. */}
-        <>
-            {/* ── Stats Bar ── */}
-            <div className="grid grid-cols-3 gap-3 mb-6">
-              <div className="liquid-glass rounded-2xl p-3 sm:p-4 flex flex-col items-center text-center" data-testid="stat-rent-due">
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-medium mb-2 border border-[#C0C0C0]/20 bg-[#C0C0C0]/[0.06] text-[#C0C0C0]">{t("tenant_monthly_rent")}</span>
-                <span className="text-sm sm:text-base font-bold font-mono text-[#C0C0C0]">₹{totalDue.toLocaleString()}</span>
-              </div>
-              <div className="liquid-glass rounded-2xl p-3 sm:p-4 flex flex-col items-center text-center" data-testid="stat-days-due">
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium mb-2 border backdrop-blur-sm ${
-                  daysUntilDue <= 5
-                    ? "bg-amber-500/10 text-amber-300 border-amber-400/25"
-                    : "border-[#C0C0C0]/20 bg-[#C0C0C0]/[0.06] text-[#C0C0C0]"
-                }`}>{t("stat_due_in")}</span>
-                <span className={`text-sm sm:text-base font-bold font-mono ${daysUntilDue <= 5 ? "text-amber-200" : "text-[#E8E8E8]"}`}>
-                  {daysUntilDue}d
-                </span>
-              </div>
-              <div className="liquid-glass rounded-2xl p-3 sm:p-4 flex flex-col items-center text-center" data-testid="stat-paid-ytd">
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-medium mb-2 border border-[#6FFFE9]/25 bg-[#6FFFE9]/[0.07] text-[#9DEFE4]">{t("stat_paid_ytd")}</span>
-                <span className="text-sm sm:text-base font-bold font-mono text-[#6FFFE9] glow-tiffany">₹{totalPaidYTD.toLocaleString()}</span>
+          <section id="pay-rent-panel" className="rounded-[27px] border border-white/[0.10] bg-[#11233a]/[0.94] px-4 py-5 shadow-[0_24px_60px_rgba(1,10,25,0.48)] backdrop-blur-xl sm:px-5" aria-labelledby="pay-rent-heading">
+            <div className="flex items-start gap-3">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-400 to-violet-700 text-white shadow-[0_8px_20px_rgba(112,64,222,0.35)]"><WalletCards size={26} /></div>
+              <div>
+                <h2 id="pay-rent-heading" className="text-[24px] font-semibold tracking-tight">Pay rent</h2>
+                <p className="mt-0.5 text-[11px] text-slate-300">Choose amount and pay from your preferred app.</p>
               </div>
             </div>
 
-            {/* ── Tabs ── */}
-            <div className="flex p-1 liquid-glass rounded-full mb-6">
-              {tabs.map(tab => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  data-testid={`tab-${tab.id}`}
-                  className={`flex-1 py-2 px-4 rounded-full text-sm font-semibold transition-all duration-200
-                    ${activeTab === tab.id
-                      ? "bg-[#6FFFE9]/[0.13] text-[#6FFFE9] shadow-sm border border-[#6FFFE9]/[0.28]"
-                      : "text-[#C0C0C0]/60 hover:text-[#C0C0C0] hover:bg-white/[0.05]"
-                    }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
+            <div className="mt-4 grid grid-cols-[1.1fr_.9fr] overflow-hidden rounded-xl border border-white/[0.06] bg-[#102138]/90">
+              <div className="px-4 py-4">
+                <p className="text-[10px] text-slate-300">Total monthly rent <span className="inline-flex h-3.5 w-3.5 items-center justify-center rounded-full border border-slate-400/60 text-[8px]">i</span></p>
+                <p className="mt-1 font-mono text-[32px] font-medium tracking-[-0.07em] text-white">{isLoading ? "—" : formatted(totalDue)}</p>
+                {paid > 0 && <p className="mt-1 text-[10px] text-violet-200">{formatted(paid)} already paid</p>}
+              </div>
+              <div className="border-l border-white/[0.07] px-4 py-4">
+                <div className="flex items-center gap-2 text-slate-100"><CalendarDays size={23} strokeWidth={1.6} /><span className="text-[10px] font-medium text-slate-300">Due date</span></div>
+                <p className="mt-2 text-[18px] font-semibold tracking-tight text-violet-300">{dueDate}</p>
+              </div>
             </div>
 
-            {/* ══ OVERVIEW TAB ══ */}
-            {activeTab === "overview" && (
-              <div className="space-y-6">
-
-                {/* Join Home — shown only when tenant has no property. */}
-                {!hasProperty && (
-                  <div className="liquid-glass-teal rounded-3xl p-5 sm:p-8" data-testid="card-join-home">
-                    <div className="flex items-start gap-3 mb-5">
-                      <Building2 size={22} className="text-[#6FFFE9] mt-0.5" />
-                      <div>
-                        <h2 className="text-2xl sm:text-3xl font-bold tracking-tighter">{t("tenant_join_home")}</h2>
-                        <p className="text-zinc-500 text-sm mt-1">{t("tenant_join_home_subtitle")}</p>
-                      </div>
-                    </div>
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="landlordEmail" className="text-zinc-400 uppercase text-[10px] tracking-wider">
-                          {t("tenant_landlord_email")}
-                        </Label>
-                        <div className="flex flex-col sm:flex-row gap-3">
-                          <Input
-                            id="landlordEmail" type="email"
-                            value={landlordEmail} onChange={e => setLandlordEmail(e.target.value)}
-                            onKeyDown={e => e.key === "Enter" && handleSearchProperties()}
-                            placeholder="landlord@example.com"
-                            className="flex-1 bg-white/[0.05] border-white/[0.12] text-white placeholder:text-zinc-600 focus:border-[#6FFFE9]/40"
-                            data-testid="input-landlord-email"
-                          />
-                          <Button onClick={handleSearchProperties} disabled={isSearching}
-                            className="bg-[#6FFFE9] text-black hover:bg-[#6FFFE9]/85 rounded-full font-semibold"
-                            data-testid="button-search-landlord">
-                            {isSearching ? <Loader2 className="animate-spin" size={16} /> : <Search size={16} />}
-                            <span className="ml-2">{t("tenant_search")}</span>
-                          </Button>
-                        </div>
-                      </div>
-                      {availableProperties.length > 0 && (
-                        <div className="space-y-3 pt-2">
-                          <p className="text-[10px] uppercase tracking-wider text-zinc-400">{t("tenant_available_properties")}</p>
-                          {availableProperties.map(prop => (
-                            <div key={prop.id} className="liquid-glass rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4" data-testid={`available-property-${prop.id}`}>
-                              <div>
-                                <p className="font-medium text-white text-sm">{prop.address}</p>
-                                <p className="text-zinc-500 text-xs font-mono">₹{prop.monthlyRent.toLocaleString()} {t("per_month")}</p>
-                              </div>
-                              <Button onClick={() => handleJoinProperty(prop.id)} disabled={isJoining}
-                                className="bg-[#6FFFE9] text-black hover:bg-[#6FFFE9]/85 text-xs h-8 px-4 rounded-full font-semibold"
-                                data-testid={`button-join-${prop.id}`}>
-                                {isJoining ? <Loader2 size={14} className="animate-spin" /> : null}
-                                {t("join_property_btn")}
-                              </Button>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Onboarding Checklist */}
-                {!allOnboardingDone && (
-                  <div className="liquid-glass rounded-3xl p-5">
-                    <div className="flex justify-between items-end mb-4">
-                      <div>
-                        <h3 className="font-semibold text-lg silver-text">{t("getting_started")}</h3>
-                        <p className="text-xs text-[#C0C0C0]/50 mt-1">{onboardingSteps.filter(s => s.done).length} / {onboardingSteps.length} {t("of_completed")}</p>
-                      </div>
-                      <div className="text-2xl font-bold text-[#6FFFE9]">
-                        {Math.round((onboardingSteps.filter(s => s.done).length / onboardingSteps.length) * 100)}%
-                      </div>
-                    </div>
-                    <div className="w-full h-2.5 bg-white/[0.07] rounded-full mb-5 overflow-hidden">
-                      <div
-                        className="h-full bg-[#6FFFE9] rounded-full transition-all duration-700"
-                        style={{ width: `${(onboardingSteps.filter(s => s.done).length / onboardingSteps.length) * 100}%` }}
-                      />
-                    </div>
-                    <div className="space-y-2.5">
-                      {onboardingSteps.map((step, i) => (
-                        <div key={i} className={`flex items-center gap-3 p-3 rounded-2xl border ${
-                          step.done
-                            ? "bg-white/[0.03] border-white/[0.06] opacity-55"
-                            : "bg-[#6FFFE9]/[0.04] border-[#6FFFE9]/20"
-                        }`}>
-                          {step.done
-                            ? <CheckCircle size={16} className="text-[#6FFFE9] shrink-0" />
-                            : <Circle size={16} className="text-zinc-600 shrink-0" />}
-                          <span className={`text-sm ${step.done ? "line-through text-zinc-500" : "text-zinc-200"}`}>
-                            {step.label}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Current Month Settlement */}
-                <div className="liquid-glass-teal rounded-3xl p-5 sm:p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <div className="inline-block px-2.5 py-1 rounded-full bg-black/40 text-[10px] font-bold text-[#C0C0C0] uppercase tracking-wider mb-2 border border-[#C0C0C0]/[0.18]">{t("current_month")}</div>
-                      <h2 className="text-4xl sm:text-5xl font-bold tracking-tighter font-mono leading-none silver-text glow-text">
-                        ₹{totalDue.toLocaleString()}
-                      </h2>
-                    </div>
-                    {unpaidLedger && <StatusBadge status={unpaidLedger.status} />}
-                  </div>
-
-                  <div className="space-y-1.5 mb-5">
-                    <div className="flex justify-between text-xs font-medium">
-                      <span className="text-[#C0C0C0]/70">{t("settlement_progress_label")}</span>
-                      <span className="text-[#6FFFE9]/80" data-testid="text-progress-percent">{progressPercent}% {t("settled_suffix")}</span>
-                    </div>
-                    <div className="w-full h-2 bg-white/[0.08] rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-[#6FFFE9] rounded-full transition-all duration-700"
-                        style={{ width: `${progressPercent}%` }}
-                        data-testid="progress-bar-settlement"
-                      />
-                    </div>
-                    <div className="flex justify-between text-xs text-[#C0C0C0]/50">
-                      <span>{t("paid_label")} <span className="text-[#6FFFE9] font-mono" data-testid="text-amount-paid">₹{amountPaid.toLocaleString()}</span></span>
-                      <span>{t("remaining_label")} <span className="text-[#C0C0C0] font-mono" data-testid="text-amount-remaining">₹{remaining.toLocaleString()}</span></span>
-                    </div>
-                  </div>
-
-                  {remaining > 0 && (
-                    <Button
-                      onClick={() => setActiveTab("payments")}
-                      className="w-full bg-[#6FFFE9] text-black hover:bg-[#6FFFE9]/85 font-bold text-sm h-12 rounded-full shadow-[0_4px_24px_rgba(111,255,233,0.30)]"
-                      data-testid="button-pay-now-overview"
-                    >
-                      {t("pay_now")} — ₹{remaining.toLocaleString()}
-                      <ChevronRight size={16} className="ml-1" strokeWidth={3} />
-                    </Button>
-                  )}
-                  {remaining === 0 && (
-                    <div className="flex items-center gap-2 text-[#6FFFE9] text-sm font-medium mt-2">
-                      <CheckCircle2 size={16} />
-                      {t("this_month_settled")}
-                    </div>
-                  )}
-                </div>
-
-                {/* Open Tickets Banner */}
-                {openTickets > 0 && (
-                  <Link href="/maintenance" className="block">
-                    <div className="liquid-glass rounded-2xl flex items-center justify-between p-4 border-amber-400/20 hover:border-amber-400/35 transition-colors cursor-pointer" data-testid="banner-open-tickets"
-                      style={{ borderTopColor: "rgba(251,191,36,0.30)", borderLeftColor: "rgba(251,191,36,0.16)" }}>
-                      <div className="flex items-center gap-3">
-                        <AlertCircle size={18} className="text-amber-400" />
-                        <div>
-                          <p className="text-sm font-medium text-white">{openTickets} {openTickets === 1 ? t("open_request_singular") : t("open_request_plural")}</p>
-                          <p className="text-xs text-zinc-500">{t("tap_view_status")}</p>
-                        </div>
-                      </div>
-                      <ChevronRight size={16} className="text-zinc-500" />
-                    </div>
-                  </Link>
-                )}
-
-                {/* Recent Payments */}
-                {paymentsData && paymentsData.filter(p => p.status === "SUCCESS").length > 0 && (
-                  <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <p className="text-[10px] uppercase tracking-widest text-[#C0C0C0]/50">{t("recent_payments")}</p>
-                      <button onClick={() => setActiveTab("payments")} className="text-[10px] text-[#6FFFE9]/70 uppercase tracking-wider hover:text-[#6FFFE9] transition-colors">
-                        {t("view_all")}
-                      </button>
-                    </div>
-                    <div className="space-y-2">
-                      {paymentsData.filter(p => p.status === "SUCCESS").slice(0, 3).map((pmt) => (
-                        <div key={pmt.id} className="liquid-glass rounded-xl flex items-center justify-between p-3" data-testid={`recent-payment-${pmt.id}`}>
-                          <div className="flex items-center gap-3">
-                            <div className="w-1.5 h-1.5 rounded-full bg-[#6FFFE9]" />
-                            <span className="text-xs text-zinc-400 font-mono">
-                              {new Date(pmt.createdAt!).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
-                            </span>
-                          </div>
-                          <span className="font-mono text-sm text-white">₹{pmt.amount.toLocaleString()}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+            <div className="mt-4">
+              <p className="mb-2.5 text-[11px] font-medium text-slate-200">Select amount to pay</p>
+              <div className="flex gap-2">
+                <AmountChoiceTile id="full" title={formatted(remaining)} caption="Full Amount" selected={amountChoice === "full"} onClick={() => setAmountChoice("full")} />
+                <AmountChoiceTile id="half" title={formatted(Math.min(Math.round(remaining / 2), remaining))} caption="Half Amount" selected={amountChoice === "half"} onClick={() => setAmountChoice("half")} />
+                <AmountChoiceTile id="custom" title={formatted(Math.min(10000, remaining))} caption="Custom Amount" selected={amountChoice === "custom"} onClick={() => setAmountChoice("custom")} />
+                <AmountChoiceTile id="other" title="Other Amount" caption="Enter manually" icon={<PencilLine size={18} />} selected={amountChoice === "other"} onClick={() => setAmountChoice("other")} />
               </div>
-            )}
+              {amountChoice === "other" && <div className="mt-3"><label htmlFor="other-amount" className="sr-only">Other payment amount</label><Input id="other-amount" inputMode="numeric" min="1" max={remaining} type="number" value={otherAmount} onChange={(event) => setOtherAmount(event.target.value)} placeholder={`Enter an amount up to ${formatted(remaining)}`} className="h-11 border-violet-400/30 bg-[#0c1a2e] font-mono text-white placeholder:text-slate-500 focus-visible:ring-violet-400" /></div>}
+            </div>
 
-            {/* ══ PAYMENTS TAB ══ */}
-            {activeTab === "payments" && (
-              <div className="space-y-6">
-
-                {/* Pay Now Panel */}
-                {remaining > 0 && (
-                  <div className="liquid-glass rounded-3xl p-5 sm:p-6 space-y-5">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="text-lg font-bold">{t("tenant_payment_heading")}</h3>
-                        <p className="text-zinc-500 text-xs mt-0.5">{t("tenant_choose_method")}</p>
-                      </div>
-                      <button
-                        onClick={() => setFlexiblePaymentEnabled(!flexiblePaymentEnabled)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full liquid-glass-chip hover:bg-white/[0.10] transition-colors text-xs"
-                        data-testid="toggle-flexible-payment"
-                      >
-                        {flexiblePaymentEnabled
-                          ? <ToggleRight className="text-[#6FFFE9]" size={18} />
-                          : <ToggleLeft className="text-zinc-400" size={18} />}
-                        <span className="uppercase tracking-wider text-zinc-300">{flexiblePaymentEnabled ? t("tenant_flexible") : t("tenant_full_only")}</span>
-                      </button>
-                    </div>
-
-                    {flexiblePaymentEnabled ? (
-                      <div className="space-y-3">
-                        <label className="text-[10px] uppercase tracking-wider text-zinc-400 block">{t("tenant_amount_to_pay")}</label>
-                        <Input
-                          type="number"
-                          value={paymentAmount}
-                          onChange={(e) => setPaymentAmount(e.target.value)}
-                          placeholder={`${t("max_prefix")} ₹${remaining.toLocaleString()}`}
-                          className="bg-white/[0.05] border-white/[0.12] text-white h-12 text-base font-mono placeholder:text-zinc-600 focus:border-[#6FFFE9]/40"
-                          data-testid="input-payment-amount"
-                        />
-                        <div className="flex gap-2 flex-wrap">
-                          {[1000, 5000, 10000].map(preset => (
-                            <Button key={preset} variant="outline" size="sm"
-                              onClick={() => setPaymentAmount(String(Math.min(preset, remaining)))}
-                              className="liquid-glass-chip border-white/[0.12] text-zinc-300 hover:bg-white/[0.08] hover:text-white text-xs rounded-full"
-                              data-testid={`button-preset-${preset}`}>
-                              ₹{preset.toLocaleString()}
-                            </Button>
-                          ))}
-                          <Button variant="outline" size="sm"
-                            onClick={() => setPaymentAmount(String(remaining))}
-                            className="liquid-glass-chip border-[#6FFFE9]/25 text-[#6FFFE9] hover:bg-[#6FFFE9]/10 text-xs rounded-full"
-                            data-testid="button-preset-full">
-                            {t("full_prefix")} ₹{remaining.toLocaleString()}
-                          </Button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="liquid-glass-teal rounded-2xl p-4 text-center">
-                        <p className="text-zinc-400 text-xs mb-1">{t("tenant_full_payment_amount")}</p>
-                        <p className="text-3xl font-bold font-mono" data-testid="text-full-amount">
-                          ₹{remaining.toLocaleString()}
-                        </p>
-                      </div>
-                    )}
-
-                    <PayRentButton
-                      amount={flexiblePaymentEnabled ? Number(paymentAmount || 0) : remaining}
-                      vpa={RENTFLO_VPA}
-                      ledgerId={unpaidLedger?.id}
-                    />
-
-                    {/* UPI Deep Links */}
-                    {(() => {
-                      const upiAmount = flexiblePaymentEnabled ? Number(paymentAmount || 0) : remaining;
-                      const upiNote = encodeURIComponent(`Rent for ${property?.address ?? ""}`);
-                      const upiPayee = encodeURIComponent("RentFLO");
-                      const upiVpa = encodeURIComponent(RENTFLO_VPA);
-                      const upiLink = `upi://pay?pa=${upiVpa}&pn=${upiPayee}&am=${upiAmount}&cu=INR&tn=${upiNote}`;
-                      if (upiAmount <= 0) return null;
-                      return (
-                        <div className="space-y-2">
-                          <p className="text-[9px] uppercase tracking-widest text-zinc-600 text-center">{t("or_pay_directly")}</p>
-                          <div className="grid grid-cols-2 gap-2">
-                            <a
-                              href={`gpay://upi/pay?pa=${upiVpa}&pn=${upiPayee}&am=${upiAmount}&cu=INR&tn=${upiNote}`}
-                              className="liquid-glass rounded-xl flex items-center justify-center gap-2 p-2.5 hover:bg-white/[0.06] transition-colors text-xs text-zinc-300 font-medium"
-                              data-testid="button-upi-gpay"
-                            >
-                              <span className="text-base">G</span>
-                              <span>{t("pay_via_gpay")}</span>
-                            </a>
-                            <a
-                              href={`phonepe://pay?pa=${upiVpa}&pn=${upiPayee}&am=${upiAmount}&cu=INR&tn=${upiNote}`}
-                              className="liquid-glass rounded-xl flex items-center justify-center gap-2 p-2.5 hover:bg-white/[0.06] transition-colors text-xs text-zinc-300 font-medium"
-                              data-testid="button-upi-phonepe"
-                            >
-                              <span className="text-base">₱</span>
-                              <span>{t("pay_via_phonepe")}</span>
-                            </a>
-                          </div>
-                          <a
-                            href={upiLink}
-                            className="liquid-glass rounded-xl flex items-center justify-center gap-2 p-2.5 hover:bg-white/[0.06] transition-colors text-xs text-zinc-300 w-full"
-                            data-testid="button-upi-any"
-                          >
-                            {t("any_upi_app")}
-                          </a>
-                        </div>
-                      );
-                    })()}
-
-                    <div className="flex items-center justify-center gap-2 text-zinc-600 text-[10px] uppercase tracking-wider">
-                      <ShieldCheck size={12} />
-                      <span>{t("tenant_bank_security")}</span>
-                    </div>
-                  </div>
-                )}
-
-                {/* Payment History — per transaction */}
-                {paymentsData && paymentsData.length > 0 && (
-                  <div>
-                    <p className="text-[10px] uppercase tracking-widest text-[#C0C0C0]/50 mb-3">{t("tenant_payment_history")}</p>
-                    <div className="space-y-2">
-                      {paymentsData.map((pmt, idx) => (
-                        <div key={pmt.id} className="liquid-glass rounded-xl flex items-center justify-between p-4" data-testid={`payment-entry-${idx}`}>
-                          <div className="flex items-center gap-3">
-                            <div className={`w-2 h-2 rounded-full ${pmt.status === "SUCCESS" ? "bg-[#6FFFE9]" : pmt.status === "PENDING_VERIFICATION" ? "bg-blue-400" : pmt.status === "PENDING" ? "bg-amber-400" : "bg-red-500"}`} />
-                            <div>
-                              <p className="text-sm text-white">
-                                {pmt.status === "SUCCESS"
-                                  ? t("payment_received")
-                                  : pmt.status === "PENDING_VERIFICATION"
-                                  ? t("awaiting_verification")
-                                  : pmt.status === "PENDING"
-                                  ? t("pending_label")
-                                  : t("failed_label")}
-                              </p>
-                              <p className="text-[10px] text-zinc-500 font-mono">
-                                {pmt.transactionRef ? `UTR ${pmt.transactionRef} · ` : ""}
-                                {new Date(pmt.createdAt!).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
-                              </p>
-                              {pmt.status === "FAILED" && pmt.rejectionReason && (
-                                <p className="text-[10px] text-red-400 mt-0.5">{pmt.rejectionReason}</p>
-                              )}
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <span className="font-mono text-base text-white">₹{pmt.amount.toLocaleString()}</span>
-                            <p className={`text-[10px] ${pmt.status === "SUCCESS" ? "text-[#6FFFE9]" : pmt.status === "PENDING_VERIFICATION" ? "text-blue-300" : pmt.status === "PENDING" ? "text-amber-400" : "text-red-400"}`}>
-                              {pmt.status === "PENDING_VERIFICATION" ? t("verifying_label") : pmt.status}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Ledger History — all months */}
-                <div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <TrendingUp size={14} className="text-[#6FFFE9]/60" />
-                    <p className="text-[10px] uppercase tracking-widest text-[#C0C0C0]/50">{t("all_months")}</p>
-                    <span className="ml-auto text-[10px] text-[#6FFFE9]/60 font-mono">{settledMonths} {t("settled_count_suffix")}</span>
-                  </div>
-                  <div className="space-y-2">
-                    {allLedgers.map(ledger => {
-                      const [yr, mo] = ledger.monthYear.split("-");
-                      const label = new Date(Number(yr), Number(mo) - 1).toLocaleDateString("en-IN", { month: "long", year: "numeric" });
-                      const pct = ledger.property.monthlyRent > 0
-                        ? Math.min(100, Math.round((ledger.amountCollected / ledger.property.monthlyRent) * 100))
-                        : 0;
-                      return (
-                        <div key={ledger.id} className="liquid-glass rounded-xl p-4 space-y-2" data-testid={`ledger-row-${ledger.id}`}>
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <CircleDot size={12} className="text-zinc-600" />
-                              <span className="text-sm text-white">{label}</span>
-                            </div>
-                            <div className="flex items-center gap-3">
-                              <span className="font-mono text-sm text-zinc-300">
-                                ₹{ledger.amountCollected.toLocaleString()}
-                                <span className="text-zinc-600"> / ₹{ledger.property.monthlyRent.toLocaleString()}</span>
-                              </span>
-                              <StatusBadge status={ledger.status} />
-                            </div>
-                          </div>
-                          <div className="w-full h-1.5 bg-white/[0.07] rounded-full overflow-hidden">
-                            <div
-                              className="h-full bg-[#6FFFE9]/70 rounded-full transition-all"
-                              style={{ width: `${pct}%` }}
-                            />
-                          </div>
-                        </div>
-                      );
-                    })}
-                    {allLedgers.length === 0 && (
-                      <div className="text-center py-10 text-zinc-600 text-sm">{t("no_payment_history")}</div>
-                    )}
-                  </div>
-                </div>
+            <div className="mt-5">
+              <div className="mb-2.5 flex items-center justify-between"><p className="text-[11px] font-medium text-slate-200">Choose payment method</p><button type="button" className="flex items-center text-[10px] font-semibold text-violet-300">View all <ChevronRight size={13} /></button></div>
+              <div className="flex gap-2">
+                <PaymentMethodTile id="apple" label="Apple Pay" detail="Apple Pay" selected={paymentMethod === "apple"} onClick={() => setPaymentMethod("apple")}><span className="text-[28px] leading-none">●</span></PaymentMethodTile>
+                <PaymentMethodTile id="upi" label="UPI" detail="UPI" selected={paymentMethod === "upi"} onClick={() => setPaymentMethod("upi")}><span className="italic tracking-[-0.2em]">UPI</span></PaymentMethodTile>
+                <PaymentMethodTile id="phonepe" label="PhonePe" detail="PhonePe" selected={paymentMethod === "phonepe"} onClick={() => setPaymentMethod("phonepe")}><span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#6040b7] text-[18px] text-white">पे</span></PaymentMethodTile>
+                <PaymentMethodTile id="gpay" label="G Pay" detail="Google Pay" selected={paymentMethod === "gpay"} onClick={() => setPaymentMethod("gpay")}><span className="font-black"><span className="text-[#4285F4]">G</span><span className="text-[#EA4335]"> </span></span></PaymentMethodTile>
+                <PaymentMethodTile id="paytm" label="paytm" detail="Paytm" selected={paymentMethod === "paytm"} onClick={() => setPaymentMethod("paytm")}><span className="text-[#164d91]">paytm</span></PaymentMethodTile>
               </div>
-            )}
+            </div>
 
-            {/* ══ LEASE TAB ══ */}
-            {activeTab === "lease" && (
-              <div className="space-y-4">
-
-                {/* Property Card */}
-                <div className="liquid-glass rounded-3xl p-5 sm:p-6 space-y-4" data-testid="card-property-details">
-                  <p className="text-[10px] uppercase tracking-widest text-[#C0C0C0]/50">{t("property_details")}</p>
-                  <div className="space-y-3">
-                    <div className="flex items-start gap-3">
-                      <MapPin size={16} className="text-[#6FFFE9]/50 mt-0.5 shrink-0" />
-                      <div>
-                        <p className="text-[10px] uppercase tracking-wider text-[#C0C0C0]/45 mb-0.5">{t("address_label")}</p>
-                        <p className="text-sm text-[#E8E8E8] font-medium" data-testid="text-property-address">{property?.address ?? "—"}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <Banknote size={16} className="text-[#C0C0C0]/50 mt-0.5 shrink-0" />
-                      <div>
-                        <p className="text-[10px] uppercase tracking-wider text-[#C0C0C0]/45 mb-0.5">{t("tenant_monthly_rent")}</p>
-                        <p className="text-sm text-[#C0C0C0] font-mono" data-testid="text-monthly-rent">₹{(property?.monthlyRent ?? 0).toLocaleString()}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <CalendarDays size={16} className="text-[#C0C0C0]/50 mt-0.5 shrink-0" />
-                      <div>
-                        <p className="text-[10px] uppercase tracking-wider text-[#C0C0C0]/45 mb-0.5">{t("payment_due")}</p>
-                        <p className="text-sm text-[#E8E8E8]" data-testid="text-payout-day">
-                          {payoutDay === 1 ? "1st" : payoutDay === 2 ? "2nd" : payoutDay === 3 ? "3rd" : `${payoutDay}th`} {t("of_every_month")}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Agreement Status */}
-                <div className="liquid-glass rounded-3xl p-5 sm:p-6" data-testid="card-agreement-status">
-                  <div className="flex items-center justify-between mb-4">
-                    <p className="text-[10px] uppercase tracking-widest text-[#C0C0C0]/50">{t("agreement_status_label")}</p>
-                    {agreementStatus && <StatusBadge status={
-                      agreementStatus === "FULLY_SIGNED" ? "SETTLED" :
-                      agreementStatus === "PENDING" ? "ARREARS" : "EXPOSED"
-                    } />}
-                  </div>
-                  <div className="space-y-3">
-                    {[
-                      { label: t("agreement_created"), done: !!agreementStatus },
-                      { label: t("owner_signed_step"), done: agreementStatus === "OWNER_SIGNED" || agreementStatus === "FULLY_SIGNED" },
-                      { label: t("tenant_signed_step"), done: agreementStatus === "TENANT_SIGNED" || agreementStatus === "FULLY_SIGNED" },
-                      { label: t("fully_executed"), done: agreementStatus === "FULLY_SIGNED" },
-                    ].map(step => (
-                      <div key={step.label} className="flex items-center gap-3">
-                        <div className={`w-4 h-4 rounded-full flex items-center justify-center border ${
-                          step.done ? "border-[#6FFFE9]/50 bg-[#6FFFE9]/10" : "border-white/[0.12] bg-white/[0.03]"
-                        }`}>
-                          {step.done && <CheckCircle2 size={10} className="text-[#6FFFE9]" />}
-                        </div>
-                        <span className={`text-sm ${step.done ? "text-white" : "text-zinc-500"}`}>{step.label}</span>
-                      </div>
-                    ))}
-                  </div>
-                  <Link href="/agreement" className="block mt-4">
-                    <Button variant="outline"
-                      className="w-full liquid-glass-chip border-white/[0.12] text-white hover:bg-white/[0.08] text-xs h-9 rounded-xl"
-                      data-testid="button-view-agreement">
-                      {t("view_sign_agreement")}
-                    </Button>
-                  </Link>
-                </div>
-
-                {/* KYC Status */}
-                <div className="liquid-glass rounded-3xl p-5 sm:p-6" data-testid="card-kyc-status">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-[10px] uppercase tracking-widest text-[#C0C0C0]/50 mb-1">{t("kyc_verification_label")}</p>
-                      <p className="text-sm text-white">
-                        {isVerified ? t("identity_verified") : hasPendingKyc ? t("under_review") : t("not_submitted")}
-                      </p>
-                      <p className="text-xs text-zinc-500 mt-0.5">
-                        {isVerified ? t("cleared_to_pay") : t("required_to_process")}
-                      </p>
-                    </div>
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center border ${
-                      isVerified
-                        ? "border-[#6FFFE9]/35 bg-[#6FFFE9]/08"
-                        : hasPendingKyc
-                        ? "border-amber-400/35 bg-amber-400/08"
-                        : "border-white/[0.10] bg-white/[0.03]"
-                    }`}>
-                      <ShieldCheck size={18} className={
-                        isVerified ? "text-[#6FFFE9]" : hasPendingKyc ? "text-amber-400" : "text-zinc-600"
-                      } />
-                    </div>
-                  </div>
-                  {!isVerified && (
-                    <Link href="/verify" className="block mt-4">
-                      <Button variant="outline"
-                        className="w-full liquid-glass-chip border-white/[0.12] text-white hover:bg-white/[0.08] text-xs h-9 rounded-xl"
-                        data-testid="button-kyc-lease">
-                        <ShieldCheck size={14} className="mr-2" />
-                        {hasPendingKyc ? t("check_kyc_status") : t("complete_kyc_now")}
-                      </Button>
-                    </Link>
-                  )}
-                </div>
-
-                {/* Maintenance Summary */}
-                <Link href="/maintenance" className="block">
-                  <div className="liquid-glass rounded-2xl flex items-center justify-between p-4 sm:p-5 hover:bg-white/[0.03] transition-colors" data-testid="card-maintenance-summary">
-                    <div className="flex items-center gap-3">
-                      <Wrench size={16} className="text-zinc-500" />
-                      <div>
-                        <p className="text-sm text-white">{t("maintenance_requests")}</p>
-                        <p className="text-xs text-zinc-500">
-                          {tickets?.length
-                            ? `${tickets.length} ${t("total_label")} · ${openTickets} ${t("open_label")}`
-                            : t("no_requests_yet")}
-                        </p>
-                      </div>
-                    </div>
-                    <ChevronRight size={16} className="text-zinc-500" />
-                  </div>
-                </Link>
+            {remaining > 0 ? (
+              <div className="mt-4">
+                <PayRentButton amount={selectedAmount} vpa={RENTFLO_VPA} ledgerId={unpaidLedger?.id} presentation="dashboard" buttonLabel={`Continue to Pay${selectedAmount ? ` ${formatted(selectedAmount)}` : ""}`} />
               </div>
+            ) : (
+              <div className="mt-4 flex h-[68px] items-center justify-center gap-2 rounded-2xl border border-emerald-300/20 bg-emerald-400/[0.10] text-sm font-semibold text-emerald-200"><CheckCircle2 size={18} />This month&apos;s rent is settled</div>
             )}
-          </>
+            <p className="mt-3 flex items-center justify-center gap-1.5 text-[10px] text-slate-400"><LockKeyhole size={11} />Payments are encrypted and securely processed</p>
+          </section>
+
+          {property && <p className="mt-4 flex items-center justify-center gap-1.5 text-center text-[10px] text-slate-300/70"><Home size={11} />{property.address}<Landmark size={11} className="ml-1" /></p>}
+        </div>
       </div>
-    </div>
+    </main>
   );
 }
