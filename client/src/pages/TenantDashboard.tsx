@@ -58,9 +58,6 @@ export default function TenantDashboard() {
       <div className="mx-auto w-full max-w-[640px] px-0 sm:px-5 sm:py-5">
         <section className="relative aspect-[2/3] w-full overflow-hidden sm:rounded-[30px] sm:shadow-[0_28px_80px_rgba(0,0,0,0.55)]" aria-label={`RentFLO tenant payment dashboard for ${tenantName}`}>
           <img src={tenantDashboardArtwork} alt="RentFLO tenant payment dashboard" className="pointer-events-none absolute inset-0 h-full w-full select-none object-contain" draggable={false} />
-          {/* Covers the legacy navigation baked into the supplied image; the live BottomNav renders above this mask. */}
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 h-[7%] bg-[#061427]" aria-hidden />
-
           <ConnectionZone label="Open navigation" className="left-[3.3%] top-[3.4%] h-[5%] w-[8.7%]"><button type="button" className="h-full w-full rounded-xl focus-visible:ring-2 focus-visible:ring-violet-300" aria-label="Open navigation" onClick={() => setMenuOpen(true)} /></ConnectionZone>
           <ConnectionZone label="View notifications" className="right-[6.6%] top-[3.4%] h-[5%] w-[8.7%]"><Link href="/notifications" className="block h-full w-full rounded-xl focus-visible:ring-2 focus-visible:ring-violet-300" aria-label="View notifications" /></ConnectionZone>
 

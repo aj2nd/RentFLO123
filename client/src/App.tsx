@@ -89,7 +89,7 @@ function PrivateRoute({ component: Component, allowedRoles }: { component: React
     <>
       {!isImageLedTenantDashboard && <Navigation />}
       {isImageLedTenantDashboard ? <Component /> : <SidebarContent><Component /></SidebarContent>}
-      <BottomNav />
+      {!isImageLedTenantDashboard && <BottomNav />}
       <AIChatBot />
     </>
   );
