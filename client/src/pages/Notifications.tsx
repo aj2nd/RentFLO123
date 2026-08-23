@@ -1,3 +1,4 @@
+/** Design: Tenant notifications retain their original status hierarchy with RentFLO violet accents. */
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
@@ -11,10 +12,10 @@ import type { Notification } from "@shared/schema";
 function notifIcon(type: string) {
   const cls = "shrink-0 mt-0.5";
   switch (type) {
-    case "RENT_ADVANCED":     return <CreditCard size={16} className={`${cls} text-[#6FFFE9]`} />;
-    case "RENT_COLLECTED":    return <CreditCard size={16} className={`${cls} text-[#6FFFE9]`} />;
+    case "RENT_ADVANCED":     return <CreditCard size={16} className={`${cls} text-[#8B5CF6]`} />;
+    case "RENT_COLLECTED":    return <CreditCard size={16} className={`${cls} text-[#8B5CF6]`} />;
     case "MAINTENANCE_CREATED":  return <Wrench size={16} className={`${cls} text-yellow-400`} />;
-    case "MAINTENANCE_RESOLVED": return <Wrench size={16} className={`${cls} text-[#6FFFE9]`} />;
+    case "MAINTENANCE_RESOLVED": return <Wrench size={16} className={`${cls} text-[#8B5CF6]`} />;
     case "RENT_DUE":          return <CalendarClock size={16} className={`${cls} text-orange-400`} />;
     default:                  return <AlertCircle size={16} className={`${cls} text-zinc-400`} />;
   }
@@ -54,7 +55,7 @@ export default function NotificationsPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-[#6FFFE9]/40" />
+        <Loader2 className="w-8 h-8 animate-spin text-[#8B5CF6]/40" />
       </div>
     );
   }
@@ -69,7 +70,7 @@ export default function NotificationsPage() {
             <h1 className="text-3xl sm:text-4xl font-bold tracking-tighter flex items-center gap-3">
               {t("notif_title")}
               {unreadCount > 0 && (
-                <span className="inline-flex items-center justify-center min-w-[22px] h-5 px-1.5 bg-[#6FFFE9] text-black text-[10px] font-bold rounded-full" data-testid="badge-unread-count">
+                <span className="inline-flex items-center justify-center min-w-[22px] h-5 px-1.5 bg-[#8B5CF6] text-white text-[10px] font-bold rounded-full" data-testid="badge-unread-count">
                   {unreadCount}
                 </span>
               )}
@@ -127,7 +128,7 @@ function NotifCard({ notif }: { notif: Notification }) {
       className={`flex items-start gap-3 p-4 border transition-colors ${
         notif.read
           ? "border-white/[0.05] bg-zinc-950/30"
-          : "border-[#6FFFE9]/20 bg-[#6FFFE9]/[0.03]"
+          : "border-[#8B5CF6]/20 bg-[#8B5CF6]/[0.03]"
       }`}
       data-testid={`card-notification-${notif.id}`}
     >
@@ -142,7 +143,7 @@ function NotifCard({ notif }: { notif: Notification }) {
         <p className="text-xs text-zinc-500 mt-0.5 leading-relaxed">{notif.body}</p>
       </div>
       {!notif.read && (
-        <div className="w-1.5 h-1.5 rounded-full bg-[#6FFFE9] shrink-0 mt-1.5" />
+        <div className="w-1.5 h-1.5 rounded-full bg-[#8B5CF6] shrink-0 mt-1.5" />
       )}
     </div>
   );

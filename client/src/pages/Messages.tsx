@@ -1,3 +1,4 @@
+/** Design: Private tenant messaging retains its original flow with RentFLO violet accents. */
 import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
@@ -126,7 +127,7 @@ export default function Messages() {
                 data-testid={`property-thread-${p.id}`}
                 className={`w-full text-left px-5 py-4 border-b border-white/[0.04] transition-colors duration-150 ${
                   selectedPropertyId === p.id
-                    ? "bg-white/[0.06] border-l-2 border-l-[#6FFFE9]/50"
+                    ? "bg-white/[0.06] border-l-2 border-l-[#8B5CF6]/50"
                     : "hover:bg-white/[0.03] border-l-2 border-l-transparent"
                 }`}
               >
@@ -218,7 +219,7 @@ export default function Messages() {
                             <div
                               className={`px-3 sm:px-4 py-3 text-sm leading-relaxed ${
                                 isMine
-                                  ? "bg-[#6FFFE9]/10 border border-[#6FFFE9]/20 text-white/80"
+                                  ? "bg-[#8B5CF6]/10 border border-[#8B5CF6]/20 text-white/80"
                                   : "bg-white/[0.05] border border-white/[0.08] text-white/65"
                               }`}
                             >
@@ -227,7 +228,7 @@ export default function Messages() {
                             <p className={`text-[9px] text-white/20 font-medium tracking-wide ${isMine ? "text-right" : "text-left"}`}>
                               {formatTime(msg.createdAt)}
                               {!isMine && !msg.read && (
-                                <span className="ml-2 inline-block w-1.5 h-1.5 rounded-full bg-[#6FFFE9] align-middle" />
+                                <span className="ml-2 inline-block w-1.5 h-1.5 rounded-full bg-[#8B5CF6] align-middle" />
                               )}
                             </p>
                           </div>
@@ -257,7 +258,7 @@ export default function Messages() {
                   rows={1}
                   maxLength={2000}
                   data-testid="input-message"
-                  className="flex-1 resize-none bg-white/[0.04] border border-white/[0.08] focus:border-[#6FFFE9]/30 focus:outline-none px-3 sm:px-4 py-3 text-sm text-white/75 placeholder:text-white/20 transition-colors duration-200 leading-relaxed"
+                  className="flex-1 resize-none bg-white/[0.04] border border-white/[0.08] focus:border-[#8B5CF6]/30 focus:outline-none px-3 sm:px-4 py-3 text-sm text-white/75 placeholder:text-white/20 transition-colors duration-200 leading-relaxed"
                   style={{ minHeight: "44px", maxHeight: "120px" }}
                   onInput={(e) => {
                     const el = e.currentTarget;
@@ -269,7 +270,7 @@ export default function Messages() {
                   onClick={handleSend}
                   disabled={!draft.trim() || sendMutation.isPending}
                   data-testid="button-send-message"
-                  className="flex-shrink-0 w-11 h-11 flex items-center justify-center border border-white/10 text-white/30 hover:text-[#6FFFE9]/80 hover:border-[#6FFFE9]/30 hover:bg-[#6FFFE9]/[0.05] disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
+                  className="flex-shrink-0 w-11 h-11 flex items-center justify-center border border-white/10 text-white/30 hover:text-[#8B5CF6]/80 hover:border-[#8B5CF6]/30 hover:bg-[#8B5CF6]/[0.05] disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
                 >
                   {sendMutation.isPending
                     ? <Loader2 size={16} className="animate-spin" />

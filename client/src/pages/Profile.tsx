@@ -1,3 +1,4 @@
+/** Design: Tenant profile preserves its account flows while using RentFLO violet accents. */
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
@@ -71,7 +72,7 @@ export default function ProfilePage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-[#6FFFE9]/40" />
+        <Loader2 className="w-8 h-8 animate-spin text-[#8B5CF6]/40" />
       </div>
     );
   }
@@ -99,17 +100,17 @@ export default function ProfilePage() {
             <img
               src={currentUser.profileImageUrl}
               alt={displayName}
-              className="w-16 h-16 rounded-full object-cover border-2 border-[#6FFFE9]/30"
+              className="w-16 h-16 rounded-full object-cover border-2 border-[#8B5CF6]/30"
               data-testid="img-profile-avatar"
             />
           ) : (
-            <div className="w-16 h-16 rounded-full bg-zinc-800 border-2 border-[#6FFFE9]/30 flex items-center justify-center text-2xl font-bold text-[#6FFFE9]" data-testid="div-profile-initials">
+            <div className="w-16 h-16 rounded-full bg-zinc-800 border-2 border-[#8B5CF6]/30 flex items-center justify-center text-2xl font-bold text-[#8B5CF6]" data-testid="div-profile-initials">
               {initials}
             </div>
           )}
           <div>
             <p className="text-xl font-bold" data-testid="text-display-name">{displayName}</p>
-            <span className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-[#6FFFE9] bg-[#6FFFE9]/10 px-2 py-0.5 mt-1">
+            <span className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-[#8B5CF6] bg-[#8B5CF6]/10 px-2 py-0.5 mt-1">
               {roleBadge[currentUser?.role ?? ""] ?? currentUser?.role}
             </span>
           </div>
@@ -125,7 +126,7 @@ export default function ProfilePage() {
                 <span className="text-[10px] uppercase tracking-widest text-zinc-500">{t("profile_full_name")}</span>
               </div>
               {!editing && (
-                <button onClick={startEdit} className="text-[10px] text-[#6FFFE9]/70 uppercase tracking-wider hover:text-[#6FFFE9] flex items-center gap-1" data-testid="button-edit-name">
+                <button onClick={startEdit} className="text-[10px] text-[#8B5CF6]/70 uppercase tracking-wider hover:text-[#8B5CF6] flex items-center gap-1" data-testid="button-edit-name">
                   <Edit2 size={10} /> {t("profile_edit")}
                 </button>
               )}
@@ -153,7 +154,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <Button onClick={handleSave} disabled={saving} size="sm" className="bg-[#6FFFE9] text-black hover:bg-[#6FFFE9]/90 rounded-none text-xs h-8" data-testid="button-save-name">
+                  <Button onClick={handleSave} disabled={saving} size="sm" className="bg-[#8B5CF6] text-white hover:bg-[#7C3AED] rounded-none text-xs h-8" data-testid="button-save-name">
                     {saving ? <Loader2 size={12} className="animate-spin mr-1" /> : <Save size={12} className="mr-1" />}
                     {t("profile_save")}
                   </Button>
@@ -186,8 +187,8 @@ export default function ProfilePage() {
             <div className="flex items-center gap-2 mt-1">
               {currentUser?.isVerified ? (
                 <>
-                  <CheckCircle size={15} className="text-[#6FFFE9]" />
-                  <span className="text-sm text-[#6FFFE9] font-medium">{t("profile_verified")}</span>
+                  <CheckCircle size={15} className="text-[#8B5CF6]" />
+                  <span className="text-sm text-[#8B5CF6] font-medium">{t("profile_verified")}</span>
                 </>
               ) : currentUser?.panNumber ? (
                 <span className="text-sm text-yellow-400 font-medium">{t("profile_under_review")}</span>
