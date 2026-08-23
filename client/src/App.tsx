@@ -109,7 +109,7 @@ function DashboardRedirect() {
   const isManusPreview = import.meta.env.DEV;
 
   if (isManusPreview) {
-    return <Redirect to="/tenant?preview=tenant" />;
+    return <Redirect to="/owner?preview=owner" />;
   }
   
   if (isLoading) return <LoadingScreen />;
