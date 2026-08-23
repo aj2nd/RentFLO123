@@ -3,6 +3,7 @@
  * canvas, so shared shell navigation is intentionally suppressed on /tenant.
  */
 import { Switch, Route, Redirect, useLocation } from "wouter";
+import { useEffect } from "react";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "next-themes";
@@ -54,19 +55,25 @@ function SidebarContent({ children }: { children: React.ReactNode }) {
 function PrivateRoute({ component: Component, allowedRoles }: { component: React.ComponentType, allowedRoles?: string[] }) {
   const { isAuthenticated, isLoading, user } = useAuth();
   const [location] = useLocation();
+  const previewQueryEnabled = import.meta.env.DEV && new URLSearchParams(window.location.search).get("preview") === "tenant";
+  const previewTenantMode = import.meta.env.DEV && (previewQueryEnabled || sessionStorage.getItem("rentflo:tenant-preview") === "1");
 
-  if (isLoading) return <LoadingScreen />;
+  useEffect(() => {
+    if (previewQueryEnabled) sessionStorage.setItem("rentflo:tenant-preview", "1");
+  }, [previewQueryEnabled]);
 
-  if (!isAuthenticated) {
+  if (isLoading && !previewTenantMode) return <LoadingScreen />;
+
+  if (!isAuthenticated && !previewTenantMode) {
     window.location.href = "/api/login";
     return null;
   }
 
-  if (!user?.role) {
+  if (!user?.role && !previewTenantMode) {
     return <Redirect to="/onboarding" />;
   }
 
-  if (allowedRoles && !allowedRoles.includes(user.role)) {
+  if (allowedRoles && !previewTenantMode && !allowedRoles.includes(user!.role)) {
     const roleRedirects: Record<string, string> = {
       'ADMIN': '/admin',
       'OWNER': '/owner',
