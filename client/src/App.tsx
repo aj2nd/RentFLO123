@@ -1,3 +1,7 @@
+/**
+ * Design integration: the supplied tenant dashboard image owns its full-screen
+ * canvas, so shared shell navigation is intentionally suppressed on /tenant.
+ */
 import { Switch, Route, Redirect, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -49,6 +53,7 @@ function SidebarContent({ children }: { children: React.ReactNode }) {
 
 function PrivateRoute({ component: Component, allowedRoles }: { component: React.ComponentType, allowedRoles?: string[] }) {
   const { isAuthenticated, isLoading, user } = useAuth();
+  const [location] = useLocation();
 
   if (isLoading) return <LoadingScreen />;
 
@@ -70,13 +75,13 @@ function PrivateRoute({ component: Component, allowedRoles }: { component: React
     return <Redirect to={roleRedirects[user.role] || '/'} />;
   }
 
+  const isImageLedTenantDashboard = location === "/tenant";
+
   return (
     <>
-      <Navigation />
-      <SidebarContent>
-        <Component />
-      </SidebarContent>
-      <BottomNav />
+      {!isImageLedTenantDashboard && <Navigation />}
+      {isImageLedTenantDashboard ? <Component /> : <SidebarContent><Component /></SidebarContent>}
+      {!isImageLedTenantDashboard && <BottomNav />}
       <AIChatBot />
     </>
   );
