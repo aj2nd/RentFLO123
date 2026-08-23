@@ -1,3 +1,4 @@
+/** Design: role-aware sidebar navigation, including a development-only tenant fallback for previewing original tenant pages. */
 import { Link, useLocation } from "wouter";
 import { useEffect } from "react";
 import {
@@ -32,7 +33,11 @@ export function Navigation() {
   }, [collapsed]);
 
   const isActive = (path: string) => location === path;
-  const role = user?.role;
+  const previewTenantMode = import.meta.env.DEV && (
+    sessionStorage.getItem("rentflo:tenant-preview") === "1" ||
+    new URLSearchParams(window.location.search).get("preview") === "tenant"
+  );
+  const role = user?.role ?? (previewTenantMode ? "TENANT" : undefined);
 
   const { data: badgeCounts } = useQuery<{ notifications: number; messages: number }>({
     queryKey: ["/api/user/badge-counts"],
@@ -131,9 +136,9 @@ export function Navigation() {
         >
           <div className="flex flex-col gap-0.5">
             <img src={newHeaderWordmark} alt="RentFLO" className="dashboard-header-wordmark dashboard-header-wordmark-desktop" />
-            {user?.role && (
+            {role && (
               <p className="text-[9px] uppercase tracking-[2px] leading-none" style={{ color: "var(--tiffany)", opacity: 0.6 }}>
-                {user.role.charAt(0) + user.role.slice(1).toLowerCase()} Portal
+                {role.charAt(0) + role.slice(1).toLowerCase()} Portal
               </p>
             )}
           </div>
