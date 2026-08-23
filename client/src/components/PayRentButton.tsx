@@ -21,9 +21,10 @@ type PayRentButtonProps = {
   amount: number;
   vpa: string;
   ledgerId?: string;
-  presentation?: "standard" | "dashboard";
+  presentation?: "standard" | "dashboard" | "image-overlay";
   buttonLabel?: string;
   buttonClassName?: string;
+  ariaLabel?: string;
 };
 
 export function PayRentButton({
@@ -33,6 +34,7 @@ export function PayRentButton({
   presentation = "standard",
   buttonLabel = "Pay Rent",
   buttonClassName = "",
+  ariaLabel,
 }: PayRentButtonProps) {
   const { t } = useI18n();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -114,21 +116,27 @@ export function PayRentButton({
 
   const utrValid = /^[A-Za-z0-9]{6,30}$/.test(utr.trim());
   const dashboardPresentation = presentation === "dashboard";
+  const imageOverlayPresentation = presentation === "image-overlay";
 
   return (
-    <div className={dashboardPresentation ? "space-y-3" : "space-y-4"}>
+    <div className={imageOverlayPresentation ? "h-full w-full" : dashboardPresentation ? "space-y-3" : "space-y-4"}>
       <Button
         type="button"
         onClick={handlePayRent}
         disabled={isProcessing || amount <= 0}
-        className={dashboardPresentation
+        aria-label={ariaLabel ?? buttonLabel}
+        className={imageOverlayPresentation
+          ? `h-full w-full border-0 bg-transparent p-0 text-transparent shadow-none hover:bg-transparent focus-visible:ring-2 focus-visible:ring-violet-300 ${buttonClassName}`
+          : dashboardPresentation
           ? `h-[68px] w-full rounded-2xl border border-violet-300/30 bg-gradient-to-r from-[#6636da] via-[#8253ea] to-[#7140dd] text-base font-semibold text-white shadow-[0_14px_30px_rgba(99,57,218,0.34)] transition-transform duration-150 active:scale-[0.98] hover:brightness-110 ${buttonClassName}`
           : `w-full h-14 rounded-none border-0 ${buttonClassName}`}
-        style={dashboardPresentation ? undefined : SILVER_BTN}
+        style={dashboardPresentation || imageOverlayPresentation ? undefined : SILVER_BTN}
         data-testid="button-pay-rent"
       >
         {isProcessing ? (
           <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processing</>
+        ) : imageOverlayPresentation ? (
+          <span className="sr-only">{buttonLabel}</span>
         ) : dashboardPresentation ? (
           <span className="flex flex-col items-center leading-tight">
             <span className="flex items-center gap-2"><LockKeyhole className="h-4 w-4" />{buttonLabel}</span>
@@ -137,7 +145,7 @@ export function PayRentButton({
         ) : buttonLabel}
       </Button>
 
-      {!dashboardPresentation && (
+      {presentation === "standard" && (
         <div className="flex items-center justify-between gap-3 rounded-none border border-white/10 bg-black px-4 py-3">
           <div className="min-w-0">
             <p className="text-[10px] uppercase tracking-widest text-zinc-500">Or pay via UPI ID</p>
