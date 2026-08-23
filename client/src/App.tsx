@@ -96,6 +96,11 @@ function PrivateRoute({ component: Component, allowedRoles }: { component: React
 
 function DashboardRedirect() {
   const { user, isLoading } = useAuth();
+  const isManusPreview = import.meta.env.DEV;
+
+  if (isManusPreview) {
+    return <Redirect to="/tenant?preview=tenant" />;
+  }
   
   if (isLoading) return <LoadingScreen />;
   
