@@ -2,6 +2,7 @@
   "name": "rest-express",
   "version": "1.0.0",
   "type": "module",
+  "packageManager": "pnpm@10.26.1",
   "license": "MIT",
   "engines": {
     "node": "20.x"
