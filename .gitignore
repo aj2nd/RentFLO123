@@ -3,6 +3,23 @@ dist
 .env
 .env.*
 !.env.example
+# Cryptographic keys, certificates, and local credential exports
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.secret
+*.secrets
+*.credentials
+id_rsa
+id_ed25519
+secrets/
+credentials/
+*service-account*.json
+.aws/
+.gcloud/
 .DS_Store
 server/public
 vite.config.ts.*
