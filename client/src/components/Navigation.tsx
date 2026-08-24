@@ -10,16 +10,12 @@ import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { NotificationBell } from "@/components/NotificationBell";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { useQuery } from "@tanstack/react-query";
-import { useTheme } from "next-themes";
 import newHeaderWordmark from "@assets/IMG_8383_1787480222056.png";
 
 export function Navigation({ showMobileTopbarWhenOpenOnly = false }: { showMobileTopbarWhenOpenOnly?: boolean }) {
   const [location] = useLocation();
   const { user, logout, isLoading } = useAuth();
-  const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme !== "light";
   const { t } = useI18n();
   const { collapsed, toggle } = useSidebar();
 
@@ -98,9 +94,9 @@ export function Navigation({ showMobileTopbarWhenOpenOnly = false }: { showMobil
 
         <div className="flex-1" />
 
-        {/* Right: theme toggle */}
+        {/* Right: notifications */}
         <div className="flex items-center justify-center flex-shrink-0" style={{ width: 44, height: 44 }}>
-          <ThemeToggle />
+          <NotificationBell />
         </div>
       </div>}
 
@@ -175,7 +171,7 @@ export function Navigation({ showMobileTopbarWhenOpenOnly = false }: { showMobil
           className="w-64 px-4 pb-5 pt-4 flex flex-col gap-2 flex-shrink-0"
           style={{ borderTop: "1px solid var(--nav-border)" }}
         >
-          {/* Alerts + Theme toggle row */}
+          {/* Alerts row */}
           <div
             className="flex items-center gap-3 px-3 py-3 rounded-xl"
             style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--nav-border)" }}
@@ -187,7 +183,6 @@ export function Navigation({ showMobileTopbarWhenOpenOnly = false }: { showMobil
             >
               {t("nav_alerts")}
             </span>
-            <ThemeToggle />
           </div>
 
           {/* Sign out */}
