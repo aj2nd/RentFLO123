@@ -22,14 +22,39 @@ const getOidcConfig = memoize(
   { maxAge: 3600 * 1000 }
 );
 
+async function ensureSessionStoreTable() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS "sessions" (
+      "sid" varchar NOT NULL COLLATE "default",
+      "sess" json NOT NULL,
+      "expire" timestamp(6) NOT NULL
+    );
+  `);
+  await pool.query(`
+    DO $$
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'sessions_pkey'
+      ) THEN
+        ALTER TABLE "sessions"
+          ADD CONSTRAINT "sessions_pkey" PRIMARY KEY ("sid");
+      END IF;
+    END $$;
+  `);
+  await pool.query(`
+    CREATE INDEX IF NOT EXISTS "IDX_sessions_expire"
+      ON "sessions" ("expire");
+  `);
+}
+
 export function getSession() {
   const sessionTtl = 30 * 24 * 60 * 60 * 1000; // 30 days
   const pgStore = connectPg(session);
   const sessionStore = new pgStore({
     pool,
-    // Provision the configured table on a fresh production database before
-    // the first login request; this keeps hosted deployments self-initializing.
-    createTableIfMissing: true,
+    // The server creates this table explicitly before middleware setup so the
+    // production bundle never needs connect-pg-simple's external table.sql.
+    createTableIfMissing: false,
     ttl: sessionTtl,
     tableName: "sessions",
     // Default prune interval is every 60 s, which opens an extra DB connection
@@ -81,6 +106,7 @@ function androidRedirect(user: any): string | null {
 
 export async function setupAuth(app: Express) {
   app.set("trust proxy", 1);
+  await ensureSessionStoreTable();
   app.use(getSession());
   app.use(passport.initialize());
   app.use(passport.session());
