@@ -18,12 +18,19 @@ function getKey(): Buffer {
     if (b.length === 32) return b;
     throw new Error("PII_ENCRYPTION_KEY must be 32 bytes (hex64 or base64)");
   }
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("PII_ENCRYPTION_KEY must be configured in production");
+  }
   // Fallback for dev only — derive from SESSION_SECRET
   const secret = process.env.SESSION_SECRET || "dev-only-fallback-do-not-use-in-prod";
   return crypto.createHash("sha256").update("rentflo-pii::" + secret).digest();
 }
 
 const ENC_PREFIX = "enc:v1:";
+
+export function isEncryptedPII(value: string | null | undefined): boolean {
+  return typeof value === "string" && value.startsWith(ENC_PREFIX);
+}
 
 export function encryptPII(plaintext: string | null | undefined): string | null {
   if (plaintext == null || plaintext === "") return null as any;
@@ -76,15 +83,37 @@ export function maskBankAccount(b?: string | null): string | null {
   return "******" + v.slice(-4);
 }
 
+export function maskIfsc(value?: string | null): string | null {
+  if (!value) return value ?? null;
+  const decoded = decryptPII(value) ?? "";
+  if (decoded.length < 4) return "****";
+  return "*******" + decoded.slice(-4);
+}
+
 // Public-safe user shape (admin views still get masked PII, never raw).
 export function publicUser(u: any) {
   if (!u) return u;
-  const { panNumber, aadhaarNumber, bankAccountNumber, ...rest } = u;
+  const {
+    panNumber,
+    aadhaarNumber,
+    bankAccountNumber,
+    ifscCode,
+    fullLegalName,
+    kycDocumentUrl,
+    cancelledChequeUrl,
+    diditSessionId,
+    digilockerRequestId,
+    ...rest
+  } = u;
   return {
     ...rest,
+    fullLegalName: decryptPII(fullLegalName),
     panNumber: maskPan(panNumber),
     aadhaarNumber: maskAadhaar(aadhaarNumber),
     bankAccountNumber: maskBankAccount(bankAccountNumber),
+    ifscCode: maskIfsc(ifscCode),
+    hasKycDocument: Boolean(kycDocumentUrl),
+    hasCancelledCheque: Boolean(cancelledChequeUrl),
   };
 }
 

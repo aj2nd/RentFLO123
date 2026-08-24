@@ -34,8 +34,9 @@ async function diditFetch(path: string, init: RequestInit = {}): Promise<any> {
   const text = await res.text();
   let data: any = null;
   try { data = text ? JSON.parse(text) : {}; } catch { data = { raw: text }; }
-  console.log(`[didit] ${init.method || "GET"} ${path} → ${res.status}`,
-    res.ok ? JSON.stringify(data).slice(0, 300) : data);
+  // Provider responses can contain document numbers and session tokens. Log
+  // only method, endpoint, and status—not payloads or credentials.
+  console.log(`[didit] ${init.method || "GET"} ${path} → ${res.status}`);
   if (!res.ok) {
     const msg = data?.message || data?.detail || `Didit request failed (${res.status})`;
     const err: any = new Error(msg);

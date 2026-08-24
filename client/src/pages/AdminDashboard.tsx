@@ -16,6 +16,11 @@ import { useI18n } from "@/hooks/use-i18n";
 import { useTheme } from "next-themes";
 import type { User, Payment } from "@shared/schema";
 
+type KycReviewUser = User & {
+  hasKycDocument?: boolean;
+  hasCancelledCheque?: boolean;
+};
+
 function FileUpload({ onFileChange, currentValue }: { onFileChange: (dataUrl: string) => void; currentValue: string }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [fileName, setFileName] = useState<string>("");
@@ -76,7 +81,7 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<'overview' | 'kyc' | 'verifications' | 'users' | 'agreements'>('overview');
   const { t } = useI18n();
 
-  const { data: pendingKyc, isLoading: kycLoading } = useQuery<User[]>({ queryKey: ["/api/kyc/pending"] });
+  const { data: pendingKyc, isLoading: kycLoading } = useQuery<KycReviewUser[]>({ queryKey: ["/api/kyc/pending"] });
   const { data: allUsers } = useQuery<User[]>({ queryKey: ["/api/users"] });
   const { data: allPayments } = useQuery<Payment[]>({ queryKey: ["/api/payments"] });
   const { data: pendingVerifs, isLoading: verifsLoading } = useQuery<any[]>({
@@ -307,11 +312,11 @@ export default function AdminDashboard() {
 
                       </div>
                       <div className="mt-3 flex gap-4">
-                        {user.kycDocumentUrl && (
-                          <a href={user.kycDocumentUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-[#9DEFE4] hover:text-[#6FFFE9] underline">{t('admin_kyc_view_doc')}</a>
+                        {user.hasKycDocument && (
+                          <a href={`/api/kyc/document/${user.id}/kyc`} target="_blank" rel="noopener noreferrer" className="text-sm text-[#9DEFE4] hover:text-[#6FFFE9] underline">{t('admin_kyc_view_doc')}</a>
                         )}
-                        {user.cancelledChequeUrl && (
-                          <a href={user.cancelledChequeUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-[#9DEFE4] hover:text-[#6FFFE9] underline">{t('admin_kyc_view_cheque')}</a>
+                        {user.hasCancelledCheque && (
+                          <a href={`/api/kyc/document/${user.id}/cheque`} target="_blank" rel="noopener noreferrer" className="text-sm text-[#9DEFE4] hover:text-[#6FFFE9] underline">{t('admin_kyc_view_cheque')}</a>
                         )}
                       </div>
                     </div>

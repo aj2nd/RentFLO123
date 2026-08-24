@@ -23,6 +23,7 @@ import OpenAI from "openai";
 import QRCode from "qrcode";
 import {
   encryptPII,
+  decryptPII,
   publicUser,
   timingSafeEqualStr,
   requirePropertyAccess,
@@ -369,7 +370,7 @@ export async function registerRoutes(
           customer_id: userId,
           customer_email: u?.email || `tenant_${userId}@rentflo.app`,
           customer_phone: (u as any)?.phoneNumber || "9999999999",
-          customer_name: (u as any)?.fullLegalName || u?.email || "Tenant",
+          customer_name: decryptPII((u as any)?.fullLegalName) || u?.email || "Tenant",
         },
         order_meta: {
           // Use X-Forwarded-Proto so the URL is https when behind Railway's proxy.
@@ -742,7 +743,7 @@ export async function registerRoutes(
           customer_id: userId,
           customer_email: u?.email || `tenant_${userId}@rentflo.app`,
           customer_phone: (u as any)?.phoneNumber || "9999999999",
-          customer_name: (u as any)?.fullLegalName || u?.email || "Tenant",
+          customer_name: decryptPII((u as any)?.fullLegalName) || u?.email || "Tenant",
         },
         order_meta: {
           // Use X-Forwarded-Proto so the URL is https when behind Railway's proxy.
@@ -1066,13 +1067,13 @@ export async function registerRoutes(
     }
 
     const updated = await authStorage.updateUser(userId, {
-      fullLegalName: input.fullLegalName,
+      fullLegalName: encryptPII(input.fullLegalName),
       panNumber: input.panNumber ? encryptPII(input.panNumber.toUpperCase()) : null,
       aadhaarNumber: input.aadhaarNumber ? encryptPII(input.aadhaarNumber) : null,
-      kycDocumentUrl: input.kycDocumentUrl || null,
+      kycDocumentUrl: input.kycDocumentUrl ? encryptPII(input.kycDocumentUrl) : null,
       bankAccountNumber: input.bankAccountNumber ? encryptPII(input.bankAccountNumber) : null,
-      ifscCode: input.ifscCode ? input.ifscCode.toUpperCase() : null,
-      cancelledChequeUrl: input.cancelledChequeUrl || null,
+      ifscCode: input.ifscCode ? encryptPII(input.ifscCode.toUpperCase()) : null,
+      cancelledChequeUrl: input.cancelledChequeUrl ? encryptPII(input.cancelledChequeUrl) : null,
       isVerified: false,
     });
 
@@ -1084,6 +1085,33 @@ export async function registerRoutes(
   app.get("/api/kyc/pending", isAuthenticated, requireRole('ADMIN'), async (req: any, res) => {
     const pendingUsers = await authStorage.getUsersPendingVerification();
     res.json(pendingUsers.map(publicUser));
+  });
+
+  // KYC document values remain encrypted in the database. Decryption is
+  // limited to an authenticated administrator's no-store response.
+  app.get("/api/kyc/document/:userId/:documentType", isAuthenticated, requireRole('ADMIN'), async (req: any, res) => {
+    const type = req.params.documentType;
+    if (type !== "kyc" && type !== "cheque") {
+      return res.status(400).json({ message: "Invalid document type" });
+    }
+    const user = await authStorage.getUser(req.params.userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+    const encrypted = type === "kyc" ? user.kycDocumentUrl : user.cancelledChequeUrl;
+    const value = decryptPII(encrypted);
+    if (!value) return res.status(404).json({ message: "Document not available" });
+    res.setHeader("Cache-Control", "no-store");
+    if (value.startsWith("data:")) {
+      const match = value.match(/^data:(image\/(?:png|jpeg|webp)|application\/pdf);base64,([A-Za-z0-9+/=]+)$/);
+      if (!match) return res.status(400).json({ message: "Unsupported document format" });
+      return res.type(match[1]).send(Buffer.from(match[2], "base64"));
+    }
+    try {
+      const url = new URL(value);
+      if (url.protocol !== "https:") throw new Error("Unsupported protocol");
+      return res.redirect(302, url.toString());
+    } catch {
+      return res.status(400).json({ message: "Unsupported document location" });
+    }
   });
 
   // Verify user (Admin only).
@@ -1158,7 +1186,7 @@ export async function registerRoutes(
     const isAadhaar = docType.includes('AADHAAR') || docType.includes('AADHAR');
     const isPan = docType.includes('PAN');
     await authStorage.updateUser(user.id, {
-      fullLegalName: name || user.fullLegalName || null,
+      fullLegalName: name ? encryptPII(name) : user.fullLegalName || null,
       aadhaarNumber: isAadhaar && docLast4
         ? encryptPII(`XXXXXXXX${docLast4}`)
         : user.aadhaarNumber,

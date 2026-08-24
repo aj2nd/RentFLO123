@@ -8,11 +8,14 @@ import connectPg from "connect-pg-simple";
 import { authStorage } from "./storage";
 import { signAuthToken, verifyAuthToken } from "./token";
 import { pool } from "../../db";
+import { decryptPII, encryptPII } from "../../security";
+import { encryptLegacySensitiveUsers } from "../../migrations/encrypt-sensitive-users";
 
 const ANDROID_DEEP_LINK = "rentflo://auth/callback";
 // A dedicated name prevents an invalid session from a prior deployment or
 // SESSION_SECRET from being reused after a production migration.
 const SESSION_COOKIE_NAME = "rentflo.sid";
+const SESSION_ENVELOPE_KEY = "__rentflo_encrypted_session";
 
 const getOidcConfig = memoize(
   async () => {
@@ -53,8 +56,34 @@ async function ensureSessionStoreTable() {
 export function getSession() {
   const sessionTtl = 30 * 24 * 60 * 60 * 1000; // 30 days
   const pgStore = connectPg(session);
-  const sessionStore = new pgStore({
-    pool,
+  class EncryptedPgStore extends pgStore {
+    get(sid: string, callback: (error: any, stored?: any) => void) {
+      return super.get(sid, (error: any, stored: any) => {
+        if (error || !stored) return callback(error, stored);
+        const envelope = stored[SESSION_ENVELOPE_KEY];
+        if (typeof envelope === "string") {
+          try {
+            const decrypted = decryptPII(envelope);
+            if (!decrypted) throw new Error("Unable to decrypt session");
+            return callback(null, JSON.parse(decrypted));
+          } catch {
+            return this.destroy(sid, () => callback(null));
+          }
+        }
+
+        // Existing readable sessions are rewritten encrypted on their next use.
+        return this.set(sid, stored, (saveError: any) => callback(saveError, stored));
+      });
+    }
+
+    set(sid: string, stored: any, callback?: (error?: any) => void) {
+      const encrypted = encryptPII(JSON.stringify(stored));
+      return super.set(sid, { [SESSION_ENVELOPE_KEY]: encrypted } as any, callback);
+    }
+  }
+
+  const sessionStore = new EncryptedPgStore({
+    pool: pool as any,
     // The server creates this table explicitly before middleware setup so the
     // production bundle never needs connect-pg-simple's external table.sql.
     createTableIfMissing: false,
@@ -112,6 +141,7 @@ function androidRedirect(user: any): string | null {
 export async function setupAuth(app: Express) {
   app.set("trust proxy", 1);
   await ensureSessionStoreTable();
+  await encryptLegacySensitiveUsers();
   app.use(getSession());
   app.use(passport.initialize());
   app.use(passport.session());
