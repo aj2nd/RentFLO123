@@ -284,15 +284,15 @@ export const submitPaymentProofSchema = z.object({
     .trim()
     .max(2048)
     .url("Screenshot link must be a valid URL")
-    .refine((u) => /^https?:\/\//i.test(u), "URL must start with http(s)://")
+    .refine((u) => /^https:\/\//i.test(u), "URL must use HTTPS")
     .optional()
     .or(z.literal("")),
-});
+}).strict();
 export type SubmitPaymentProofRequest = z.infer<typeof submitPaymentProofSchema>;
 
 export const verifyPaymentSchema = z.object({
   rejectionReason: z.string().trim().min(1).max(500).optional(),
-});
+}).strict();
 
 export const insertMaintenanceTicketSchema = createInsertSchema(maintenanceTickets).omit({
   id: true,
@@ -305,11 +305,11 @@ export const insertMaintenanceTicketSchema = createInsertSchema(maintenanceTicke
 // A tenant may describe a problem, but may not choose its tenant identity,
 // resolution state, resolver, or timestamps.
 export const createMaintenanceTicketRequestSchema = z.object({
-  propertyId: z.string().min(1).max(255),
+  propertyId: z.string().uuid(),
   title: z.string().trim().min(1).max(200),
   description: z.string().trim().min(1).max(5000),
   photoUrl: z.string().trim().max(7_000_000)
-    .refine((value) => /^https?:\/\//i.test(value) || /^data:image\/(png|jpe?g|webp);base64,/i.test(value), "Photo must be an image URL or supported image data")
+    .refine((value) => /^https:\/\//i.test(value) || /^data:image\/(png|jpe?g|webp);base64,[A-Za-z0-9+/=]+$/i.test(value), "Photo must be an HTTPS image URL or supported image data")
     .optional().or(z.literal("")),
 }).strict();
 

@@ -3,10 +3,21 @@ import { chatStorage } from "../chat/storage";
 import { openai, speechToText, ensureCompatibleFormat } from "./client";
 import { isAuthenticated } from "../auth";
 import { authStorage } from "../auth/storage";
+import { z } from "zod";
+import { conversationIdParamsSchema, sanitizedText, validateRequest } from "../../input-validation";
 
 // Body parser with 50MB limit for audio payloads — applied only to the audio
 // route, after isAuthenticated, so unauthenticated requests never parse the body.
-const audioBodyParser = express.json({ limit: "50mb" });
+const audioBodyParser = express.json({ limit: "14mb" });
+const legacyConversationTitleSchema = z.object({
+  title: sanitizedText(1, 200).optional(),
+}).strict();
+const audioMessageSchema = z.object({
+  audio: z.string().min(4).max(14_000_000)
+    .regex(/^[A-Za-z0-9+/]+={0,2}$/, "Audio must be valid base64")
+    .refine((value) => Buffer.byteLength(value, "base64") <= 10 * 1024 * 1024, "Audio must be 10 MB or smaller"),
+  voice: z.enum(["alloy", "ash", "ballad", "coral", "echo", "fable", "nova", "onyx", "sage", "shimmer", "verse"]).default("alloy"),
+}).strict();
 
 // The legacy conversation schema has no participant ownership. Restrict it to
 // verified admins until a user-owned conversation migration is completed.
@@ -30,9 +41,9 @@ export function registerAudioRoutes(app: Express): void {
   });
 
   // Get single conversation with messages
-  app.get("/api/conversations/:id", isAuthenticated, requireLegacyConversationAdmin, async (req: Request, res: Response) => {
+  app.get("/api/conversations/:id", isAuthenticated, requireLegacyConversationAdmin, validateRequest({ params: conversationIdParamsSchema }), async (req: Request, res: Response) => {
     try {
-      const id = parseInt(req.params.id as string);
+      const id = (req.params as any).id as number;
       const conversation = await chatStorage.getConversation(id);
       if (!conversation) {
         return res.status(404).json({ error: "Conversation not found" });
@@ -46,9 +57,9 @@ export function registerAudioRoutes(app: Express): void {
   });
 
   // Create new conversation
-  app.post("/api/conversations", isAuthenticated, requireLegacyConversationAdmin, async (req: Request, res: Response) => {
+  app.post("/api/conversations", isAuthenticated, requireLegacyConversationAdmin, validateRequest({ body: legacyConversationTitleSchema }), async (req: Request, res: Response) => {
     try {
-      const { title } = req.body;
+      const { title } = req.body as z.infer<typeof legacyConversationTitleSchema>;
       const conversation = await chatStorage.createConversation(title || "New Chat");
       res.status(201).json(conversation);
     } catch (error) {
@@ -58,9 +69,9 @@ export function registerAudioRoutes(app: Express): void {
   });
 
   // Delete conversation
-  app.delete("/api/conversations/:id", isAuthenticated, requireLegacyConversationAdmin, async (req: Request, res: Response) => {
+  app.delete("/api/conversations/:id", isAuthenticated, requireLegacyConversationAdmin, validateRequest({ params: conversationIdParamsSchema }), async (req: Request, res: Response) => {
     try {
-      const id = parseInt(req.params.id as string);
+      const id = (req.params as any).id as number;
       await chatStorage.deleteConversation(id);
       res.status(204).send();
     } catch (error) {
@@ -74,14 +85,10 @@ export function registerAudioRoutes(app: Express): void {
   // Uses gpt-4o-mini-transcribe for STT, gpt-audio for voice response
   // isAuthenticated runs BEFORE audioBodyParser so the 50 MB body is never
   // parsed for unauthenticated requests.
-  app.post("/api/conversations/:id/messages", isAuthenticated, requireLegacyConversationAdmin, audioBodyParser, async (req: Request, res: Response) => {
+  app.post("/api/conversations/:id/messages", isAuthenticated, requireLegacyConversationAdmin, audioBodyParser, validateRequest({ params: conversationIdParamsSchema, body: audioMessageSchema }), async (req: Request, res: Response) => {
     try {
-      const conversationId = parseInt(req.params.id as string);
-      const { audio, voice = "alloy" } = req.body;
-
-      if (!audio) {
-        return res.status(400).json({ error: "Audio data (base64) is required" });
-      }
+      const conversationId = (req.params as any).id as number;
+      const { audio, voice } = req.body as z.infer<typeof audioMessageSchema>;
 
       // 1. Auto-detect format and convert to OpenAI-compatible format
       const rawBuffer = Buffer.from(audio, "base64");

@@ -1,28 +1,24 @@
 import type { Express, Request, Response } from "express";
 import { openai } from "./client";
 import { isAuthenticated } from "../auth";
+import { z } from "zod";
+import { sanitizedText, validateRequest } from "../../input-validation";
+
+const imageGenerationSchema = z.object({
+  prompt: sanitizedText(1, 1000),
+  size: z.enum(["256x256", "512x512", "1024x1024"]).default("1024x1024"),
+}).strict();
 
 export function registerImageRoutes(app: Express): void {
-  app.post("/api/generate-image", isAuthenticated, async (req: Request, res: Response) => {
+  app.post("/api/generate-image", isAuthenticated, validateRequest({ body: imageGenerationSchema }), async (req: Request, res: Response) => {
     try {
-      const { prompt, size = "1024x1024" } = req.body;
-
-      if (!prompt || typeof prompt !== "string") {
-        return res.status(400).json({ error: "Prompt is required" });
-      }
-      if (prompt.length > 1000) {
-        return res.status(400).json({ error: "Prompt must be under 1000 characters" });
-      }
-      const ALLOWED_SIZES = ["256x256", "512x512", "1024x1024"];
-      if (!ALLOWED_SIZES.includes(size)) {
-        return res.status(400).json({ error: "Invalid size" });
-      }
+      const { prompt, size } = req.body as z.infer<typeof imageGenerationSchema>;
 
       const response = await openai.images.generate({
         model: "gpt-image-1",
         prompt,
         n: 1,
-        size: size as "1024x1024" | "512x512" | "256x256",
+        size,
       });
 
       const imageData = response.data?.[0];
@@ -36,4 +32,3 @@ export function registerImageRoutes(app: Express): void {
     }
   });
 }
-

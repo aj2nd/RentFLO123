@@ -3,6 +3,15 @@ import OpenAI from "openai";
 import { chatStorage } from "./storage";
 import { isAuthenticated } from "../auth";
 import { authStorage } from "../auth/storage";
+import { z } from "zod";
+import { conversationIdParamsSchema, sanitizedText, validateRequest } from "../../input-validation";
+
+const conversationTitleSchema = z.object({
+  title: sanitizedText(1, 200).optional(),
+}).strict();
+const conversationMessageSchema = z.object({
+  content: sanitizedText(1, 4000),
+}).strict();
 
 const openai = new OpenAI({
   apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
@@ -31,9 +40,9 @@ export function registerChatRoutes(app: Express): void {
   });
 
   // Get single conversation with messages
-  app.get("/api/conversations/:id", isAuthenticated, requireLegacyConversationAdmin, async (req: Request, res: Response) => {
+  app.get("/api/conversations/:id", isAuthenticated, requireLegacyConversationAdmin, validateRequest({ params: conversationIdParamsSchema }), async (req: Request, res: Response) => {
     try {
-      const id = parseInt(req.params.id as string);
+      const id = (req.params as any).id as number;
       const conversation = await chatStorage.getConversation(id);
       if (!conversation) {
         return res.status(404).json({ error: "Conversation not found" });
@@ -47,9 +56,9 @@ export function registerChatRoutes(app: Express): void {
   });
 
   // Create new conversation
-  app.post("/api/conversations", isAuthenticated, requireLegacyConversationAdmin, async (req: Request, res: Response) => {
+  app.post("/api/conversations", isAuthenticated, requireLegacyConversationAdmin, validateRequest({ body: conversationTitleSchema }), async (req: Request, res: Response) => {
     try {
-      const { title } = req.body;
+      const { title } = req.body as z.infer<typeof conversationTitleSchema>;
       const conversation = await chatStorage.createConversation(title || "New Chat");
       res.status(201).json(conversation);
     } catch (error) {
@@ -59,9 +68,9 @@ export function registerChatRoutes(app: Express): void {
   });
 
   // Delete conversation
-  app.delete("/api/conversations/:id", isAuthenticated, requireLegacyConversationAdmin, async (req: Request, res: Response) => {
+  app.delete("/api/conversations/:id", isAuthenticated, requireLegacyConversationAdmin, validateRequest({ params: conversationIdParamsSchema }), async (req: Request, res: Response) => {
     try {
-      const id = parseInt(req.params.id as string);
+      const id = (req.params as any).id as number;
       await chatStorage.deleteConversation(id);
       res.status(204).send();
     } catch (error) {
@@ -71,13 +80,10 @@ export function registerChatRoutes(app: Express): void {
   });
 
   // Send message and get AI response (streaming)
-  app.post("/api/conversations/:id/messages", isAuthenticated, requireLegacyConversationAdmin, async (req: Request, res: Response) => {
+  app.post("/api/conversations/:id/messages", isAuthenticated, requireLegacyConversationAdmin, validateRequest({ params: conversationIdParamsSchema, body: conversationMessageSchema }), async (req: Request, res: Response) => {
     try {
-      const conversationId = parseInt(req.params.id as string);
-      const { content } = req.body;
-      if (!content || typeof content !== "string" || content.length > 4000) {
-        return res.status(400).json({ error: "content must be a non-empty string under 4000 chars" });
-      }
+      const conversationId = (req.params as any).id as number;
+      const { content } = req.body as z.infer<typeof conversationMessageSchema>;
 
       // Save user message
       await chatStorage.createMessage(conversationId, "user", content);

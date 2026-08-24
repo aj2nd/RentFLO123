@@ -6,8 +6,24 @@ import { submitPaymentProofSchema, verifyPaymentSchema } from "@shared/schema";
 import { z } from "zod";
 import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
 import { authStorage } from "./replit_integrations/auth/storage";
-import xss from "xss";
 import { initVapid, getVapidPublicKey, createNotification } from "./push";
+import {
+  documentParamsSchema,
+  emailQuerySchema,
+  emptyBodySchema,
+  idParamsSchema,
+  ledgerIdParamsSchema,
+  ledgerQuerySchema,
+  orderIdParamsSchema,
+  paymentIdParamsSchema,
+  propertyIdParamsSchema,
+  resourceIdSchema,
+  ticketIdParamsSchema,
+  ticketQuerySchema,
+  upiQrQuerySchema,
+  userIdParamsSchema,
+  validateRequest,
+} from "./input-validation";
 
 import {
   diditConfigured,
@@ -30,26 +46,6 @@ import {
   requirePropertyAccess,
   requireLedgerAccess,
 } from "./security";
-
-function sanitizeStrings(obj: any): any {
-  if (typeof obj === 'string') return xss(obj);
-  if (Array.isArray(obj)) return obj.map(sanitizeStrings);
-  if (obj && typeof obj === 'object') {
-    const sanitized: any = {};
-    for (const key of Object.keys(obj)) {
-      sanitized[key] = sanitizeStrings(obj[key]);
-    }
-    return sanitized;
-  }
-  return obj;
-}
-
-const sanitizeBody: RequestHandler = (req, _res, next) => {
-  if (req.body && typeof req.body === 'object') {
-    req.body = sanitizeStrings(req.body);
-  }
-  next();
-};
 
 // These limits run after isAuthenticated, so a caller cannot evade them by
 // switching IP addresses. Their IP-level backstops are mounted in index.ts.
@@ -83,6 +79,46 @@ const notificationTriggerAccountLimiter = createAccountRateLimiter({
   max: 2,
   message: "Too many notification checks. Please try again later.",
 });
+
+const signedCashfreeWebhookSchema = z.object({
+  type: z.string().max(100),
+  data: z.object({
+    order: z.object({
+      order_id: z.string().trim().min(1).max(128).regex(/^[A-Za-z0-9_-]+$/).optional(),
+      order_amount: z.union([z.number().finite().nonnegative().max(10_000_000), z.string().regex(/^\d+(?:\.\d{1,2})?$/)]).optional(),
+    }).passthrough(),
+    payment: z.object({
+      cf_payment_id: z.union([z.string().trim().min(1).max(128).regex(/^[A-Za-z0-9_-]+$/), z.number().int().nonnegative()]).optional(),
+      payment_id: z.union([z.string().trim().min(1).max(128).regex(/^[A-Za-z0-9_-]+$/), z.number().int().nonnegative()]).optional(),
+      payment_status: z.string().max(32).optional(),
+      payment_amount: z.union([z.number().finite().nonnegative().max(10_000_000), z.string().regex(/^\d+(?:\.\d{1,2})?$/)]).optional(),
+    }).passthrough(),
+  }).passthrough(),
+}).passthrough();
+
+const signedDiditWebhookSchema = z.object({
+  session_id: z.string().trim().min(1).max(256).optional(),
+  id: z.string().trim().min(1).max(256).optional(),
+  status: z.string().trim().max(100).optional(),
+}).passthrough().refine((event) => event.session_id || event.id, {
+  message: "Webhook session identifier is required",
+});
+
+const documentValueSchema = z.string().trim().max(2_000_000).refine(
+  (value) => value === "" || /^https:\/\//i.test(value) || /^data:(?:image\/(?:png|jpeg|webp)|application\/pdf);base64,[A-Za-z0-9+/=]+$/i.test(value),
+  "Document must be an HTTPS URL or supported base64 image/PDF",
+);
+
+function publicAppBaseUrl(): string {
+  const configured = process.env.PUBLIC_APP_URL || "https://rentflo.in";
+  try {
+    const url = new URL(configured);
+    if (url.protocol !== "https:") throw new Error("App URL must use HTTPS");
+    return url.origin;
+  } catch {
+    return "https://rentflo.in";
+  }
+}
 
 const requireRole = (...roles: string[]): RequestHandler => {
   return async (req: any, res, next) => {
@@ -165,18 +201,12 @@ export async function registerRoutes(
   // === PUSH NOTIFICATIONS INIT ===
   await initVapid();
 
-  // === GLOBAL MIDDLEWARE ===
-  app.use("/api", sanitizeBody);
-
   // === API ROUTES ===
 
   // Render a payment QR image locally so UPI payment data never leaves RentFLO
   // through a browser call to an external QR-generation service.
-  app.get("/api/payments/upi-qr", isAuthenticated, async (req, res) => {
-    const data = typeof req.query.data === "string" ? req.query.data : "";
-    if (data.length === 0 || data.length > 2048) {
-      return res.status(400).json({ message: "Invalid UPI payment data" });
-    }
+  app.get("/api/payments/upi-qr", isAuthenticated, validateRequest({ query: upiQrQuerySchema }), async (req, res) => {
+    const { data } = res.locals.validatedQuery as z.infer<typeof upiQrQuerySchema>;
     try {
       const upi = new URL(data);
       if (upi.protocol !== "upi:" || upi.hostname !== "pay" || !upi.searchParams.get("pa")) {
@@ -271,7 +301,7 @@ export async function registerRoutes(
     return res.json(props);
   });
 
-  app.get(api.properties.get.path, isAuthenticated, async (req: any, res) => {
+  app.get(api.properties.get.path, isAuthenticated, validateRequest({ params: idParamsSchema }), async (req: any, res) => {
     const access = await requirePropertyAccess(req, res, req.params.id);
     if (!access) return;
     res.json(access.property);
@@ -280,15 +310,12 @@ export async function registerRoutes(
   // Look up properties by owner email (for tenant join). Returns only address/id —
   // no owner PII — and only properties without a tenant (the only ones a tenant
   // could legitimately join). Limits enumeration value.
-  app.get("/api/properties/by-owner-email", isAuthenticated, async (req, res) => {
+  app.get("/api/properties/by-owner-email", isAuthenticated, validateRequest({ query: emailQuerySchema }), async (req, res) => {
     const caller = (req as any).currentUser || await authStorage.getUser((req as any).user?.claims?.sub);
     if (!caller || caller.role !== "TENANT") {
       return res.status(403).json({ message: "Only tenants can search an owner invitation" });
     }
-    const { email } = req.query;
-    if (!email || typeof email !== "string" || email.length > 254) {
-      return res.status(400).json({ message: "Email is required" });
-    }
+    const { email } = res.locals.validatedQuery as z.infer<typeof emailQuerySchema>;
     const props = await storage.getPropertiesByOwnerEmail(email);
     const safe = props
       .filter((p) => !p.tenantId)
@@ -300,7 +327,7 @@ export async function registerRoutes(
   // Caller must (a) have TENANT role, (b) be authenticated with the email the
   // owner pre-registered as `pendingTenantEmail`. This prevents any random
   // logged-in user from claiming arbitrary vacant properties.
-  app.post("/api/properties/:id/join", isAuthenticated, async (req: any, res) => {
+  app.post("/api/properties/:id/join", isAuthenticated, validateRequest({ params: idParamsSchema, body: emptyBodySchema }), async (req: any, res) => {
     const { id } = req.params;
     const userId = req.user?.claims?.sub;
     if (!userId) return res.status(401).json({ message: 'Unauthorized' });
@@ -331,11 +358,11 @@ export async function registerRoutes(
   });
 
   // Ledgers — scoped. ADMIN sees all; non-admins only see ledgers for properties they own/rent.
-  app.get(api.ledgers.list.path, isAuthenticated, async (req: any, res) => {
+  app.get(api.ledgers.list.path, isAuthenticated, validateRequest({ query: ledgerQuerySchema }), async (req: any, res) => {
     const userId = req.user?.claims?.sub;
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
     const u = await authStorage.getUser(userId);
-    const { propertyId, status } = req.query;
+    const { propertyId, status } = res.locals.validatedQuery as z.infer<typeof ledgerQuerySchema>;
 
     // If propertyId is given, verify access first.
     if (typeof propertyId === "string") {
@@ -352,7 +379,7 @@ export async function registerRoutes(
   });
 
   // Manual Payout (Admin)
-  app.post(api.ledgers.payOwner.path, isAuthenticated, requireRole('ADMIN'), async (req, res) => {
+  app.post(api.ledgers.payOwner.path, isAuthenticated, requireRole('ADMIN'), validateRequest({ params: idParamsSchema }), async (req, res) => {
     const id = req.params.id as string;
     const ledger = await storage.getLedger(id);
     if (!ledger) {
@@ -393,7 +420,7 @@ export async function registerRoutes(
   });
 
   // Create Cashfree Order for Tenant Payment — only the tenant of the property may create.
-  app.post('/api/ledgers/:id/create-order', isAuthenticated, async (req: any, res) => {
+  app.post('/api/ledgers/:id/create-order', isAuthenticated, validateRequest({ params: idParamsSchema, body: emptyBodySchema }), async (req: any, res) => {
     const { id } = req.params;
     const access = await requireLedgerAccess(req, res, id);
     if (!access) return;
@@ -421,8 +448,7 @@ export async function registerRoutes(
           customer_name: decryptPII((u as any)?.fullLegalName) || u?.email || "Tenant",
         },
         order_meta: {
-          // Use X-Forwarded-Proto so the URL is https when behind Railway's proxy.
-          notify_url: `${(req.headers["x-forwarded-proto"] as string)?.split(",")[0]?.trim() || req.protocol}://${req.get("host")}/api/cashfree/webhook`,
+          notify_url: `${publicAppBaseUrl()}/api/cashfree/webhook`,
         },
         order_note: `Rent for ${ledger.monthYear}`,
         order_tags: { ledgerId: id, propertyId: property.id, monthYear: ledger.monthYear },
@@ -471,7 +497,12 @@ export async function registerRoutes(
         return res.status(400).json({ message: 'Invalid signature' });
       }
 
-      const parsed = JSON.parse(rawBody.toString('utf8'));
+      let parsed: z.infer<typeof signedCashfreeWebhookSchema>;
+      try {
+        parsed = signedCashfreeWebhookSchema.parse(JSON.parse(rawBody.toString('utf8')));
+      } catch {
+        return res.status(400).json({ message: 'Invalid webhook payload' });
+      }
       const data = parsed?.data || {};
       const orderInfo = data?.order || {};
       const paymentInfo = data?.payment || {};
@@ -594,7 +625,7 @@ export async function registerRoutes(
   // the Cashfree modal closes; we fetch the order's payments from Cashfree and
   // reconcile the ledger using the same logic as the webhook. Idempotent: the
   // unique index on razorpay_payment_id ensures we never double-count.
-  app.post('/api/cashfree/verify/:orderId', isAuthenticated, paymentVerificationAccountLimiter, async (req: any, res) => {
+  app.post('/api/cashfree/verify/:orderId', isAuthenticated, paymentVerificationAccountLimiter, validateRequest({ params: orderIdParamsSchema, body: emptyBodySchema }), async (req: any, res) => {
     const orderId = req.params.orderId as string;
     if (!cashfreeConfigured()) {
       return res.status(503).json({ message: 'Payment gateway not configured' });
@@ -686,7 +717,7 @@ export async function registerRoutes(
   });
 
   // Collect Rent (Manual/Testing - also updates ledger after successful payment)
-  app.post(api.ledgers.collectRent.path, isAuthenticated, requireRole('ADMIN'), async (req, res) => {
+  app.post(api.ledgers.collectRent.path, isAuthenticated, requireRole('ADMIN'), validateRequest({ params: idParamsSchema }), async (req, res) => {
     const id = req.params.id as string;
     const ledger = await storage.getLedger(id);
     if (!ledger) {
@@ -743,7 +774,7 @@ export async function registerRoutes(
   });
 
   // Get payments for a ledger — must own/rent the property.
-  app.get(api.payments.listByLedger.path, isAuthenticated, async (req: any, res) => {
+  app.get(api.payments.listByLedger.path, isAuthenticated, validateRequest({ params: ledgerIdParamsSchema }), async (req: any, res) => {
     const { ledgerId } = req.params;
     const access = await requireLedgerAccess(req, res, String(ledgerId));
     if (!access) return;
@@ -752,7 +783,7 @@ export async function registerRoutes(
   });
 
   // Create partial payment with Cashfree — only the tenant of the property may pay.
-  app.post(api.payments.create.path, isAuthenticated, paymentOrderAccountLimiter, async (req: any, res) => {
+  app.post(api.payments.create.path, isAuthenticated, paymentOrderAccountLimiter, validateRequest({ params: ledgerIdParamsSchema }), async (req: any, res) => {
     const { ledgerId } = req.params;
     const access = await requireLedgerAccess(req, res, ledgerId);
     if (!access) return;
@@ -794,8 +825,7 @@ export async function registerRoutes(
           customer_name: decryptPII((u as any)?.fullLegalName) || u?.email || "Tenant",
         },
         order_meta: {
-          // Use X-Forwarded-Proto so the URL is https when behind Railway's proxy.
-          notify_url: `${(req.headers["x-forwarded-proto"] as string)?.split(",")[0]?.trim() || req.protocol}://${req.get("host")}/api/cashfree/webhook`,
+          notify_url: `${publicAppBaseUrl()}/api/cashfree/webhook`,
         },
         order_note: `Partial rent for ${ledger.monthYear}`,
         order_tags: {
@@ -834,7 +864,7 @@ export async function registerRoutes(
   // Tenant submits proof (UTR + optional screenshot) after returning from their
   // UPI app. The payment is recorded in PENDING_VERIFICATION state — the ledger
   // is NOT credited until an admin verifies the UTR against the bank statement.
-  app.post("/api/ledgers/:id/submit-payment-proof", isAuthenticated, async (req: any, res) => {
+  app.post("/api/ledgers/:id/submit-payment-proof", isAuthenticated, validateRequest({ params: idParamsSchema }), async (req: any, res) => {
     const { id: ledgerId } = req.params;
     const access = await requireLedgerAccess(req, res, ledgerId);
     if (!access) return;
@@ -920,6 +950,7 @@ export async function registerRoutes(
     "/api/payments/:id/verify",
     isAuthenticated,
     requireRole("ADMIN"),
+    validateRequest({ params: paymentIdParamsSchema, body: emptyBodySchema }),
     async (req: any, res) => {
       const adminId = req.user?.claims?.sub;
       try {
@@ -959,6 +990,7 @@ export async function registerRoutes(
     "/api/payments/:id/reject",
     isAuthenticated,
     requireRole("ADMIN"),
+    validateRequest({ params: paymentIdParamsSchema }),
     async (req: any, res) => {
       const adminId = req.user?.claims?.sub;
       let parsed;
@@ -994,11 +1026,11 @@ export async function registerRoutes(
   // === MAINTENANCE TICKETS ===
   
   // List tickets — scoped. ADMIN sees all; non-admins see only their property tickets.
-  app.get(api.tickets.list.path, isAuthenticated, async (req: any, res) => {
+  app.get(api.tickets.list.path, isAuthenticated, validateRequest({ query: ticketQuerySchema }), async (req: any, res) => {
     const userId = req.user?.claims?.sub;
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
     const u = await authStorage.getUser(userId);
-    const { propertyId, status } = req.query;
+    const { propertyId, status } = res.locals.validatedQuery as z.infer<typeof ticketQuerySchema>;
 
     if (typeof propertyId === "string") {
       const access = await requirePropertyAccess(req, res, propertyId);
@@ -1056,7 +1088,7 @@ export async function registerRoutes(
   });
 
   // Resolve ticket (Admin)
-  app.post(api.tickets.resolve.path, isAuthenticated, requireRole('ADMIN'), async (req: any, res) => {
+  app.post(api.tickets.resolve.path, isAuthenticated, requireRole('ADMIN'), validateRequest({ params: ticketIdParamsSchema, body: emptyBodySchema }), async (req: any, res) => {
     const { id } = req.params;
     const ticket = await storage.getTicket(id);
     if (!ticket) {
@@ -1081,7 +1113,7 @@ export async function registerRoutes(
   });
 
   // Get ticket counts by property — must own/rent the property.
-  app.get(api.tickets.countsByProperty.path, isAuthenticated, async (req: any, res) => {
+  app.get(api.tickets.countsByProperty.path, isAuthenticated, validateRequest({ params: idParamsSchema }), async (req: any, res) => {
     const { id } = req.params;
     const access = await requirePropertyAccess(req, res, id);
     if (!access) return;
@@ -1096,10 +1128,10 @@ export async function registerRoutes(
     fullLegalName: z.string().trim().min(2).max(100),
     panNumber: z.string().trim().regex(/^[A-Z]{5}[0-9]{4}[A-Z]$/i, "Invalid PAN format").optional().or(z.literal("")),
     aadhaarNumber: z.string().trim().regex(/^\d{12}$/, "Aadhaar must be 12 digits").optional().or(z.literal("")),
-    kycDocumentUrl: z.string().max(2_000_000).optional().or(z.literal("")),
+    kycDocumentUrl: documentValueSchema.optional().or(z.literal("")),
     bankAccountNumber: z.string().trim().regex(/^\d{9,18}$/, "Invalid bank account").optional().or(z.literal("")),
     ifscCode: z.string().trim().regex(/^[A-Z]{4}0[A-Z0-9]{6}$/i, "Invalid IFSC").optional().or(z.literal("")),
-    cancelledChequeUrl: z.string().max(2_000_000).optional().or(z.literal("")),
+    cancelledChequeUrl: documentValueSchema.optional().or(z.literal("")),
   }).strict();
 
   app.post("/api/kyc/submit", isAuthenticated, async (req: any, res) => {
@@ -1142,7 +1174,7 @@ export async function registerRoutes(
 
   // KYC document values remain encrypted in the database. Decryption is
   // limited to an authenticated administrator's no-store response.
-  app.get("/api/kyc/document/:userId/:documentType", isAuthenticated, requireRole('ADMIN'), async (req: any, res) => {
+  app.get("/api/kyc/document/:userId/:documentType", isAuthenticated, requireRole('ADMIN'), validateRequest({ params: documentParamsSchema }), async (req: any, res) => {
     const type = req.params.documentType;
     if (type !== "kyc" && type !== "cheque") {
       return res.status(400).json({ message: "Invalid document type" });
@@ -1168,7 +1200,7 @@ export async function registerRoutes(
   });
 
   // Verify user (Admin only).
-  app.post("/api/kyc/verify/:userId", isAuthenticated, requireRole('ADMIN'), async (req: any, res) => {
+  app.post("/api/kyc/verify/:userId", isAuthenticated, requireRole('ADMIN'), validateRequest({ params: userIdParamsSchema, body: emptyBodySchema }), async (req: any, res) => {
     const { userId } = req.params;
     const updated = await authStorage.updateUser(userId, { isVerified: true });
     if (!updated) return res.status(404).json({ message: 'User not found' });
@@ -1187,20 +1219,18 @@ export async function registerRoutes(
   //      number returned, encrypt them, and flip isVerified=true.
   //   Webhook (/api/kyc/didit/webhook) is best-effort — we still re-fetch the
   //   decision before trusting any state change.
-  app.post("/api/kyc/didit/start", isAuthenticated, diditStartAccountLimiter, async (req: any, res) => {
+  app.post("/api/kyc/didit/start", isAuthenticated, diditStartAccountLimiter, validateRequest({ body: emptyBodySchema }), async (req: any, res) => {
     const userId = req.user?.claims?.sub;
     if (!userId) return res.status(401).json({ message: 'Unauthorized' });
     if (!diditConfigured()) {
       return res.status(503).json({ message: 'E-KYC provider not configured' });
     }
     try {
-      const proto = (req.headers['x-forwarded-proto'] as string)?.split(',')[0] || req.protocol;
-      const host = (req.headers['x-forwarded-host'] as string)?.split(',')[0] || req.get('host');
       // Owners start KYC from the /verify page and should return there.
       // Tenants start from their dashboard and should return to /tenant.
       const me = await authStorage.getUser(userId);
       const returnPath = me?.role === 'OWNER' ? '/verify?kyc=didit' : '/tenant?kyc=didit';
-      const callback = `${proto}://${host}${returnPath}`;
+      const callback = `${publicAppBaseUrl()}${returnPath}`;
       console.log(`[didit] creating session for role=${me?.role} with callback=${callback}`);
       const session = await createDiditSession({
         callback,
@@ -1294,12 +1324,16 @@ export async function registerRoutes(
         console.error('[didit] webhook refused — DIDIT_WEBHOOK_SECRET is not configured');
         return res.status(503).json({ message: 'Webhook verification is not configured' });
       }
-      if (!rawBody || !sig || !verifyDiditWebhook(rawBody, sig)) {
+      if (!rawBody || !sig || sig.length > 1024 || !/^[A-Za-z0-9+/=_-]+$/.test(sig) || !verifyDiditWebhook(rawBody, sig)) {
         console.warn('[didit] webhook rejected — invalid or missing signature');
         return res.status(401).json({ message: 'Invalid signature' });
       }
 
-      const event = req.body || {};
+      const eventResult = signedDiditWebhookSchema.safeParse(req.body || {});
+      if (!eventResult.success) {
+        return res.status(400).json({ message: 'Invalid webhook payload' });
+      }
+      const event = eventResult.data;
       const sessionId: string | undefined = event.session_id || event.id;
       console.log(`[didit] webhook received session=${sessionId} status=${event.status}`);
       if (!sessionId) {
@@ -1380,7 +1414,7 @@ export async function registerRoutes(
   });
 
   // POST /api/agreements/:propertyId/mark-signed — admin: mark agreement as FULLY_SIGNED
-  app.post("/api/agreements/:propertyId/mark-signed", isAuthenticated, requireRole('ADMIN'), async (req: any, res) => {
+  app.post("/api/agreements/:propertyId/mark-signed", isAuthenticated, requireRole('ADMIN'), validateRequest({ params: propertyIdParamsSchema, body: emptyBodySchema }), async (req: any, res) => {
     const { propertyId } = req.params;
     const agreement = await storage.markAgreementSigned(propertyId);
 
@@ -1402,7 +1436,7 @@ export async function registerRoutes(
   });
 
   // POST /api/agreements/:propertyId/mark-owner-signed — admin: mark owner as having signed
-  app.post("/api/agreements/:propertyId/mark-owner-signed", isAuthenticated, requireRole('ADMIN'), async (req: any, res) => {
+  app.post("/api/agreements/:propertyId/mark-owner-signed", isAuthenticated, requireRole('ADMIN'), validateRequest({ params: propertyIdParamsSchema, body: emptyBodySchema }), async (req: any, res) => {
     const { propertyId } = req.params;
     const agreement = await storage.markOwnerSigned(propertyId);
 
@@ -1426,7 +1460,7 @@ export async function registerRoutes(
   });
 
   // POST /api/agreements/:propertyId/mark-tenant-signed — admin: mark tenant as having signed
-  app.post("/api/agreements/:propertyId/mark-tenant-signed", isAuthenticated, requireRole('ADMIN'), async (req: any, res) => {
+  app.post("/api/agreements/:propertyId/mark-tenant-signed", isAuthenticated, requireRole('ADMIN'), validateRequest({ params: propertyIdParamsSchema, body: emptyBodySchema }), async (req: any, res) => {
     const { propertyId } = req.params;
     const agreement = await storage.markTenantSigned(propertyId);
 
@@ -1464,12 +1498,12 @@ export async function registerRoutes(
 
   // Subscribe to push — strict validation; storage rejects hijack attempts.
   const pushSubSchema = z.object({
-    endpoint: z.string().url().max(2000),
-    p256dh: z.string().min(1).max(500),
-    auth: z.string().min(1).max(500),
+    endpoint: z.string().url().max(2000).refine((value) => /^https:\/\//i.test(value), "Push endpoint must use HTTPS"),
+    p256dh: z.string().min(16).max(500).regex(/^[A-Za-z0-9_-]+={0,2}$/, "Invalid push key format"),
+    auth: z.string().min(8).max(500).regex(/^[A-Za-z0-9_-]+={0,2}$/, "Invalid push auth format"),
   }).strict();
   const pushUnsubscribeSchema = z.object({
-    endpoint: z.string().url().max(2000),
+    endpoint: z.string().url().max(2000).refine((value) => /^https:\/\//i.test(value), "Push endpoint must use HTTPS"),
   }).strict();
   app.post("/api/push/subscribe", isAuthenticated, async (req: any, res) => {
     const userId = req.user?.claims?.sub;
@@ -1544,7 +1578,7 @@ export async function registerRoutes(
   });
 
   // Mark all notifications as read
-  app.post("/api/notifications/read", isAuthenticated, async (req: any, res) => {
+  app.post("/api/notifications/read", isAuthenticated, validateRequest({ body: emptyBodySchema }), async (req: any, res) => {
     const userId = req.user?.claims?.sub;
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
     await storage.markNotificationsRead(userId);
@@ -1552,7 +1586,7 @@ export async function registerRoutes(
   });
 
   // Rent due reminder check — creates an in-app notification if rent is due within 3 days
-  app.post("/api/notifications/rent-due-check", isAuthenticated, notificationTriggerAccountLimiter, async (req: any, res) => {
+  app.post("/api/notifications/rent-due-check", isAuthenticated, notificationTriggerAccountLimiter, validateRequest({ body: emptyBodySchema }), async (req: any, res) => {
     try {
       const userId = req.user?.claims?.sub;
       if (!userId) return res.status(401).json({ message: "Unauthorized" });
@@ -1680,7 +1714,7 @@ async function seedDatabase() {
 // ── Messaging Routes ──────────────────────────────────────────────────────────
 export function registerMessagingRoutes(app: Express) {
   // GET /api/messages/:propertyId — fetch all messages for a property
-  app.get('/api/messages/:propertyId', isAuthenticated, async (req: any, res) => {
+  app.get('/api/messages/:propertyId', isAuthenticated, validateRequest({ params: propertyIdParamsSchema }), async (req: any, res) => {
     try {
       const userId = req.user?.claims?.sub;
       if (!userId) return res.status(401).json({ message: 'Unauthorized' });
@@ -1705,7 +1739,10 @@ export function registerMessagingRoutes(app: Express) {
   });
 
   // POST /api/messages/:propertyId — send a message
-  app.post('/api/messages/:propertyId', isAuthenticated, async (req: any, res) => {
+  const propertyMessageSchema = z.object({
+    body: z.string().trim().min(1).max(2000),
+  }).strict();
+  app.post('/api/messages/:propertyId', isAuthenticated, validateRequest({ params: propertyIdParamsSchema, body: propertyMessageSchema }), async (req: any, res) => {
     try {
       const userId = req.user?.claims?.sub;
       if (!userId) return res.status(401).json({ message: 'Unauthorized' });
@@ -1718,9 +1755,7 @@ export function registerMessagingRoutes(app: Express) {
         return res.status(403).json({ message: 'Forbidden' });
       }
 
-      const body = (req.body.body || '').trim();
-      if (!body) return res.status(400).json({ message: 'Message body is required' });
-      if (body.length > 2000) return res.status(400).json({ message: 'Message too long' });
+      const { body } = req.body;
 
       const receiverId = property.ownerId === userId ? property.tenantId! : property.ownerId;
       if (!receiverId) return res.status(400).json({ message: 'No counterparty on this property yet' });
@@ -1793,7 +1828,7 @@ export function registerMessagingRoutes(app: Express) {
   });
 
   // GET /api/admin/messages/:propertyId — full thread for one property (admin only)
-  app.get('/api/admin/messages/:propertyId', isAuthenticated, requireRole('ADMIN'), async (req, res) => {
+  app.get('/api/admin/messages/:propertyId', isAuthenticated, requireRole('ADMIN'), validateRequest({ params: propertyIdParamsSchema }), async (req, res) => {
     try {
       const propertyId = req.params.propertyId as string;
       const property = await storage.getProperty(propertyId);

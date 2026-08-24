@@ -6,6 +6,7 @@ import type { Express, Request, RequestHandler, Response } from "express";
 import memoize from "memoizee";
 import connectPg from "connect-pg-simple";
 import { authStorage } from "./storage";
+import { bearerTokenSchema, emptyBodySchema, loginQuerySchema, validateRequest } from "../../input-validation";
 import { signAuthToken, verifyAuthToken } from "./token";
 import { pool } from "../../db";
 import { decryptPII, encryptPII } from "../../security";
@@ -198,8 +199,8 @@ export async function setupAuth(app: Express) {
   passport.serializeUser((user: Express.User, cb) => cb(null, user));
   passport.deserializeUser((user: Express.User, cb) => cb(null, user));
 
-  app.get("/api/login", (req, res, next) => {
-    const isAndroid = req.query.platform === "android";
+  app.get("/api/login", validateRequest({ query: loginQuerySchema }), (req, res, next) => {
+    const isAndroid = res.locals.validatedQuery.platform === "android";
 
     if (req.isAuthenticated()) {
       if (isAndroid) {
@@ -258,7 +259,7 @@ export async function setupAuth(app: Express) {
     });
   });
 
-  app.post("/api/logout", (req, res) => {
+  app.post("/api/logout", validateRequest({ body: emptyBodySchema }), (req, res) => {
     req.logout(() => {
       req.session.destroy(() => {
         clearSessionCookies(res);
@@ -278,8 +279,10 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
 
   // Bearer-token auth (Android app — sessions don't cross WebView/Chrome boundary)
   const authHeader = req.headers.authorization;
-  if (authHeader?.startsWith("Bearer ")) {
-    const token = authHeader.slice(7).trim();
+  if (authHeader) {
+    const header = bearerTokenSchema.safeParse(authHeader);
+    if (!header.success) return res.status(401).json({ message: "Unauthorized" });
+    const token = header.data.slice(7);
     const claims = verifyAuthToken(token);
     if (!claims) {
       return res.status(401).json({ message: "Unauthorized" });

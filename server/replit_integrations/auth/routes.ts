@@ -4,7 +4,20 @@ import { isAuthenticated } from ".";
 import { db } from "../../db";
 import { properties } from "@shared/schema";
 import { eq, isNull } from "drizzle-orm";
+import { z } from "zod";
 import { publicUser } from "../../security";
+import { emailQuerySchema, emptyBodySchema, validateRequest } from "../../input-validation";
+
+const onboardingRoleSchema = z.object({
+  role: z.enum(["TENANT", "OWNER"]),
+}).strict();
+
+const profileUpdateSchema = z.object({
+  firstName: z.string().trim().min(1).max(100).optional(),
+  lastName: z.string().trim().min(1).max(100).optional(),
+}).strict().refine((value) => value.firstName !== undefined || value.lastName !== undefined, {
+  message: "At least one profile field is required",
+});
 
 // Register auth-specific routes
 export function registerAuthRoutes(app: Express): void {
@@ -21,14 +34,10 @@ export function registerAuthRoutes(app: Express): void {
   });
 
   // Set user role (during onboarding) with Tenant Auto-Match
-  app.post("/api/auth/set-role", isAuthenticated, async (req: any, res) => {
+  app.post("/api/auth/set-role", isAuthenticated, validateRequest({ body: onboardingRoleSchema }), async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const { role } = req.body;
-
-      if (!role || !['TENANT', 'OWNER'].includes(role)) {
-        return res.status(400).json({ message: "Invalid role. Must be TENANT or OWNER." });
-      }
+      const { role } = req.body as z.infer<typeof onboardingRoleSchema>;
 
       const dbUser = await authStorage.updateUserRole(userId, role);
       if (!dbUser) {
@@ -61,11 +70,10 @@ export function registerAuthRoutes(app: Express): void {
   });
 
   // Update profile (name only — email managed by auth provider)
-  app.patch("/api/auth/profile", isAuthenticated, async (req: any, res) => {
+  app.patch("/api/auth/profile", isAuthenticated, validateRequest({ body: profileUpdateSchema }), async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const firstName = typeof req.body?.firstName === "string" ? req.body.firstName.trim().slice(0, 100) : undefined;
-      const lastName = typeof req.body?.lastName === "string" ? req.body.lastName.trim().slice(0, 100) : undefined;
+      const { firstName, lastName } = req.body as z.infer<typeof profileUpdateSchema>;
       const updated = await authStorage.updateUser(userId, {
         ...(firstName !== undefined ? { firstName } : {}),
         ...(lastName !== undefined ? { lastName } : {}),
@@ -81,7 +89,7 @@ export function registerAuthRoutes(app: Express): void {
   // Look up user by email (for property tenant assignment).
   // Only OWNER/ADMIN can perform lookups (used when adding a tenant to a property).
   // Email-format validated and length-bounded; rate-limited at the app layer.
-  app.get("/api/auth/user-by-email", isAuthenticated, async (req: any, res) => {
+  app.get("/api/auth/user-by-email", isAuthenticated, validateRequest({ query: emailQuerySchema }), async (req: any, res) => {
     try {
       const callerId = req.user?.claims?.sub;
       const caller = await authStorage.getUser(callerId);
@@ -89,10 +97,7 @@ export function registerAuthRoutes(app: Express): void {
         return res.status(403).json({ message: "Forbidden" });
       }
 
-      const { email } = req.query;
-      if (!email || typeof email !== "string" || email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        return res.status(400).json({ message: "Email is required" });
-      }
+      const { email } = res.locals.validatedQuery as z.infer<typeof emailQuerySchema>;
 
       const user = await authStorage.getUserByEmail(email);
       if (!user) {
@@ -108,7 +113,7 @@ export function registerAuthRoutes(app: Express): void {
   });
 
   // Delete own account (OWNER or TENANT only)
-  app.delete("/api/auth/account", isAuthenticated, async (req: any, res) => {
+  app.delete("/api/auth/account", isAuthenticated, validateRequest({ body: emptyBodySchema }), async (req: any, res) => {
     try {
       const userId = req.user?.claims?.sub;
       const user = await authStorage.getUser(userId);

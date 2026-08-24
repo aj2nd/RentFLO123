@@ -8,6 +8,7 @@ import { createServer } from "http";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import { pool, connectWithRetry } from "./db";
+import { sanitizeRequestBody } from "./input-validation";
 
 const app = express();
 const httpServer = createServer(app);
@@ -204,6 +205,10 @@ app.use(
 );
 
 app.use(express.urlencoded({ extended: false, limit: "2mb" }));
+// Sanitize every application-controlled input before registered API handlers.
+// Signed provider webhooks are excluded in the middleware and validate only
+// after their raw signature check.
+app.use("/api", sanitizeRequestBody);
 
 // ── Public account-deletion page ────────────────────────────────────────────
 // Required by Google Play Store "Data Deletion URL" field. Must be a
