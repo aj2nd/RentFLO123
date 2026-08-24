@@ -27,7 +27,9 @@ export function getSession() {
   const pgStore = connectPg(session);
   const sessionStore = new pgStore({
     pool,
-    createTableIfMissing: false,
+    // Provision the configured table on a fresh production database before
+    // the first login request; this keeps hosted deployments self-initializing.
+    createTableIfMissing: true,
     ttl: sessionTtl,
     tableName: "sessions",
     // Default prune interval is every 60 s, which opens an extra DB connection
