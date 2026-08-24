@@ -2,17 +2,16 @@
  * Design: exact corrected owner dashboard artwork with transparent, accessible
  * functional connection zones. The owner image remains visually unaltered.
  */
-import { useState } from "react";
 import { Link } from "wouter";
-import { BellRing, BookOpenText, FileSignature, Home, MessageSquare, ShieldCheck, UserRound, Wrench, X } from "lucide-react";
 import ownerDashboardArtwork from "@assets/rentflo-owner-dashboard-corrected-reference.jpeg";
+import { useSidebar } from "@/contexts/SidebarContext";
 
 function OwnerConnectionZone({ children, label, className }: { children: React.ReactNode; label: string; className: string }) {
   return <div className={`absolute z-20 ${className}`} aria-label={label}>{children}</div>;
 }
 
 export default function OwnerImageDashboard() {
-  const [menuOpen, setMenuOpen] = useState(false);
+  const { toggle } = useSidebar();
 
   return (
     <main className="dashboard-owner bg-[#020812] text-white">
@@ -20,7 +19,7 @@ export default function OwnerImageDashboard() {
         <section className="relative aspect-[822/1735] w-full overflow-hidden sm:rounded-[30px] sm:shadow-[0_28px_80px_rgba(0,0,0,0.55)]" aria-label="RentFLO owner dashboard">
           <img src={ownerDashboardArtwork} alt="RentFLO owner dashboard" className="pointer-events-none absolute inset-0 h-full w-full select-none object-contain" draggable={false} />
 
-          <OwnerConnectionZone label="Open owner navigation" className="left-[5.5%] top-[2.1%] h-[4.3%] w-[11.2%]"><button type="button" className="h-full w-full rounded-xl focus-visible:ring-2 focus-visible:ring-violet-300" aria-label="Open owner navigation" onClick={() => setMenuOpen(true)} /></OwnerConnectionZone>
+          <OwnerConnectionZone label="Open owner navigation" className="left-[5.5%] top-[2.1%] h-[4.3%] w-[11.2%]"><button type="button" className="h-full w-full rounded-xl focus-visible:ring-2 focus-visible:ring-violet-300" aria-label="Open owner navigation" onClick={toggle} /></OwnerConnectionZone>
           <OwnerConnectionZone label="View owner notifications" className="left-[76.1%] top-[2.1%] h-[4.3%] w-[11.2%]"><Link href="/notifications" className="block h-full w-full rounded-xl focus-visible:ring-2 focus-visible:ring-violet-300" aria-label="View owner notifications" /></OwnerConnectionZone>
 
           <OwnerConnectionZone label="Complete owner KYC" className="left-[5.5%] top-[11.1%] h-[7%] w-[22%]"><Link href="/verify" className="block h-full w-full rounded-xl focus-visible:ring-2 focus-visible:ring-violet-300" aria-label="Complete owner KYC verification" /></OwnerConnectionZone>
@@ -39,22 +38,6 @@ export default function OwnerImageDashboard() {
           <OwnerConnectionZone label="Open owner messages" className="left-[54.7%] top-[90%] h-[9.7%] w-[15.5%]"><Link href="/messages" className="block h-full w-full rounded-xl focus-visible:ring-2 focus-visible:ring-violet-300" aria-label="Open owner messages" /></OwnerConnectionZone>
           <OwnerConnectionZone label="Open owner profile" className="left-[71.2%] top-[90%] h-[9.7%] w-[15.5%]"><Link href="/profile" className="block h-full w-full rounded-xl focus-visible:ring-2 focus-visible:ring-violet-300" aria-label="Open owner profile" /></OwnerConnectionZone>
 
-          {menuOpen && <div className="absolute inset-0 z-40 bg-[#020815]/72 backdrop-blur-[2px]" role="dialog" aria-modal="true" aria-label="Owner navigation menu">
-            <div className="absolute left-0 top-0 h-full w-[78%] max-w-[420px] bg-[#0a1b31] px-[7%] py-[9%] shadow-[24px_0_56px_rgba(0,0,0,0.45)]">
-              <div className="flex items-center justify-between"><div><p className="text-[10px] uppercase tracking-[0.22em] text-violet-300">RentFLO</p><h2 className="mt-1 text-xl font-semibold text-white">Owner menu</h2></div><button type="button" onClick={() => setMenuOpen(false)} className="rounded-lg border border-white/10 p-2 text-slate-200 hover:bg-white/10" aria-label="Close menu"><X size={18} /></button></div>
-              <nav className="mt-9 space-y-2" aria-label="Owner destinations">
-                <Link href="/owner" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 rounded-xl bg-violet-500/15 px-4 py-3 text-sm font-semibold text-violet-100"><Home size={19} />Home</Link>
-                <Link href="/ledger" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm text-slate-200 hover:bg-white/[0.07]"><BookOpenText size={19} />Ledger</Link>
-                <Link href="/maintenance" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm text-slate-200 hover:bg-white/[0.07]"><Wrench size={19} />Repairs</Link>
-                <Link href="/messages" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm text-slate-200 hover:bg-white/[0.07]"><MessageSquare size={19} />Messages</Link>
-                <Link href="/notifications" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm text-slate-200 hover:bg-white/[0.07]"><BellRing size={19} />Notifications</Link>
-                <Link href="/verify" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm text-slate-200 hover:bg-white/[0.07]"><ShieldCheck size={19} />KYC verification</Link>
-                <Link href="/agreement" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm text-slate-200 hover:bg-white/[0.07]"><FileSignature size={19} />Agreement</Link>
-                <Link href="/profile" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm text-slate-200 hover:bg-white/[0.07]"><UserRound size={19} />Profile</Link>
-              </nav>
-            </div>
-            <button type="button" aria-label="Close menu" className="absolute right-0 top-0 h-full w-[22%]" onClick={() => setMenuOpen(false)} />
-          </div>}
         </section>
       </div>
     </main>

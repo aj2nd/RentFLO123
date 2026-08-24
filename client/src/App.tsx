@@ -96,7 +96,7 @@ function PrivateRoute({ component: Component, allowedRoles }: { component: React
 
   return (
     <>
-      {(!isImageLedDashboard || location === "/tenant") && <Navigation showMobileTopbarWhenOpenOnly={location === "/tenant"} />}
+      {(!isImageLedDashboard || location === "/tenant" || location === "/owner") && <Navigation showMobileTopbarWhenOpenOnly={location === "/tenant" || location === "/owner"} />}
       {isImageLedDashboard ? <Component /> : <SidebarContent><Component /></SidebarContent>}
       {!isImageLedDashboard && <BottomNav />}
       <AIChatBot />
