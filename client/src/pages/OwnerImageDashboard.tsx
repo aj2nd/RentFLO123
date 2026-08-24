@@ -3,8 +3,10 @@
  * functional connection zones. The owner image remains visually unaltered.
  */
 import { Link } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 import ownerDashboardArtwork from "@assets/rentflo-owner-dashboard-corrected-reference.jpeg";
 import { useSidebar } from "@/contexts/SidebarContext";
+import type { Agreement, User } from "@shared/schema";
 
 function OwnerConnectionZone({ children, label, className }: { children: React.ReactNode; label: string; className: string }) {
   return <div className={`absolute z-20 ${className}`} aria-label={label}>{children}</div>;
@@ -12,12 +14,18 @@ function OwnerConnectionZone({ children, label, className }: { children: React.R
 
 export default function OwnerImageDashboard() {
   const { toggle } = useSidebar();
+  const { data: currentUser } = useQuery<User>({ queryKey: ["/api/auth/user"] });
+  const { data: agreementData } = useQuery<{ agreement: Agreement | null }>({ queryKey: ["/api/agreements/mine"] });
+  const completeKyc = Boolean(currentUser?.isVerified);
+  const agreementSigned = agreementData?.agreement?.status === "FULLY_SIGNED" || agreementData?.agreement?.status === "OWNER_SIGNED";
 
   return (
     <main className="dashboard-owner bg-[#020812] text-white">
       <div className="mx-auto w-full max-w-[640px] px-0 sm:px-5 sm:py-5">
         <section className="relative aspect-[822/1735] w-full overflow-hidden sm:rounded-[30px] sm:shadow-[0_28px_80px_rgba(0,0,0,0.55)]" aria-label="RentFLO owner dashboard">
           <img src={ownerDashboardArtwork} alt="RentFLO owner dashboard" className="pointer-events-none absolute inset-0 h-full w-full select-none object-contain" draggable={false} />
+          {completeKyc && <span data-testid="owner-kyc-complete" className="pointer-events-none absolute left-[16.8%] top-[12.8%] z-30 flex h-[2.8%] w-[5.8%] items-center justify-center rounded-full border border-white/80 bg-emerald-500 text-[clamp(9px,2.4vw,15px)] font-black leading-none text-white shadow-[0_0_14px_rgba(16,185,129,0.9)]" aria-label="KYC completed">✓</span>}
+          {completeKyc && !agreementSigned && <span data-testid="owner-agreement-next" className="pointer-events-none absolute left-[29.6%] top-[10.8%] z-10 h-[7.6%] w-[25%] rounded-2xl border-2 border-violet-300/90 bg-violet-400/[0.14] shadow-[inset_0_0_24px_rgba(196,181,253,0.33),0_0_18px_rgba(139,92,246,0.62)]" aria-label="Sign Agreement is the next required step" />}
 
           <OwnerConnectionZone label="Open owner navigation" className="left-[5.5%] top-[2.1%] h-[4.3%] w-[11.2%]"><button type="button" className="h-full w-full rounded-xl focus-visible:ring-2 focus-visible:ring-violet-300" aria-label="Open owner navigation" onClick={toggle} /></OwnerConnectionZone>
           <OwnerConnectionZone label="View owner notifications" className="left-[76.1%] top-[2.1%] h-[4.3%] w-[11.2%]"><Link href="/notifications" className="block h-full w-full rounded-xl focus-visible:ring-2 focus-visible:ring-violet-300" aria-label="View owner notifications" /></OwnerConnectionZone>
