@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Receipt, TrendingUp, TrendingDown, Minus, Download } from "lucide-react";
 import { motion } from "framer-motion";
 import { useI18n } from "@/hooks/use-i18n";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useLayoutEffect } from "react";
 
 interface LedgerEntry {
   id: string;
@@ -90,6 +90,13 @@ function downloadCSV(transactions: Transaction[], user: { firstName?: string; la
 export default function LedgerPage() {
   const { user, isLoading: authLoading } = useAuth();
   const { t } = useI18n();
+
+  useLayoutEffect(() => {
+    const resetScroll = () => window.scrollTo(0, 0);
+    resetScroll();
+    const frame = window.requestAnimationFrame(resetScroll);
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
 
   const { data: ledgers, isLoading: ledgersLoading } = useQuery<LedgerEntry[]>({ queryKey: ['/api/ledgers'] });
   const { data: payments, isLoading: paymentsLoading } = useQuery<Payment[]>({ queryKey: ['/api/payments'] });
