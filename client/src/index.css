@@ -457,7 +457,7 @@
   --surface-modal: rgba(0, 0, 0, 0.92);
   --surface-card: rgba(9, 9, 9, 0.95);
   --border-subtle: rgba(255, 255, 255, 0.06);
-  --border-accent-dim: rgba(111, 255, 233, 0.20);
+  --border-accent-dim: rgba(139, 92, 246, 0.34);
 
   /* Mobile top bar height — used in height calculations */
   --topbar-h: 60px;
