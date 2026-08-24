@@ -20,6 +20,7 @@ import {
 } from "./didit";
 // leegality removed — agreements are now signed physically
 import OpenAI from "openai";
+import QRCode from "qrcode";
 import {
   encryptPII,
   publicUser,
@@ -133,6 +134,31 @@ export async function registerRoutes(
   app.use("/api", sanitizeBody);
 
   // === API ROUTES ===
+
+  // Render a payment QR image locally so UPI payment data never leaves RentFLO
+  // through a browser call to an external QR-generation service.
+  app.get("/api/payments/upi-qr", isAuthenticated, async (req, res) => {
+    const data = typeof req.query.data === "string" ? req.query.data : "";
+    if (data.length === 0 || data.length > 2048) {
+      return res.status(400).json({ message: "Invalid UPI payment data" });
+    }
+    try {
+      const upi = new URL(data);
+      if (upi.protocol !== "upi:" || upi.hostname !== "pay" || !upi.searchParams.get("pa")) {
+        return res.status(400).json({ message: "Invalid UPI payment data" });
+      }
+      const png = await QRCode.toBuffer(data, {
+        type: "png",
+        width: 240,
+        margin: 1,
+        errorCorrectionLevel: "M",
+      });
+      res.setHeader("Cache-Control", "no-store");
+      res.type("png").send(png);
+    } catch {
+      return res.status(400).json({ message: "Invalid UPI payment data" });
+    }
+  });
 
   // Properties — list is scoped to the caller. Admin sees all; OWNER sees own; TENANT sees own.
   app.get(api.properties.list.path, isAuthenticated, async (req: any, res) => {

@@ -116,6 +116,11 @@ export function PayRentButton({
     }
   };
 
+  const handleShowQr = () => {
+    const qrUrl = `/api/payments/upi-qr?data=${encodeURIComponent(upiLink)}`;
+    window.open(qrUrl, "_blank", "noopener,noreferrer");
+  };
+
   const utrValid = /^[A-Za-z0-9]{6,30}$/.test(utr.trim());
   const dashboardPresentation = presentation === "dashboard";
   const imageOverlayPresentation = presentation === "image-overlay";
@@ -157,7 +162,7 @@ export function PayRentButton({
             <Button type="button" variant="outline" onClick={handleCopy} className="rounded-none border-[#6FFFE9]/20 text-zinc-300 hover:border-[#6FFFE9]/40 hover:bg-white/5" data-testid="button-copy-upi">
               <Copy className="mr-2 h-4 w-4" />{copied ? "Copied" : "Copy"}
             </Button>
-            <Button type="button" variant="outline" className="rounded-none border-[#6FFFE9]/20 text-zinc-300 hover:border-[#6FFFE9]/40 hover:bg-white/5" data-testid="button-show-qr" onClick={() => window.open(`https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(upiLink)}`, "_blank", "noopener,noreferrer")}>
+            <Button type="button" variant="outline" className="rounded-none border-[#6FFFE9]/20 text-zinc-300 hover:border-[#6FFFE9]/40 hover:bg-white/5" data-testid="button-show-qr" onClick={handleShowQr}>
               <QrCode className="h-4 w-4" />
             </Button>
           </div>
