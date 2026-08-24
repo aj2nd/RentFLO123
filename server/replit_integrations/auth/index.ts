@@ -2,7 +2,7 @@ import * as client from "openid-client";
 import { Strategy, type VerifyFunction } from "openid-client/passport";
 import passport from "passport";
 import session from "express-session";
-import type { Express, RequestHandler } from "express";
+import type { Express, Request, RequestHandler, Response } from "express";
 import memoize from "memoizee";
 import connectPg from "connect-pg-simple";
 import { authStorage } from "./storage";
@@ -14,8 +14,34 @@ import { encryptLegacySensitiveUsers } from "../../migrations/encrypt-sensitive-
 const ANDROID_DEEP_LINK = "rentflo://auth/callback";
 // A dedicated name prevents an invalid session from a prior deployment or
 // SESSION_SECRET from being reused after a production migration.
-const SESSION_COOKIE_NAME = "rentflo.sid";
+const SESSION_COOKIE_NAME = "__Host-rentflo.sid";
+const LEGACY_SESSION_COOKIE_NAME = "rentflo.sid";
 const SESSION_ENVELOPE_KEY = "__rentflo_encrypted_session";
+// Web sessions are deliberately short-lived and fixed-duration. A user must
+// sign in again after seven days, even if an OAuth refresh occurs meanwhile.
+const SESSION_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+// connect-pg-simple expects its fallback TTL in seconds, not milliseconds.
+const SESSION_TTL_SECONDS = SESSION_MAX_AGE_MS / 1000;
+const SESSION_COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: true,
+  sameSite: "lax" as const,
+  path: "/",
+};
+
+function clearSessionCookies(res: Response) {
+  res.clearCookie(SESSION_COOKIE_NAME, SESSION_COOKIE_OPTIONS);
+  // Clear names issued by older releases while users naturally migrate to the
+  // host-only cookie above. The legacy cookie never grants a new session.
+  res.clearCookie(LEGACY_SESSION_COOKIE_NAME, SESSION_COOKIE_OPTIONS);
+  res.clearCookie("connect.sid", SESSION_COOKIE_OPTIONS);
+}
+
+function rejectExpiredSession(req: Request, res: Response) {
+  req.session?.destroy(() => undefined);
+  clearSessionCookies(res);
+  return res.status(401).json({ message: "Session expired. Please sign in again." });
+}
 
 const getOidcConfig = memoize(
   async () => {
@@ -54,7 +80,6 @@ async function ensureSessionStoreTable() {
 }
 
 export function getSession() {
-  const sessionTtl = 30 * 24 * 60 * 60 * 1000; // 30 days
   const pgStore = connectPg(session);
   class EncryptedPgStore extends pgStore {
     get(sid: string, callback: (error: any, stored?: any) => void) {
@@ -87,11 +112,11 @@ export function getSession() {
     // The server creates this table explicitly before middleware setup so the
     // production bundle never needs connect-pg-simple's external table.sql.
     createTableIfMissing: false,
-    ttl: sessionTtl,
+    ttl: SESSION_TTL_SECONDS,
     tableName: "sessions",
     // Default prune interval is every 60 s, which opens an extra DB connection
     // on each cycle and contributes to pool exhaustion during request bursts.
-    // Pruning hourly is sufficient for a 30-day session TTL.
+    // Pruning hourly is sufficient for the fixed seven-day session lifetime.
     pruneSessionInterval: 60 * 60, // seconds — prune once per hour
   });
   return session({
@@ -101,12 +126,12 @@ export function getSession() {
     resave: false,
     saveUninitialized: false,
     cookie: {
-      httpOnly: true,
-      secure: true,
-      sameSite: "lax",
-      path: "/",
-      maxAge: sessionTtl,
+      ...SESSION_COOKIE_OPTIONS,
+      maxAge: SESSION_MAX_AGE_MS,
     },
+    // Never extend the browser cookie just because an authenticated request
+    // occurred; the server also enforces the fixed session-issued timestamp.
+    rolling: false,
   });
 }
 
@@ -205,6 +230,10 @@ export async function setupAuth(app: Express) {
         if (loginErr) return res.redirect("/api/login");
         const isAndroid = (req.session as any).androidAuth === true;
         (req.session as any).androidAuth = false;
+        // This stamp is server-side session data, not a browser-readable token.
+        // It caps a web login even if the user continues to make requests.
+        (req.session as any).authIssuedAt = Date.now();
+        req.session.cookie.maxAge = SESSION_MAX_AGE_MS;
         // Passport mutates the session asynchronously. Save it before the
         // redirect so Railway has persisted the logged-in user before the SPA
         // immediately asks /api/auth/user for its identity.
@@ -223,8 +252,7 @@ export async function setupAuth(app: Express) {
   app.get("/api/logout", (req, res) => {
     req.logout(() => {
       req.session.destroy(() => {
-        res.clearCookie(SESSION_COOKIE_NAME);
-        res.clearCookie("connect.sid");
+        clearSessionCookies(res);
         res.redirect("/");
       });
     });
@@ -233,8 +261,7 @@ export async function setupAuth(app: Express) {
   app.post("/api/logout", (req, res) => {
     req.logout(() => {
       req.session.destroy(() => {
-        res.clearCookie(SESSION_COOKIE_NAME);
-        res.clearCookie("connect.sid");
+        clearSessionCookies(res);
         res.status(204).end();
       });
     });
@@ -271,7 +298,14 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
   // Session-based auth (web)
   const user = req.user as any;
   const userId = user?.claims?.sub;
-  if (!req.isAuthenticated() || !userId || !user.expires_at) {
+  const issuedAt = Number((req.session as any)?.authIssuedAt);
+  const nowMs = Date.now();
+  const hasValidSessionWindow = Number.isFinite(issuedAt)
+    && issuedAt > 0
+    && issuedAt <= nowMs + 60_000
+    && nowMs - issuedAt <= SESSION_MAX_AGE_MS;
+  if (!req.isAuthenticated() || !userId || !user.expires_at || !hasValidSessionWindow) {
+    if (req.isAuthenticated()) return rejectExpiredSession(req, res);
     return res.status(401).json({ message: "Unauthorized" });
   }
   const now = Math.floor(Date.now() / 1000);
@@ -295,8 +329,7 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
     }
     return next();
   } catch (error) {
-    res.status(401).json({ message: "Unauthorized" });
-    return;
+    return rejectExpiredSession(req, res);
   }
 };
 export { registerAuthRoutes } from "./routes";

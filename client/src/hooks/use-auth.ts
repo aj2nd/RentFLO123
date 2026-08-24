@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import type { User } from "@shared/models/auth";
 import {
   API_BASE,
+  clearLegacyBrowserAuthStorage,
   getAuthToken,
   setAuthToken,
   clearAuthToken,
@@ -37,6 +38,12 @@ async function fetchUser(): Promise<User | null> {
 
 export function useAuth() {
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    // Clear any credential written by a historical browser build. The web app
+    // only authenticates through the server-managed HTTP-only cookie.
+    clearLegacyBrowserAuthStorage();
+  }, []);
 
   const { data: user, isLoading } = useQuery<User | null>({
     queryKey: ["/api/auth/user"],

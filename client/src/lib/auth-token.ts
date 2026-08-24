@@ -9,6 +9,17 @@ export const API_BASE = Capacitor.isNativePlatform() ? "https://rentflo.in" : ""
 
 const AUTH_TOKEN_KEY = "auth_token";
 
+/**
+ * Removes a token left by any legacy browser build. Web authentication uses
+ * the HTTP-only session cookie, so browser JavaScript must never retain an
+ * equivalent credential. Native Android storage is intentionally untouched.
+ */
+export function clearLegacyBrowserAuthStorage(): void {
+  if (typeof window === "undefined" || Capacitor.isNativePlatform()) return;
+  window.localStorage.removeItem(AUTH_TOKEN_KEY);
+  window.sessionStorage.removeItem(AUTH_TOKEN_KEY);
+}
+
 export async function getAuthToken(): Promise<string | null> {
   if (!Capacitor.isNativePlatform()) return null;
   const { value } = await Preferences.get({ key: AUTH_TOKEN_KEY });

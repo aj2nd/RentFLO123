@@ -1,6 +1,8 @@
 import crypto from "crypto";
 
-const TOKEN_TTL_SECONDS = 30 * 24 * 60 * 60;
+// This applies only to the Android deep-link fallback. Browser sessions use
+// the HTTP-only server session cookie configured in index.ts.
+export const NATIVE_AUTH_TOKEN_TTL_SECONDS = 7 * 24 * 60 * 60;
 
 export interface AuthClaims {
   sub: string;
@@ -36,7 +38,7 @@ export function signAuthToken(claims: { sub: string; email?: string }): string {
       sub: claims.sub,
       email: claims.email,
       iat: now,
-      exp: now + TOKEN_TTL_SECONDS,
+      exp: now + NATIVE_AUTH_TOKEN_TTL_SECONDS,
     }),
   );
   const data = `${header}.${payload}`;
