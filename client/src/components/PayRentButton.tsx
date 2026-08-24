@@ -25,6 +25,7 @@ type PayRentButtonProps = {
   buttonLabel?: string;
   buttonClassName?: string;
   ariaLabel?: string;
+  dueDate?: string;
 };
 
 export function PayRentButton({
@@ -35,6 +36,7 @@ export function PayRentButton({
   buttonLabel = "Pay Rent",
   buttonClassName = "",
   ariaLabel,
+  dueDate,
 }: PayRentButtonProps) {
   const { t } = useI18n();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -47,9 +49,9 @@ export function PayRentButton({
   const { toast } = useToast();
 
   const upiLink = useMemo(() => {
-    const params = new URLSearchParams({ pa: vpa, pn: "Rentflo", am: String(amount), cu: "INR", tn: "RentPayment" });
+    const params = new URLSearchParams({ pa: vpa, pn: "Rentflo", am: String(amount), cu: "INR", tn: dueDate ? `RentPayment Due ${dueDate}` : "RentPayment" });
     return `upi://pay?${params.toString()}`;
-  }, [amount, vpa]);
+  }, [amount, dueDate, vpa]);
 
   useEffect(() => {
     const saved = sessionStorage.getItem("rentflo-payrent-processing");
