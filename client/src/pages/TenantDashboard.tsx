@@ -78,7 +78,7 @@ export default function TenantDashboard() {
           <span aria-hidden>₹</span>
           <input data-testid="input-monthly-rent" inputMode="numeric" type="text" pattern="[0-9]*" value={monthlyRentInput ? Number(monthlyRentInput).toLocaleString("en-IN") : ""} onChange={(event) => setMonthlyRentInput(event.target.value.replace(/[^0-9]/g, ""))} placeholder="" className="min-w-0 flex-1 bg-transparent text-inherit outline-none" aria-label="Enter total monthly rent in Indian rupees" />
         </label>
-        <label className="absolute left-[65%] top-[62.2%] z-30 flex h-[2.4%] w-[22%] items-center rounded-md bg-[#24383c]/90 px-1 text-[clamp(10px,2.5vw,16px)] font-medium text-violet-300" aria-label="Select due date in the current month">
+        <label className="absolute left-[63.5%] top-[63.25%] z-30 flex h-[2.1%] w-[21%] items-center rounded-md bg-[#24383c]/90 px-1 text-[clamp(10px,2.5vw,16px)] font-medium text-violet-300" aria-label="Select due date in the current month">
           <span data-testid="text-due-date" aria-hidden>{dueDateLabel}</span>
           <input data-testid="input-due-date" type="date" value={dueDate} min={currentMonthBounds.firstDay} max={currentMonthBounds.lastDay} onChange={(event) => setDueDate(event.target.value)} className="absolute inset-0 h-full w-full cursor-pointer opacity-0" aria-label="Select due date in the current month" />
         </label>
