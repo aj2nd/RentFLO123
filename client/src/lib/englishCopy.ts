@@ -4,7 +4,6 @@ export default {
     settings: "Settings",
     welcome_message: "Welcome to RentFLO",
     login: "Login",
-    change_language: "Change Language",
     dashboard: "Dashboard",
     tenant: "Tenant",
     owner: "Owner",

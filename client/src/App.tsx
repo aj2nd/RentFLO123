@@ -11,7 +11,6 @@ import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/use-auth";
-import { LanguageProvider } from "@/contexts/LanguageContext";
 import { SidebarProvider, useSidebar } from "@/contexts/SidebarContext";
 
 import NotFound from "@/pages/not-found";
@@ -238,15 +237,13 @@ function App() {
   return (
     <ThemeProvider attribute="class" defaultTheme="dark" forcedTheme="dark" enableSystem={false} disableTransitionOnChange>
       <QueryClientProvider client={queryClient}>
-        <LanguageProvider>
-          <SidebarProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Router />
-              <ConditionalLegalFooter />
-            </TooltipProvider>
-          </SidebarProvider>
-        </LanguageProvider>
+        <SidebarProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Router />
+            <ConditionalLegalFooter />
+          </TooltipProvider>
+        </SidebarProvider>
       </QueryClientProvider>
     </ThemeProvider>
   );
