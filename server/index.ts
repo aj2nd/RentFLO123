@@ -12,6 +12,10 @@ import { pool, connectWithRetry } from "./db";
 const app = express();
 const httpServer = createServer(app);
 
+// Railway forwards requests through a single trusted reverse proxy. Configure
+// this before every limiter so req.ip is the originating client, not Railway.
+app.set("trust proxy", 1);
+
 declare module "http" {
   interface IncomingMessage {
     rawBody: unknown;
@@ -70,54 +74,93 @@ app.use("/api", (req, res, next) => {
 
 // ── Rate Limiters ───────────────────────────────────────────────────────────
 
-// Global API limiter: 300 requests per 15 minutes per IP
+// Global API limiter: 240 requests per 15 minutes per originating IP.
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 300,
+  max: 240,
   standardHeaders: true,
   legacyHeaders: false,
   message: { message: "Too many requests. Please try again later." },
   skip: (req) => !req.path.startsWith("/api"),
 });
 
-// Auth/login limiter: 30 attempts per 15 minutes per IP
-const authLimiter = rateLimit({
+// Authentication starts may redirect to a provider and are much stricter than
+// general API traffic. RentFLO has no local signup or password-reset route:
+// Google OIDC owns those flows.
+const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 30,
+  max: 5,
   standardHeaders: true,
   legacyHeaders: false,
   message: { message: "Too many authentication attempts. Please try again later." },
 });
 
-// Sensitive action limiter (KYC, payments): 20 per 15 minutes per IP.
+const oauthCallbackLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "Too many authentication callbacks. Please try again later." },
+});
+
+const accountDiscoveryLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "Too many account lookups. Please try again later." },
+});
+
+// Sensitive action limiter (KYC, payments): 12 per 15 minutes per IP.
 // Didit status polling is intentionally exempted — it's polled every 3s
 // from the client and has its own dedicated, polling-friendly limiter below.
 const sensitiveLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 20,
+  max: 12,
   standardHeaders: true,
   legacyHeaders: false,
   message: { message: "Too many requests for this action. Please try again later." },
-  skip: (req) => req.path === "/api/kyc/didit/status",
+  skip: (req) => req.originalUrl.split("?")[0] === "/api/kyc/didit/status",
 });
 
 // Polling limiter for Didit status — generous because the client polls
 // every 3s for up to 36s (~12 calls) per verification attempt.
 const diditPollLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 200,
+  max: 60,
   standardHeaders: true,
   legacyHeaders: false,
   message: { message: "Too many status checks. Please slow down." },
 });
 
-// AI/expensive resource limiter (chatbot)
+// AI/expensive resource limiter (chatbot): network-level backstop. A stricter
+// authenticated per-account cap is applied immediately before OpenAI work.
 const aiLimiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: 10,
+  windowMs: 15 * 60 * 1000,
+  max: 5,
   standardHeaders: true,
   legacyHeaders: false,
   message: { message: "Too many requests. Please slow down." },
+});
+
+// Cashfree order and verification requests make provider calls. They receive
+// a network-level limit here plus a per-account limit at the route handler.
+const paymentProviderLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "Too many payment-provider requests. Please try again later." },
+});
+
+// A Didit session creation request contacts the external KYC provider. Polling
+// has its own separate policy above to preserve the expected verification UI.
+const diditStartLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "Too many verification starts. Please try again later." },
 });
 
 // Webhook limiter (Cashfree) — high enough for legit traffic, low enough to deter abuse
@@ -130,15 +173,17 @@ const webhookLimiter = rateLimit({
 });
 
 app.use(globalLimiter);
-app.use("/api/login", authLimiter);
-app.use("/api/callback", authLimiter);
-app.use("/api/auth/set-role", authLimiter);
-app.use("/api/auth/user-by-email", authLimiter);
+app.use("/api/login", loginLimiter);
+app.use("/api/auth/google/callback", oauthCallbackLimiter);
+app.use("/api/auth/user-by-email", accountDiscoveryLimiter);
 app.use("/api/kyc/didit/status", diditPollLimiter);
+app.use("/api/kyc/didit/start", diditStartLimiter);
 app.use("/api/kyc", sensitiveLimiter);
 app.use("/api/payments", sensitiveLimiter);
 app.use("/api/advances", sensitiveLimiter);
 app.use("/api/ledgers", sensitiveLimiter);
+app.use("/api/ledgers/:ledgerId/payments", paymentProviderLimiter);
+app.use("/api/cashfree/verify", paymentProviderLimiter);
 app.use("/api/agreements/leegality/send", sensitiveLimiter);
 app.use("/api/agreements/leegality/webhook", webhookLimiter);
 app.use("/api/agreements", sensitiveLimiter);
@@ -146,6 +191,7 @@ app.use("/api/push", sensitiveLimiter);
 app.use("/api/notifications/rent-due-check", sensitiveLimiter);
 app.use("/api/chatbot", aiLimiter);
 app.use("/api/cashfree/webhook", webhookLimiter);
+app.use("/api/kyc/didit/webhook", webhookLimiter);
 
 // ── Body Parsing (with size limits) ─────────────────────────────────────────
 app.use(

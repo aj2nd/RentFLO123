@@ -21,6 +21,7 @@ import {
 // leegality removed — agreements are now signed physically
 import OpenAI from "openai";
 import QRCode from "qrcode";
+import { createAccountRateLimiter } from "./rate-limit";
 import {
   encryptPII,
   decryptPII,
@@ -49,6 +50,39 @@ const sanitizeBody: RequestHandler = (req, _res, next) => {
   }
   next();
 };
+
+// These limits run after isAuthenticated, so a caller cannot evade them by
+// switching IP addresses. Their IP-level backstops are mounted in index.ts.
+const paymentOrderAccountLimiter = createAccountRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 3,
+  message: "Too many payment order attempts. Please try again later.",
+});
+const paymentVerificationAccountLimiter = createAccountRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: "Too many payment verification attempts. Please try again later.",
+});
+const diditStartAccountLimiter = createAccountRateLimiter({
+  windowMs: 60 * 60 * 1000,
+  max: 3,
+  message: "Too many verification starts. Please try again later.",
+});
+const diditPollAccountLimiter = createAccountRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  message: "Too many verification status checks. Please slow down.",
+});
+const aiAccountLimiter = createAccountRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 3,
+  message: "Too many AI requests. Please try again later.",
+});
+const notificationTriggerAccountLimiter = createAccountRateLimiter({
+  windowMs: 60 * 60 * 1000,
+  max: 2,
+  message: "Too many notification checks. Please try again later.",
+});
 
 const requireRole = (...roles: string[]): RequestHandler => {
   return async (req: any, res, next) => {
@@ -560,7 +594,7 @@ export async function registerRoutes(
   // the Cashfree modal closes; we fetch the order's payments from Cashfree and
   // reconcile the ledger using the same logic as the webhook. Idempotent: the
   // unique index on razorpay_payment_id ensures we never double-count.
-  app.post('/api/cashfree/verify/:orderId', isAuthenticated, async (req: any, res) => {
+  app.post('/api/cashfree/verify/:orderId', isAuthenticated, paymentVerificationAccountLimiter, async (req: any, res) => {
     const orderId = req.params.orderId as string;
     if (!cashfreeConfigured()) {
       return res.status(503).json({ message: 'Payment gateway not configured' });
@@ -718,7 +752,7 @@ export async function registerRoutes(
   });
 
   // Create partial payment with Cashfree — only the tenant of the property may pay.
-  app.post(api.payments.create.path, isAuthenticated, async (req: any, res) => {
+  app.post(api.payments.create.path, isAuthenticated, paymentOrderAccountLimiter, async (req: any, res) => {
     const { ledgerId } = req.params;
     const access = await requireLedgerAccess(req, res, ledgerId);
     if (!access) return;
@@ -1153,7 +1187,7 @@ export async function registerRoutes(
   //      number returned, encrypt them, and flip isVerified=true.
   //   Webhook (/api/kyc/didit/webhook) is best-effort — we still re-fetch the
   //   decision before trusting any state change.
-  app.post("/api/kyc/didit/start", isAuthenticated, async (req: any, res) => {
+  app.post("/api/kyc/didit/start", isAuthenticated, diditStartAccountLimiter, async (req: any, res) => {
     const userId = req.user?.claims?.sub;
     if (!userId) return res.status(401).json({ message: 'Unauthorized' });
     if (!diditConfigured()) {
@@ -1217,7 +1251,7 @@ export async function registerRoutes(
     });
   }
 
-  app.get("/api/kyc/didit/status", isAuthenticated, async (req: any, res) => {
+  app.get("/api/kyc/didit/status", isAuthenticated, diditPollAccountLimiter, async (req: any, res) => {
     const userId = req.user?.claims?.sub;
     if (!userId) return res.status(401).json({ message: 'Unauthorized' });
     if (!diditConfigured()) {
@@ -1518,7 +1552,7 @@ export async function registerRoutes(
   });
 
   // Rent due reminder check — creates an in-app notification if rent is due within 3 days
-  app.post("/api/notifications/rent-due-check", isAuthenticated, async (req: any, res) => {
+  app.post("/api/notifications/rent-due-check", isAuthenticated, notificationTriggerAccountLimiter, async (req: any, res) => {
     try {
       const userId = req.user?.claims?.sub;
       if (!userId) return res.status(401).json({ message: "Unauthorized" });
@@ -1807,7 +1841,7 @@ export function registerMessagingRoutes(app: Express) {
       .optional(),
   }).strict();
 
-  app.post("/api/chatbot", isAuthenticated, async (req: any, res) => {
+  app.post("/api/chatbot", isAuthenticated, aiAccountLimiter, async (req: any, res) => {
     try {
       let parsed: z.infer<typeof chatSchema>;
       try {
