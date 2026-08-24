@@ -5,9 +5,9 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
-import { BookOpen, Home, MessageSquare, UserRound, Wrench, X } from "lucide-react";
 import { useLedgers } from "@/hooks/use-ledgers";
 import { useAuth } from "@/hooks/use-auth";
+import { useSidebar } from "@/contexts/SidebarContext";
 import { PayRentButton } from "@/components/PayRentButton";
 import { LegalFooter } from "@/components/LegalFooter";
 import type { Agreement, User } from "@shared/schema";
@@ -24,12 +24,12 @@ function ConnectionZone({ children, label, className }: { children: React.ReactN
 export default function TenantDashboard() {
   const { data: ledgers } = useLedgers();
   const { user } = useAuth();
+  const { toggle } = useSidebar();
   const { data: currentUser } = useQuery<User>({ queryKey: ["/api/auth/user"] });
   const { data: agreementData } = useQuery<{ agreement: Agreement | null }>({ queryKey: ["/api/agreements/mine"] });
   const [amountChoice, setAmountChoice] = useState<AmountChoice>("full");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("phonepe");
   const [otherAmount, setOtherAmount] = useState("");
-  const [menuOpen, setMenuOpen] = useState(false);
   const unpaidLedger = ledgers?.find((ledger) => ledger.amountCollected < ledger.property.monthlyRent);
   const property = unpaidLedger?.property ?? ledgers?.[0]?.property ?? null;
   const totalDue = property?.monthlyRent ?? 48500;
@@ -49,7 +49,7 @@ export default function TenantDashboard() {
     <div className="mx-auto w-full max-w-[640px] px-0 sm:px-5 sm:py-5">
       <section className="relative aspect-[853/1844] w-full overflow-hidden sm:rounded-[30px] sm:shadow-[0_28px_80px_rgba(0,0,0,0.55)]" aria-label={`RentFLO tenant payment dashboard for ${tenantName}`}>
         <img src={tenantDashboardArtwork} alt="RentFLO tenant payment dashboard" className="pointer-events-none absolute inset-0 h-full w-full select-none object-contain" draggable={false} />
-        <ConnectionZone label="Open navigation" className="left-[4%] top-[1.1%] h-[4.4%] w-[10%]"><button type="button" className="h-full w-full rounded-xl focus-visible:ring-2 focus-visible:ring-violet-300" aria-label="Open navigation" onClick={() => setMenuOpen(true)} /></ConnectionZone>
+        <ConnectionZone label="Open navigation" className="left-[4%] top-[1.1%] h-[4.4%] w-[10%]"><button type="button" className="h-full w-full rounded-xl focus-visible:ring-2 focus-visible:ring-violet-300" aria-label="Open navigation" onClick={toggle} /></ConnectionZone>
         <ConnectionZone label="View notifications" className="right-[4.6%] top-[1.1%] h-[4.4%] w-[9.5%]"><Link href="/notifications" className="block h-full w-full rounded-xl focus-visible:ring-2 focus-visible:ring-violet-300" aria-label="View notifications" /></ConnectionZone>
         <ConnectionZone label="KYC verification" className="left-[7%] top-[6.8%] h-[8%] w-[21%]"><Link href="/verify" className="block h-full w-full rounded-xl focus-visible:ring-2 focus-visible:ring-violet-300" aria-label={completeKyc ? "Review completed KYC verification" : "Complete KYC verification"} /></ConnectionZone>
         <ConnectionZone label="Agreement signing" className="left-[29.5%] top-[6.8%] h-[8%] w-[25%]"><Link href="/agreement" className="block h-full w-full rounded-xl focus-visible:ring-2 focus-visible:ring-violet-300" aria-label={agreementSigned ? "Review signed agreement" : "Sign rental agreement"} /></ConnectionZone>
@@ -73,7 +73,6 @@ export default function TenantDashboard() {
         <ConnectionZone label="Messages navigation" className="left-[52%] top-[79%] h-[15%] w-[13%]"><Link href="/messages" className="block h-full w-full rounded-2xl focus-visible:ring-2 focus-visible:ring-violet-300" aria-label="Open messages" /></ConnectionZone>
         <ConnectionZone label="Profile navigation" className="left-[67%] top-[79%] h-[15%] w-[13%]"><Link href="/profile" className="block h-full w-full rounded-2xl focus-visible:ring-2 focus-visible:ring-violet-300" aria-label="Open profile" /></ConnectionZone>
         <span className="sr-only">Current amount: ₹{selectedAmount.toLocaleString("en-IN")}. Selected payment method: {paymentMethod}.</span>
-        {menuOpen && <div className="absolute inset-0 z-40 bg-[#020815]/72 backdrop-blur-[2px]" role="dialog" aria-modal="true" aria-label="Tenant navigation menu"><div className="absolute left-0 top-0 h-full w-[78%] max-w-[420px] bg-[#0a1b31] px-[7%] py-[9%] shadow-[24px_0_56px_rgba(0,0,0,0.45)]"><div className="flex items-center justify-between"><div><p className="text-[10px] uppercase tracking-[0.22em] text-violet-300">RentFLO</p><h2 className="mt-1 text-xl font-semibold text-white">Tenant menu</h2></div><button type="button" onClick={() => setMenuOpen(false)} className="rounded-lg border border-white/10 p-2 text-slate-200 hover:bg-white/10" aria-label="Close menu"><X size={18} /></button></div><nav className="mt-9 space-y-2" aria-label="Tenant destinations"><Link href="/tenant" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 rounded-xl bg-violet-500/15 px-4 py-3 text-sm font-semibold text-violet-100"><Home size={19} />Home</Link><Link href="/ledger" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm text-slate-200 hover:bg-white/[0.07]"><BookOpen size={19} />Ledger</Link><Link href="/maintenance" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm text-slate-200 hover:bg-white/[0.07]"><Wrench size={19} />Repairs</Link><Link href="/messages" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm text-slate-200 hover:bg-white/[0.07]"><MessageSquare size={19} />Messages</Link><Link href="/profile" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm text-slate-200 hover:bg-white/[0.07]"><UserRound size={19} />Profile</Link></nav></div><button type="button" aria-label="Close menu" className="absolute right-0 top-0 h-full w-[22%]" onClick={() => setMenuOpen(false)} /></div>}
       </section>
       <LegalFooter embedded forceVisible />
     </div>

@@ -15,7 +15,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useTheme } from "next-themes";
 import newHeaderWordmark from "@assets/IMG_8383_1787480222056.png";
 
-export function Navigation() {
+export function Navigation({ showMobileTopbarWhenOpenOnly = false }: { showMobileTopbarWhenOpenOnly?: boolean }) {
   const [location] = useLocation();
   const { user, logout, isLoading } = useAuth();
   const { resolvedTheme } = useTheme();
@@ -63,7 +63,7 @@ export function Navigation() {
   return (
     <>
       {/* ── Mobile top bar — visible only on mobile (md:hidden) ── */}
-      <div
+      {(!showMobileTopbarWhenOpenOnly || !collapsed) && <div
         className="fixed left-0 right-0 md:hidden flex items-center"
         style={{
           top: 0,
@@ -102,7 +102,7 @@ export function Navigation() {
         <div className="flex items-center justify-center flex-shrink-0" style={{ width: 44, height: 44 }}>
           <ThemeToggle />
         </div>
-      </div>
+      </div>}
 
       {/* Backdrop overlay — mobile only, tap to close */}
       {!collapsed && (
