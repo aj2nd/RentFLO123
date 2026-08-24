@@ -1,16 +1,26 @@
-import type { Express, Request, Response } from "express";
+import type { Express, NextFunction, Request, Response } from "express";
 import OpenAI from "openai";
 import { chatStorage } from "./storage";
 import { isAuthenticated } from "../auth";
+import { authStorage } from "../auth/storage";
 
 const openai = new OpenAI({
   apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
   baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
 });
 
+// Legacy conversations have no user/participant ownership column. Until that
+// schema is migrated, restrict this dormant module to verified administrators.
+async function requireLegacyConversationAdmin(req: Request, res: Response, next: NextFunction) {
+  const userId = (req as any).user?.claims?.sub;
+  const user = userId ? await authStorage.getUser(userId) : null;
+  if (!user || user.role !== "ADMIN") return res.status(403).json({ error: "Forbidden" });
+  return next();
+}
+
 export function registerChatRoutes(app: Express): void {
   // Get all conversations
-  app.get("/api/conversations", isAuthenticated, async (req: Request, res: Response) => {
+  app.get("/api/conversations", isAuthenticated, requireLegacyConversationAdmin, async (req: Request, res: Response) => {
     try {
       const conversations = await chatStorage.getAllConversations();
       res.json(conversations);
@@ -21,7 +31,7 @@ export function registerChatRoutes(app: Express): void {
   });
 
   // Get single conversation with messages
-  app.get("/api/conversations/:id", isAuthenticated, async (req: Request, res: Response) => {
+  app.get("/api/conversations/:id", isAuthenticated, requireLegacyConversationAdmin, async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id as string);
       const conversation = await chatStorage.getConversation(id);
@@ -37,7 +47,7 @@ export function registerChatRoutes(app: Express): void {
   });
 
   // Create new conversation
-  app.post("/api/conversations", isAuthenticated, async (req: Request, res: Response) => {
+  app.post("/api/conversations", isAuthenticated, requireLegacyConversationAdmin, async (req: Request, res: Response) => {
     try {
       const { title } = req.body;
       const conversation = await chatStorage.createConversation(title || "New Chat");
@@ -49,7 +59,7 @@ export function registerChatRoutes(app: Express): void {
   });
 
   // Delete conversation
-  app.delete("/api/conversations/:id", isAuthenticated, async (req: Request, res: Response) => {
+  app.delete("/api/conversations/:id", isAuthenticated, requireLegacyConversationAdmin, async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id as string);
       await chatStorage.deleteConversation(id);
@@ -61,7 +71,7 @@ export function registerChatRoutes(app: Express): void {
   });
 
   // Send message and get AI response (streaming)
-  app.post("/api/conversations/:id/messages", isAuthenticated, async (req: Request, res: Response) => {
+  app.post("/api/conversations/:id/messages", isAuthenticated, requireLegacyConversationAdmin, async (req: Request, res: Response) => {
     try {
       const conversationId = parseInt(req.params.id as string);
       const { content } = req.body;
@@ -119,4 +129,3 @@ export function registerChatRoutes(app: Express): void {
     }
   });
 }
-

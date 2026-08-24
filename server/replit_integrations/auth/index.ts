@@ -242,6 +242,13 @@ export async function setupAuth(app: Express) {
 }
 
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
+  const attachVerifiedAccount = async (userId: string) => {
+    const account = await authStorage.getUser(userId);
+    if (!account) return null;
+    (req as any).currentUser = account;
+    return account;
+  };
+
   // Bearer-token auth (Android app — sessions don't cross WebView/Chrome boundary)
   const authHeader = req.headers.authorization;
   if (authHeader?.startsWith("Bearer ")) {
@@ -255,16 +262,23 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
     (req as any).user = {
       claims: { sub: claims.sub, email: claims.email, exp: claims.exp },
     };
+    if (!(await attachVerifiedAccount(claims.sub))) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
     return next();
   }
 
   // Session-based auth (web)
   const user = req.user as any;
-  if (!req.isAuthenticated() || !user.expires_at) {
+  const userId = user?.claims?.sub;
+  if (!req.isAuthenticated() || !userId || !user.expires_at) {
     return res.status(401).json({ message: "Unauthorized" });
   }
   const now = Math.floor(Date.now() / 1000);
   if (now <= user.expires_at) {
+    if (!(await attachVerifiedAccount(userId))) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
     return next();
   }
   const refreshToken = user.refresh_token;
@@ -276,6 +290,9 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
     const config = await getOidcConfig();
     const tokenResponse = await client.refreshTokenGrant(config, refreshToken);
     updateUserSession(user, tokenResponse);
+    if (!(await attachVerifiedAccount(userId))) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
     return next();
   } catch (error) {
     res.status(401).json({ message: "Unauthorized" });

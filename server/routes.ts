@@ -56,7 +56,7 @@ const requireRole = (...roles: string[]): RequestHandler => {
     if (!userId) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
-    const user = await authStorage.getUser(userId);
+    const user = req.currentUser || await authStorage.getUser(userId);
     if (!user || !roles.includes(user.role || '')) {
       return res.status(403).json({ message: 'Forbidden: insufficient permissions' });
     }
@@ -237,6 +237,10 @@ export async function registerRoutes(
   // no owner PII — and only properties without a tenant (the only ones a tenant
   // could legitimately join). Limits enumeration value.
   app.get("/api/properties/by-owner-email", isAuthenticated, async (req, res) => {
+    const caller = (req as any).currentUser || await authStorage.getUser((req as any).user?.claims?.sub);
+    if (!caller || caller.role !== "TENANT") {
+      return res.status(403).json({ message: "Only tenants can search an owner invitation" });
+    }
     const { email } = req.query;
     if (!email || typeof email !== "string" || email.length > 254) {
       return res.status(400).json({ message: "Email is required" });
@@ -1237,13 +1241,13 @@ export async function registerRoutes(
       const sig = (req.headers['x-signature'] || req.headers['x-didit-signature']) as string | undefined;
       const rawBody: Buffer | undefined = req.rawBody as Buffer | undefined;
 
-      if (diditWebhookSecretConfigured()) {
-        if (!rawBody || !sig || !verifyDiditWebhook(rawBody, sig)) {
-          console.warn('[didit] webhook rejected — invalid or missing signature');
-          return res.status(401).json({ message: 'Invalid signature' });
-        }
-      } else {
-        console.warn('[didit] webhook accepted without signature verification — set DIDIT_WEBHOOK_SECRET to enforce');
+      if (!diditWebhookSecretConfigured()) {
+        console.error('[didit] webhook refused — DIDIT_WEBHOOK_SECRET is not configured');
+        return res.status(503).json({ message: 'Webhook verification is not configured' });
+      }
+      if (!rawBody || !sig || !verifyDiditWebhook(rawBody, sig)) {
+        console.warn('[didit] webhook rejected — invalid or missing signature');
+        return res.status(401).json({ message: 'Invalid signature' });
       }
 
       const event = req.body || {};
