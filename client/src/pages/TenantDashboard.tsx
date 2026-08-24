@@ -74,11 +74,11 @@ export default function TenantDashboard() {
     <div className="mx-auto w-full max-w-[640px] px-0 sm:px-5 sm:py-5">
       <section className="relative aspect-[853/1844] w-full overflow-hidden sm:rounded-[30px] sm:shadow-[0_28px_80px_rgba(0,0,0,0.55)]" aria-label={`RentFLO tenant payment dashboard for ${tenantName}`}>
         <img src={tenantDashboardArtwork} alt="RentFLO tenant payment dashboard" className="pointer-events-none absolute inset-0 h-full w-full select-none object-contain" draggable={false} />
-        <label className="absolute left-[15.5%] top-[61.6%] z-30 flex h-[3.8%] w-[25%] items-center gap-1.5 rounded-lg bg-[#132333]/90 px-1.5 text-[clamp(12px,3.1vw,20px)] font-semibold text-white backdrop-blur-sm" aria-label="Total monthly rent in Indian rupees">
+        <label className="absolute left-[11%] top-[62.2%] z-30 flex h-[2.4%] w-[21%] items-center gap-1 rounded-md bg-[#24383c]/90 px-1 text-[clamp(12px,3.1vw,20px)] font-semibold text-white" aria-label="Total monthly rent in Indian rupees">
           <span aria-hidden>₹</span>
-          <input data-testid="input-monthly-rent" inputMode="numeric" type="text" pattern="[0-9]*" value={monthlyRentInput ? Number(monthlyRentInput).toLocaleString("en-IN") : ""} onChange={(event) => setMonthlyRentInput(event.target.value.replace(/[^0-9]/g, ""))} placeholder="— — — — —" className="min-w-0 flex-1 bg-transparent text-inherit outline-none placeholder:text-white/85" aria-label="Enter total monthly rent in Indian rupees" />
+          <input data-testid="input-monthly-rent" inputMode="numeric" type="text" pattern="[0-9]*" value={monthlyRentInput ? Number(monthlyRentInput).toLocaleString("en-IN") : ""} onChange={(event) => setMonthlyRentInput(event.target.value.replace(/[^0-9]/g, ""))} placeholder="" className="min-w-0 flex-1 bg-transparent text-inherit outline-none" aria-label="Enter total monthly rent in Indian rupees" />
         </label>
-        <label className="absolute left-[66%] top-[61.5%] z-30 flex h-[3.8%] w-[24%] items-center rounded-lg bg-[#132333]/90 px-1 text-[clamp(10px,2.5vw,16px)] font-medium text-violet-300 backdrop-blur-sm" aria-label="Select due date in the current month">
+        <label className="absolute left-[65%] top-[62.2%] z-30 flex h-[2.4%] w-[22%] items-center rounded-md bg-[#24383c]/90 px-1 text-[clamp(10px,2.5vw,16px)] font-medium text-violet-300" aria-label="Select due date in the current month">
           <span data-testid="text-due-date" aria-hidden>{dueDateLabel}</span>
           <input data-testid="input-due-date" type="date" value={dueDate} min={currentMonthBounds.firstDay} max={currentMonthBounds.lastDay} onChange={(event) => setDueDate(event.target.value)} className="absolute inset-0 h-full w-full cursor-pointer opacity-0" aria-label="Select due date in the current month" />
         </label>
