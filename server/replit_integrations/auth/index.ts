@@ -10,6 +10,9 @@ import { signAuthToken, verifyAuthToken } from "./token";
 import { pool } from "../../db";
 
 const ANDROID_DEEP_LINK = "rentflo://auth/callback";
+// A dedicated name prevents an invalid session from a prior deployment or
+// SESSION_SECRET from being reused after a production migration.
+const SESSION_COOKIE_NAME = "rentflo.sid";
 
 const getOidcConfig = memoize(
   async () => {
@@ -63,6 +66,7 @@ export function getSession() {
     pruneSessionInterval: 60 * 60, // seconds — prune once per hour
   });
   return session({
+    name: SESSION_COOKIE_NAME,
     secret: process.env.SESSION_SECRET!,
     store: sessionStore,
     resave: false,
@@ -71,6 +75,7 @@ export function getSession() {
       httpOnly: true,
       secure: true,
       sameSite: "lax",
+      path: "/",
       maxAge: sessionTtl,
     },
   });
@@ -170,11 +175,17 @@ export async function setupAuth(app: Express) {
         if (loginErr) return res.redirect("/api/login");
         const isAndroid = (req.session as any).androidAuth === true;
         (req.session as any).androidAuth = false;
-        if (isAndroid) {
-          const deepLink = androidRedirect(user);
-          if (deepLink) return res.redirect(deepLink);
-        }
-        return res.redirect("/");
+        // Passport mutates the session asynchronously. Save it before the
+        // redirect so Railway has persisted the logged-in user before the SPA
+        // immediately asks /api/auth/user for its identity.
+        req.session.save((saveErr) => {
+          if (saveErr) return next(saveErr);
+          if (isAndroid) {
+            const deepLink = androidRedirect(user);
+            if (deepLink) return res.redirect(deepLink);
+          }
+          return res.redirect("/");
+        });
       });
     })(req, res, next);
   });
@@ -182,6 +193,7 @@ export async function setupAuth(app: Express) {
   app.get("/api/logout", (req, res) => {
     req.logout(() => {
       req.session.destroy(() => {
+        res.clearCookie(SESSION_COOKIE_NAME);
         res.clearCookie("connect.sid");
         res.redirect("/");
       });
@@ -191,6 +203,7 @@ export async function setupAuth(app: Express) {
   app.post("/api/logout", (req, res) => {
     req.logout(() => {
       req.session.destroy(() => {
+        res.clearCookie(SESSION_COOKIE_NAME);
         res.clearCookie("connect.sid");
         res.status(204).end();
       });
