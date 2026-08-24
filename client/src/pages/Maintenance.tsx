@@ -11,6 +11,7 @@ import {
   Upload, Image as ImageIcon, Building2, Loader2, ChevronDown
 } from "lucide-react";
 import type { MaintenanceTicket, Property } from "@shared/schema";
+import { safeImageSource } from "@/lib/safe-url";
 
 type TicketWithProperty = MaintenanceTicket & { property: Property };
 
@@ -202,9 +203,9 @@ export default function Maintenance() {
             <div className="space-y-2">
               <label className="text-[10px] font-bold uppercase tracking-[1.5px] text-white/30">{t("maint_photo_optional")}</label>
               <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
-              {formPhoto ? (
+              {safeImageSource(formPhoto) ? (
                 <div className="relative inline-block">
-                  <img src={formPhoto} alt="Preview" className="h-24 w-auto border border-white/10 object-cover" />
+                  <img src={safeImageSource(formPhoto)!} alt="Preview" className="h-24 w-auto border border-white/10 object-cover" />
                   <button onClick={() => setFormPhoto("")}
                     className="absolute -top-2 -right-2 w-5 h-5 bg-zinc-800 border border-white/10 flex items-center justify-center hover:bg-zinc-700 transition-colors">
                     <X size={10} className="text-white/60" />
@@ -286,7 +287,7 @@ export default function Maintenance() {
                 role={role}
                 onResolve={() => resolveMutation.mutate(ticket.id)}
                 isResolving={resolveMutation.isPending && resolveMutation.variables === ticket.id}
-                onViewPhoto={() => setSelectedImage(ticket.photoUrl ?? null)}
+                onViewPhoto={() => setSelectedImage(safeImageSource(ticket.photoUrl))}
               />
             ))}
           </div>
@@ -294,14 +295,14 @@ export default function Maintenance() {
       </div>
 
       {/* ── Image lightbox ──────────────────────────────── */}
-      {selectedImage && (
+      {safeImageSource(selectedImage) && (
         <div
           className="fixed inset-0 bg-black/92 flex items-center justify-center z-50 cursor-pointer p-8"
           onClick={() => setSelectedImage(null)}
           data-testid="modal-image"
         >
           <div className="relative max-w-3xl max-h-[80vh]" onClick={e => e.stopPropagation()}>
-            <img src={selectedImage} alt="Maintenance issue" className="max-w-full max-h-[80vh] object-contain border border-white/[0.08]" />
+            <img src={safeImageSource(selectedImage)!} alt="Maintenance issue" className="max-w-full max-h-[80vh] object-contain border border-white/[0.08]" />
             <button
               onClick={() => setSelectedImage(null)}
               className="absolute -top-3 -right-3 w-7 h-7 bg-zinc-900 border border-white/10 flex items-center justify-center hover:bg-zinc-800 transition-colors"

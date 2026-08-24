@@ -18,7 +18,10 @@ self.addEventListener("push", (event) => {
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  const url = event.notification.data?.url || "/";
+  const candidate = event.notification.data?.url;
+  const url = typeof candidate === "string" && candidate.startsWith("/") && !candidate.startsWith("//") && !/[\\\u0000-\u001F\u007F]/.test(candidate)
+    ? candidate
+    : "/";
   event.waitUntil(
     clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
       for (const client of clientList) {

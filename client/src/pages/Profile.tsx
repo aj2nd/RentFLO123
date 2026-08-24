@@ -13,6 +13,7 @@ import {
   Edit2, Save, X, LogOut, Trash2, AlertTriangle,
 } from "lucide-react";
 import type { User as UserType } from "@shared/schema";
+import { safeImageSource } from "@/lib/safe-url";
 
 export default function ProfilePage() {
   const { logout, isLoggingOut } = useAuth();
@@ -79,6 +80,7 @@ export default function ProfilePage() {
 
   const displayName = [currentUser?.firstName, currentUser?.lastName].filter(Boolean).join(" ") || currentUser?.email || "User";
   const initials = (currentUser?.firstName?.[0] ?? currentUser?.email?.[0] ?? "U").toUpperCase();
+  const avatarUrl = safeImageSource(currentUser?.profileImageUrl);
   const roleBadge: Record<string, string> = {
     TENANT: t("profile_role_tenant"),
     OWNER: t("profile_role_owner"),
@@ -96,9 +98,9 @@ export default function ProfilePage() {
 
         {/* Avatar + name */}
         <div className="flex items-center gap-5 mb-8">
-          {currentUser?.profileImageUrl ? (
+          {avatarUrl ? (
             <img
-              src={currentUser.profileImageUrl}
+              src={avatarUrl}
               alt={displayName}
               className="w-16 h-16 rounded-full object-cover border-2 border-[#8B5CF6]/30"
               data-testid="img-profile-avatar"

@@ -6,17 +6,21 @@ import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
 import { CheckCircle, FileText, Clock, Download, PenLine } from "lucide-react";
 import type { Property, Agreement } from "@shared/schema";
+import { appendDivider, appendTextElement, openPrintDocument } from "@/lib/print-document";
 
 type AgreementData = { property: Property | null; agreement: Agreement | null };
 
-function escapeHtml(s: string): string {
-  return String(s)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
+const agreementPrintCss = `
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#000;color:#e4e4e7;font-family:Inter,sans-serif;padding:48px 40px;font-size:14px;line-height:1.7}
+  .brand{font-size:32px;font-weight:900;letter-spacing:-1px;margin-bottom:2px;color:#8B5CF6}
+  .badge{display:inline-block;border:1px solid rgba(139,92,246,.35);color:#8B5CF6;font-size:11px;text-transform:uppercase;letter-spacing:3px;padding:4px 12px;margin-bottom:32px}
+  h1{font-size:24px;font-weight:700;color:#8B5CF6;margin-bottom:8px}h2{font-size:16px;font-weight:600;margin:24px 0 8px;color:#fff}
+  p,li{color:#a1a1aa;font-size:13px;margin-bottom:8px}.meta{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:24px 0;padding:20px;border:1px solid rgba(139,92,246,.2)}
+  .label{font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#52525b;margin-bottom:2px}.value{font-size:14px;font-weight:600;color:#fff;overflow-wrap:anywhere}
+  .sig-box{border:1px solid rgba(139,92,246,.3);padding:20px;margin-top:32px}.footer{margin-top:48px;font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#3f3f46;text-align:center}
+  .divider{border:none;border-top:1px solid rgba(139,92,246,.15);margin:24px 0}
+`;
 
 function ordinal(n: number) {
   const s = ["th", "st", "nd", "rd"];
@@ -173,49 +177,46 @@ export default function AgreementPage() {
                     variant="outline"
                     className="flex-1 h-12 border-[#8B5CF6]/30 text-[#8B5CF6] hover:bg-[#8B5CF6]/10 rounded-none bg-transparent font-semibold"
                     onClick={() => {
-                      const win = window.open("", "_blank", "width=700,height=900");
-                      if (!win) return;
-                      win.document.write(`<!DOCTYPE html><html><head><title>RentFLO Agreement — ${escapeHtml(data.property!.address)}</title>
-                        <style>*{margin:0;padding:0;box-sizing:border-box}body{background:#000;color:#e4e4e7;font-family:Inter,sans-serif;padding:48px 40px;font-size:14px;line-height:1.7}
-                        .brand{font-size:32px;font-weight:900;letter-spacing:-1px;margin-bottom:2px}.brand span{color:#8B5CF6}
-                        .badge{display:inline-block;border:1px solid rgba(139,92,246,0.35);color:#8B5CF6;font-size:11px;text-transform:uppercase;letter-spacing:3px;padding:4px 12px;margin-bottom:32px}
-                        h1{font-size:24px;font-weight:700;color:#8B5CF6;margin-bottom:8px}
-                        h2{font-size:16px;font-weight:600;margin:24px 0 8px;color:#fff}
-                        p,li{color:#a1a1aa;font-size:13px;margin-bottom:8px}ul{padding-left:20px;margin-bottom:8px}
-                        .meta{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:24px 0;padding:20px;border:1px solid rgba(139,92,246,0.2)}
-                        .meta-item .label{font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#52525b;margin-bottom:2px}
-                        .meta-item .value{font-size:14px;font-weight:600;color:#fff}
-                        .sig-box{border:1px solid rgba(139,92,246,0.3);padding:20px;margin-top:32px}
-                        .sig-label{font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#52525b;margin-bottom:8px}
-                        hr{border:none;border-top:1px solid rgba(139,92,246,0.15);margin:24px 0}
-                        .footer{margin-top:48px;font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#3f3f46;text-align:center}
-                        </style></head><body>
-                        <div class="brand">Rent<span>FLO</span></div>
-                        <div class="badge">Tripartite Rent Advance Agreement</div>
-                        <h1>Rental Agreement</h1>
-                        <p>This agreement is entered into between the Owner, RentFLO Technologies Pvt. Ltd. (Platform), and the Tenant.</p>
-                        <div class="meta">
-                          <div class="meta-item"><div class="label">Property</div><div class="value">${escapeHtml(data.property!.address)}</div></div>
-                          <div class="meta-item"><div class="label">Monthly Rent</div><div class="value">₹${escapeHtml(data.property!.monthlyRent.toLocaleString())}</div></div>
-                          <div class="meta-item"><div class="label">Payout Day</div><div class="value">${escapeHtml(String(data.property!.payoutDay))}${["st","nd","rd"][data.property!.payoutDay-1]||"th"} of Month</div></div>
-                          <div class="meta-item"><div class="label">Signed On</div><div class="value">${escapeHtml(fullySignedAt)}</div></div>
-                          <div class="meta-item"><div class="label">Agreement Status</div><div class="value">FULLY SIGNED</div></div>
-                          <div class="meta-item"><div class="label">Tenant</div><div class="value">${escapeHtml(userName)}</div></div>
-                        </div>
-                        <hr/>
-                        <h2>1. Rent Advance</h2><p>RentFLO advances the monthly rent to the Owner on the agreed payout day regardless of whether the Tenant has paid. The Tenant is then obligated to reimburse RentFLO by the same date each month.</p>
-                        <h2>2. Tenant Obligations</h2><ul><li>Pay the monthly rent to RentFLO on or before the payout day.</li><li>Maintain the property in good condition.</li><li>Report maintenance issues promptly via the RentFLO platform.</li></ul>
-                        <h2>3. Owner Obligations</h2><ul><li>Ensure the property is habitable and meets legal standards.</li><li>Respond to maintenance requests within a reasonable time.</li></ul>
-                        <h2>4. Governing Law</h2><p>This Agreement is governed by the laws of India. Disputes shall be subject to the exclusive jurisdiction of courts in Mumbai, Maharashtra.</p>
-                        <div class="sig-box">
-                          <div class="sig-label">Physical Signature — Confirmed by RentFLO</div>
-                          <p style="color:#8B5CF6;font-size:13px;">✓ Physically signed and confirmed on ${escapeHtml(fullySignedAt)}</p>
-                        </div>
-                        <div class="footer">rentflo.com · This is a legally binding agreement · Keep for your records</div>
-                        </body></html>`);
-                      win.document.close();
-                      win.focus();
-                      setTimeout(() => win.print(), 400);
+                      const property = data.property!;
+                      const print = openPrintDocument(`RentFLO Agreement — ${property.address}`, agreementPrintCss, 700, 900);
+                      if (!print) return;
+                      const meta = print.doc.createElement("div");
+                      meta.className = "meta";
+                      const addMeta = (label: string, value: unknown) => {
+                        const item = print.doc.createElement("div");
+                        appendTextElement(print.doc, item, "div", label, "label");
+                        appendTextElement(print.doc, item, "div", value, "value");
+                        meta.append(item);
+                      };
+                      appendTextElement(print.doc, print.body, "div", "RentFLO", "brand");
+                      appendTextElement(print.doc, print.body, "div", "Tripartite Rent Advance Agreement", "badge");
+                      appendTextElement(print.doc, print.body, "h1", "Rental Agreement");
+                      appendTextElement(print.doc, print.body, "p", "This agreement is entered into between the Owner, RentFLO Technologies Pvt. Ltd. (Platform), and the Tenant.");
+                      addMeta("Property", property.address);
+                      addMeta("Monthly Rent", `₹${property.monthlyRent.toLocaleString()}`);
+                      addMeta("Payout Day", `${property.payoutDay}${ordinal(property.payoutDay)} of Month`);
+                      addMeta("Signed On", fullySignedAt);
+                      addMeta("Agreement Status", "FULLY SIGNED");
+                      addMeta("Tenant", userName);
+                      print.body.append(meta);
+                      appendDivider(print.doc, print.body);
+                      [
+                        ["1. Rent Advance", "RentFLO advances the monthly rent to the Owner on the agreed payout day regardless of whether the Tenant has paid. The Tenant is then obligated to reimburse RentFLO by the same date each month."],
+                        ["2. Tenant Obligations", "Pay monthly rent on time, maintain the property in good condition, and report maintenance issues promptly via the RentFLO platform."],
+                        ["3. Owner Obligations", "Ensure the property is habitable and respond to maintenance requests within a reasonable time."],
+                        ["4. Governing Law", "This Agreement is governed by the laws of India. Disputes are subject to the exclusive jurisdiction of courts in Mumbai, Maharashtra."],
+                      ].forEach(([heading, content]) => {
+                        appendTextElement(print.doc, print.body, "h2", heading);
+                        appendTextElement(print.doc, print.body, "p", content);
+                      });
+                      const signature = print.doc.createElement("div");
+                      signature.className = "sig-box";
+                      appendTextElement(print.doc, signature, "div", "Physical Signature — Confirmed by RentFLO", "label");
+                      appendTextElement(print.doc, signature, "p", `✓ Physically signed and confirmed on ${fullySignedAt}`);
+                      print.body.append(signature);
+                      appendTextElement(print.doc, print.body, "div", "rentflo.com · This is a legally binding agreement · Keep for your records", "footer");
+                      print.win.focus();
+                      setTimeout(() => print.win.print(), 400);
                     }}
                     data-testid="button-download-agreement"
                   >

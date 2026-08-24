@@ -5,6 +5,13 @@ import { eq } from "drizzle-orm";
 
 let vapidInitialized = false;
 
+function safeInternalPath(value: string): string {
+  if (!value || value.length > 1024 || !value.startsWith("/") || value.startsWith("//") || /[\\\u0000-\u001F\u007F]/.test(value)) {
+    return "/";
+  }
+  return value;
+}
+
 export async function initVapid() {
   if (vapidInitialized) return;
 
@@ -44,7 +51,7 @@ export async function sendPushToUser(
     .from(pushSubscriptions)
     .where(eq(pushSubscriptions.userId, userId));
 
-  const payload = JSON.stringify({ title, body, url });
+  const payload = JSON.stringify({ title, body, url: safeInternalPath(url) });
 
   const results = await Promise.allSettled(
     subs.map(async (sub) => {
@@ -76,8 +83,9 @@ export async function createNotification(
   type: "RENT_ADVANCED" | "RENT_COLLECTED" | "MAINTENANCE_CREATED" | "MAINTENANCE_RESOLVED" | "RENT_DUE" | "MESSAGE_RECEIVED",
   url: string = "/"
 ) {
-  await db.insert(notifications).values({ userId, title, body, type, url });
-  await sendPushToUser(userId, title, body, url).catch(err =>
+  const safeUrl = safeInternalPath(url);
+  await db.insert(notifications).values({ userId, title, body, type, url: safeUrl });
+  await sendPushToUser(userId, title, body, safeUrl).catch(err =>
     console.error("[push] sendPushToUser error:", err)
   );
 }

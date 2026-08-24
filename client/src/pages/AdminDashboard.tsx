@@ -15,6 +15,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useI18n } from "@/hooks/use-i18n";
 import { useTheme } from "next-themes";
 import type { User, Payment } from "@shared/schema";
+import { safeExternalHttpsUrl, safeImageSource } from "@/lib/safe-url";
 
 type KycReviewUser = User & {
   hasKycDocument?: boolean;
@@ -49,8 +50,8 @@ function FileUpload({ onFileChange, currentValue }: { onFileChange: (dataUrl: st
       {currentValue ? (
         <div className="flex items-center gap-3 p-3 border border-[#6FFFE9]/30 bg-zinc-900">
           <div className="w-10 h-10 border border-zinc-700 flex items-center justify-center bg-zinc-800">
-            {currentValue.startsWith("data:image") ? (
-              <img src={currentValue} alt="Receipt" className="w-full h-full object-cover" loading="lazy" />
+            {safeImageSource(currentValue) ? (
+              <img src={safeImageSource(currentValue)!} alt="Receipt" className="w-full h-full object-cover" loading="lazy" />
             ) : (
               <Image size={18} className="text-zinc-400" />
             )}
@@ -371,8 +372,8 @@ export default function AdminDashboard() {
                             <p className="font-mono text-sm text-zinc-300">{new Date(p.createdAt).toLocaleString("en-IN")}</p>
                           </div>
                         </div>
-                        {p.proofScreenshotUrl && (
-                          <a href={p.proofScreenshotUrl} target="_blank" rel="noopener noreferrer"
+                        {safeExternalHttpsUrl(p.proofScreenshotUrl) && (
+                          <a href={safeExternalHttpsUrl(p.proofScreenshotUrl)!} target="_blank" rel="noopener noreferrer"
                             className="inline-flex items-center gap-2 mt-4 text-sm text-[#9DEFE4] hover:text-[#6FFFE9] underline"
                             data-testid={`link-proof-${p.id}`}>
                             <ExternalLink size={14} /> {t('admin_verif_view_screenshot')}

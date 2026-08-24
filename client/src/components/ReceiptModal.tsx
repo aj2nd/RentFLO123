@@ -1,5 +1,6 @@
 import { X, Download, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { appendDivider, appendTextElement, openPrintDocument } from "@/lib/print-document";
 
 interface ReceiptData {
   amount: number;
@@ -16,14 +17,19 @@ interface ReceiptModalProps {
   onClose: () => void;
 }
 
-function escapeHtml(s: string): string {
-  return String(s)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
+const receiptPrintCss = `
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #000; color: #fff; font-family: Inter, sans-serif; padding: 40px; }
+  .brand { font-size: 28px; font-weight: 900; letter-spacing: -1px; margin-bottom: 4px; color: #6FFFE9; }
+  .subtitle { font-size: 11px; text-transform: uppercase; letter-spacing: 4px; color: #6FFFE9; margin-bottom: 32px; }
+  .amount { font-size: 52px; font-weight: 900; letter-spacing: -2px; margin: 28px 0 8px; font-family: Georgia, serif; }
+  .status { font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: #6FFFE9; margin-bottom: 32px; }
+  .divider { border: none; border-top: 1px solid rgba(111,255,233,0.15); margin: 20px 0; }
+  .row { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin: 10px 0; }
+  .label { font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: #71717a; }
+  .value { font-size: 13px; color: #fff; text-align: right; max-width: 60%; overflow-wrap: anywhere; }
+  .footer { margin-top: 32px; font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: #3f3f46; text-align: center; }
+`;
 
 export function ReceiptModal({ data, onClose }: ReceiptModalProps) {
   const refNo = `RFL-${data.paymentId?.slice(-8)?.toUpperCase() ?? data.orderId?.slice(-8)?.toUpperCase() ?? "N/A"}`;
@@ -31,51 +37,31 @@ export function ReceiptModal({ data, onClose }: ReceiptModalProps) {
   const timeStr = data.date.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
 
   const handlePrint = () => {
-    const printContent = document.getElementById("receipt-printable");
-    if (!printContent) return;
-    const win = window.open("", "_blank", "width=480,height=700");
-    if (!win) return;
-    win.document.write(`
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>RentFLO Receipt ${refNo}</title>
-        <style>
-          * { margin: 0; padding: 0; box-sizing: border-box; }
-          body { background: #000; color: #fff; font-family: Inter, sans-serif; padding: 40px; }
-          .brand { font-size: 28px; font-weight: 900; letter-spacing: -1px; margin-bottom: 4px; }
-          .brand span { color: #6FFFE9; }
-          .subtitle { font-size: 11px; text-transform: uppercase; letter-spacing: 4px; color: #6FFFE9; margin-bottom: 32px; }
-          .amount { font-size: 52px; font-weight: 900; letter-spacing: -2px; margin: 28px 0 8px; font-family: 'Georgia', serif; }
-          .status { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: #6FFFE9; margin-bottom: 32px; }
-          .divider { border: none; border-top: 1px solid rgba(111,255,233,0.15); margin: 20px 0; }
-          .row { display: flex; justify-content: space-between; align-items: baseline; margin: 10px 0; }
-          .label { font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: #71717a; }
-          .value { font-size: 13px; color: #fff; text-align: right; max-width: 60%; }
-          .footer { margin-top: 32px; font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: #3f3f46; text-align: center; }
-        </style>
-      </head>
-      <body>
-        <div class="brand">Rent<span>FLO</span></div>
-        <div class="subtitle">Payment Receipt</div>
-        <hr class="divider">
-        <div class="amount">₹${data.amount.toLocaleString()}</div>
-        <div class="status">✓ Payment Successful</div>
-        <hr class="divider">
-        <div class="row"><span class="label">Reference</span><span class="value">${escapeHtml(refNo)}</span></div>
-        <div class="row"><span class="label">Date</span><span class="value">${escapeHtml(dateStr)}, ${escapeHtml(timeStr)}</span></div>
-        <div class="row"><span class="label">Property</span><span class="value">${escapeHtml(data.property)}</span></div>
-        <div class="row"><span class="label">Tenant</span><span class="value">${escapeHtml(data.tenantName)}</span></div>
-        ${data.monthYear ? `<div class="row"><span class="label">Period</span><span class="value">${escapeHtml(data.monthYear)}</span></div>` : ""}
-        <div class="row"><span class="label">Payment ID</span><span class="value" style="font-family:monospace;font-size:11px">${escapeHtml(data.paymentId)}</span></div>
-        <hr class="divider">
-        <div class="footer">rentflo.com &nbsp;·&nbsp; Secured by Cashfree &nbsp;·&nbsp; Keep for your records</div>
-      </body>
-      </html>
-    `);
-    win.document.close();
-    win.focus();
-    setTimeout(() => win.print(), 400);
+    const print = openPrintDocument(`RentFLO Receipt ${refNo}`, receiptPrintCss, 480, 700);
+    if (!print) return;
+    const addRow = (label: string, value: unknown) => {
+      const row = print.doc.createElement("div");
+      row.className = "row";
+      appendTextElement(print.doc, row, "span", label, "label");
+      appendTextElement(print.doc, row, "span", value, "value");
+      print.body.append(row);
+    };
+    appendTextElement(print.doc, print.body, "div", "RentFLO", "brand");
+    appendTextElement(print.doc, print.body, "div", "Payment Receipt", "subtitle");
+    appendDivider(print.doc, print.body);
+    appendTextElement(print.doc, print.body, "div", `₹${data.amount.toLocaleString()}`, "amount");
+    appendTextElement(print.doc, print.body, "div", "✓ Payment Successful", "status");
+    appendDivider(print.doc, print.body);
+    addRow("Reference", refNo);
+    addRow("Date", `${dateStr}, ${timeStr}`);
+    addRow("Property", data.property);
+    addRow("Tenant", data.tenantName);
+    if (data.monthYear) addRow("Period", data.monthYear);
+    addRow("Payment ID", data.paymentId);
+    appendDivider(print.doc, print.body);
+    appendTextElement(print.doc, print.body, "div", "rentflo.com · Secured by Cashfree · Keep for your records", "footer");
+    print.win.focus();
+    setTimeout(() => print.win.print(), 400);
   };
 
   return (

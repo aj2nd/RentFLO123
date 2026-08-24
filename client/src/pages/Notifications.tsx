@@ -6,6 +6,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Bell, CheckCheck, Loader2, Home, Wrench, CreditCard, AlertCircle, CalendarClock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
+import { safeInternalPath } from "@/lib/safe-url";
 import { motion } from "framer-motion";
 import type { Notification } from "@shared/schema";
 
@@ -100,22 +101,25 @@ export default function NotificationsPage() {
         )}
 
         <div className="space-y-2">
-          {notifications?.map((notif, i) => (
+          {notifications?.map((notif, i) => {
+            const destination = safeInternalPath(notif.url);
+            return (
             <motion.div
               key={notif.id}
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.04 }}
             >
-              {notif.url ? (
-                <Link href={notif.url}>
+              {destination ? (
+                <Link href={destination}>
                   <NotifCard notif={notif} />
                 </Link>
               ) : (
                 <NotifCard notif={notif} />
               )}
             </motion.div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

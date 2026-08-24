@@ -9,6 +9,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Upload, CheckCircle, Clock, ShieldCheck, FileSignature, Zap, ExternalLink, Loader2 } from "lucide-react";
 import { useLocation } from "wouter";
 import { useI18n } from "@/hooks/use-i18n";
+import { safeHttpsUrl } from "@/lib/safe-url";
 import type { User } from "@shared/schema";
 
 type DocType = "PAN" | "AADHAAR";
@@ -92,11 +93,12 @@ export default function Verify() {
     try {
       const r = await apiRequest("POST", "/api/kyc/didit/start");
       const data = await r.json();
-      if (!r.ok || !data?.url) {
+      const diditUrl = safeHttpsUrl(data?.url, "didit.me");
+      if (!r.ok || !diditUrl) {
         throw new Error(data?.message || "Could not start Didit verification.");
       }
       sessionStorage.setItem("didit:in_progress", "1");
-      window.location.assign(data.url);
+      window.location.assign(diditUrl);
     } catch (err: any) {
       toast({ title: "Could not start Didit", description: err?.message ?? "Please try again.", variant: "destructive" });
       setDiditLoading(false);

@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
 import { useState } from "react";
 import { useI18n } from "@/hooks/use-i18n";
+import { safeImageSource } from "@/lib/safe-url";
 
 export default function AdminMaintenance() {
   const { data: tickets, isLoading } = useTickets();
@@ -86,8 +87,8 @@ export default function AdminMaintenance() {
                       <p className="text-zinc-600 text-xs uppercase tracking-wider truncate">{t('maint_property')}: {ticket.property.address}</p>
                     </div>
                     <div className="flex sm:flex-col items-center sm:items-end gap-3 shrink-0">
-                      {ticket.photoUrl && (
-                        <button onClick={() => setSelectedImage(ticket.photoUrl)}
+                      {safeImageSource(ticket.photoUrl) && (
+                        <button onClick={() => setSelectedImage(safeImageSource(ticket.photoUrl))}
                           className="text-zinc-400 hover:text-white transition-colors flex items-center gap-1 text-sm"
                           data-testid={`button-view-photo-${ticket.id}`}>
                           <ImageIcon size={14} />
@@ -141,11 +142,11 @@ export default function AdminMaintenance() {
           )}
         </section>
 
-        {selectedImage && (
+        {safeImageSource(selectedImage) && (
           <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 cursor-pointer"
             onClick={() => setSelectedImage(null)} data-testid="modal-image-preview">
             <div className="max-w-4xl max-h-[80vh] p-4">
-              <img src={selectedImage} alt="Maintenance issue" className="max-w-full max-h-full object-contain border border-zinc-700" loading="lazy" />
+              <img src={safeImageSource(selectedImage)!} alt="Maintenance issue" className="max-w-full max-h-full object-contain border border-zinc-700" loading="lazy" />
               <p className="text-zinc-500 text-center mt-4 text-sm">{t('maint_click_close')}</p>
             </div>
           </div>
