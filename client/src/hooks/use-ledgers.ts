@@ -142,7 +142,7 @@ export function useTickets(propertyId?: string) {
 
 export function useCreateTicket() {
   return useMutation({
-    mutationFn: async (data: { propertyId: string; tenantId: string; title: string; description: string; photoUrl?: string }) => {
+    mutationFn: async (data: { propertyId: string; title: string; description: string; photoUrl?: string }) => {
       const res = await fetch(api.tickets.create.path, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

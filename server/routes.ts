@@ -176,12 +176,22 @@ export async function registerRoutes(
     try {
       const userId = req.user?.claims?.sub;
       const input = api.properties.create.input.parse(req.body);
-      // Enforce: ownerId must be the logged-in user (unless admin)
-      const user = await authStorage.getUser(userId);
-      if (user?.role !== 'ADMIN') {
-        input.ownerId = userId;
+      const user = req.currentUser || await authStorage.getUser(userId);
+      if (!user || (user.role !== 'OWNER' && user.role !== 'ADMIN')) {
+        return res.status(403).json({ message: "Only verified owners can create properties" });
       }
-      const property = await storage.createProperty(input);
+
+      const tenantEmail = input.tenantEmail?.trim().toLowerCase() || null;
+      const tenantCandidate = tenantEmail ? await authStorage.getUserByEmail(tenantEmail) : undefined;
+      const tenantId = tenantCandidate?.role === "TENANT" ? tenantCandidate.id : null;
+      const property = await storage.createProperty({
+        address: input.address,
+        monthlyRent: input.monthlyRent,
+        payoutDay: input.payoutDay,
+        ownerId: userId,
+        tenantId,
+        pendingTenantEmail: tenantId ? null : tenantEmail,
+      });
 
       // Auto-create a ledger for the current month
       const now = new Date();
@@ -979,8 +989,13 @@ export async function registerRoutes(
         return res.status(403).json({ message: "Only the tenant can report issues" });
       }
       // Force tenantId to authenticated user (don't trust client-supplied tenantId)
-      input.tenantId = userId;
-      const ticket = await storage.createTicket(input);
+      const ticket = await storage.createTicket({
+        propertyId: input.propertyId,
+        tenantId: userId,
+        title: input.title,
+        description: input.description,
+        photoUrl: input.photoUrl || null,
+      });
 
       // Notify all admins about new maintenance request
       const admins = await authStorage.getAdminUsers();
@@ -1051,7 +1066,7 @@ export async function registerRoutes(
     bankAccountNumber: z.string().trim().regex(/^\d{9,18}$/, "Invalid bank account").optional().or(z.literal("")),
     ifscCode: z.string().trim().regex(/^[A-Z]{4}0[A-Z0-9]{6}$/i, "Invalid IFSC").optional().or(z.literal("")),
     cancelledChequeUrl: z.string().max(2_000_000).optional().or(z.literal("")),
-  });
+  }).strict();
 
   app.post("/api/kyc/submit", isAuthenticated, async (req: any, res) => {
     const userId = req.user?.claims?.sub;
@@ -1418,7 +1433,10 @@ export async function registerRoutes(
     endpoint: z.string().url().max(2000),
     p256dh: z.string().min(1).max(500),
     auth: z.string().min(1).max(500),
-  });
+  }).strict();
+  const pushUnsubscribeSchema = z.object({
+    endpoint: z.string().url().max(2000),
+  }).strict();
   app.post("/api/push/subscribe", isAuthenticated, async (req: any, res) => {
     const userId = req.user?.claims?.sub;
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
@@ -1441,8 +1459,9 @@ export async function registerRoutes(
   // Unsubscribe from push — only deletes the caller's own endpoint.
   app.post("/api/push/unsubscribe", isAuthenticated, async (req: any, res) => {
     const userId = req.user?.claims?.sub;
-    const endpoint = typeof req.body?.endpoint === "string" ? req.body.endpoint : null;
-    if (endpoint && userId) await storage.deletePushSubscription(endpoint, userId);
+    const parsed = pushUnsubscribeSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ message: parsed.error.errors[0]?.message || "Invalid subscription endpoint" });
+    if (userId) await storage.deletePushSubscription(parsed.data.endpoint, userId);
     res.json({ ok: true });
   });
 
@@ -1774,7 +1793,7 @@ export function registerMessagingRoutes(app: Express) {
         z.object({
           role: z.enum(["user", "assistant", "system"]),
           content: z.string().min(1).max(4000),
-        }),
+        }).strict(),
       )
       .min(1)
       .max(20),
@@ -1784,9 +1803,9 @@ export function registerMessagingRoutes(app: Express) {
         name: z.string().max(100).optional(),
         property: z.string().max(500).optional(),
         monthlyRent: z.number().int().nonnegative().optional(),
-      })
+      }).strict()
       .optional(),
-  });
+  }).strict();
 
   app.post("/api/chatbot", isAuthenticated, async (req: any, res) => {
     try {

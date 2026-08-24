@@ -52,7 +52,7 @@ export default function Maintenance() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: { propertyId: string; tenantId: string; title: string; description: string; photoUrl?: string }) =>
+    mutationFn: (data: { propertyId: string; title: string; description: string; photoUrl?: string }) =>
       apiRequest("POST", "/api/tickets", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/tickets"] });
@@ -88,10 +88,8 @@ export default function Maintenance() {
     if (!formPropertyId) { toast({ title: t("maint_select_property_toast"), variant: "destructive" }); return; }
     if (!formTitle.trim()) { toast({ title: t("maint_enter_title_toast"), variant: "destructive" }); return; }
     if (!formDesc.trim()) { toast({ title: t("maint_describe_issue_toast"), variant: "destructive" }); return; }
-    if (!user?.id) return;
     createMutation.mutate({
       propertyId: formPropertyId,
-      tenantId: user.id,
       title: formTitle.trim(),
       description: formDesc.trim(),
       photoUrl: formPhoto || undefined,

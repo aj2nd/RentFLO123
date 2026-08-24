@@ -250,6 +250,15 @@ export const insertPropertySchema = createInsertSchema(properties).omit({
   createdAt: true 
 });
 
+// Browser-facing property creation is intentionally narrower than the raw
+// table insert type. Ownership and tenant assignment are derived server-side.
+export const createPropertyRequestSchema = z.object({
+  address: z.string().trim().min(3).max(1000),
+  monthlyRent: z.number().int().positive().max(10_000_000),
+  payoutDay: z.number().int().min(1).max(31),
+  tenantEmail: z.string().trim().email().max(254).optional().or(z.literal("")),
+}).strict();
+
 export const insertLedgerSchema = createInsertSchema(ledgers).omit({ 
   id: true, 
   createdAt: true, 
@@ -292,6 +301,17 @@ export const insertMaintenanceTicketSchema = createInsertSchema(maintenanceTicke
   resolvedAt: true,
   resolvedBy: true,
 });
+
+// A tenant may describe a problem, but may not choose its tenant identity,
+// resolution state, resolver, or timestamps.
+export const createMaintenanceTicketRequestSchema = z.object({
+  propertyId: z.string().min(1).max(255),
+  title: z.string().trim().min(1).max(200),
+  description: z.string().trim().min(1).max(5000),
+  photoUrl: z.string().trim().max(7_000_000)
+    .refine((value) => /^https?:\/\//i.test(value) || /^data:image\/(png|jpe?g|webp);base64,/i.test(value), "Photo must be an image URL or supported image data")
+    .optional().or(z.literal("")),
+}).strict();
 
 // === EXPLICIT API TYPES ===
 export type Property = typeof properties.$inferSelect;

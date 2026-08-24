@@ -44,7 +44,7 @@ export default function Setup() {
     if (isNaN(rentNum) || rentNum <= 0) { toast({ title: t('setup_owner_rent_invalid'), variant: "destructive" }); return; }
     if (isNaN(payoutDayNum) || payoutDayNum < 1 || payoutDayNum > 28) { toast({ title: t('setup_owner_payout_invalid'), variant: "destructive" }); return; }
     createProperty(
-      { address: address.trim(), monthlyRent: rentNum, payoutDay: payoutDayNum, ownerId: user?.id || "", pendingTenantEmail: tenantEmail.trim() || undefined },
+      { address: address.trim(), monthlyRent: rentNum, payoutDay: payoutDayNum, tenantEmail: tenantEmail.trim() || undefined },
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: ["/api/properties/mine"] });

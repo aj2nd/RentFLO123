@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { insertPropertySchema, insertLedgerSchema, insertMaintenanceTicketSchema, properties, ledgers, payments, maintenanceTickets } from './schema';
+import { createPropertyRequestSchema, insertLedgerSchema, createMaintenanceTicketRequestSchema, properties, ledgers, payments, maintenanceTickets } from './schema';
 
 // ============================================
 // SHARED ERROR SCHEMAS
@@ -32,7 +32,7 @@ export const api = {
     create: {
       method: 'POST' as const,
       path: '/api/properties',
-      input: insertPropertySchema,
+      input: createPropertyRequestSchema,
       responses: {
         201: z.custom<typeof properties.$inferSelect>(),
         400: errorSchemas.validation,
@@ -152,7 +152,7 @@ export const api = {
     create: {
       method: 'POST' as const,
       path: '/api/tickets',
-      input: insertMaintenanceTicketSchema,
+      input: createMaintenanceTicketRequestSchema,
       responses: {
         201: z.custom<typeof maintenanceTickets.$inferSelect>(),
         400: errorSchemas.validation,

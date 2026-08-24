@@ -254,7 +254,6 @@ function AddPropertyModal({ isVerified }: { isVerified?: boolean }) {
   const { toast } = useToast();
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
-  const [isLookingUpTenant, setIsLookingUpTenant] = useState(false);
   const createProperty = useCreateProperty();
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<AddPropertyFormData>({
@@ -263,30 +262,12 @@ function AddPropertyModal({ isVerified }: { isVerified?: boolean }) {
 
   const onSubmit = async (data: AddPropertyFormData) => {
     if (!user?.id) return;
-    let tenantId: string | undefined;
-    if (data.tenantEmail.trim()) {
-      setIsLookingUpTenant(true);
-      try {
-        const res = await fetch(`/api/auth/user-by-email?email=${encodeURIComponent(data.tenantEmail)}`, { credentials: "include" });
-        if (res.ok) {
-          const tenantUser = await res.json();
-          tenantId = tenantUser.id;
-        } else {
-          toast({ title: "Tenant not found", description: "No user with that email. Property will be created without a tenant." });
-        }
-      } catch {
-        toast({ title: "Error", description: "Failed to look up tenant." });
-      }
-      setIsLookingUpTenant(false);
-    }
     try {
       await createProperty.mutateAsync({
         address: data.address,
         monthlyRent: parseInt(data.monthlyRent),
         payoutDay: parseInt(data.payoutDay),
-        ownerId: user.id,
-        tenantId,
-        pendingTenantEmail: !tenantId && data.tenantEmail.trim() ? data.tenantEmail.toLowerCase().trim() : undefined,
+        tenantEmail: data.tenantEmail.trim() || undefined,
       });
       toast({ title: "Property Added", description: `${data.address} has been added to your portfolio.` });
       reset();
@@ -395,7 +376,7 @@ function AddPropertyModal({ isVerified }: { isVerified?: boolean }) {
             </div>
             <button
               type="submit"
-              disabled={createProperty.isPending || isLookingUpTenant}
+              disabled={createProperty.isPending}
               data-testid="button-submit-property"
               style={{
                 width: "100%", height: 48, background: "#6FFFE9", border: "none",
@@ -405,7 +386,7 @@ function AddPropertyModal({ isVerified }: { isVerified?: boolean }) {
                 opacity: createProperty.isPending ? 0.7 : 1, transition: "opacity 0.15s",
               }}
             >
-              {createProperty.isPending || isLookingUpTenant
+              {createProperty.isPending
                 ? <><Loader2 size={16} className="animate-spin" /> {t("processing_text")}</>
                 : t('modal_submit_property')
               }
