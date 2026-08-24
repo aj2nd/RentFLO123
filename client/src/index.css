@@ -625,6 +625,11 @@
     -webkit-tap-highlight-color: transparent;
     --tw-prose-body: #C0C0C0;
   }
+  /* Tenant home owns its bottom navigation and in-flow legal rail. Avoid
+     adding a second safe-area tail beneath that self-contained composition. */
+  body:has(.dashboard-tenant) {
+    padding-bottom: 0;
+  }
   ::selection {
     background: #C0C0C0;
     color: #000;
