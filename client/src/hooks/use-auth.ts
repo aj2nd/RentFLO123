@@ -22,6 +22,10 @@ async function fetchUser(): Promise<User | null> {
     const response = await fetch(`${API_BASE}/api/auth/user`, {
       credentials: "include",
       headers,
+      // An identity response must never come from the browser HTTP cache.
+      // A cached 401 from before OAuth would otherwise leave a newly logged-in
+      // user on the landing page until their browser data is cleared.
+      cache: "no-store",
     });
     if (response.status === 401) return null;
     if (!response.ok) return null;
@@ -38,7 +42,11 @@ export function useAuth() {
     queryKey: ["/api/auth/user"],
     queryFn: fetchUser,
     retry: false,
-    staleTime: 1000 * 60 * 5,
+    // Always reconcile the browser session on a mount or tab return. The user
+    // object is small and an outdated unauthenticated value breaks login.
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: "always",
   });
 
   useEffect(() => {
