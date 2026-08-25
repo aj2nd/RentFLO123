@@ -78,6 +78,14 @@ if (!authServer.includes("if (hasUsableWebSession(req))")) {
   throw new Error("A valid authenticated session must retain the safe login shortcut.");
 }
 
+if (!authServer.includes("const existingAccount = await authStorage.getUser(sessionUserId)")) {
+  throw new Error("The Login shortcut must validate the stored account before redirecting a browser session home.");
+}
+
+if (!authServer.includes("return rejectExpiredSession(req, res);")) {
+  throw new Error("An orphaned authenticated session must be cleared rather than repeatedly returning 401.");
+}
+
 if (!authToken.includes("NATIVE_AUTH_TOKEN_TTL_SECONDS = 7 * 24 * 60 * 60")) {
   throw new Error("The Android fallback token must share the seven-day maximum lifetime.");
 }

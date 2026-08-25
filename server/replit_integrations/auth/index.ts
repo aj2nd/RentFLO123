@@ -225,11 +225,23 @@ export async function setupAuth(app: Express) {
     const isAndroid = res.locals.validatedQuery.platform === "android";
 
     if (hasUsableWebSession(req)) {
-      if (isAndroid) {
-        const deepLink = androidRedirect(req.user);
-        if (deepLink) return res.redirect(deepLink);
+      try {
+        // Passport can restore a structurally valid browser session whose user
+        // row was removed or never completed onboarding. Treat it as stale: a
+        // redirect to `/` would only make the SPA receive `/api/auth/user` 401
+        // and appear as if the Login button did nothing.
+        const sessionUserId = (req.user as any).claims.sub as string;
+        const existingAccount = await authStorage.getUser(sessionUserId);
+        if (existingAccount) {
+          if (isAndroid) {
+            const deepLink = androidRedirect(req.user);
+            if (deepLink) return res.redirect(deepLink);
+          }
+          return res.redirect("/");
+        }
+      } catch (error) {
+        return next(error);
       }
-      return res.redirect("/");
     }
 
     try {
@@ -339,7 +351,7 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
   const now = Math.floor(Date.now() / 1000);
   if (now <= user.expires_at) {
     if (!(await attachVerifiedAccount(userId))) {
-      return res.status(401).json({ message: "Unauthorized" });
+      return rejectExpiredSession(req, res);
     }
     return next();
   }
@@ -353,7 +365,7 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
     const tokenResponse = await client.refreshTokenGrant(config, refreshToken);
     updateUserSession(user, tokenResponse);
     if (!(await attachVerifiedAccount(userId))) {
-      return res.status(401).json({ message: "Unauthorized" });
+      return rejectExpiredSession(req, res);
     }
     return next();
   } catch (error) {
