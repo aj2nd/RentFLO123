@@ -10,11 +10,19 @@ import { pool, connectWithRetry } from "./db";
 import { sanitizeRequestBody } from "./input-validation";
 import { createHttpsRedirectMiddleware } from "./transport-security";
 import { createRentfloSecurityHeaders } from "./security-headers";
-import { logPrivateError, productionErrorHandler } from "./error-handling";
+import {
+  createApiMonitoringMiddleware,
+  installRedactedConsoleLogging,
+  logOperationalEvent,
+  logPrivateError,
+  logSecurityEvent,
+  productionErrorHandler,
+} from "./error-handling";
 
 const app = express();
 const httpServer = createServer(app);
 app.disable("x-powered-by");
+installRedactedConsoleLogging();
 
 // Railway forwards requests through a single trusted reverse proxy. Configure
 // this before every limiter so req.ip is the originating client, not Railway.
@@ -232,12 +240,11 @@ app.post(
       : undefined;
     const report = legacy || modern;
     if (report && typeof report === "object") {
-      console.warn("[csp] violation", JSON.stringify({
+      // Do not record blocked/document URLs: they may contain query data.
+      logSecurityEvent("csp_violation", req, {
         effectiveDirective: cspLogField((report as Record<string, unknown>)["effective-directive"]),
         violatedDirective: cspLogField((report as Record<string, unknown>)["violated-directive"]),
-        blockedUri: cspLogField((report as Record<string, unknown>)["blocked-uri"]),
-        documentUri: cspLogField((report as Record<string, unknown>)["document-uri"]),
-      }));
+      });
     }
     res.status(204).end();
   },
@@ -374,35 +381,12 @@ app.use("/api", (_req, res, next) => {
   next();
 });
 
-// ── Request Logging (no sensitive response bodies) ───────────────────────────
+// ── Request Logging & Monitoring (no sensitive request data) ─────────────────
 export function log(message: string, source = "express") {
-  const formattedTime = new Date().toLocaleTimeString("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: true,
-  });
-
-  console.log(`${formattedTime} [${source}] ${message}`);
+  logOperationalEvent("server_message", { source, message });
 }
 
-const SENSITIVE_PATHS = ["/api/auth/user", "/api/kyc", "/api/payments", "/api/advances"];
-
-app.use((req, res, next) => {
-  const start = Date.now();
-  const path = req.path;
-
-  res.on("finish", () => {
-    const duration = Date.now() - start;
-    if (path.startsWith("/api")) {
-      const isSensitive = SENSITIVE_PATHS.some((p) => path.startsWith(p));
-      const logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms${isSensitive ? "" : ""}`;
-      log(logLine);
-    }
-  });
-
-  next();
-});
+app.use(createApiMonitoringMiddleware());
 
 // ── Graceful shutdown & process resilience ───────────────────────────────────
 process.on("unhandledRejection", (reason) => {

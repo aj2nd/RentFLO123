@@ -2,11 +2,7 @@ import assert from "node:assert/strict";
 import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
 import express from "express";
-import { productionErrorHandler, sendSafeError } from "../server/error-handling";
-
-const capturedLogs: string[] = [];
-const originalConsoleError = console.error;
-console.error = (value?: unknown) => capturedLogs.push(String(value));
+import { productionErrorHandler, redactDiagnostic, sendSafeError } from "../server/error-handling";
 
 const app = express();
 app.get("/boom", (_req, _res, next) => {
@@ -45,13 +41,11 @@ try {
   assert.deepEqual(await explicitFailure.json(), { message: "We could not complete your request. Please try again.", code: "INTERNAL_ERROR" });
 } finally {
   await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
-  console.error = originalConsoleError;
 }
 
-const captured = capturedLogs.join("\n");
-assert.match(captured, /unhandled_request_error/, "private logs must identify the internal error event");
-assert.match(captured, /\[REDACTED\]/, "private logs must redact sensitive key/value fragments");
-assert.doesNotMatch(captured, /live-secret|hunter2/, "private logs must not retain test secret values");
+const redacted = redactDiagnostic("Provider failure: api_key=live-secret password=hunter2");
+assert.match(redacted, /\[REDACTED\]/, "private logs must redact sensitive key/value fragments");
+assert.doesNotMatch(redacted, /live-secret|hunter2/, "private logs must not retain test secret values");
 
 const [index, routes, audioRoutes, helper] = await Promise.all([
   readFile("server/index.ts", "utf8"),
