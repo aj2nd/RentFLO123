@@ -13,6 +13,7 @@ import { createRentfloSecurityHeaders } from "./security-headers";
 
 const app = express();
 const httpServer = createServer(app);
+app.disable("x-powered-by");
 
 // Railway forwards requests through a single trusted reverse proxy. Configure
 // this before every limiter so req.ip is the originating client, not Railway.

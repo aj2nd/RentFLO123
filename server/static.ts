@@ -1,6 +1,7 @@
 import express, { type Express } from "express";
 import fs from "fs";
 import path from "path";
+import { blockProductionArtifactMiddleware } from "./production-exposure";
 
 export function serveStatic(app: Express) {
   const distPath = path.resolve(__dirname, "public");
@@ -13,6 +14,10 @@ export function serveStatic(app: Express) {
     );
     return;
   }
+
+  // Must precede both express.static and SPA fallback. It turns requests for
+  // source maps or repository metadata into a real 404 rather than index.html.
+  app.use(blockProductionArtifactMiddleware);
 
   app.use(
     express.static(distPath, {
