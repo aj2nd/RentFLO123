@@ -3,6 +3,21 @@ import fs from "fs";
 import path from "path";
 import { blockProductionArtifactMiddleware } from "./production-exposure";
 
+const NON_INDEXABLE_APP_ROUTE_PREFIXES = [
+  "/admin",
+  "/owner",
+  "/tenant",
+  "/ledger",
+  "/verify",
+  "/agreement",
+  "/messages",
+  "/maintenance",
+  "/profile",
+  "/notifications",
+  "/onboarding",
+  "/setup",
+];
+
 export function serveStatic(app: Express) {
   const distPath = path.resolve(__dirname, "public");
 
@@ -70,6 +85,11 @@ export function serveStatic(app: Express) {
     }
     if (req.path.startsWith("/api")) {
       return res.status(404).json({ message: "Not found" });
+    }
+    if (NON_INDEXABLE_APP_ROUTE_PREFIXES.some((prefix) => req.path === prefix || req.path.startsWith(`${prefix}/`))) {
+      // App-only views are useful after authentication but are not public landing pages.
+      // This header overrides the common HTML shell's indexable root-page meta tag.
+      res.setHeader("X-Robots-Tag", "noindex, nofollow, noarchive");
     }
     res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
     res.setHeader("Pragma", "no-cache");
