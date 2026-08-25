@@ -231,20 +231,17 @@ export async function setupAuth(app: Express) {
   app.get("/api/login", validateRequest({ query: loginQuerySchema }), async (req, res, next) => {
     const isAndroid = res.locals.validatedQuery.platform === "android";
 
-    if (hasActiveWebSessionForLoginRedirect(req)) {
+    if (isAndroid && hasActiveWebSessionForLoginRedirect(req)) {
       try {
-        // Passport can restore a structurally valid browser session whose user
-        // row was removed or never completed onboarding. Treat it as stale: a
-        // redirect to `/` would only make the SPA receive `/api/auth/user` 401
-        // and appear as if the Login button did nothing.
+        // Android can safely return through its authenticated deep link. Browser
+        // logins intentionally skip this shortcut and always rotate into a fresh
+        // Google OAuth exchange, preventing stale Safari sessions from returning
+        // the user to the landing page without opening the provider.
         const sessionUserId = (req.user as any).claims.sub as string;
         const existingAccount = await authStorage.getUser(sessionUserId);
         if (existingAccount) {
-          if (isAndroid) {
-            const deepLink = androidRedirect(req.user);
-            if (deepLink) return res.redirect(deepLink);
-          }
-          return res.redirect("/");
+          const deepLink = androidRedirect(req.user);
+          if (deepLink) return res.redirect(deepLink);
         }
       } catch (error) {
         return next(error);

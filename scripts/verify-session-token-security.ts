@@ -75,8 +75,12 @@ if (!authHook.includes('url: `${API_BASE}/api/login?platform=android`')) {
   throw new Error("The native OAuth deep-link flow must remain isolated from browser session login.");
 }
 
-if (!authServer.includes("if (hasActiveWebSessionForLoginRedirect(req))")) {
-  throw new Error("Only an unexpired authenticated session may retain the safe login shortcut.");
+if (!authServer.includes("if (isAndroid && hasActiveWebSessionForLoginRedirect(req))")) {
+  throw new Error("Only the native flow may retain the active-session deep-link shortcut.");
+}
+
+if (authServer.includes("if (hasActiveWebSessionForLoginRedirect(req))")) {
+  throw new Error("Web Login must not redirect an existing session back to the landing page.");
 }
 
 if (!authServer.includes("const existingAccount = await authStorage.getUser(sessionUserId)")) {
