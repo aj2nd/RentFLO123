@@ -140,12 +140,12 @@ export default function LandingPage() {
 
           {/* Card */}
           <div
-            className="audience-panel relative overflow-hidden rounded-[2px]"
+            className="audience-panel relative overflow-hidden rounded-[34px]"
             data-audience={audienceTab}
             style={audienceTab === "owners" ? {
-              background: "radial-gradient(circle at 76% 14%, rgba(59,130,246,0.16), transparent 30%), linear-gradient(145deg, #101722 0%, #070B11 56%, #05080D 100%)",
-              border: "1px solid rgba(68,143,255,0.42)",
-              boxShadow: "0 26px 80px rgba(0,0,0,0.46), inset 0 1px 0 rgba(117,172,255,0.18)",
+              background: "radial-gradient(circle at 92% 4%, rgba(48,135,255,0.34), transparent 27%), radial-gradient(circle at 4% 100%, rgba(26,108,219,0.16), transparent 27%), linear-gradient(145deg, #122033 0%, #07111E 48%, #03070D 100%)",
+              border: "1px solid rgba(92,168,255,0.78)",
+              boxShadow: "0 0 0 1px rgba(28,100,206,0.22), 0 28px 90px rgba(0,0,0,0.58), 0 0 42px rgba(43,137,255,0.32), inset 0 1px 0 rgba(177,214,255,0.52), inset 0 -1px 0 rgba(43,137,255,0.25)",
             } : isLight ? {
               background: "var(--surface-card)",
               border: "1px solid var(--border-subtle)",
@@ -181,13 +181,29 @@ export default function LandingPage() {
                  background: audienceTab === "owners" ? "rgba(50,135,255,0.32)" : isLight ? "color-mix(in srgb, var(--audience-accent) 12%, transparent)" : "var(--audience-accent-glow)",
               }}
             />
+            {audienceTab === "owners" && (
+              <>
+                <div
+                  className="absolute pointer-events-none -right-[48%] -top-[43%] h-[118%] w-[116%] rounded-full"
+                  style={{
+                    border: "1px solid rgba(126,190,255,0.68)",
+                    background: "radial-gradient(circle at 26% 64%, rgba(58,145,255,0.22), rgba(20,70,135,0.05) 38%, transparent 70%)",
+                    boxShadow: "-18px 18px 70px rgba(54,142,255,0.22), inset 20px -22px 64px rgba(91,169,255,0.14)",
+                  }}
+                />
+                <div
+                  className="absolute bottom-0 left-0 h-44 w-52 pointer-events-none opacity-75"
+                  style={{ backgroundImage: "radial-gradient(circle, rgba(92,170,255,0.92) 1px, transparent 1.5px)", backgroundSize: "11px 11px", maskImage: "radial-gradient(ellipse at bottom left, black 0%, transparent 73%)" }}
+                />
+              </>
+            )}
 
             <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-0">
 
               {/* Left: big headline */}
               <div
                 className="p-10 md:p-14 flex flex-col justify-between"
-                 style={{ borderRight: audienceTab === "owners" ? "1px solid rgba(72,144,244,0.24)" : isLight ? "1px solid var(--border-subtle)" : "1px solid color-mix(in srgb, var(--audience-accent) 16%, transparent)" }}
+                 style={{ borderRight: audienceTab === "owners" ? "none" : isLight ? "1px solid var(--border-subtle)" : "1px solid color-mix(in srgb, var(--audience-accent) 16%, transparent)" }}
               >
                 <div>
                   <div className="mb-6">
@@ -259,7 +275,7 @@ export default function LandingPage() {
                 <div className="mt-10">
                   <a
                     href="/api/login"
-                    className="inline-flex items-center gap-2 px-7 py-3 font-bold text-sm uppercase tracking-[1.5px] transition-all duration-200"
+                    className="inline-flex items-center gap-3 rounded-[12px] px-8 py-4 font-bold text-sm uppercase tracking-[2px] transition-all duration-200"
                      style={audienceTab === "owners" ? { background: "linear-gradient(100deg, #57A7FF 0%, #3A8CFF 100%)", color: "#07111F", boxShadow: "0 12px 28px rgba(44,133,255,0.30)" } : { background: "var(--audience-accent)", color: "#07111F", boxShadow: "0 0 24px var(--audience-accent-glow)" }}
                     onMouseEnter={e => { e.currentTarget.style.opacity = "0.85" }}
                     onMouseLeave={e => { e.currentTarget.style.opacity = "1" }}
@@ -270,7 +286,10 @@ export default function LandingPage() {
               </div>
 
               {/* Right: benefit bullets */}
-              <div className="p-10 md:p-14">
+              <div
+                className="relative p-10 md:p-14"
+                style={audienceTab === "owners" ? { background: "linear-gradient(180deg, rgba(7,15,27,0.12), rgba(2,7,14,0.42))", borderTop: "1px solid rgba(72,151,255,0.22)" } : undefined}
+              >
                  <p className="text-[10px] font-semibold uppercase tracking-[2px] mb-8" style={{ color: "var(--audience-accent)", opacity: 0.8 }}>
                   {audienceTab === "owners" ? t("landing_what_you_get") : t("landing_how_helps")}
                 </p>
