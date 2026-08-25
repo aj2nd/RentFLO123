@@ -62,6 +62,7 @@ import {
   propertyResponse,
   ticketResponse,
 } from "./response-serializers";
+import { cashfreeWebhookSecret, verifyCashfreeWebhookSignature } from "./payment-webhook-security";
 
 // These limits run after isAuthenticated, so a caller cannot evade them by
 // switching IP addresses. Their IP-level backstops are mounted in index.ts.
@@ -485,8 +486,8 @@ export async function registerRoutes(
 
   // Cashfree Webhook - Payment Verification (handles partial payments)
   // SECURITY:
-  //  - HMAC-SHA256 over `${timestamp}${rawBody}` using CASHFREE_SECRET_KEY,
-  //    base64-encoded. Compared via timing-safe equal.
+  //  - HMAC-SHA256 over `${timestamp}${rawBody}` using the Cashfree PG secret
+  //    key, base64-encoded. Every documented signature header is required.
   //  - Computed over RAW request body (not parsed/sanitized) to avoid drift.
   //  - Idempotent: if a payment row with the same cf_payment_id is already SUCCESS,
   //    we return 200 without re-counting.
@@ -494,24 +495,16 @@ export async function registerRoutes(
   // generic gateway-order-id / gateway-payment-id (no migration needed).
   app.post('/api/cashfree/webhook', async (req: any, res) => {
     try {
-      const cryptoMod = await import('crypto');
-      const secret = process.env.CASHFREE_SECRET_KEY || '';
-      if (!secret) return res.status(503).json({ message: 'Payment gateway not configured' });
-
-      const headerSig = (req.headers['x-webhook-signature'] as string) || '';
-      const headerTs = (req.headers['x-webhook-timestamp'] as string) || '';
       const rawBody: Buffer | undefined = req.rawBody as Buffer | undefined;
-
-      if (!headerSig || !headerTs || !rawBody) {
-        return res.status(400).json({ message: 'Invalid signature' });
-      }
-
-      const expected = cryptoMod
-        .createHmac('sha256', secret)
-        .update(headerTs + rawBody.toString('utf8'))
-        .digest('base64');
-      if (!timingSafeEqualStr(expected, headerSig)) {
-        return res.status(400).json({ message: 'Invalid signature' });
+      const secret = cashfreeWebhookSecret();
+      if (!secret) return res.status(503).json({ message: 'Payment webhook verification is not configured' });
+      const verified = verifyCashfreeWebhookSignature({
+        signature: req.headers['x-webhook-signature'],
+        timestamp: req.headers['x-webhook-timestamp'],
+        version: req.headers['x-webhook-version'],
+      }, rawBody, secret);
+      if (!verified) {
+        return res.status(401).json({ message: 'Invalid webhook signature' });
       }
 
       let parsed: z.infer<typeof signedCashfreeWebhookSchema>;
