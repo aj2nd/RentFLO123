@@ -298,32 +298,46 @@ export default function LandingPage() {
                  <p className="text-[10px] font-semibold uppercase tracking-[2px] mb-8" style={{ color: "var(--audience-accent)", opacity: 0.8 }}>
                   {audienceTab === "owners" ? t("landing_what_you_get") : t("landing_how_helps")}
                 </p>
-                <ul className="space-y-6">
-                  {(audienceTab === "owners" ? [
-                    { title: t("landing_owner_b1_title"), desc: t("landing_owner_b1_desc") },
-                    { title: t("landing_owner_b2_title"), desc: t("landing_owner_b2_desc") },
-                    { title: t("landing_owner_b3_title"), desc: t("landing_owner_b3_desc") },
-                    { title: t("landing_owner_b4_title"), desc: t("landing_owner_b4_desc") },
-                  ] : [
-                    { title: t("landing_tenant_b1_title"), desc: t("landing_tenant_b1_desc") },
-                    { title: t("landing_tenant_b2_title"), desc: t("landing_tenant_b2_desc") },
-                    { title: t("landing_tenant_b3_title"), desc: t("landing_tenant_b3_desc") },
-                    { title: t("landing_tenant_b4_title"), desc: t("landing_tenant_b4_desc") },
-                  ]).map((item: { title: string; desc: string }, i) => (
-                    <li key={i} className="flex gap-4">
-                      <div
-                        className="mt-1 flex-shrink-0 w-5 h-5 flex items-center justify-center"
-                         style={{ border: "1px solid var(--audience-accent-border)", background: "var(--audience-accent-soft)", boxShadow: "0 0 14px var(--audience-accent-glow)" }}
-                      >
-                         <div className="w-1.5 h-1.5" style={{ background: "var(--audience-accent)", boxShadow: "0 0 8px var(--audience-accent)" }} />
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold text-foreground mb-1">{item.title}</p>
-                        <p className="text-sm font-light text-muted-foreground leading-relaxed">{item.desc}</p>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
+                {audienceTab === "owners" ? (
+                  <ul className="divide-y" style={{ borderColor: "var(--border-subtle)" }}>
+                    {[
+                      { Icon: Zap, title: "Get Your Rent", highlight: "on Time", desc: "Rent credited on the 1st, every month.", accent: "#2E84FF" },
+                      { Icon: ShieldCheck, title: "Zero", highlight: "Risk", desc: "You get paid even if the tenant delays or leaves.", accent: "#9B5CFF" },
+                      { Icon: Building2, title: "Easy", highlight: "Repairs & Maintenance", desc: "We manage repairs from start to finish.", accent: "#19C7D6" },
+                      { Icon: Clock, title: "No Tenant", highlight: "Chasing", desc: "We handle all follow-ups and disputes for you.", accent: "#F7B733" },
+                    ].map(({ Icon, title, highlight, desc, accent }) => (
+                      <li key={title} className="py-7 first:pt-0 last:pb-0">
+                        <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border" style={{ borderColor: `${accent}66`, background: `${accent}0D`, boxShadow: `0 0 24px ${accent}1A` }}>
+                          <Icon size={25} strokeWidth={1.7} style={{ color: accent }} />
+                        </div>
+                        <h4 className="text-2xl font-bold tracking-[-0.8px] text-foreground">
+                          {title} <span style={{ color: accent }}>{highlight}</span>
+                        </h4>
+                        <div className="my-4 h-1 w-14 rounded-full" style={{ background: accent }} />
+                        <p className="max-w-md text-base font-light leading-relaxed text-muted-foreground">{desc}</p>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <ul className="space-y-6">
+                    {[
+                      { title: t("landing_tenant_b1_title"), desc: t("landing_tenant_b1_desc") },
+                      { title: t("landing_tenant_b2_title"), desc: t("landing_tenant_b2_desc") },
+                      { title: t("landing_tenant_b3_title"), desc: t("landing_tenant_b3_desc") },
+                      { title: t("landing_tenant_b4_title"), desc: t("landing_tenant_b4_desc") },
+                    ].map((item: { title: string; desc: string }, i) => (
+                      <li key={i} className="flex gap-4">
+                        <div className="mt-1 flex-shrink-0 w-5 h-5 flex items-center justify-center" style={{ border: "1px solid var(--audience-accent-border)", background: "var(--audience-accent-soft)", boxShadow: "0 0 14px var(--audience-accent-glow)" }}>
+                          <div className="w-1.5 h-1.5" style={{ background: "var(--audience-accent)", boxShadow: "0 0 8px var(--audience-accent)" }} />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-foreground mb-1">{item.title}</p>
+                          <p className="text-sm font-light text-muted-foreground leading-relaxed">{item.desc}</p>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
 
             </div>
