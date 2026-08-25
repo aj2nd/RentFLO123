@@ -1,5 +1,4 @@
-import houseLogoImg from "@assets/IMG_7223_1777731010120.jpeg";
-import wordmarkImg from "@assets/IMG_7224_1777731010120.jpeg";
+import wordmarkImg from "@assets/IMG_8383_1787480222056.png";
 
 export function LoadingScreen() {
   return (
@@ -15,37 +14,9 @@ export function LoadingScreen() {
         }}
       />
 
-      {/* Logo lockup */}
+      {/* New supplied RentFLO wordmark replaces the legacy icon + wordmark lockup. */}
       <div className="relative flex flex-col items-center gap-6">
-        {/* Icon with liquid glass ring */}
-        <div className="relative">
-          <div
-            className="absolute inset-0 rounded-full"
-            style={{
-              background: 'conic-gradient(from 0deg, rgba(111,255,233,0.6), rgba(111,255,233,0.05), rgba(111,255,233,0.6))',
-              filter: 'blur(8px)',
-              transform: 'scale(1.4)',
-              animation: 'spin 3s linear infinite',
-            }}
-          />
-          <div
-            className="relative flex items-center justify-center"
-            style={{
-              width: 72,
-              height: 72,
-              background: 'linear-gradient(135deg, rgba(111,255,233,0.12) 0%, rgba(255,255,255,0.06) 50%, rgba(111,255,233,0.08) 100%)',
-              backdropFilter: 'blur(12px)',
-              border: '1px solid rgba(111,255,233,0.3)',
-              borderRadius: '18px',
-              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.15), 0 8px 32px rgba(0,0,0,0.6)',
-            }}
-          >
-            <img src={houseLogoImg} alt="RentFLO" style={{ width: 44, height: 44 }} className="object-contain" />
-          </div>
-        </div>
-
-        {/* Wordmark */}
-        <img src={wordmarkImg} alt="RentFLO" style={{ height: 28 }} className="object-contain opacity-90" />
+        <img src={wordmarkImg} alt="RentFLO" style={{ width: 'min(72vw, 280px)' }} className="h-auto object-contain brightness-0 invert opacity-95" />
 
         {/* Tagline */}
         <p className="text-xs uppercase tracking-[0.3em] text-[#6FFFE9]/40 mt-1">
@@ -75,10 +46,6 @@ export function LoadingScreen() {
         @keyframes shimmer {
           0%   { left: -40%; }
           100% { left: 140%; }
-        }
-        @keyframes spin {
-          from { transform: scale(1.4) rotate(0deg); }
-          to   { transform: scale(1.4) rotate(360deg); }
         }
       `}</style>
     </div>
