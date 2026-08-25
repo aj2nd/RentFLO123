@@ -354,7 +354,7 @@ export default function Verify() {
                     <span className="text-sm text-zinc-400">
                       {formData.kycDocumentUrl ? t('kyc_doc_uploaded') : t('kyc_choose_file')}
                     </span>
-                    <input type="file" accept="image/*,.pdf"
+                    <input type="file" accept="image/png,image/jpeg,image/webp,application/pdf"
                       onChange={(e) => handleFileUpload(e, "kycDocumentUrl")}
                       className="hidden" data-testid="input-kyc-document" />
                   </label>
@@ -403,7 +403,7 @@ export default function Verify() {
                         <span className="text-sm text-zinc-400">
                           {formData.cancelledChequeUrl ? t('kyc_uploaded_tick') : t('kyc_upload_cheque')}
                         </span>
-                        <input type="file" accept="image/*,.pdf"
+                        <input type="file" accept="image/png,image/jpeg,image/webp,application/pdf"
                           onChange={(e) => handleFileUpload(e, "cancelledChequeUrl")}
                           className="hidden" data-testid="input-cancelled-cheque" />
                       </label>

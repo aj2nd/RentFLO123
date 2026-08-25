@@ -46,6 +46,12 @@ import {
   requirePropertyAccess,
   requireLedgerAccess,
 } from "./security";
+import {
+  mediaExtension,
+  UploadValidationError,
+  validateKycDocumentUpload,
+  validateTicketImageUpload,
+} from "./upload-validation";
 
 // These limits run after isAuthenticated, so a caller cannot evade them by
 // switching IP addresses. Their IP-level backstops are mounted in index.ts.
@@ -105,8 +111,8 @@ const signedDiditWebhookSchema = z.object({
 });
 
 const documentValueSchema = z.string().trim().max(2_000_000).refine(
-  (value) => value === "" || /^https:\/\//i.test(value) || /^data:(?:image\/(?:png|jpeg|webp)|application\/pdf);base64,[A-Za-z0-9+/=]+$/i.test(value),
-  "Document must be an HTTPS URL or supported base64 image/PDF",
+  (value) => value === "" || /^data:(?:image\/(?:png|jpeg|webp)|application\/pdf);base64,[A-Za-z0-9+/=]+$/i.test(value),
+  "Document must be a supported base64 image or PDF upload",
 );
 
 function publicAppBaseUrl(): string {
@@ -1048,6 +1054,17 @@ export async function registerRoutes(
   app.post(api.tickets.create.path, isAuthenticated, async (req: any, res) => {
     try {
       const input = api.tickets.create.input.parse(req.body);
+      let safePhotoUrl: string | null = null;
+      if (input.photoUrl) {
+        try {
+          safePhotoUrl = validateTicketImageUpload(input.photoUrl).dataUrl;
+        } catch (error) {
+          if (error instanceof UploadValidationError) {
+            return res.status(400).json({ message: error.message, field: "photoUrl" });
+          }
+          throw error;
+        }
+      }
       const userId = req.user?.claims?.sub;
       const access = await requirePropertyAccess(req, res, input.propertyId);
       if (!access) return;
@@ -1060,7 +1077,7 @@ export async function registerRoutes(
         tenantId: userId,
         title: input.title,
         description: input.description,
-        photoUrl: input.photoUrl || null,
+        photoUrl: safePhotoUrl,
       });
 
       // Notify all admins about new maintenance request
@@ -1151,14 +1168,33 @@ export async function registerRoutes(
       return res.status(400).json({ message: 'Either PAN number or Aadhaar number is required' });
     }
 
+    let safeKycDocumentUrl: string | null = null;
+    let safeCancelledChequeUrl: string | null = null;
+    try {
+      safeKycDocumentUrl = input.kycDocumentUrl ? validateKycDocumentUpload(input.kycDocumentUrl).dataUrl : null;
+    } catch (error) {
+      if (error instanceof UploadValidationError) {
+        return res.status(400).json({ message: error.message, field: "kycDocumentUrl" });
+      }
+      throw error;
+    }
+    try {
+      safeCancelledChequeUrl = input.cancelledChequeUrl ? validateKycDocumentUpload(input.cancelledChequeUrl).dataUrl : null;
+    } catch (error) {
+      if (error instanceof UploadValidationError) {
+        return res.status(400).json({ message: error.message, field: "cancelledChequeUrl" });
+      }
+      throw error;
+    }
+
     const updated = await authStorage.updateUser(userId, {
       fullLegalName: encryptPII(input.fullLegalName),
       panNumber: input.panNumber ? encryptPII(input.panNumber.toUpperCase()) : null,
       aadhaarNumber: input.aadhaarNumber ? encryptPII(input.aadhaarNumber) : null,
-      kycDocumentUrl: input.kycDocumentUrl ? encryptPII(input.kycDocumentUrl) : null,
+      kycDocumentUrl: safeKycDocumentUrl ? encryptPII(safeKycDocumentUrl) : null,
       bankAccountNumber: input.bankAccountNumber ? encryptPII(input.bankAccountNumber) : null,
       ifscCode: input.ifscCode ? encryptPII(input.ifscCode.toUpperCase()) : null,
-      cancelledChequeUrl: input.cancelledChequeUrl ? encryptPII(input.cancelledChequeUrl) : null,
+      cancelledChequeUrl: safeCancelledChequeUrl ? encryptPII(safeCancelledChequeUrl) : null,
       isVerified: false,
     });
 
@@ -1185,17 +1221,14 @@ export async function registerRoutes(
     const value = decryptPII(encrypted);
     if (!value) return res.status(404).json({ message: "Document not available" });
     res.setHeader("Cache-Control", "no-store");
-    if (value.startsWith("data:")) {
-      const match = value.match(/^data:(image\/(?:png|jpeg|webp)|application\/pdf);base64,([A-Za-z0-9+/=]+)$/);
-      if (!match) return res.status(400).json({ message: "Unsupported document format" });
-      return res.type(match[1]).send(Buffer.from(match[2], "base64"));
-    }
     try {
-      const url = new URL(value);
-      if (url.protocol !== "https:") throw new Error("Unsupported protocol");
-      return res.redirect(302, url.toString());
+      const upload = validateKycDocumentUpload(value);
+      res.setHeader("X-Content-Type-Options", "nosniff");
+      res.setHeader("Content-Security-Policy", "sandbox; default-src 'none'");
+      res.setHeader("Content-Disposition", `attachment; filename="${type}-document.${mediaExtension(upload.mime)}"`);
+      return res.type(upload.mime).send(upload.bytes);
     } catch {
-      return res.status(400).json({ message: "Unsupported document location" });
+      return res.status(400).json({ message: "Unsupported or malformed stored document" });
     }
   });
 

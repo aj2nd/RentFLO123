@@ -46,7 +46,7 @@ function FileUpload({ onFileChange, currentValue }: { onFileChange: (dataUrl: st
 
   return (
     <div className="space-y-2">
-      <input ref={fileInputRef} type="file" accept="image/*,.pdf" onChange={handleFileSelect} className="hidden" data-testid="input-file-upload" />
+      <input ref={fileInputRef} type="file" accept="image/png,image/jpeg,image/webp,application/pdf" onChange={handleFileSelect} className="hidden" data-testid="input-file-upload" />
       {currentValue ? (
         <div className="flex items-center gap-3 p-3 border border-[#6FFFE9]/30 bg-zinc-900">
           <div className="w-10 h-10 border border-zinc-700 flex items-center justify-center bg-zinc-800">

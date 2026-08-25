@@ -1,10 +1,11 @@
 import express, { type Express, type NextFunction, type Request, type Response } from "express";
 import { chatStorage } from "../chat/storage";
-import { openai, speechToText, ensureCompatibleFormat } from "./client";
+import { detectAudioFormat, openai, speechToText, ensureCompatibleFormat } from "./client";
 import { isAuthenticated } from "../auth";
 import { authStorage } from "../auth/storage";
 import { z } from "zod";
 import { conversationIdParamsSchema, sanitizedText, validateRequest } from "../../input-validation";
+import { decodeStrictBase64, MAX_AUDIO_UPLOAD_BYTES, UploadValidationError } from "../../upload-validation";
 
 // Body parser with 50MB limit for audio payloads — applied only to the audio
 // route, after isAuthenticated, so unauthenticated requests never parse the body.
@@ -15,7 +16,7 @@ const legacyConversationTitleSchema = z.object({
 const audioMessageSchema = z.object({
   audio: z.string().min(4).max(14_000_000)
     .regex(/^[A-Za-z0-9+/]+={0,2}$/, "Audio must be valid base64")
-    .refine((value) => Buffer.byteLength(value, "base64") <= 10 * 1024 * 1024, "Audio must be 10 MB or smaller"),
+    .refine((value) => Buffer.byteLength(value, "base64") <= MAX_AUDIO_UPLOAD_BYTES, "Audio must be 10 MB or smaller"),
   voice: z.enum(["alloy", "ash", "ballad", "coral", "echo", "fable", "nova", "onyx", "sage", "shimmer", "verse"]).default("alloy"),
 }).strict();
 
@@ -91,7 +92,18 @@ export function registerAudioRoutes(app: Express): void {
       const { audio, voice } = req.body as z.infer<typeof audioMessageSchema>;
 
       // 1. Auto-detect format and convert to OpenAI-compatible format
-      const rawBuffer = Buffer.from(audio, "base64");
+      let rawBuffer: Buffer;
+      try {
+        rawBuffer = decodeStrictBase64(audio, MAX_AUDIO_UPLOAD_BYTES);
+      } catch (error) {
+        if (error instanceof UploadValidationError) {
+          return res.status(400).json({ error: error.message });
+        }
+        throw error;
+      }
+      if (detectAudioFormat(rawBuffer) === "unknown") {
+        return res.status(400).json({ error: "Audio must be a supported WebM, MP4, WAV, MP3, or OGG recording" });
+      }
       const { buffer: audioBuffer, format: inputFormat } = await ensureCompatibleFormat(rawBuffer);
 
       // 2. Transcribe user audio

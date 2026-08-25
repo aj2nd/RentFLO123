@@ -308,8 +308,8 @@ export const createMaintenanceTicketRequestSchema = z.object({
   propertyId: z.string().uuid(),
   title: z.string().trim().min(1).max(200),
   description: z.string().trim().min(1).max(5000),
-  photoUrl: z.string().trim().max(7_000_000)
-    .refine((value) => /^https:\/\//i.test(value) || /^data:image\/(png|jpe?g|webp);base64,[A-Za-z0-9+/=]+$/i.test(value), "Photo must be an HTTPS image URL or supported image data")
+  photoUrl: z.string().trim().max(2_000_000)
+    .refine((value) => /^data:image\/(png|jpe?g|webp);base64,[A-Za-z0-9+/=]+$/i.test(value), "Photo must be a supported image upload")
     .optional().or(z.literal("")),
 }).strict();
 

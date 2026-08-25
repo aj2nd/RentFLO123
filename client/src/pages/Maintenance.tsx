@@ -202,7 +202,7 @@ export default function Maintenance() {
 
             <div className="space-y-2">
               <label className="text-[10px] font-bold uppercase tracking-[1.5px] text-white/30">{t("maint_photo_optional")}</label>
-              <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
+              <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={handlePhotoUpload} />
               {safeImageSource(formPhoto) ? (
                 <div className="relative inline-block">
                   <img src={safeImageSource(formPhoto)!} alt="Preview" className="h-24 w-auto border border-white/10 object-cover" />
