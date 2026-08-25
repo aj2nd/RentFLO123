@@ -63,6 +63,14 @@ if (!authHook.includes("clearLegacyBrowserAuthStorage();")) {
   throw new Error("The browser startup path must clear a legacy authentication key.");
 }
 
+if (!authHook.includes('window.location.assign(`${API_BASE}/api/login`)')) {
+  throw new Error("Browser OAuth must use the current browsing context so the callback session is available immediately.");
+}
+
+if (!authHook.includes('url: `${API_BASE}/api/login?platform=android`')) {
+  throw new Error("The native OAuth deep-link flow must remain isolated from browser session login.");
+}
+
 if (!authToken.includes("NATIVE_AUTH_TOKEN_TTL_SECONDS = 7 * 24 * 60 * 60")) {
   throw new Error("The Android fallback token must share the seven-day maximum lifetime.");
 }
@@ -73,4 +81,4 @@ if (!nativeClaims || nativeClaims.exp - nativeClaims.iat !== NATIVE_AUTH_TOKEN_T
   throw new Error("Native fallback token runtime lifetime verification failed.");
 }
 
-console.log("Verified secure HTTP-only web session cookies, seven-day session enforcement, encrypted session storage, legacy browser-token removal, and native fallback-token expiry.");
+console.log("Verified secure HTTP-only web session cookies, same-tab browser OAuth, seven-day session enforcement, encrypted session storage, legacy browser-token removal, and native fallback-token expiry.");

@@ -89,11 +89,16 @@ export function useAuth() {
 
   const loginMutation = useMutation({
     mutationFn: async () => {
-      const loginUrl = Capacitor.isNativePlatform()
-        ? `${API_BASE}/api/login?platform=android`
-        : `${API_BASE}/api/login`;
+      if (!Capacitor.isNativePlatform()) {
+        // Browser OAuth must stay in this tab. A popup/custom-tab-style handoff
+        // can leave iPhone Safari's app tab polling /api/auth/user before the
+        // callback cookie is available to that browsing context.
+        window.location.assign(`${API_BASE}/api/login`);
+        return;
+      }
+
       await Browser.open({
-        url: loginUrl,
+        url: `${API_BASE}/api/login?platform=android`,
         windowName: "_blank",
         presentationStyle: "popover",
       });
