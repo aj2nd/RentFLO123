@@ -4,7 +4,7 @@
 
 ## Encryption model
 
-RentFLO now uses an AES-256-GCM envelope (`enc:v1:`) for protected values. The encryption key must be supplied through the server-only `PII_ENCRYPTION_KEY` environment variable in production; the application now refuses to use the development fallback key in production.
+RentFLO now uses an AES-256-GCM envelope (`enc:v1:`) for protected values. The encryption key is supplied through the server-only `PII_ENCRYPTION_KEY` environment variable. Production rejects a missing key and short values. Standard 32-byte keys (`64` hexadecimal characters or Base64 decoding to `32` bytes) are used directly. A pre-existing server-only Railway secret of at least 32 characters is deterministically expanded with SHA-256 for compatibility with the encrypted-session rollout; this is not a plaintext or client-controlled fallback.
 
 ## Fields changed
 

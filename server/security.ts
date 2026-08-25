@@ -10,13 +10,20 @@ import { authStorage } from "./replit_integrations/auth/storage";
 // decrypts after restarts (NOT for prod — set PII_ENCRYPTION_KEY in production).
 
 function getKey(): Buffer {
-  const raw = process.env.PII_ENCRYPTION_KEY;
+  const raw = process.env.PII_ENCRYPTION_KEY?.trim();
   if (raw) {
     // Accept hex (64 chars) or base64
     if (/^[0-9a-fA-F]{64}$/.test(raw)) return Buffer.from(raw, "hex");
     const b = Buffer.from(raw, "base64");
     if (b.length === 32) return b;
-    throw new Error("PII_ENCRYPTION_KEY must be 32 bytes (hex64 or base64)");
+    // Compatibility for existing Railway secrets generated before session
+    // encryption was introduced. A sufficiently long server-only secret is
+    // deterministically expanded to an AES-256 key, avoiding login outages
+    // while never falling back to plaintext or a client-controlled value.
+    if (raw.length >= 32) {
+      return crypto.createHash("sha256").update("rentflo-pii-key-v1::" + raw).digest();
+    }
+    throw new Error("PII_ENCRYPTION_KEY must be hex64, base64-encoded 32 bytes, or a legacy server secret of at least 32 characters");
   }
   if (process.env.NODE_ENV === "production") {
     throw new Error("PII_ENCRYPTION_KEY must be configured in production");

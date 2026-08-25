@@ -9,6 +9,23 @@ if (!encrypted || !isEncryptedPII(encrypted) || encrypted.includes(sample) || de
   throw new Error("PII encryption envelope verification failed");
 }
 
+// Existing Railway secrets that predate encrypted sessions remain encrypted at
+// rest through a deterministic SHA-256 expansion rather than breaking login.
+process.env.PII_ENCRYPTION_KEY = "legacy-railway-secret-that-is-long-enough-to-be-safe";
+const legacyEncrypted = encryptPII(sample);
+if (!legacyEncrypted || !isEncryptedPII(legacyEncrypted) || decryptPII(legacyEncrypted) !== sample) {
+  throw new Error("Legacy PII key compatibility verification failed");
+}
+process.env.PII_ENCRYPTION_KEY = "too-short";
+let rejectedShortKey = false;
+try {
+  encryptPII(sample);
+} catch {
+  rejectedShortKey = true;
+}
+if (!rejectedShortKey) throw new Error("Short PII encryption keys must be rejected");
+delete process.env.PII_ENCRYPTION_KEY;
+
 const sanitized = publicUser({
   id: "user-1",
   fullLegalName: encrypted,
@@ -29,4 +46,4 @@ if (!sanitized.hasKycDocument || !sanitized.hasCancelledCheque || sanitized.panN
   throw new Error("Public user masking verification failed");
 }
 
-console.log("Encryption envelope, masking, and protected-field omission verified.");
+console.log("Encryption envelope, legacy-key compatibility, short-key rejection, masking, and protected-field omission verified.");
