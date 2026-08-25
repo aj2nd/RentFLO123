@@ -46,6 +46,10 @@ export function serveStatic(app: Express) {
         // Hashed bundles (Vite emits /assets/[name]-[hash].ext) never change → cache forever.
         if (filePath.includes(`${path.sep}assets${path.sep}`)) {
           res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+        } else if (filePath.endsWith("robots.txt") || filePath.endsWith("sitemap.xml")) {
+          // Crawlers must be able to retrieve these very small discovery files reliably.
+          // A short shared cache avoids forcing every crawler fetch through a cold app origin.
+          res.setHeader("Cache-Control", "public, max-age=3600, stale-while-revalidate=86400");
         } else if (filePath.endsWith("index.html") || filePath.endsWith("sw.js")) {
           // HTML shell + service worker must always revalidate so deploys land immediately.
           // Pragma covers HTTP/1.0 proxies.

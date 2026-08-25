@@ -27,6 +27,12 @@ pnpm exec tsx scripts/verify-seo-foundation.ts
 pnpm run build
 ```
 
+## Search Console Sitemap Fetch Follow-up
+
+Google Search Console initially showed **“Couldn’t fetch”** immediately after the sitemap was submitted. A crawler-relevant request made after deployment returned HTTP 200, `application/xml`, valid XML, and the expected canonical homepage; `robots.txt` also returned HTTP 200 and declared the sitemap. The observed public origin response was comparatively slow, so the robots and sitemap files now use a short shared cache (`max-age=3600`) plus `stale-while-revalidate`, reducing the chance that a crawler receives a cold-origin delay for these tiny, infrequently changing discovery files.
+
+The first failure therefore appears transient rather than an invalid sitemap. Keep the submitted URL in Search Console. After the cache policy deploys, open the submitted sitemap row, tap **Resubmit sitemap**, and allow Google time to retry; Search Console can take several hours to update its displayed status.
+
 ## References
 
 [1]: https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap "Google Search Central: Build and submit a sitemap"

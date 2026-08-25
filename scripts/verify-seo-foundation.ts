@@ -16,5 +16,7 @@ assert.doesNotMatch(html, /SearchAction/);
 assert.match(robots, /Sitemap: https:\/\/rentflo\.in\/sitemap\.xml/);
 assert.match(sitemap, /<loc>https:\/\/rentflo\.in\/<\/loc>/);
 assert.match(staticServer, /X-Robots-Tag", "noindex, nofollow, noarchive/);
+assert.match(staticServer, /filePath\.endsWith\("robots\.txt"\) \|\| filePath\.endsWith\("sitemap\.xml"\)/);
+assert.match(staticServer, /public, max-age=3600, stale-while-revalidate=86400/);
 
 console.log("SEO foundation verification passed.");
