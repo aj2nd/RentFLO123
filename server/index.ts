@@ -24,27 +24,47 @@ declare module "http" {
 }
 
 // ── Security Headers ────────────────────────────────────────────────────────
+const CSP_REPORT_ENDPOINT = "/api/csp-report";
+const CSP_INLINE_SCRIPT_HASHES = [
+  "'sha256-a4ZFAIL/HZc14Fsh0YVz7m6pn0FS+VOCQiIDiQiJ/dQ='",
+  "'sha256-8QICGeAmf5e/E/hXyCn+o0uzfzS334/haSabo3VGefk='",
+];
+
 app.use(
   helmet({
     contentSecurityPolicy: {
       directives: {
         defaultSrc:     ["'self'"],
-        scriptSrc:      ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://sdk.cashfree.com", "https://*.cashfree.com"],
+        scriptSrc:      ["'self'", ...CSP_INLINE_SCRIPT_HASHES, "https://sdk.cashfree.com", "https://*.cashfree.com"],
         styleSrc:       ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         imgSrc:         ["'self'", "data:", "blob:", "https:"],
         fontSrc:        ["'self'", "data:", "https://fonts.gstatic.com"],
         connectSrc:     ["'self'", "https://*.cashfree.com", "https://*.didit.me", "https://api.leegality.com", "wss:", "ws:"],
         frameSrc:       ["'self'", "https://*.cashfree.com", "https://*.didit.me", "https://verify.didit.me", "https://*.leegality.com"],
+        workerSrc:      ["'self'", "blob:"],
+        manifestSrc:    ["'self'"],
+        mediaSrc:       ["'self'", "data:", "blob:"],
         objectSrc:      ["'none'"],
         baseUri:        ["'self'"],
         formAction:     ["'self'"],
         frameAncestors: ["'none'"],
+        reportUri:      [CSP_REPORT_ENDPOINT],
+        "report-to":   ["csp"],
       },
     },
     crossOriginEmbedderPolicy: false,
     referrerPolicy: { policy: "strict-origin-when-cross-origin" },
   })
 ); 
+app.use((_req, res, next) => {
+  res.setHeader("Reporting-Endpoints", `csp="${CSP_REPORT_ENDPOINT}"`);
+  res.setHeader("Report-To", JSON.stringify({
+    group: "csp",
+    max_age: 10_886_400,
+    endpoints: [{ url: CSP_REPORT_ENDPOINT }],
+  }));
+  next();
+});
 // ── CORS for Capacitor Android app ──────────────────────────────────────────
 // The Android WebView origin is https://localhost (Capacitor 4+) or
 // capacitor://localhost (older); http://localhost is the dev fallback. The
@@ -173,6 +193,23 @@ const webhookLimiter = rateLimit({
   message: { message: "Too many requests." },
 });
 
+// CSP reports are untrusted browser data. Keep their handler lightweight,
+// bounded, and independently rate-limited so violations cannot become a
+// log-injection or resource-exhaustion path.
+const cspReportLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (_req, res) => res.status(204).end(),
+});
+
+function cspLogField(value: unknown): string | undefined {
+  if (typeof value !== "string") return undefined;
+  const normalized = value.replace(/[\u0000-\u001F\u007F]/g, " ").slice(0, 512);
+  return normalized || undefined;
+}
+
 app.use(globalLimiter);
 app.use("/api/login", loginLimiter);
 app.use("/api/auth/google/callback", oauthCallbackLimiter);
@@ -193,6 +230,28 @@ app.use("/api/notifications/rent-due-check", sensitiveLimiter);
 app.use("/api/chatbot", aiLimiter);
 app.use("/api/cashfree/webhook", webhookLimiter);
 app.use("/api/kyc/didit/webhook", webhookLimiter);
+
+app.post(
+  CSP_REPORT_ENDPOINT,
+  cspReportLimiter,
+  express.json({ type: ["application/csp-report", "application/reports+json", "application/json"], limit: "32kb" }),
+  (req, res) => {
+    const legacy = req.body?.["csp-report"];
+    const modern = Array.isArray(req.body)
+      ? req.body.find((entry: unknown) => (entry as { type?: unknown })?.type === "csp-violation")?.body
+      : undefined;
+    const report = legacy || modern;
+    if (report && typeof report === "object") {
+      console.warn("[csp] violation", JSON.stringify({
+        effectiveDirective: cspLogField((report as Record<string, unknown>)["effective-directive"]),
+        violatedDirective: cspLogField((report as Record<string, unknown>)["violated-directive"]),
+        blockedUri: cspLogField((report as Record<string, unknown>)["blocked-uri"]),
+        documentUri: cspLogField((report as Record<string, unknown>)["document-uri"]),
+      }));
+    }
+    res.status(204).end();
+  },
+);
 
 // ── Body Parsing (with size limits) ─────────────────────────────────────────
 app.use(
