@@ -4,7 +4,7 @@
  * shared tenant bottom navigation remains available across every tenant page.
  */
 import { Switch, Route, Redirect, useLocation } from "wouter";
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "next-themes";
@@ -13,27 +13,27 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/use-auth";
 import { SidebarProvider, useSidebar } from "@/contexts/SidebarContext";
 
-import NotFound from "@/pages/not-found";
-import LandingPage from "@/pages/LandingPage";
-import Onboarding from "@/pages/Onboarding";
-import Setup from "@/pages/Setup";
-import AdminDashboard from "@/pages/AdminDashboard";
-import AdminMaintenance from "@/pages/AdminMaintenance";
-import AdminMessages from "@/pages/AdminMessages";
-import OwnerImageDashboard from "@/pages/OwnerImageDashboard";
-import TenantDashboard from "@/pages/TenantDashboard";
-import Ledger from "@/pages/Ledger";
-import Terms from "@/pages/Terms";
-import Privacy from "@/pages/Privacy";
-import Refund from "@/pages/Refund";
-import Support from "@/pages/Support";
-import About from "@/pages/About";
-import Verify from "@/pages/Verify";
-import AgreementPage from "@/pages/Agreement";
-import Messages from "@/pages/Messages";
-import Maintenance from "@/pages/Maintenance";
-import ProfilePage from "@/pages/Profile";
-import NotificationsPage from "@/pages/Notifications";
+const NotFound = lazy(() => import("@/pages/not-found"));
+const LandingPage = lazy(() => import("@/pages/LandingPage"));
+const Onboarding = lazy(() => import("@/pages/Onboarding"));
+const Setup = lazy(() => import("@/pages/Setup"));
+const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
+const AdminMaintenance = lazy(() => import("@/pages/AdminMaintenance"));
+const AdminMessages = lazy(() => import("@/pages/AdminMessages"));
+const OwnerImageDashboard = lazy(() => import("@/pages/OwnerImageDashboard"));
+const TenantDashboard = lazy(() => import("@/pages/TenantDashboard"));
+const Ledger = lazy(() => import("@/pages/Ledger"));
+const Terms = lazy(() => import("@/pages/Terms"));
+const Privacy = lazy(() => import("@/pages/Privacy"));
+const Refund = lazy(() => import("@/pages/Refund"));
+const Support = lazy(() => import("@/pages/Support"));
+const About = lazy(() => import("@/pages/About"));
+const Verify = lazy(() => import("@/pages/Verify"));
+const AgreementPage = lazy(() => import("@/pages/Agreement"));
+const Messages = lazy(() => import("@/pages/Messages"));
+const Maintenance = lazy(() => import("@/pages/Maintenance"));
+const ProfilePage = lazy(() => import("@/pages/Profile"));
+const NotificationsPage = lazy(() => import("@/pages/Notifications"));
 import { LegalFooter } from "@/components/LegalFooter";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { Navigation } from "@/components/Navigation";
@@ -173,6 +173,7 @@ function SetupRoute() {
 
 function Router() {
   return (
+    <Suspense fallback={<LoadingScreen />}>
     <Switch>
       <Route path="/" component={DashboardRedirect} />
       <Route path="/onboarding" component={OnboardingRoute} />
@@ -223,6 +224,7 @@ function Router() {
 
       <Route component={NotFound} />
     </Switch>
+    </Suspense>
   );
 }
 
