@@ -74,10 +74,10 @@ export default function TenantDashboard() {
     <div className="mx-auto w-full max-w-[640px] px-0 sm:px-5 sm:py-5">
       <section className="relative aspect-[853/1844] w-full overflow-hidden sm:rounded-[30px] sm:shadow-[0_28px_80px_rgba(0,0,0,0.55)]" aria-label={`RentFLO tenant payment dashboard for ${tenantName}`}>
         <img src={tenantDashboardArtwork} alt="RentFLO tenant payment dashboard" className="pointer-events-none absolute inset-0 h-full w-full select-none object-contain" draggable={false} />
-        <label className="absolute left-[7.7%] top-[62.68%] z-30 flex h-[2.4%] w-[23%] items-center gap-1 rounded-md bg-[#24383c]/90 px-1 text-[clamp(12px,3.1vw,20px)] font-semibold text-white" aria-label="Total monthly rent in Indian rupees">
-          <span aria-hidden>₹</span>
-          {!monthlyRentInput && <span data-testid="rent-dash-placeholder" className="pointer-events-none absolute left-[20%] right-[4%] top-1/2 flex -translate-y-1/2 items-center justify-between" aria-hidden>{Array.from({ length: 5 }, (_, index) => <span key={index} className="h-[2px] w-[15%] rounded-full bg-white" />)}</span>}
-          <input data-testid="input-monthly-rent" inputMode="numeric" type="text" pattern="[0-9]*" value={monthlyRentInput ? Number(monthlyRentInput).toLocaleString("en-IN") : ""} onChange={(event) => setMonthlyRentInput(event.target.value.replace(/[^0-9]/g, ""))} placeholder="" className="min-w-0 flex-1 bg-transparent text-inherit outline-none" aria-label="Enter total monthly rent in Indian rupees" />
+        <label className="absolute left-[8.4%] top-[62.68%] z-30 flex h-[2.4%] w-[22.1%] min-w-0 items-center gap-1 overflow-hidden px-1 text-[clamp(12px,3.1vw,20px)] font-semibold text-white" aria-label="Total monthly rent in Indian rupees">
+          <span className="shrink-0" aria-hidden>₹</span>
+          {!monthlyRentInput && <span data-testid="rent-dash-placeholder" className="pointer-events-none absolute left-[24%] right-[5%] top-1/2 flex -translate-y-1/2 items-center justify-between" aria-hidden>{Array.from({ length: 5 }, (_, index) => <span key={index} className="h-[2px] w-[15%] rounded-full bg-white" />)}</span>}
+          <input data-testid="input-monthly-rent" inputMode="numeric" type="text" pattern="[0-9]*" value={monthlyRentInput ? Number(monthlyRentInput).toLocaleString("en-IN") : ""} onChange={(event) => setMonthlyRentInput(event.target.value.replace(/[^0-9]/g, ""))} placeholder="" className="min-w-0 flex-1 truncate bg-transparent text-inherit outline-none" aria-label="Enter total monthly rent in Indian rupees" />
         </label>
         <label className="absolute left-[63.5%] top-[63.25%] z-30 flex h-[2.1%] w-[21%] items-center rounded-md bg-[#24383c]/90 px-1 text-[clamp(10px,2.5vw,16px)] font-medium text-violet-300" aria-label="Select due date in the current month">
           <span data-testid="text-due-date" aria-hidden>{dueDateLabel}</span>
