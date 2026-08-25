@@ -8,6 +8,7 @@ import { conversationIdParamsSchema, sanitizedText, validateRequest } from "../.
 import { decodeStrictBase64, MAX_AUDIO_UPLOAD_BYTES, UploadValidationError } from "../../upload-validation";
 import { legacyChatMessageResponse, legacyConversationResponse } from "../../response-serializers";
 import { createAiUsageLimiter } from "../../ai-usage-limit";
+import { logPrivateError } from "../../error-handling";
 import {
   AUDIO_SYSTEM_INSTRUCTIONS,
   buildUntrustedConversationPrompt,
@@ -111,7 +112,7 @@ export function registerAudioRoutes(app: Express): void {
         rawBuffer = decodeStrictBase64(audio, MAX_AUDIO_UPLOAD_BYTES);
       } catch (error) {
         if (error instanceof UploadValidationError) {
-          return res.status(400).json({ error: error.message });
+          return res.status(400).json({ error: "Invalid audio upload" });
         }
         throw error;
       }
@@ -175,7 +176,7 @@ export function registerAudioRoutes(app: Express): void {
       res.write(`data: ${JSON.stringify({ type: "done", transcript: assistantTranscript })}\n\n`);
       res.end();
     } catch (error) {
-      console.error("Error processing voice message:", error);
+      logPrivateError("legacy_voice_message_failed", error);
       if (res.headersSent) {
         res.write(`data: ${JSON.stringify({ type: "error", error: "Failed to process voice message" })}\n\n`);
         res.end();

@@ -65,6 +65,7 @@ import {
 import { cashfreeWebhookSecret, verifyCashfreeWebhookSignature } from "./payment-webhook-security";
 import { outstandingRent, ownerPayout } from "./pricing";
 import { createAiUsageLimiter, ensureAiUsageLimitTable } from "./ai-usage-limit";
+import { logPrivateError, sendSafeError } from "./error-handling";
 import {
   buildUntrustedConversationPrompt,
   RENTFLO_CHAT_SYSTEM_INSTRUCTIONS,
@@ -1029,7 +1030,8 @@ export async function registerRoutes(
         res.json({ payment: paymentResponse(payment, "ADMIN"), ledger: ledgerResponse(ledger, "ADMIN") });
       } catch (err: any) {
         const status = err?.status || 500;
-        return res.status(status).json({ message: status === 500 ? "Internal Server Error" : err.message });
+        logPrivateError("admin_payment_verify_failed", err, { status });
+        return sendSafeError(res, status);
       }
     },
   );
@@ -1066,7 +1068,8 @@ export async function registerRoutes(
         res.json(paymentResponse(updated, "ADMIN"));
       } catch (err: any) {
         const status = err?.status || 500;
-        return res.status(status).json({ message: status === 500 ? "Internal Server Error" : err.message });
+        logPrivateError("admin_payment_reject_failed", err, { status });
+        return sendSafeError(res, status);
       }
     },
   );
@@ -1103,7 +1106,7 @@ export async function registerRoutes(
           safePhotoUrl = validateTicketImageUpload(input.photoUrl).dataUrl;
         } catch (error) {
           if (error instanceof UploadValidationError) {
-            return res.status(400).json({ message: error.message, field: "photoUrl" });
+            return res.status(400).json({ message: "Invalid photo upload", field: "photoUrl" });
           }
           throw error;
         }
@@ -1217,7 +1220,7 @@ export async function registerRoutes(
       safeKycDocumentUrl = input.kycDocumentUrl ? validateKycDocumentUpload(input.kycDocumentUrl).dataUrl : null;
     } catch (error) {
       if (error instanceof UploadValidationError) {
-        return res.status(400).json({ message: error.message, field: "kycDocumentUrl" });
+        return res.status(400).json({ message: "Invalid KYC document upload", field: "kycDocumentUrl" });
       }
       throw error;
     }
@@ -1225,7 +1228,7 @@ export async function registerRoutes(
       safeCancelledChequeUrl = input.cancelledChequeUrl ? validateKycDocumentUpload(input.cancelledChequeUrl).dataUrl : null;
     } catch (error) {
       if (error instanceof UploadValidationError) {
-        return res.status(400).json({ message: error.message, field: "cancelledChequeUrl" });
+        return res.status(400).json({ message: "Invalid cheque upload", field: "cancelledChequeUrl" });
       }
       throw error;
     }
@@ -1321,8 +1324,8 @@ export async function registerRoutes(
         status: session.status,
       });
     } catch (err: any) {
-      console.error('[didit] start failed:', err?.message || err);
-      return res.status(502).json({ message: err?.message || 'Failed to start Didit session' });
+      logPrivateError("didit_start_failed", err);
+      return res.status(502).json({ message: "We could not start e-KYC. Please try again.", code: "KYC_PROVIDER_UNAVAILABLE" });
     }
   });
 
@@ -1379,8 +1382,8 @@ export async function registerRoutes(
       await finalizeDiditKyc(me, decision);
       return res.json({ status: 'verified', verified: true });
     } catch (err: any) {
-      console.error('[didit] status check failed:', err?.message || err);
-      return res.status(502).json({ message: err?.message || 'Failed to check Didit status' });
+      logPrivateError("didit_status_check_failed", err);
+      return res.status(502).json({ message: "We could not check e-KYC status. Please try again.", code: "KYC_PROVIDER_UNAVAILABLE" });
     }
   });
 
@@ -2010,7 +2013,7 @@ export function registerMessagingRoutes(app: Express) {
         res.end();
       }
     } catch (err: any) {
-      console.error("Chatbot error:", err);
+      logPrivateError("chatbot_request_failed", err);
       if (res.headersSent) {
         res.write(`data: ${JSON.stringify({ error: "Something went wrong." })}\n\n`);
         res.end();

@@ -10,6 +10,7 @@ import { pool, connectWithRetry } from "./db";
 import { sanitizeRequestBody } from "./input-validation";
 import { createHttpsRedirectMiddleware } from "./transport-security";
 import { createRentfloSecurityHeaders } from "./security-headers";
+import { logPrivateError, productionErrorHandler } from "./error-handling";
 
 const app = express();
 const httpServer = createServer(app);
@@ -405,11 +406,11 @@ app.use((req, res, next) => {
 
 // ── Graceful shutdown & process resilience ───────────────────────────────────
 process.on("unhandledRejection", (reason) => {
-  console.error("[unhandledRejection]", reason);
+  logPrivateError("unhandled_rejection", reason);
 });
 
 process.on("uncaughtException", (err) => {
-  console.error("[uncaughtException]", err);
+  logPrivateError("uncaught_exception", err);
   // Don't exit — let Railway restart if it becomes truly unrecoverable
 });
 
@@ -437,7 +438,7 @@ process.on("SIGINT", shutdown);
     await connectWithRetry();
     await registerRoutes(httpServer, app);
   } catch (err) {
-    console.error("[startup] Failed to initialize routes/database — API routes may be unavailable:", err);
+    logPrivateError("startup_routes_initialization_failed", err);
   }
 
   // ── Static / SPA serving ─────────────────────────────────────────────────
@@ -446,7 +447,7 @@ process.on("SIGINT", shutdown);
     try {
       serveStatic(app);
     } catch (err) {
-      console.error("[startup] serveStatic failed:", err);
+      logPrivateError("startup_static_initialization_failed", err);
     }
   } else {
     const { setupVite } = await import("./vite");
@@ -454,24 +455,9 @@ process.on("SIGINT", shutdown);
   }
 
   // ── Global error handler (must be last middleware) ────────────────────────
-  // Logs the full error object so Railway shows the complete stack trace.
-  app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
-    console.error(err); // full stack visible in Railway logs
-
-    const status = err.status || err.statusCode || 500;
-
-    // Never leak internal error details to clients
-    const message =
-      status < 500
-        ? err.message || "Bad Request"
-        : "Internal Server Error";
-
-    if (res.headersSent) {
-      return next(err);
-    }
-
-    return res.status(status).json({ message });
-  });
+  // Full redacted diagnostics stay in private server logs; browser responses
+  // are generic and never include stacks, provider payloads, or secret values.
+  app.use(productionErrorHandler);
 
   const port = parseInt(process.env.PORT || "5000", 10);
   httpServer.listen(
