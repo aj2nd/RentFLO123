@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+/* Style contract: preserve the user's supplied dark owners-and-tenants artwork as one exact, responsive visual within the landing-page flow. */
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { ArrowRight, ShieldCheck, Zap, Building2, Clock, Plus, Minus, Home, Users, UserPlus, FileCheck, Wallet } from "lucide-react";
 import { useI18n } from "@/hooks/use-i18n";
@@ -64,160 +65,13 @@ export default function LandingPage() {
             {t("landing_rent_now")}<br />{t("landing_pay_later")}
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-16">
-            {/* Step 1 */}
-            <div
-              className="rounded-2xl p-8 md:p-10 flex flex-col"
-              style={{ background: "var(--surface-card)", border: "1px solid var(--border-subtle)" }}
-            >
-              {/* Badge */}
-              <div className="mb-5">
-                <span
-                  className="inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold uppercase tracking-[2px]"
-                  style={isLight ? {
-                    background: "var(--color-violet-bg)",
-                    border: "1px solid var(--color-violet-border)",
-                    color: "var(--color-violet)",
-                  } : {
-                    background: "var(--owner-accent-soft)",
-                    border: "1px solid var(--owner-accent-border)",
-                    color: "var(--owner-accent)",
-                  }}
-                >
-                  <Home size={10} />
-                  {t("landing_for_owners")}
-                </span>
-              </div>
-              {/* Number + illustration row */}
-              <div className="flex items-center gap-4 mb-8">
-                <span
-                  className="text-[80px] font-black leading-none select-none flex-shrink-0 w-20 text-center"
-                  style={isLight ? {
-                    background: 'linear-gradient(160deg, rgba(124,58,237,0.30) 0%, rgba(124,58,237,0.75) 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
-                  } : {
-                    background: 'linear-gradient(160deg, color-mix(in srgb, var(--owner-accent) 28%, transparent) 0%, var(--owner-accent) 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
-                  }}
-                >
-                  1
-                </span>
-                {/* Building + calendar illustration */}
-                <div className="flex-1 flex items-center justify-center gap-4">
-                  {/* Property building */}
-                  <svg width="90" height="90" viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="8" y="28" width="54" height="54" rx="4" fill="var(--owner-accent-soft)" stroke="var(--owner-accent-border)" strokeWidth="1.5"/>
-                    {/* Awning stripes */}
-                    <rect x="8" y="28" width="54" height="14" rx="4" fill="var(--owner-accent-soft)" stroke="var(--owner-accent-border)" strokeWidth="1.5"/>
-                    <line x1="18" y1="28" x2="18" y2="42" stroke="var(--owner-accent-border)" strokeWidth="4"/>
-                    <line x1="30" y1="28" x2="30" y2="42" stroke="var(--owner-accent-border)" strokeWidth="4"/>
-                    <line x1="42" y1="28" x2="42" y2="42" stroke="var(--owner-accent-border)" strokeWidth="4"/>
-                    {/* Windows */}
-                    <rect x="16" y="50" width="12" height="10" rx="1.5" fill="var(--owner-accent-soft)" stroke="var(--owner-accent-border)" strokeWidth="1"/>
-                    <rect x="36" y="50" width="12" height="10" rx="1.5" fill="var(--owner-accent-soft)" stroke="var(--owner-accent-border)" strokeWidth="1"/>
-                    {/* Door */}
-                    <rect x="23" y="65" width="14" height="17" rx="2" fill="var(--owner-accent-soft)" stroke="var(--owner-accent-border)" strokeWidth="1.2"/>
-                    {/* Sign */}
-                    <rect x="14" y="20" width="42" height="10" rx="2" fill="var(--owner-accent-soft)" stroke="var(--owner-accent-border)" strokeWidth="1"/>
-                    <text x="35" y="28" textAnchor="middle" fontSize="6" fontWeight="700" fill="var(--owner-accent)" fontFamily="Inter, sans-serif">STORE</text>
-                  </svg>
-                  {/* Calendar */}
-                  <svg width="72" height="72" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="6" y="12" width="60" height="54" rx="6" fill="var(--owner-accent-soft)" stroke="var(--owner-accent-border)" strokeWidth="1.5"/>
-                    {/* Header bar */}
-                    <rect x="6" y="12" width="60" height="18" rx="6" fill="var(--owner-accent-soft)" stroke="var(--owner-accent-border)" strokeWidth="1.5"/>
-                    {/* Calendar rings */}
-                    <rect x="20" y="6" width="5" height="14" rx="2.5" fill="var(--owner-accent)"/>
-                    <rect x="47" y="6" width="5" height="14" rx="2.5" fill="var(--owner-accent)"/>
-                    {/* Big "1" date */}
-                    <text x="36" y="56" textAnchor="middle" fontSize="28" fontWeight="900" fill="var(--owner-accent)" fontFamily="Inter, sans-serif">1</text>
-                    <text x="36" y="24" textAnchor="middle" fontSize="7" fontWeight="700" fill="var(--owner-accent)" fontFamily="Inter, sans-serif" letterSpacing="1">1ST</text>
-                  </svg>
-                </div>
-              </div>
-              <p className="text-base md:text-lg font-light leading-relaxed text-muted-foreground">
-                {t("landing_owner_pay_full")}
-              </p>
-            </div>
-
-            {/* Step 2 */}
-            <div
-              className="rounded-2xl p-8 md:p-10 flex flex-col"
-              style={{ background: "var(--surface-card)", border: "1px solid var(--border-subtle)" }}
-            >
-              {/* Badge */}
-              <div className="mb-5">
-                <span
-                  className="inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold uppercase tracking-[2px]"
-                  style={isLight ? {
-                    background: "var(--color-gold-bg)",
-                    border: "1px solid var(--color-gold-border)",
-                    color: "var(--color-gold)",
-                  } : {
-                    background: "var(--tenant-accent-soft)",
-                    border: "1px solid var(--tenant-accent-border)",
-                    color: "var(--tenant-accent)",
-                  }}
-                >
-                  <Users size={10} />
-                  {t("landing_for_tenants")}
-                </span>
-              </div>
-              {/* Number + illustration row */}
-              <div className="flex items-center gap-4 mb-8">
-                <span
-                  className="text-[80px] font-black leading-none select-none flex-shrink-0 w-20 text-center"
-                  style={isLight ? {
-                    background: 'linear-gradient(160deg, rgba(217,119,6,0.30) 0%, rgba(217,119,6,0.75) 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
-                  } : {
-                    background: 'linear-gradient(160deg, color-mix(in srgb, var(--tenant-accent) 28%, transparent) 0%, var(--tenant-accent) 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
-                  }}
-                >
-                  2
-                </span>
-                {/* Receipt → split payments illustration */}
-                <div className="flex-1 flex items-center justify-center gap-3">
-                  {/* Long receipt */}
-                  <svg width="72" height="90" viewBox="0 0 72 90" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="8" y="4" width="56" height="78" rx="4" fill="var(--tenant-accent-soft)" stroke="var(--tenant-accent-border)" strokeWidth="1.5"/>
-                    {/* Receipt lines */}
-                    {[18, 30, 42, 54, 66].map((y, i) => (
-                      <rect key={i} x="16" y={y} width={i % 2 === 0 ? 40 : 28} height="5" rx="2" fill="var(--tenant-accent-border)"/>
-                    ))}
-                    {/* Zigzag bottom */}
-                    <path d="M8 82 L14 86 L20 82 L26 86 L32 82 L38 86 L44 82 L50 86 L56 82 L62 86 L64 82" stroke="var(--tenant-accent-border)" strokeWidth="1.5" fill="none"/>
-                  </svg>
-
-                  {/* Arrow */}
-                  <ArrowRight size={20} style={{ color: "var(--tenant-accent)", opacity: 0.75, flexShrink: 0 }} />
-
-                  {/* 3 smaller receipts */}
-                  <div className="flex flex-col gap-2">
-                    {[62, 48, 36].map((w, i) => (
-                      <svg key={i} width={w} height="26" viewBox={`0 0 ${w} 26`} fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="1" y="1" width={w - 2} height="20" rx="3" fill="var(--tenant-accent-soft)" stroke="var(--tenant-accent-border)" strokeWidth="1.2"/>
-                        <rect x="6" y="7" width={w - 22} height="4" rx="1.5" fill="var(--tenant-accent-border)"/>
-                        <rect x="6" y="14" width={w - 30} height="3" rx="1.5" fill="var(--tenant-accent-soft)"/>
-                        <path d={`M1 21 L4 25 L8 21 L12 25 L16 21 L20 25 L24 21 L${w - 1} 21`} stroke="var(--tenant-accent-border)" strokeWidth="1" fill="none"/>
-                      </svg>
-                    ))}
-                  </div>
-                </div>
-              </div>
-              <p className="text-base md:text-lg font-light leading-relaxed text-muted-foreground">
-                {t("landing_tenant_pay_back")}
-              </p>
-            </div>
+          <div className="mx-auto w-full max-w-[853px]">
+            <img
+              src="/rentflo-owners-tenants-upgraded.jpeg"
+              alt="RentFLO pays owners their full rent upfront and lets tenants repay on a flexible monthly or weekly schedule"
+              className="h-auto w-full rounded-[24px] object-contain"
+              loading="lazy"
+            />
           </div>
         </div>
       </section>
