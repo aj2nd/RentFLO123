@@ -66,7 +66,6 @@ export function PayRentButton({
   const submitProof = useMutation({
     mutationFn: async () => {
       const res = await apiRequest("POST", `/api/ledgers/${ledgerId}/submit-payment-proof`, {
-        amount,
         transactionRef: utr.trim(),
         proofScreenshotUrl: proofUrl.trim() || undefined,
       });

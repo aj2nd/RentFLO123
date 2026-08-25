@@ -108,13 +108,13 @@ export function usePaymentsByLedger(ledgerId: string) {
 
 export function useCreatePartialPayment() {
   return useMutation({
-    mutationFn: async ({ ledgerId, amount }: { ledgerId: string; amount: number }) => {
+    mutationFn: async ({ ledgerId }: { ledgerId: string }) => {
       const url = buildUrl(api.payments.create.path, { ledgerId });
       const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ amount }),
+        body: JSON.stringify({}),
       });
       if (!res.ok) {
         const error = await res.json();

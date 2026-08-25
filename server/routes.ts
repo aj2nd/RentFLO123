@@ -63,6 +63,7 @@ import {
   ticketResponse,
 } from "./response-serializers";
 import { cashfreeWebhookSecret, verifyCashfreeWebhookSignature } from "./payment-webhook-security";
+import { outstandingRent, ownerPayout } from "./pricing";
 
 // These limits run after isAuthenticated, so a caller cannot evade them by
 // switching IP addresses. Their IP-level backstops are mounted in index.ts.
@@ -403,24 +404,25 @@ export async function registerRoutes(
     if (!ledger) {
       return res.status(404).json({ message: 'Ledger not found' });
     }
+    const prop = await storage.getProperty(ledger.propertyId);
+    if (!prop) return res.status(404).json({ message: 'Property not found' });
 
     try {
       const input = api.ledgers.payOwner.input.parse(req.body);
-      
-      // Update ledger
+      const amountAdvanced = ownerPayout(prop);
+      // Payout is calculated from server-owned rent and fee configuration.
       const updated = await storage.updateLedger(id, {
-        amountAdvanced: input.amountAdvanced,
+        amountAdvanced,
         proofOfTransferUrl: input.proofOfTransferUrl,
-        status: ledger.amountCollected >= input.amountAdvanced ? 'SETTLED' : 'EXPOSED',
+        status: ledger.amountCollected >= amountAdvanced ? 'SETTLED' : 'EXPOSED',
       });
 
       // Push notification to the property owner
-      const prop = await storage.getProperty(ledger.propertyId);
       if (prop?.ownerId) {
         createNotification(
           prop.ownerId,
           "Rent Advanced",
-          `₹${input.amountAdvanced.toLocaleString('en-IN')} has been credited to your account for ${ledger.monthYear}.`,
+          `₹${amountAdvanced.toLocaleString('en-IN')} has been credited to your account for ${ledger.monthYear}.`,
           "RENT_ADVANCED",
           "/owner"
         ).catch(() => {});
@@ -454,10 +456,16 @@ export async function registerRoutes(
     try {
       const userId = req.user?.claims?.sub as string;
       const u = await authStorage.getUser(userId);
+      const existing = await storage.getPaymentsByLedger(id);
+      if (existing.some((payment) => payment.status === "PENDING" || payment.status === "PENDING_VERIFICATION")) {
+        return res.status(409).json({ message: "A payment for this ledger is already in progress" });
+      }
+      const amountDue = outstandingRent(property, existing);
+      if (amountDue <= 0) return res.status(409).json({ message: "Rent for this ledger is already settled" });
       const orderId = `rent_${id}_${Date.now()}`;
       const order = await cashfreeCreateOrder({
         order_id: orderId,
-        order_amount: property.monthlyRent,
+        order_amount: amountDue,
         order_currency: "INR",
         customer_details: {
           customer_id: userId,
@@ -471,11 +479,18 @@ export async function registerRoutes(
         order_note: `Rent for ${ledger.monthYear}`,
         order_tags: { ledgerId: id, propertyId: property.id, monthYear: ledger.monthYear },
       });
+      await storage.createPayment({
+        ledgerId: id,
+        amount: amountDue,
+        razorpayOrderId: order.order_id,
+        paymentMethod: "CASHFREE",
+        status: "PENDING",
+      });
 
       res.json({
         orderId: order.order_id,
         paymentSessionId: order.payment_session_id,
-        amount: property.monthlyRent,
+        amount: amountDue,
         currency: "INR",
       });
     } catch (err: any) {
@@ -564,6 +579,11 @@ export async function registerRoutes(
       const pendingPayment = existingPayments.find((p) => p.razorpayOrderId === cf_order_id);
       let amountPaid = 0;
       if (pendingPayment) {
+        const providerAmount = Number(paymentInfo.payment_amount || orderInfo.order_amount || 0);
+        const expectedAmount = outstandingRent(property, existingPayments);
+        if (!Number.isInteger(providerAmount) || providerAmount !== pendingPayment.amount || pendingPayment.amount !== expectedAmount) {
+          return res.status(409).json({ message: "Provider payment amount does not match the server-calculated order" });
+        }
         await storage.updatePayment(pendingPayment.id, {
           razorpayPaymentId: cf_payment_id,
           status: 'SUCCESS',
@@ -571,11 +591,16 @@ export async function registerRoutes(
         amountPaid = pendingPayment.amount;
       } else {
         // No pre-created payment row (e.g. /create-order flow). Insert a
-        // SUCCESS row so totals reconcile. Cashfree amounts are in rupees.
+        // SUCCESS row only if Cashfree's signed amount equals the balance
+        // calculated from the server-side property and successful payments.
         // The DB has a unique index on razorpay_payment_id — concurrent
         // duplicate webhook deliveries will fail the second insert; we catch
         // that and treat it as already-processed.
         amountPaid = Number(paymentInfo.payment_amount || orderInfo.order_amount || 0);
+        const expectedAmount = outstandingRent(property, existingPayments);
+        if (!Number.isInteger(amountPaid) || amountPaid <= 0 || amountPaid !== expectedAmount) {
+          return res.status(409).json({ message: "Provider payment amount does not match the server-calculated rent due" });
+        }
         try {
           await storage.createPayment({
             ledgerId,
@@ -681,11 +706,19 @@ export async function registerRoutes(
       if (!alreadyProcessed) {
         const pending = existingPayments.find((p) => p.razorpayOrderId === orderId);
         if (pending) {
+          const expectedAmount = outstandingRent(property, existingPayments);
+          if (!Number.isInteger(amount) || amount !== pending.amount || pending.amount !== expectedAmount) {
+            return res.status(409).json({ message: "Provider payment amount does not match the server-calculated order" });
+          }
           await storage.updatePayment(pending.id, {
             razorpayPaymentId: cf_payment_id,
             status: 'SUCCESS',
           });
         } else {
+          const expectedAmount = outstandingRent(property, existingPayments);
+          if (!Number.isInteger(amount) || amount <= 0 || amount !== expectedAmount) {
+            return res.status(409).json({ message: "Provider payment amount does not match the server-calculated rent due" });
+          }
           try {
             await storage.createPayment({
               ledgerId,
@@ -733,16 +766,16 @@ export async function registerRoutes(
     if (!ledger) {
       return res.status(404).json({ message: 'Ledger not found' });
     }
+    const property = await storage.getProperty(ledger.propertyId);
+    if (!property) return res.status(404).json({ message: 'Property not found' });
 
     try {
-      const input = api.ledgers.collectRent.input.parse(req.body);
-      
-      const newAmountCollected = (ledger.amountCollected || 0) + input.amountCollected;
-      const isSettled = newAmountCollected >= (ledger.amountAdvanced || 0);
+      api.ledgers.collectRent.input.parse(req.body);
+      const newAmountCollected = property.monthlyRent;
 
       const updated = await storage.updateLedger(id, {
         amountCollected: newAmountCollected,
-        status: isSettled ? 'SETTLED' : ledger.status
+        status: newAmountCollected >= (ledger.amountAdvanced || 0) ? 'SETTLED' : ledger.status
       });
 
       res.json(ledgerResponse(updated, "ADMIN"));
@@ -808,26 +841,20 @@ export async function registerRoutes(
     }
 
     try {
-      const input = api.payments.create.input.parse(req.body);
-
-      // Bound amount: must be >0 and <= remaining due (avoid overpayment exploits).
+      api.payments.create.input.parse(req.body);
       const existing = await storage.getPaymentsByLedger(ledgerId);
-      const alreadyPaid = existing
-        .filter((p) => p.status === "SUCCESS")
-        .reduce((s, p) => s + p.amount, 0);
-      const remaining = Math.max(0, property.monthlyRent - alreadyPaid);
-      if (input.amount <= 0 || input.amount > remaining + 0) {
-        return res.status(400).json({
-          message: `Amount must be between 1 and ${remaining}`,
-        });
+      if (existing.some((payment) => payment.status === "PENDING" || payment.status === "PENDING_VERIFICATION")) {
+        return res.status(409).json({ message: "A payment for this ledger is already in progress" });
       }
+      const amountDue = outstandingRent(property, existing);
+      if (amountDue <= 0) return res.status(409).json({ message: "Rent for this ledger is already settled" });
 
       const userId = req.user?.claims?.sub as string;
       const u = await authStorage.getUser(userId);
       const orderId = `partial_${ledgerId}_${Date.now()}`;
       const order = await cashfreeCreateOrder({
         order_id: orderId,
-        order_amount: input.amount,
+        order_amount: amountDue,
         order_currency: 'INR',
         customer_details: {
           customer_id: userId,
@@ -849,7 +876,7 @@ export async function registerRoutes(
 
       const payment = await storage.createPayment({
         ledgerId: ledgerId,
-        amount: input.amount,
+        amount: amountDue,
         razorpayOrderId: order.order_id,
         paymentMethod: 'CASHFREE',
         status: 'PENDING',
@@ -859,7 +886,7 @@ export async function registerRoutes(
         payment: paymentResponse(payment, role),
         orderId: order.order_id,
         paymentSessionId: order.payment_session_id,
-        amount: input.amount,
+        amount: amountDue,
         currency: 'INR',
       });
     } catch (err: any) {
@@ -892,17 +919,14 @@ export async function registerRoutes(
       throw err;
     }
 
-    // Bound amount: must not exceed remaining due across SUCCESS + PENDING_VERIFICATION.
+    // The manual proof amount is the server-calculated outstanding rent. Pending
+    // proofs reserve that balance so a browser cannot create overlapping prices.
     const existing = await storage.getPaymentsByLedger(ledgerId);
     const counted = existing
       .filter((p) => p.status === "SUCCESS" || p.status === "PENDING_VERIFICATION")
       .reduce((s, p) => s + p.amount, 0);
     const remaining = Math.max(0, property.monthlyRent - counted);
-    if (input.amount > remaining) {
-      return res.status(400).json({
-        message: `Amount exceeds remaining due (₹${remaining})`,
-      });
-    }
+    if (remaining <= 0) return res.status(409).json({ message: "No server-calculated rent balance remains for this ledger" });
 
     // Reject duplicate UTRs across the entire system (prevents reusing the same
     // reference number for multiple ledgers). Use indexed lookup instead of full scan.
@@ -915,7 +939,7 @@ export async function registerRoutes(
     try {
       payment = await storage.createPayment({
         ledgerId,
-        amount: input.amount,
+        amount: remaining,
         transactionRef: input.transactionRef.toUpperCase(),
         proofScreenshotUrl: input.proofScreenshotUrl || null,
         paymentMethod: "UPI_MANUAL",
@@ -936,7 +960,7 @@ export async function registerRoutes(
       createNotification(
         admin.id,
         "Payment Awaiting Verification",
-        `Tenant submitted UTR ${input.transactionRef.toUpperCase()} for ₹${input.amount.toLocaleString("en-IN")} — please verify.`,
+        `Tenant submitted UTR ${input.transactionRef.toUpperCase()} for ₹${remaining.toLocaleString("en-IN")} — please verify.`,
         "RENT_COLLECTED",
         "/admin",
       ).catch(() => {});

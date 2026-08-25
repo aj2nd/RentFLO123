@@ -64,7 +64,6 @@ export const api = {
       method: 'POST' as const,
       path: '/api/ledgers/:id/pay-owner',
       input: z.object({
-        amountAdvanced: z.number().finite().int().positive().max(10_000_000),
         proofOfTransferUrl: z.string().trim().url().max(2048).refine((value) => /^https:/.test(value), "Proof URL must use HTTPS").optional().or(z.literal("")),
       }).strict(),
       responses: {
@@ -77,9 +76,7 @@ export const api = {
     collectRent: {
       method: 'POST' as const,
       path: '/api/ledgers/:id/collect-rent',
-      input: z.object({
-        amountCollected: z.number().finite().int().positive().max(10_000_000),
-      }).strict(),
+      input: z.object({}).strict(),
       responses: {
         200: z.custom<typeof ledgers.$inferSelect>(),
         404: errorSchemas.notFound,
@@ -126,9 +123,7 @@ export const api = {
     create: {
       method: 'POST' as const,
       path: '/api/ledgers/:ledgerId/payments',
-      input: z.object({
-        amount: z.number().finite().int().positive().max(10_000_000), // Amount in rupees
-      }).strict(),
+      input: z.object({}).strict(),
       responses: {
         200: z.object({
           payment: z.custom<typeof payments.$inferSelect>(),

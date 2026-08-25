@@ -272,7 +272,6 @@ export const insertPaymentSchema = createInsertSchema(payments).omit({
 
 // Tenant-submitted UPI proof payload — strict validation.
 export const submitPaymentProofSchema = z.object({
-  amount: z.number().int().positive().max(10_000_000),
   // UTR is typically 12 digits, but some banks issue 16 or 22-char alphanumeric refs.
   // Accept 6–32 alphanumeric to be liberal but bounded.
   transactionRef: z

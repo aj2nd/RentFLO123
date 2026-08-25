@@ -707,11 +707,11 @@ function PayoutRow({ ledger }: { ledger: any }) {
   const fee = monthlyRent * 0.05;
   const payoutAmount = monthlyRent - fee;
 
-  const form = useForm({ defaultValues: { amountAdvanced: payoutAmount, proofOfTransferUrl: "" } });
+  const form = useForm({ defaultValues: { proofOfTransferUrl: "" } });
 
   const onSubmit = (data: any) => {
     payOwner(
-      { id: ledger.id, data: { ...data, amountAdvanced: Number(data.amountAdvanced) } },
+      { id: ledger.id, data },
       {
         onSuccess: () => { toast({ title: "Payout Processed", description: `Successfully marked ${ledger.property.address} as paid.` }); setIsOpen(false); },
         onError: (err) => { toast({ title: "Error", description: err.message, variant: "destructive" }); }
@@ -762,10 +762,7 @@ function PayoutRow({ ledger }: { ledger: any }) {
                   <span>₹{payoutAmount.toLocaleString()}</span>
                 </div>
               </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-400">{t('admin_confirm_amount')}</label>
-                <Input {...form.register("amountAdvanced")} type="number" className="bg-zinc-950 border-zinc-800 text-white rounded-none h-12" />
-              </div>
+              <p className="text-xs text-zinc-500">The final payout is calculated and verified on the server from the configured rent and payout fee.</p>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-400">{t('admin_bank_receipt')}</label>
                 <FileUpload onFileChange={(dataUrl) => form.setValue("proofOfTransferUrl", dataUrl)} currentValue={form.watch("proofOfTransferUrl")} />
