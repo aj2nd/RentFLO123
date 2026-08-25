@@ -1,6 +1,7 @@
 import OpenAI, { toFile } from "openai";
 import { Buffer } from "node:buffer";
 import { spawn } from "child_process";
+import { AUDIO_SYSTEM_INSTRUCTIONS, TEXT_TO_SPEECH_SYSTEM_INSTRUCTIONS } from "../../ai-security";
 import { writeFile, unlink, readFile } from "fs/promises";
 import { randomUUID } from "crypto";
 import { tmpdir } from "os";
@@ -124,12 +125,15 @@ export async function voiceChat(
     model: "gpt-audio",
     modalities: ["text", "audio"],
     audio: { voice, format: outputFormat },
-    messages: [{
-      role: "user",
-      content: [
-        { type: "input_audio", input_audio: { data: audioBase64, format: inputFormat } },
-      ],
-    }],
+    messages: [
+      { role: "system", content: AUDIO_SYSTEM_INSTRUCTIONS },
+      {
+        role: "user",
+        content: [
+          { type: "input_audio", input_audio: { data: audioBase64, format: inputFormat } },
+        ],
+      },
+    ],
   });
   const message = response.choices[0]?.message as any;
   const transcript = message?.audio?.transcript || message?.content || "";
@@ -160,12 +164,15 @@ export async function voiceChatStream(
     model: "gpt-audio",
     modalities: ["text", "audio"],
     audio: { voice, format: "pcm16" },
-    messages: [{
-      role: "user",
-      content: [
-        { type: "input_audio", input_audio: { data: audioBase64, format: inputFormat } },
-      ],
-    }],
+    messages: [
+      { role: "system", content: AUDIO_SYSTEM_INSTRUCTIONS },
+      {
+        role: "user",
+        content: [
+          { type: "input_audio", input_audio: { data: audioBase64, format: inputFormat } },
+        ],
+      },
+    ],
     stream: true,
   });
 
@@ -197,8 +204,8 @@ export async function textToSpeech(
     modalities: ["text", "audio"],
     audio: { voice, format },
     messages: [
-      { role: "system", content: "You are an assistant that performs text-to-speech." },
-      { role: "user", content: `Repeat the following text verbatim: ${text}` },
+      { role: "system", content: TEXT_TO_SPEECH_SYSTEM_INSTRUCTIONS },
+      { role: "user", content: JSON.stringify({ text }) },
     ],
   });
   const audioData = (response.choices[0]?.message as any)?.audio?.data ?? "";
@@ -219,8 +226,8 @@ export async function textToSpeechStream(
     modalities: ["text", "audio"],
     audio: { voice, format: "pcm16" },
     messages: [
-      { role: "system", content: "You are an assistant that performs text-to-speech." },
-      { role: "user", content: `Repeat the following text verbatim: ${text}` },
+      { role: "system", content: TEXT_TO_SPEECH_SYSTEM_INSTRUCTIONS },
+      { role: "user", content: JSON.stringify({ text }) },
     ],
     stream: true,
   });

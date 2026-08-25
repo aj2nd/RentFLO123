@@ -3,6 +3,7 @@ import { openai } from "./client";
 import { isAuthenticated } from "../auth";
 import { z } from "zod";
 import { sanitizedText, validateRequest } from "../../input-validation";
+import { buildImageGenerationPrompt } from "../../ai-security";
 
 const imageGenerationSchema = z.object({
   prompt: sanitizedText(1, 1000),
@@ -16,7 +17,7 @@ export function registerImageRoutes(app: Express): void {
 
       const response = await openai.images.generate({
         model: "gpt-image-1",
-        prompt,
+        prompt: buildImageGenerationPrompt(prompt),
         n: 1,
         size,
       });

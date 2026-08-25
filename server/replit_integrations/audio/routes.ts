@@ -7,6 +7,12 @@ import { z } from "zod";
 import { conversationIdParamsSchema, sanitizedText, validateRequest } from "../../input-validation";
 import { decodeStrictBase64, MAX_AUDIO_UPLOAD_BYTES, UploadValidationError } from "../../upload-validation";
 import { legacyChatMessageResponse, legacyConversationResponse } from "../../response-serializers";
+import {
+  AUDIO_SYSTEM_INSTRUCTIONS,
+  buildUntrustedConversationPrompt,
+  sanitizeModelOutputText,
+  type UntrustedConversationTurn,
+} from "../../ai-security";
 
 // Body parser with 50MB limit for audio payloads — applied only to the audio
 // route, after isAuthenticated, so unauthenticated requests never parse the body.
@@ -115,7 +121,7 @@ export function registerAudioRoutes(app: Express): void {
 
       // 4. Get conversation history
       const existingMessages = await chatStorage.getMessagesByConversation(conversationId);
-      const chatHistory = existingMessages.map((m) => ({
+      const chatHistory: UntrustedConversationTurn[] = existingMessages.map((m) => ({
         role: m.role as "user" | "assistant",
         content: m.content,
       }));
@@ -132,7 +138,10 @@ export function registerAudioRoutes(app: Express): void {
         model: "gpt-audio",
         modalities: ["text", "audio"],
         audio: { voice, format: "pcm16" },
-        messages: chatHistory,
+        messages: [
+          { role: "system", content: AUDIO_SYSTEM_INSTRUCTIONS },
+          { role: "user", content: buildUntrustedConversationPrompt(chatHistory, { authenticatedRole: "ADMIN" }) },
+        ],
         stream: true,
       });
 
@@ -143,8 +152,9 @@ export function registerAudioRoutes(app: Express): void {
         if (!delta) continue;
 
         if (delta?.audio?.transcript) {
-          assistantTranscript += delta.audio.transcript;
-          res.write(`data: ${JSON.stringify({ type: "transcript", data: delta.audio.transcript })}\n\n`);
+          const transcript = sanitizeModelOutputText(delta.audio.transcript);
+          assistantTranscript = sanitizeModelOutputText(`${assistantTranscript}${transcript}`);
+          res.write(`data: ${JSON.stringify({ type: "transcript", data: transcript })}\n\n`);
         }
 
         if (delta?.audio?.data) {

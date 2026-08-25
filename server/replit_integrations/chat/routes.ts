@@ -6,6 +6,12 @@ import { authStorage } from "../auth/storage";
 import { z } from "zod";
 import { conversationIdParamsSchema, sanitizedText, validateRequest } from "../../input-validation";
 import { legacyChatMessageResponse, legacyConversationResponse } from "../../response-serializers";
+import {
+  buildUntrustedConversationPrompt,
+  LEGACY_CHAT_SYSTEM_INSTRUCTIONS,
+  sanitizeModelOutputText,
+  type UntrustedConversationTurn,
+} from "../../ai-security";
 
 const conversationTitleSchema = z.object({
   title: sanitizedText(1, 200).optional(),
@@ -91,7 +97,7 @@ export function registerChatRoutes(app: Express): void {
 
       // Get conversation history for context
       const messages = await chatStorage.getMessagesByConversation(conversationId);
-      const chatMessages = messages.map((m) => ({
+      const chatMessages: UntrustedConversationTurn[] = messages.map((m) => ({
         role: m.role as "user" | "assistant",
         content: m.content,
       }));
@@ -104,7 +110,10 @@ export function registerChatRoutes(app: Express): void {
       // Stream response from OpenAI
       const stream = await openai.chat.completions.create({
         model: "gpt-5.4",
-        messages: chatMessages,
+        messages: [
+          { role: "system", content: LEGACY_CHAT_SYSTEM_INSTRUCTIONS },
+          { role: "user", content: buildUntrustedConversationPrompt(chatMessages, { authenticatedRole: "ADMIN" }) },
+        ],
         stream: true,
         max_completion_tokens: 8192,
       });
@@ -112,9 +121,9 @@ export function registerChatRoutes(app: Express): void {
       let fullResponse = "";
 
       for await (const chunk of stream) {
-        const content = chunk.choices[0]?.delta?.content || "";
+        const content = sanitizeModelOutputText(chunk.choices[0]?.delta?.content || "");
         if (content) {
-          fullResponse += content;
+          fullResponse = sanitizeModelOutputText(`${fullResponse}${content}`);
           res.write(`data: ${JSON.stringify({ content })}\n\n`);
         }
       }

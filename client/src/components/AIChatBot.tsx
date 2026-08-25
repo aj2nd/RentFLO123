@@ -2,9 +2,9 @@ import { useState, useRef, useEffect } from "react";
 import { Send, Loader2, ChevronDown, Sparkles, Bot, Headset } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
-import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "wouter";
+import { safeModelTextForDisplay } from "@/lib/safe-model-output";
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -29,21 +29,6 @@ export function AIChatBot() {
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const abortRef = useRef<AbortController | null>(null);
-
-  // Fetch property context for the system prompt
-  const { data: properties } = useQuery<any[]>({
-    queryKey: ["/api/properties/mine"],
-    enabled: !!user,
-  });
-
-  const firstProperty = properties?.[0];
-
-  const userContext = {
-    role: user?.role,
-    name: `${user?.firstName || ""} ${user?.lastName || ""}`.trim() || user?.email,
-    property: firstProperty?.address,
-    monthlyRent: firstProperty?.monthlyRent,
-  };
 
   // Auto scroll to latest message
   useEffect(() => {
@@ -80,7 +65,6 @@ export function AIChatBot() {
         credentials: "include",
         body: JSON.stringify({
           messages: newMessages,
-          userContext,
         }),
         signal: controller.signal,
       });
@@ -105,7 +89,7 @@ export function AIChatBot() {
           try {
             const parsed = JSON.parse(line.slice(6));
             if (parsed.content) {
-              fullContent += parsed.content;
+              fullContent = safeModelTextForDisplay(`${fullContent}${parsed.content}`);
               setMessages(prev => {
                 const updated = [...prev];
                 updated[updated.length - 1] = { role: "assistant", content: fullContent };
@@ -314,7 +298,7 @@ export function AIChatBot() {
                     }`}
                     data-testid={`chat-message-${msg.role}-${i}`}
                   >
-                    {msg.content || (
+                    {safeModelTextForDisplay(msg.content) || (
                       msg.role === "assistant" && streaming && i === messages.length - 1 ? (
                         <span className="flex items-center gap-1.5 text-zinc-500">
                           <Loader2 size={12} className="animate-spin" />

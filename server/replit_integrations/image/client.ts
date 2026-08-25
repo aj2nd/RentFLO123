@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import OpenAI, { toFile } from "openai";
 import { Buffer } from "node:buffer";
+import { buildImageGenerationPrompt } from "../../ai-security";
 
 export const openai = new OpenAI({
   apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
@@ -17,7 +18,7 @@ export async function generateImageBuffer(
 ): Promise<Buffer> {
   const response = await openai.images.generate({
     model: "gpt-image-1",
-    prompt,
+    prompt: buildImageGenerationPrompt(prompt),
     size,
   });
   const base64 = response.data?.[0]?.b64_json ?? "";
@@ -44,7 +45,7 @@ export async function editImages(
   const response = await openai.images.edit({
     model: "gpt-image-1",
     image: images,
-    prompt,
+    prompt: buildImageGenerationPrompt(prompt),
   });
 
   const imageBase64 = response.data?.[0]?.b64_json ?? "";
@@ -56,4 +57,3 @@ export async function editImages(
 
   return imageBytes;
 }
-

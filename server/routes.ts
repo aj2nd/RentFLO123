@@ -64,6 +64,12 @@ import {
 } from "./response-serializers";
 import { cashfreeWebhookSecret, verifyCashfreeWebhookSignature } from "./payment-webhook-security";
 import { outstandingRent, ownerPayout } from "./pricing";
+import {
+  buildUntrustedConversationPrompt,
+  RENTFLO_CHAT_SYSTEM_INSTRUCTIONS,
+  sanitizeModelOutputText,
+  type UntrustedConversationTurn,
+} from "./ai-security";
 
 // These limits run after isAuthenticated, so a caller cannot evade them by
 // switching IP addresses. Their IP-level backstops are mounted in index.ts.
@@ -1922,20 +1928,12 @@ export function registerMessagingRoutes(app: Express) {
     messages: z
       .array(
         z.object({
-          role: z.enum(["user", "assistant", "system"]),
+          role: z.enum(["user", "assistant"]),
           content: z.string().min(1).max(4000),
         }).strict(),
       )
       .min(1)
       .max(20),
-    userContext: z
-      .object({
-        role: z.string().max(50).optional(),
-        name: z.string().max(100).optional(),
-        property: z.string().max(500).optional(),
-        monthlyRent: z.number().int().nonnegative().optional(),
-      }).strict()
-      .optional(),
   }).strict();
 
   app.post("/api/chatbot", isAuthenticated, aiAccountLimiter, async (req: any, res) => {
@@ -1947,28 +1945,26 @@ export function registerMessagingRoutes(app: Express) {
         if (err instanceof z.ZodError) return res.status(400).json({ message: err.errors[0].message });
         throw err;
       }
-      const { messages, userContext } = parsed;
-      // Strip any client-supplied "system" messages — only our trusted prompt allowed.
-      const safeMessages = messages.filter((m) => m.role !== "system");
+      const messages = parsed.messages as UntrustedConversationTurn[];
+      const lastMessage = messages.at(-1);
+      if (!lastMessage || lastMessage.role !== "user") {
+        return res.status(400).json({ message: "The final chat message must be from the user" });
+      }
 
-      // Build context-aware system prompt
-      const systemPrompt = `You are RentFLO Assistant, a helpful AI for the RentFLO rent-advance platform. You help landlords (owners) and tenants manage their rent, payments, KYC verification, maintenance tickets, and rental agreements.
-
-User context:
-- Role: ${userContext?.role || 'unknown'}
-- Name: ${userContext?.name || 'User'}
-${userContext?.property ? `- Property: ${userContext.property}` : ''}
-${userContext?.monthlyRent ? `- Monthly Rent: ₹${userContext.monthlyRent.toLocaleString()}` : ''}
-
-You can help with:
-- Explaining rent advance status (ARREARS, EXPOSED, SETTLED)
-- KYC verification process (PAN, Aadhaar, bank details)
-- Payment and split payment questions
-- Maintenance ticket status
-- Rental agreement signing
-- How to navigate the platform
-
-Keep answers concise, friendly, and specific to rent/property management in India. Use ₹ for currency. If a question is unrelated to the platform or property management, politely redirect to relevant topics.`;
+      const userId = req.user?.claims?.sub as string;
+      const account = await authStorage.getUser(userId);
+      if (!account) return res.status(401).json({ message: "Unauthorized" });
+      const property = account.role === "OWNER"
+        ? (await storage.getPropertiesByOwnerId(userId))[0]
+        : account.role === "TENANT"
+          ? (await storage.getPropertiesByTenantId(userId))[0]
+          : undefined;
+      // Database values are authoritative records but text inside them can still
+      // be user-created. Keep every such value in the untrusted data envelope.
+      const untrustedPrompt = buildUntrustedConversationPrompt(messages, {
+        authenticatedRole: account.role || "unknown",
+        property: property ? { address: property.address, monthlyRent: property.monthlyRent } : null,
+      });
 
       res.setHeader("Content-Type", "text/event-stream");
       res.setHeader("Cache-Control", "no-cache, no-transform");
@@ -1979,8 +1975,8 @@ Keep answers concise, friendly, and specific to rent/property management in Indi
       const stream = await getOpenAI().chat.completions.create({
         model: "gpt-4o-mini",
         messages: [
-          { role: "system", content: systemPrompt },
-          ...safeMessages.map((m) => ({ role: m.role, content: m.content })),
+          { role: "system", content: RENTFLO_CHAT_SYSTEM_INSTRUCTIONS },
+          { role: "user", content: untrustedPrompt },
         ],
         stream: true,
         max_completion_tokens: 800,
@@ -1995,7 +1991,7 @@ Keep answers concise, friendly, and specific to rent/property management in Indi
 
       for await (const chunk of stream) {
         if (clientGone) break;
-        const content = chunk.choices[0]?.delta?.content || "";
+        const content = sanitizeModelOutputText(chunk.choices[0]?.delta?.content || "");
         if (content) {
           res.write(`data: ${JSON.stringify({ content })}\n\n`);
         }
