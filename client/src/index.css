@@ -1141,3 +1141,27 @@
     radial-gradient(ellipse 20% 18% at 40% 52%,  rgba(  0, 232, 122, 0.12) 0%, transparent 65%),
     #FFFFFF !important;
 }
+
+/* Design: preserve the existing dark glass drawer while allowing the complete
+   legal/support footer to scroll above iPhone browser chrome on short viewports. */
+@media (max-width: 767px) {
+  .rentflo-sidebar-panel {
+    bottom: 0 !important;
+    height: auto !important;
+    max-height: calc(100dvh - var(--topbar-h)) !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .rentflo-sidebar-panel .rentflo-sidebar-links {
+    flex: 0 0 auto;
+    min-height: min-content;
+    overflow: visible;
+  }
+
+  .rentflo-sidebar-panel .rentflo-sidebar-footer {
+    padding-bottom: max(1.25rem, env(safe-area-inset-bottom, 0px));
+  }
+}

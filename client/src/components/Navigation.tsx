@@ -112,7 +112,7 @@ export function Navigation({ showMobileTopbarWhenOpenOnly = false }: { showMobil
 
       {/* ── Sidebar panel ── */}
       <nav
-        className="fixed left-0 flex flex-col z-50 overflow-hidden transition-all duration-300 ease-in-out"
+        className="rentflo-sidebar-panel fixed left-0 flex flex-col z-50 overflow-hidden transition-all duration-300 ease-in-out"
         style={{
           top: "var(--topbar-h)",
           height: "calc(100dvh - var(--topbar-h) - 64px - env(safe-area-inset-bottom, 0px))",
@@ -144,7 +144,7 @@ export function Navigation({ showMobileTopbarWhenOpenOnly = false }: { showMobil
         </div>
 
         {/* ── Nav items — scrollable ── */}
-        <div className="flex-1 min-h-0 overflow-y-auto w-64 py-4">
+        <div className="rentflo-sidebar-links flex-1 min-h-0 overflow-y-auto w-64 py-4">
           <div className="space-y-1 px-4">
             {isLoading ? (
               <div className="flex items-center justify-center py-8">
@@ -168,7 +168,7 @@ export function Navigation({ showMobileTopbarWhenOpenOnly = false }: { showMobil
 
         {/* ── Footer: alerts + sign out ── */}
         <div
-          className="w-64 px-4 pb-5 pt-4 flex flex-col gap-2 flex-shrink-0"
+          className="rentflo-sidebar-footer w-64 px-4 pb-5 pt-4 flex flex-col gap-2 flex-shrink-0"
           style={{ borderTop: "1px solid var(--nav-border)" }}
         >
           {/* Alerts row */}
