@@ -52,6 +52,16 @@ import {
   validateKycDocumentUpload,
   validateTicketImageUpload,
 } from "./upload-validation";
+import {
+  agreementResponse,
+  ledgerResponse,
+  notificationResponse,
+  paymentResponse,
+  pendingPaymentResponse,
+  propertyMessageResponse,
+  propertyResponse,
+  ticketResponse,
+} from "./response-serializers";
 
 // These limits run after isAuthenticated, so a caller cannot evade them by
 // switching IP addresses. Their IP-level backstops are mounted in index.ts.
@@ -236,9 +246,9 @@ export async function registerRoutes(
     const userId = req.user?.claims?.sub;
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
     const u = await authStorage.getUser(userId);
-    if (u?.role === "ADMIN") return res.json(await storage.getProperties());
-    if (u?.role === "OWNER") return res.json(await storage.getPropertiesByOwnerId(userId));
-    if (u?.role === "TENANT") return res.json(await storage.getPropertiesByTenantId(userId));
+    if (u?.role === "ADMIN") return res.json((await storage.getProperties()).map((property) => propertyResponse(property, u.role)));
+    if (u?.role === "OWNER") return res.json((await storage.getPropertiesByOwnerId(userId)).map((property) => propertyResponse(property, u.role)));
+    if (u?.role === "TENANT") return res.json((await storage.getPropertiesByTenantId(userId)).map((property) => propertyResponse(property, u.role)));
     return res.json([]);
   });
 
@@ -274,7 +284,7 @@ export async function registerRoutes(
         monthYear,
       });
 
-      res.status(201).json(property);
+      res.status(201).json(propertyResponse(property, user.role));
     } catch (err) {
       if (err instanceof z.ZodError) {
         return res.status(400).json({
@@ -296,21 +306,22 @@ export async function registerRoutes(
 
     if (user.role === "OWNER") {
       const props = await storage.getPropertiesByOwnerId(userId);
-      return res.json(props);
+      return res.json(props.map((property) => propertyResponse(property, user.role)));
     }
     if (user.role === "TENANT") {
       const props = await storage.getPropertiesByTenantId(userId);
-      return res.json(props);
+      return res.json(props.map((property) => propertyResponse(property, user.role)));
     }
     // ADMIN sees all
     const props = await storage.getProperties();
-    return res.json(props);
+    return res.json(props.map((property) => propertyResponse(property, user.role)));
   });
 
   app.get(api.properties.get.path, isAuthenticated, validateRequest({ params: idParamsSchema }), async (req: any, res) => {
     const access = await requirePropertyAccess(req, res, req.params.id);
     if (!access) return;
-    res.json(access.property);
+    const viewer = req.currentUser || await authStorage.getUser(req.user?.claims?.sub);
+    res.json(propertyResponse(access.property, viewer?.role));
   });
 
   // Look up properties by owner email (for tenant join). Returns only address/id —
@@ -360,7 +371,7 @@ export async function registerRoutes(
     }
 
     const updated = await storage.updatePropertyTenant(id, userId);
-    res.json(updated);
+    res.json(propertyResponse(updated, caller.role));
   });
 
   // Ledgers — scoped. ADMIN sees all; non-admins only see ledgers for properties they own/rent.
@@ -375,13 +386,13 @@ export async function registerRoutes(
       const access = await requirePropertyAccess(req, res, propertyId);
       if (!access) return;
       const ledgers = await storage.getLedgers(propertyId, typeof status === "string" ? status : undefined);
-      return res.json(ledgers);
+      return res.json(ledgers.map((ledger) => ledgerResponse(ledger, u?.role)));
     }
 
     const all = await storage.getLedgers(undefined, typeof status === "string" ? status : undefined);
-    if (u?.role === "ADMIN") return res.json(all);
+    if (u?.role === "ADMIN") return res.json(all.map((ledger) => ledgerResponse(ledger, u.role)));
     const allowed = all.filter((l) => l.property.ownerId === userId || l.property.tenantId === userId);
-    res.json(allowed);
+    res.json(allowed.map((ledger) => ledgerResponse(ledger, u?.role)));
   });
 
   // Manual Payout (Admin)
@@ -414,7 +425,7 @@ export async function registerRoutes(
         ).catch(() => {});
       }
       
-      res.json(updated);
+      res.json(ledgerResponse(updated, "ADMIN"));
     } catch (err) {
       if (err instanceof z.ZodError) {
         return res.status(400).json({
@@ -741,7 +752,7 @@ export async function registerRoutes(
         status: isSettled ? 'SETTLED' : ledger.status
       });
 
-      res.json(updated);
+      res.json(ledgerResponse(updated, "ADMIN"));
     } catch (err) {
        if (err instanceof z.ZodError) {
         return res.status(400).json({
@@ -775,8 +786,8 @@ export async function registerRoutes(
     const userId = req.user?.claims?.sub;
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
     const u = await authStorage.getUser(userId);
-    if (u?.role === "ADMIN") return res.json(await storage.getAllPayments());
-    res.json(await storage.getPaymentsByUserProperties(userId));
+    if (u?.role === "ADMIN") return res.json((await storage.getAllPayments()).map((payment) => paymentResponse(payment, u.role)));
+    res.json((await storage.getPaymentsByUserProperties(userId)).map((payment) => paymentResponse(payment, u?.role)));
   });
 
   // Get payments for a ledger — must own/rent the property.
@@ -785,7 +796,8 @@ export async function registerRoutes(
     const access = await requireLedgerAccess(req, res, String(ledgerId));
     if (!access) return;
     const payments = await storage.getPaymentsByLedger(String(ledgerId));
-    res.json(payments);
+    const viewer = req.currentUser || await authStorage.getUser(req.user?.claims?.sub);
+    res.json(payments.map((payment) => paymentResponse(payment, viewer?.role)));
   });
 
   // Create partial payment with Cashfree — only the tenant of the property may pay.
@@ -851,7 +863,7 @@ export async function registerRoutes(
       });
 
       res.json({
-        payment,
+        payment: paymentResponse(payment, role),
         orderId: order.order_id,
         paymentSessionId: order.payment_session_id,
         amount: input.amount,
@@ -937,7 +949,7 @@ export async function registerRoutes(
       ).catch(() => {});
     }
 
-    res.json(payment);
+    res.json(paymentResponse(payment, "TENANT"));
   });
 
   // Admin: list all payments awaiting verification.
@@ -947,7 +959,7 @@ export async function registerRoutes(
     requireRole("ADMIN"),
     async (_req, res) => {
       const list = await storage.getPendingVerificationPayments();
-      res.json(list);
+      res.json(list.map(pendingPaymentResponse));
     },
   );
 
@@ -983,7 +995,7 @@ export async function registerRoutes(
             "/owner",
           ).catch(() => {});
         }
-        res.json({ payment, ledger });
+        res.json({ payment: paymentResponse(payment, "ADMIN"), ledger: ledgerResponse(ledger, "ADMIN") });
       } catch (err: any) {
         const status = err?.status || 500;
         return res.status(status).json({ message: status === 500 ? "Internal Server Error" : err.message });
@@ -1020,7 +1032,7 @@ export async function registerRoutes(
             "/tenant",
           ).catch(() => {});
         }
-        res.json(updated);
+        res.json(paymentResponse(updated, "ADMIN"));
       } catch (err: any) {
         const status = err?.status || 500;
         return res.status(status).json({ message: status === 500 ? "Internal Server Error" : err.message });
@@ -1042,12 +1054,12 @@ export async function registerRoutes(
       const access = await requirePropertyAccess(req, res, propertyId);
       if (!access) return;
       const tickets = await storage.getTickets(propertyId, typeof status === "string" ? status : undefined);
-      return res.json(tickets);
+      return res.json(tickets.map(ticketResponse));
     }
 
     const all = await storage.getTickets(undefined, typeof status === "string" ? status : undefined);
-    if (u?.role === "ADMIN") return res.json(all);
-    res.json(all.filter((t) => t.property.ownerId === userId || t.property.tenantId === userId));
+    if (u?.role === "ADMIN") return res.json(all.map(ticketResponse));
+    res.json(all.filter((t) => t.property.ownerId === userId || t.property.tenantId === userId).map(ticketResponse));
   });
 
   // Create ticket — only the tenant of the property may create.
@@ -1092,7 +1104,7 @@ export async function registerRoutes(
         ).catch(() => {});
       }
 
-      res.status(201).json(ticket);
+      res.status(201).json(ticketResponse(ticket));
     } catch (err) {
       if (err instanceof z.ZodError) {
         return res.status(400).json({
@@ -1126,7 +1138,7 @@ export async function registerRoutes(
       "/tenant"
     ).catch(() => {});
 
-    res.json(updated);
+    res.json(ticketResponse(updated));
   });
 
   // Get ticket counts by property — must own/rent the property.
@@ -1414,7 +1426,7 @@ export async function registerRoutes(
 
     const property = userProperties[0];
     const agreement = await storage.getAgreementByProperty(property.id);
-    return res.json({ property, agreement: agreement || null });
+    return res.json({ property: propertyResponse(property, dbUser.role), agreement: agreementResponse(agreement) });
   });
 
   // GET /api/agreements/all — admin: list all agreements enriched with property + party info
@@ -1437,7 +1449,7 @@ export async function registerRoutes(
       const owner  = property?.ownerId  ? userMap.get(property.ownerId)  : undefined;
       const tenant = property?.tenantId ? userMap.get(property.tenantId) : undefined;
       return {
-        ...agr,
+        ...agreementResponse(agr),
         property: property ? { address: property.address, monthlyRent: property.monthlyRent } : null,
         owner:  owner  ? { firstName: owner.firstName,  lastName: owner.lastName,  email: owner.email  } : null,
         tenant: tenant ? { firstName: tenant.firstName, lastName: tenant.lastName, email: tenant.email } : null,
@@ -1465,7 +1477,7 @@ export async function registerRoutes(
         ).catch(() => {});
       }
     }
-    return res.json(agreement);
+    return res.json(agreementResponse(agreement));
   });
 
   // POST /api/agreements/:propertyId/mark-owner-signed — admin: mark owner as having signed
@@ -1489,7 +1501,7 @@ export async function registerRoutes(
         ).catch(() => {});
       }
     }
-    return res.json(agreement);
+    return res.json(agreementResponse(agreement));
   });
 
   // POST /api/agreements/:propertyId/mark-tenant-signed — admin: mark tenant as having signed
@@ -1513,7 +1525,7 @@ export async function registerRoutes(
         ).catch(() => {});
       }
     }
-    return res.json(agreement);
+    return res.json(agreementResponse(agreement));
   });
 
   // Get all users (Admin only) — PII (PAN/Aadhaar/bank) returned masked.
@@ -1582,7 +1594,7 @@ export async function registerRoutes(
     const userId = req.user?.claims?.sub;
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
     const notifs = await storage.getNotifications(userId);
-    res.json(notifs);
+    res.json(notifs.map(notificationResponse));
   });
 
   // Combined badge-counts — single round-trip replaces the two separate polling calls.
@@ -1764,7 +1776,7 @@ export function registerMessagingRoutes(app: Express) {
       const msgs = await storage.getMessages(propertyId);
       // Mark messages as read for this user
       await storage.markMessagesRead(propertyId, userId);
-      res.json(msgs);
+      res.json(msgs.map(propertyMessageResponse));
     } catch (e) {
       console.error(e);
       res.status(500).json({ message: 'Internal server error' });
@@ -1806,7 +1818,7 @@ export function registerMessagingRoutes(app: Express) {
         "/messages"
       ).catch(() => {});
 
-      res.status(201).json(msg);
+      res.status(201).json(propertyMessageResponse(msg));
     } catch (e) {
       console.error(e);
       res.status(500).json({ message: 'Internal server error' });
@@ -1847,9 +1859,9 @@ export function registerMessagingRoutes(app: Express) {
       }
 
       const conversations = Array.from(grouped.values()).map(({ property, msgs }) => ({
-        property,
+        property: propertyResponse(property, "ADMIN"),
         messageCount: msgs.length,
-        lastMessage: msgs[0] ?? null,
+        lastMessage: msgs[0] ? propertyMessageResponse(msgs[0]) : null,
         unreadCount: msgs.filter(m => !m.read).length,
       }));
 
@@ -1867,7 +1879,7 @@ export function registerMessagingRoutes(app: Express) {
       const property = await storage.getProperty(propertyId);
       if (!property) return res.status(404).json({ message: 'Property not found' });
       const msgs = await storage.getMessages(propertyId);
-      res.json({ property, messages: msgs });
+      res.json({ property: propertyResponse(property, "ADMIN"), messages: msgs.map(propertyMessageResponse) });
     } catch (e) {
       console.error(e);
       res.status(500).json({ message: 'Internal server error' });

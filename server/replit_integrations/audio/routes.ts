@@ -6,6 +6,7 @@ import { authStorage } from "../auth/storage";
 import { z } from "zod";
 import { conversationIdParamsSchema, sanitizedText, validateRequest } from "../../input-validation";
 import { decodeStrictBase64, MAX_AUDIO_UPLOAD_BYTES, UploadValidationError } from "../../upload-validation";
+import { legacyChatMessageResponse, legacyConversationResponse } from "../../response-serializers";
 
 // Body parser with 50MB limit for audio payloads — applied only to the audio
 // route, after isAuthenticated, so unauthenticated requests never parse the body.
@@ -34,7 +35,7 @@ export function registerAudioRoutes(app: Express): void {
   app.get("/api/conversations", isAuthenticated, requireLegacyConversationAdmin, async (req: Request, res: Response) => {
     try {
       const conversations = await chatStorage.getAllConversations();
-      res.json(conversations);
+      res.json(conversations.map(legacyConversationResponse));
     } catch (error) {
       console.error("Error fetching conversations:", error);
       res.status(500).json({ error: "Failed to fetch conversations" });
@@ -50,7 +51,7 @@ export function registerAudioRoutes(app: Express): void {
         return res.status(404).json({ error: "Conversation not found" });
       }
       const messages = await chatStorage.getMessagesByConversation(id);
-      res.json({ ...conversation, messages });
+      res.json({ ...legacyConversationResponse(conversation), messages: messages.map(legacyChatMessageResponse) });
     } catch (error) {
       console.error("Error fetching conversation:", error);
       res.status(500).json({ error: "Failed to fetch conversation" });
@@ -62,7 +63,7 @@ export function registerAudioRoutes(app: Express): void {
     try {
       const { title } = req.body as z.infer<typeof legacyConversationTitleSchema>;
       const conversation = await chatStorage.createConversation(title || "New Chat");
-      res.status(201).json(conversation);
+      res.status(201).json(legacyConversationResponse(conversation));
     } catch (error) {
       console.error("Error creating conversation:", error);
       res.status(500).json({ error: "Failed to create conversation" });

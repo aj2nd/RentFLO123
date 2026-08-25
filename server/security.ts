@@ -94,19 +94,19 @@ export function maskIfsc(value?: string | null): string | null {
 export function publicUser(u: any) {
   if (!u) return u;
   const {
-    panNumber,
-    aadhaarNumber,
-    bankAccountNumber,
-    ifscCode,
-    fullLegalName,
-    kycDocumentUrl,
-    cancelledChequeUrl,
-    diditSessionId,
-    digilockerRequestId,
-    ...rest
+    id, email, firstName, lastName, profileImageUrl, role, isVerified, createdAt,
+    panNumber, aadhaarNumber, bankAccountNumber, ifscCode, fullLegalName,
+    kycDocumentUrl, cancelledChequeUrl,
   } = u;
   return {
-    ...rest,
+    id,
+    email,
+    firstName,
+    lastName,
+    profileImageUrl,
+    role,
+    isVerified: Boolean(isVerified),
+    createdAt,
     fullLegalName: decryptPII(fullLegalName),
     panNumber: maskPan(panNumber),
     aadhaarNumber: maskAadhaar(aadhaarNumber),
