@@ -26,6 +26,9 @@ const requiredServerFragments = [
   "authIssuedAt",
   "nowMs - issuedAt <= SESSION_MAX_AGE_MS",
   "rejectExpiredSession",
+  "function hasUsableWebSession",
+  "function regenerateSession",
+  "await regenerateSession(req)",
   "encryptPII(JSON.stringify(stored))",
 ];
 
@@ -69,6 +72,10 @@ if (!authHook.includes('window.location.assign(`${API_BASE}/api/login`)')) {
 
 if (!authHook.includes('url: `${API_BASE}/api/login?platform=android`')) {
   throw new Error("The native OAuth deep-link flow must remain isolated from browser session login.");
+}
+
+if (!authServer.includes("if (hasUsableWebSession(req))")) {
+  throw new Error("A valid authenticated session must retain the safe login shortcut.");
 }
 
 if (!authToken.includes("NATIVE_AUTH_TOKEN_TTL_SECONDS = 7 * 24 * 60 * 60")) {

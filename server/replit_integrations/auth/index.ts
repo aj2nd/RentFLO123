@@ -44,6 +44,28 @@ function rejectExpiredSession(req: Request, res: Response) {
   return res.status(401).json({ message: "Session expired. Please sign in again." });
 }
 
+function hasUsableWebSession(req: Request): boolean {
+  const user = req.user as any;
+  const userId = user?.claims?.sub;
+  const issuedAt = Number((req.session as any)?.authIssuedAt);
+  const nowMs = Date.now();
+  return Boolean(
+    req.isAuthenticated()
+    && userId
+    && user.expires_at
+    && Number.isFinite(issuedAt)
+    && issuedAt > 0
+    && issuedAt <= nowMs + 60_000
+    && nowMs - issuedAt <= SESSION_MAX_AGE_MS,
+  );
+}
+
+function regenerateSession(req: Request): Promise<void> {
+  return new Promise((resolve, reject) => {
+    req.session.regenerate((error) => (error ? reject(error) : resolve()));
+  });
+}
+
 const getOidcConfig = memoize(
   async () => {
     return await client.discovery(
@@ -199,15 +221,24 @@ export async function setupAuth(app: Express) {
   passport.serializeUser((user: Express.User, cb) => cb(null, user));
   passport.deserializeUser((user: Express.User, cb) => cb(null, user));
 
-  app.get("/api/login", validateRequest({ query: loginQuerySchema }), (req, res, next) => {
+  app.get("/api/login", validateRequest({ query: loginQuerySchema }), async (req, res, next) => {
     const isAndroid = res.locals.validatedQuery.platform === "android";
 
-    if (req.isAuthenticated()) {
+    if (hasUsableWebSession(req)) {
       if (isAndroid) {
         const deepLink = androidRedirect(req.user);
         if (deepLink) return res.redirect(deepLink);
       }
       return res.redirect("/");
+    }
+
+    try {
+      // A previous deployment, interrupted OAuth flow, or stale Safari cookie
+      // may leave Passport with an unusable session. Do not let that state travel
+      // through a fresh OAuth exchange: rotate it before saving the provider flow.
+      await regenerateSession(req);
+    } catch (error) {
+      return next(error);
     }
 
     // Persist platform on the session so the OAuth callback knows where to send
@@ -301,13 +332,7 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
   // Session-based auth (web)
   const user = req.user as any;
   const userId = user?.claims?.sub;
-  const issuedAt = Number((req.session as any)?.authIssuedAt);
-  const nowMs = Date.now();
-  const hasValidSessionWindow = Number.isFinite(issuedAt)
-    && issuedAt > 0
-    && issuedAt <= nowMs + 60_000
-    && nowMs - issuedAt <= SESSION_MAX_AGE_MS;
-  if (!req.isAuthenticated() || !userId || !user.expires_at || !hasValidSessionWindow) {
+  if (!hasUsableWebSession(req)) {
     if (req.isAuthenticated()) return rejectExpiredSession(req, res);
     return res.status(401).json({ message: "Unauthorized" });
   }
