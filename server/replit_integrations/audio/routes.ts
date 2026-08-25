@@ -7,6 +7,7 @@ import { z } from "zod";
 import { conversationIdParamsSchema, sanitizedText, validateRequest } from "../../input-validation";
 import { decodeStrictBase64, MAX_AUDIO_UPLOAD_BYTES, UploadValidationError } from "../../upload-validation";
 import { legacyChatMessageResponse, legacyConversationResponse } from "../../response-serializers";
+import { createAiUsageLimiter } from "../../ai-usage-limit";
 import {
   AUDIO_SYSTEM_INSTRUCTIONS,
   buildUntrustedConversationPrompt,
@@ -26,6 +27,12 @@ const audioMessageSchema = z.object({
     .refine((value) => Buffer.byteLength(value, "base64") <= MAX_AUDIO_UPLOAD_BYTES, "Audio must be 10 MB or smaller"),
   voice: z.enum(["alloy", "ash", "ballad", "coral", "echo", "fable", "nova", "onyx", "sage", "shimmer", "verse"]).default("alloy"),
 }).strict();
+const legacyVoiceChatDailyUsageLimiter = createAiUsageLimiter({
+  feature: "legacy_voice_chat",
+  windowMs: 24 * 60 * 60 * 1000,
+  max: 10,
+  message: "Your daily voice assistant limit has been reached.",
+});
 
 // The legacy conversation schema has no participant ownership. Restrict it to
 // verified admins until a user-owned conversation migration is completed.
@@ -93,7 +100,7 @@ export function registerAudioRoutes(app: Express): void {
   // Uses gpt-4o-mini-transcribe for STT, gpt-audio for voice response
   // isAuthenticated runs BEFORE audioBodyParser so the 50 MB body is never
   // parsed for unauthenticated requests.
-  app.post("/api/conversations/:id/messages", isAuthenticated, requireLegacyConversationAdmin, audioBodyParser, validateRequest({ params: conversationIdParamsSchema, body: audioMessageSchema }), async (req: Request, res: Response) => {
+  app.post("/api/conversations/:id/messages", isAuthenticated, requireLegacyConversationAdmin, audioBodyParser, validateRequest({ params: conversationIdParamsSchema, body: audioMessageSchema }), legacyVoiceChatDailyUsageLimiter, async (req: Request, res: Response) => {
     try {
       const conversationId = (req.params as any).id as number;
       const { audio, voice } = req.body as z.infer<typeof audioMessageSchema>;

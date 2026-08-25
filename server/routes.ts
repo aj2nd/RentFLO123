@@ -64,6 +64,7 @@ import {
 } from "./response-serializers";
 import { cashfreeWebhookSecret, verifyCashfreeWebhookSignature } from "./payment-webhook-security";
 import { outstandingRent, ownerPayout } from "./pricing";
+import { createAiUsageLimiter, ensureAiUsageLimitTable } from "./ai-usage-limit";
 import {
   buildUntrustedConversationPrompt,
   RENTFLO_CHAT_SYSTEM_INSTRUCTIONS,
@@ -97,6 +98,12 @@ const aiAccountLimiter = createAccountRateLimiter({
   windowMs: 15 * 60 * 1000,
   max: 3,
   message: "Too many AI requests. Please try again later.",
+});
+const chatbotDailyUsageLimiter = createAiUsageLimiter({
+  feature: "chatbot",
+  windowMs: 24 * 60 * 60 * 1000,
+  max: 20,
+  message: "Your daily RentFLO Assistant limit has been reached.",
 });
 const notificationTriggerAccountLimiter = createAccountRateLimiter({
   windowMs: 60 * 60 * 1000,
@@ -220,6 +227,7 @@ export async function registerRoutes(
 ): Promise<Server> {
   // === AUTH SETUP ===
   await setupAuth(app);
+  await ensureAiUsageLimitTable();
   registerAuthRoutes(app);
 
   // === PUSH NOTIFICATIONS INIT ===
@@ -1936,7 +1944,7 @@ export function registerMessagingRoutes(app: Express) {
       .max(20),
   }).strict();
 
-  app.post("/api/chatbot", isAuthenticated, aiAccountLimiter, async (req: any, res) => {
+  app.post("/api/chatbot", isAuthenticated, aiAccountLimiter, validateRequest({ body: chatSchema }), chatbotDailyUsageLimiter, async (req: any, res) => {
     try {
       let parsed: z.infer<typeof chatSchema>;
       try {

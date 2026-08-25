@@ -6,6 +6,7 @@ import { authStorage } from "../auth/storage";
 import { z } from "zod";
 import { conversationIdParamsSchema, sanitizedText, validateRequest } from "../../input-validation";
 import { legacyChatMessageResponse, legacyConversationResponse } from "../../response-serializers";
+import { createAiUsageLimiter } from "../../ai-usage-limit";
 import {
   buildUntrustedConversationPrompt,
   LEGACY_CHAT_SYSTEM_INSTRUCTIONS,
@@ -19,6 +20,12 @@ const conversationTitleSchema = z.object({
 const conversationMessageSchema = z.object({
   content: sanitizedText(1, 4000),
 }).strict();
+const legacyTextChatDailyUsageLimiter = createAiUsageLimiter({
+  feature: "legacy_text_chat",
+  windowMs: 24 * 60 * 60 * 1000,
+  max: 20,
+  message: "Your daily legacy chat limit has been reached.",
+});
 
 const openai = new OpenAI({
   apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
@@ -87,7 +94,7 @@ export function registerChatRoutes(app: Express): void {
   });
 
   // Send message and get AI response (streaming)
-  app.post("/api/conversations/:id/messages", isAuthenticated, requireLegacyConversationAdmin, validateRequest({ params: conversationIdParamsSchema, body: conversationMessageSchema }), async (req: Request, res: Response) => {
+  app.post("/api/conversations/:id/messages", isAuthenticated, requireLegacyConversationAdmin, validateRequest({ params: conversationIdParamsSchema, body: conversationMessageSchema }), legacyTextChatDailyUsageLimiter, async (req: Request, res: Response) => {
     try {
       const conversationId = (req.params as any).id as number;
       const { content } = req.body as z.infer<typeof conversationMessageSchema>;
