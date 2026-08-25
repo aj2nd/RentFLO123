@@ -27,6 +27,7 @@ const requiredServerFragments = [
   "nowMs - issuedAt <= SESSION_MAX_AGE_MS",
   "rejectExpiredSession",
   "function hasUsableWebSession",
+  "function hasActiveWebSessionForLoginRedirect",
   "function regenerateSession",
   "await regenerateSession(req)",
   "encryptPII(JSON.stringify(stored))",
@@ -74,8 +75,8 @@ if (!authHook.includes('url: `${API_BASE}/api/login?platform=android`')) {
   throw new Error("The native OAuth deep-link flow must remain isolated from browser session login.");
 }
 
-if (!authServer.includes("if (hasUsableWebSession(req))")) {
-  throw new Error("A valid authenticated session must retain the safe login shortcut.");
+if (!authServer.includes("if (hasActiveWebSessionForLoginRedirect(req))")) {
+  throw new Error("Only an unexpired authenticated session may retain the safe login shortcut.");
 }
 
 if (!authServer.includes("const existingAccount = await authStorage.getUser(sessionUserId)")) {

@@ -60,6 +60,13 @@ function hasUsableWebSession(req: Request): boolean {
   );
 }
 
+function hasActiveWebSessionForLoginRedirect(req: Request): boolean {
+  const expiresAt = Number((req.user as any)?.expires_at);
+  return hasUsableWebSession(req)
+    && Number.isFinite(expiresAt)
+    && expiresAt > Math.floor(Date.now() / 1000);
+}
+
 function regenerateSession(req: Request): Promise<void> {
   return new Promise((resolve, reject) => {
     req.session.regenerate((error) => (error ? reject(error) : resolve()));
@@ -224,7 +231,7 @@ export async function setupAuth(app: Express) {
   app.get("/api/login", validateRequest({ query: loginQuerySchema }), async (req, res, next) => {
     const isAndroid = res.locals.validatedQuery.platform === "android";
 
-    if (hasUsableWebSession(req)) {
+    if (hasActiveWebSessionForLoginRedirect(req)) {
       try {
         // Passport can restore a structurally valid browser session whose user
         // row was removed or never completed onboarding. Treat it as stale: a
