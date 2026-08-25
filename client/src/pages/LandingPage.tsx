@@ -140,9 +140,13 @@ export default function LandingPage() {
 
           {/* Card */}
           <div
-            className="audience-panel relative overflow-hidden"
+            className="audience-panel relative overflow-hidden rounded-[2px]"
             data-audience={audienceTab}
-            style={isLight ? {
+            style={audienceTab === "owners" ? {
+              background: "radial-gradient(circle at 76% 14%, rgba(59,130,246,0.16), transparent 30%), linear-gradient(145deg, #101722 0%, #070B11 56%, #05080D 100%)",
+              border: "1px solid rgba(68,143,255,0.42)",
+              boxShadow: "0 26px 80px rgba(0,0,0,0.46), inset 0 1px 0 rgba(117,172,255,0.18)",
+            } : isLight ? {
               background: "var(--surface-card)",
               border: "1px solid var(--border-subtle)",
               boxShadow: "var(--shadow-card)",
@@ -155,10 +159,12 @@ export default function LandingPage() {
             <div
               className="absolute inset-0 pointer-events-none"
               style={{
-                backgroundImage: isLight
+                backgroundImage: audienceTab === "owners"
+                  ? "linear-gradient(rgba(67,131,214,0.18) 1px, transparent 1px), linear-gradient(90deg, rgba(67,131,214,0.18) 1px, transparent 1px)"
+                  : isLight
                   ? "linear-gradient(rgba(15,118,110,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(15,118,110,0.04) 1px, transparent 1px)"
                   : "linear-gradient(color-mix(in srgb, var(--audience-accent) 10%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in srgb, var(--audience-accent) 10%, transparent) 1px, transparent 1px)",
-                backgroundSize: "48px 48px",
+                backgroundSize: audienceTab === "owners" ? "54px 54px" : "48px 48px",
               }}
             />
             {/* Glow */}
@@ -172,7 +178,7 @@ export default function LandingPage() {
                 height: "320px",
                 borderRadius: "50%",
                 filter: "blur(80px)",
-                 background: isLight ? "color-mix(in srgb, var(--audience-accent) 12%, transparent)" : "var(--audience-accent-glow)",
+                 background: audienceTab === "owners" ? "rgba(50,135,255,0.32)" : isLight ? "color-mix(in srgb, var(--audience-accent) 12%, transparent)" : "var(--audience-accent-glow)",
               }}
             />
 
@@ -181,7 +187,7 @@ export default function LandingPage() {
               {/* Left: big headline */}
               <div
                 className="p-10 md:p-14 flex flex-col justify-between"
-                 style={{ borderRight: isLight ? "1px solid var(--border-subtle)" : "1px solid color-mix(in srgb, var(--audience-accent) 16%, transparent)" }}
+                 style={{ borderRight: audienceTab === "owners" ? "1px solid rgba(72,144,244,0.24)" : isLight ? "1px solid var(--border-subtle)" : "1px solid color-mix(in srgb, var(--audience-accent) 16%, transparent)" }}
               >
                 <div>
                   <div className="mb-6">
@@ -254,7 +260,7 @@ export default function LandingPage() {
                   <a
                     href="/api/login"
                     className="inline-flex items-center gap-2 px-7 py-3 font-bold text-sm uppercase tracking-[1.5px] transition-all duration-200"
-                     style={{ background: "var(--audience-accent)", color: "#07111F", boxShadow: "0 0 24px var(--audience-accent-glow)" }}
+                     style={audienceTab === "owners" ? { background: "linear-gradient(100deg, #57A7FF 0%, #3A8CFF 100%)", color: "#07111F", boxShadow: "0 12px 28px rgba(44,133,255,0.30)" } : { background: "var(--audience-accent)", color: "#07111F", boxShadow: "0 0 24px var(--audience-accent-glow)" }}
                     onMouseEnter={e => { e.currentTarget.style.opacity = "0.85" }}
                     onMouseLeave={e => { e.currentTarget.style.opacity = "1" }}
                   >
@@ -281,8 +287,8 @@ export default function LandingPage() {
                     { title: t("landing_tenant_b4_title"), desc: t("landing_tenant_b4_desc") },
                   ]).map((item: { title: string; desc: string }, i) => (
                     <li key={i} className="flex gap-4">
-                      <div className="mt-1 flex-shrink-0 w-5 h-5 flex items-center justify-center" style={{ border: "1px solid var(--audience-accent-border)", background: "var(--audience-accent-soft)", boxShadow: "0 0 14px var(--audience-accent-glow)" }}>
-                        <div className="w-1.5 h-1.5" style={{ background: "var(--audience-accent)", boxShadow: "0 0 8px var(--audience-accent)" }} />
+                      <div className="mt-1 flex-shrink-0 w-6 h-6 flex items-center justify-center" style={audienceTab === "owners" ? { border: "1px solid rgba(84,158,255,0.65)", background: "rgba(53,131,247,0.10)", boxShadow: "0 0 18px rgba(56,145,255,0.22)" } : { border: "1px solid var(--audience-accent-border)", background: "var(--audience-accent-soft)", boxShadow: "0 0 14px var(--audience-accent-glow)" }}>
+                        <div className="w-1.5 h-1.5" style={audienceTab === "owners" ? { background: "#57A7FF", boxShadow: "0 0 10px #57A7FF" } : { background: "var(--audience-accent)", boxShadow: "0 0 8px var(--audience-accent)" }} />
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-foreground mb-1">{item.title}</p>
