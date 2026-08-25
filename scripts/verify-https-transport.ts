@@ -49,18 +49,19 @@ try {
   await new Promise<void>((resolve, reject) => development.server.close((error) => error ? reject(error) : resolve()));
 }
 
-const [index, routes, auth, nativeAuth, staticServer] = await Promise.all([
+const [index, routes, auth, nativeAuth, staticServer, securityHeaders] = await Promise.all([
   readFile("server/index.ts", "utf8"),
   readFile("server/routes.ts", "utf8"),
   readFile("server/replit_integrations/auth/index.ts", "utf8"),
   readFile("client/src/lib/auth-token.ts", "utf8"),
   readFile("server/static.ts", "utf8"),
+  readFile("server/security-headers.ts", "utf8"),
 ]);
 
 assert.match(index, /app\.set\("trust proxy", 1\)/, "Railway reverse proxy must be explicitly trusted");
 assert.match(index, /createHttpsRedirectMiddleware\(/, "application must install the production HTTPS redirect middleware");
-assert.match(index, /strictTransportSecurity: IS_PRODUCTION \? \{ maxAge: 31_536_000, includeSubDomains: true \} : false/, "production must enable one-year HSTS for subdomains");
-assert.match(index, /IS_PRODUCTION \? \[\] : \["ws:"\]/, "production CSP must not permit insecure WebSocket transport");
+assert.match(securityHeaders, /strictTransportSecurity: options\.production \? \{ maxAge: 31_536_000, includeSubDomains: true \} : false/, "production must enable one-year HSTS for subdomains");
+assert.match(securityHeaders, /options\.production \? \[\] : \["ws:"\]/, "production CSP must not permit insecure WebSocket transport");
 assert.match(index, /IS_PRODUCTION \? \[\] : \["http:\/\/localhost"\]/, "production CORS must not allow a plain-HTTP browser origin");
 assert.match(routes, /url\.protocol !== "https:"/, "PUBLIC_APP_URL must be HTTPS before provider callbacks are built");
 assert.match(auth, /callbackURL: `https:\/\/rentflo\.in\/api\/auth\/google\/callback`/, "OAuth callback must remain HTTPS");

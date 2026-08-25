@@ -5,11 +5,11 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
-import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import { pool, connectWithRetry } from "./db";
 import { sanitizeRequestBody } from "./input-validation";
 import { createHttpsRedirectMiddleware } from "./transport-security";
+import { createRentfloSecurityHeaders } from "./security-headers";
 
 const app = express();
 const httpServer = createServer(app);
@@ -40,33 +40,11 @@ const CSP_INLINE_SCRIPT_HASHES = [
 ];
 const IS_PRODUCTION = process.env.NODE_ENV === "production";
 
-app.use(
-  helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc:     ["'self'"],
-        scriptSrc:      ["'self'", ...CSP_INLINE_SCRIPT_HASHES, "https://sdk.cashfree.com", "https://*.cashfree.com"],
-        styleSrc:       ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-        imgSrc:         ["'self'", "data:", "blob:", "https:"],
-        fontSrc:        ["'self'", "data:", "https://fonts.gstatic.com"],
-        connectSrc:     ["'self'", "https://*.cashfree.com", "https://*.didit.me", "https://api.leegality.com", "wss:", ...(IS_PRODUCTION ? [] : ["ws:"])],
-        frameSrc:       ["'self'", "https://*.cashfree.com", "https://*.didit.me", "https://verify.didit.me", "https://*.leegality.com"],
-        workerSrc:      ["'self'", "blob:"],
-        manifestSrc:    ["'self'"],
-        mediaSrc:       ["'self'", "data:", "blob:"],
-        objectSrc:      ["'none'"],
-        baseUri:        ["'self'"],
-        formAction:     ["'self'"],
-        frameAncestors: ["'none'"],
-        reportUri:      [CSP_REPORT_ENDPOINT],
-        "report-to":   ["csp"],
-      },
-    },
-    crossOriginEmbedderPolicy: false,
-    referrerPolicy: { policy: "strict-origin-when-cross-origin" },
-    strictTransportSecurity: IS_PRODUCTION ? { maxAge: 31_536_000, includeSubDomains: true } : false,
-  })
-); 
+app.use(createRentfloSecurityHeaders({
+  production: IS_PRODUCTION,
+  cspReportEndpoint: CSP_REPORT_ENDPOINT,
+  inlineScriptHashes: CSP_INLINE_SCRIPT_HASHES,
+}));
 app.use((_req, res, next) => {
   res.setHeader("Reporting-Endpoints", `csp="${CSP_REPORT_ENDPOINT}"`);
   res.setHeader("Report-To", JSON.stringify({
