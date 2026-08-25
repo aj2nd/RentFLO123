@@ -9,6 +9,7 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import { pool, connectWithRetry } from "./db";
 import { sanitizeRequestBody } from "./input-validation";
+import { createHttpsRedirectMiddleware } from "./transport-security";
 
 const app = express();
 const httpServer = createServer(app);
@@ -16,6 +17,14 @@ const httpServer = createServer(app);
 // Railway forwards requests through a single trusted reverse proxy. Configure
 // this before every limiter so req.ip is the originating client, not Railway.
 app.set("trust proxy", 1);
+
+// Redirect public HTTP requests at the application boundary. Railway supplies
+// the original scheme through its one trusted proxy; /health stays available to
+// the platform's internal health checker and is not a public browser surface.
+app.use(createHttpsRedirectMiddleware({
+  production: process.env.NODE_ENV === "production",
+  publicAppUrl: process.env.PUBLIC_APP_URL,
+}));
 
 declare module "http" {
   interface IncomingMessage {
@@ -29,6 +38,7 @@ const CSP_INLINE_SCRIPT_HASHES = [
   "'sha256-a4ZFAIL/HZc14Fsh0YVz7m6pn0FS+VOCQiIDiQiJ/dQ='",
   "'sha256-8QICGeAmf5e/E/hXyCn+o0uzfzS334/haSabo3VGefk='",
 ];
+const IS_PRODUCTION = process.env.NODE_ENV === "production";
 
 app.use(
   helmet({
@@ -39,7 +49,7 @@ app.use(
         styleSrc:       ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         imgSrc:         ["'self'", "data:", "blob:", "https:"],
         fontSrc:        ["'self'", "data:", "https://fonts.gstatic.com"],
-        connectSrc:     ["'self'", "https://*.cashfree.com", "https://*.didit.me", "https://api.leegality.com", "wss:", "ws:"],
+        connectSrc:     ["'self'", "https://*.cashfree.com", "https://*.didit.me", "https://api.leegality.com", "wss:", ...(IS_PRODUCTION ? [] : ["ws:"])],
         frameSrc:       ["'self'", "https://*.cashfree.com", "https://*.didit.me", "https://verify.didit.me", "https://*.leegality.com"],
         workerSrc:      ["'self'", "blob:"],
         manifestSrc:    ["'self'"],
@@ -54,6 +64,7 @@ app.use(
     },
     crossOriginEmbedderPolicy: false,
     referrerPolicy: { policy: "strict-origin-when-cross-origin" },
+    strictTransportSecurity: IS_PRODUCTION ? { maxAge: 31_536_000, includeSubDomains: true } : false,
   })
 ); 
 app.use((_req, res, next) => {
@@ -67,13 +78,12 @@ app.use((_req, res, next) => {
 });
 // ── CORS for Capacitor Android app ──────────────────────────────────────────
 // The Android WebView origin is https://localhost (Capacitor 4+) or
-// capacitor://localhost (older); http://localhost is the dev fallback. The
-// web SPA is served same-origin so it doesn't need CORS — only allow the
-// native/dev origins here, scoped to /api/*.
+// capacitor://localhost (older). http://localhost is permitted only for local
+// development; production CORS never grants a plain-HTTP browser origin.
 const CAPACITOR_ORIGINS = new Set([
   "https://localhost",
   "capacitor://localhost",
-  "http://localhost",
+  ...(IS_PRODUCTION ? [] : ["http://localhost"]),
 ]);
 
 app.use("/api", (req, res, next) => {
