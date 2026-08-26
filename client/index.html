@@ -179,8 +179,10 @@
       }
 
       /* Authenticated and utility pages render their own navigation branding;
-         never add a second global wordmark above those page layouts. */
-      body.route-no-global-header .i18n-header {
+         never add a second global wordmark above those page layouts. The
+         navigation marker makes this independent of route-script timing. */
+      body.route-no-global-header .i18n-header,
+      body:has(.dashboard-header-wordmark) .i18n-header {
         display: none !important;
       }
 
