@@ -172,18 +172,7 @@ export function Navigation({ showMobileTopbarWhenOpenOnly = false }: { showMobil
           style={{ borderTop: "1px solid var(--nav-border)" }}
         >
           {/* Alerts row */}
-          <div
-            className="flex items-center gap-3 px-3 py-3 rounded-xl"
-            style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--nav-border)" }}
-          >
-            <NotificationBell />
-            <span
-              className="text-[10px] font-semibold uppercase tracking-widest flex-1"
-              style={{ color: "var(--nav-text-dim)" }}
-            >
-              {t("nav_alerts")}
-            </span>
-          </div>
+          <NotificationBell showLabel />
 
           {/* Sign out */}
           <button
