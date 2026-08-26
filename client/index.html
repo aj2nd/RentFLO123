@@ -480,13 +480,17 @@
           );
         }
 
+        function isLandingRoute() {
+          return window.location.pathname === '/' && !!document.querySelector('.rentflo-hero');
+        }
+
         function setDockedLandingWordmark(docked) {
           if (!header || !logoLeft) return;
           header.classList.toggle('glass', docked);
 
           // The landing header needs an element-level dock because mobile
           // Safari can retain a responsive hero offset after a class change.
-          if (!header.classList.contains('landing-header')) return;
+          if (!isLandingRoute()) return;
           if (docked) {
             logoLeft.style.setProperty('position', 'fixed', 'important');
             logoLeft.style.setProperty('top', '0px', 'important');
@@ -518,7 +522,7 @@
 
         function onLandingTouchMove(event) {
           var touch = event.touches && event.touches[0];
-          if (!touch || !header || !header.classList.contains('landing-header')) return;
+          if (!touch || !header || !isLandingRoute()) return;
           if (touchStartY - touch.clientY > 1) {
             touchDockPending = true;
             setDockedLandingWordmark(true);
