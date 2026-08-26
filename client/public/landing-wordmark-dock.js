@@ -34,6 +34,7 @@
     wordmark.style.removeProperty('left');
     wordmark.style.removeProperty('transform');
     wordmark.style.removeProperty('z-index');
+    wordmark.style.removeProperty('transition');
   }
 
   function dockAtTop() {
@@ -47,6 +48,7 @@
     wordmark.style.setProperty('left', '50%', 'important');
     wordmark.style.setProperty('transform', 'translateX(-50%)', 'important');
     wordmark.style.setProperty('z-index', '10000', 'important');
+    wordmark.style.setProperty('transition', 'none', 'important');
   }
 
   function syncDock() {
