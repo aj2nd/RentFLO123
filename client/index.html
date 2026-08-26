@@ -393,6 +393,12 @@
         body:has(.rentflo-hero) .i18n-header:not(.glass) .logo-wordmark {
           height: 42.5px;
         }
+
+        /* A dedicated docked landing state that always wins over the
+           moon-aligned unscrolled rules above. */
+        body:has(.rentflo-hero) .i18n-header.glass .logo-left {
+          top: env(safe-area-inset-top, 0px) !important;
+        }
       }
     </style>
   </head>
@@ -462,6 +468,7 @@
         var GLASS_THRESHOLD = 0;
 
         var touchStartY = 0;
+        var touchDockPending = false;
 
         function getScrollTop() {
           return Math.max(
@@ -474,24 +481,34 @@
 
         function updateGlass() {
           var scrollTop = getScrollTop();
-          var scrolled = scrollTop > GLASS_THRESHOLD;
+          if (scrollTop > GLASS_THRESHOLD) touchDockPending = false;
+          var scrolled = scrollTop > GLASS_THRESHOLD || touchDockPending;
           if (header) header.classList.toggle('glass', scrolled);
         }
 
         function onLandingTouchStart(event) {
           var touch = event.touches && event.touches[0];
           touchStartY = touch ? touch.clientY : 0;
+          touchDockPending = false;
           updateGlass();
         }
 
         function onLandingTouchMove(event) {
           var touch = event.touches && event.touches[0];
-          if (!touch || window.location.pathname !== '/') return;
-          if (touchStartY - touch.clientY > 1 && header) header.classList.add('glass');
+          if (!touch || !header || !header.classList.contains('landing-header')) return;
+          if (touchStartY - touch.clientY > 1) {
+            touchDockPending = true;
+            header.classList.add('glass');
+          }
         }
 
         function onLandingTouchEnd() {
-          requestAnimationFrame(updateGlass);
+          requestAnimationFrame(function() {
+            if (getScrollTop() > GLASS_THRESHOLD) {
+              touchDockPending = false;
+              updateGlass();
+            }
+          });
         }
 
         window.addEventListener('scroll', updateGlass, { passive: true });
