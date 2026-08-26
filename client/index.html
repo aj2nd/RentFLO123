@@ -121,6 +121,16 @@
         transition: top 0.3s ease, transform 0.3s ease;
       }
 
+      /* The supplied landing hero already contains the RentFLO wordmark.
+         Keep this separate browser header mark hidden at hero load so the
+         two marks never overlap; it returns when the existing scroll state
+         applies the .glass class. */
+      .i18n-header.landing-header:not(.glass) .logo-left {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+      }
+
       .i18n-header .logo-center {
         display: flex;
         align-items: center;
@@ -173,6 +183,8 @@
          initial position on public pages. */
       .i18n-header.glass .logo-left {
         top: env(safe-area-inset-top, 0px);
+        opacity: 1;
+        visibility: visible;
       }
 
       .i18n-header .right-controls {
