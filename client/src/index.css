@@ -1,3 +1,4 @@
+/* Design: preserve the completed browser UI while giving installed iPhone pages a safe-area-aware app shell. */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
 
 @tailwind base;
@@ -465,6 +466,20 @@
 
 @media (min-width: 768px) {
   :root { --topbar-h: 0px; }
+}
+
+/* iPhone Home Screen apps expose the status bar inside the visual viewport.
+   Sidebar routes own that inset once through their shell; browser pages and
+   image-led dashboards retain their established safe-area treatment. */
+@media (display-mode: standalone) and (max-width: 767px) {
+  :root {
+    --topbar-h: calc(60px + env(safe-area-inset-top, 0px));
+  }
+
+  body:has(.rentflo-sidebar-content) {
+    padding-top: 0;
+    padding-bottom: 0;
+  }
 }
 
 /* ── Light mode — HOLI FESTIVAL ULTRA ────────────────────────────────── */

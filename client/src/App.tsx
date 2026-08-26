@@ -1,7 +1,6 @@
 /**
- * Design integration: the supplied tenant dashboard image owns its full-screen
- * canvas, so only the top shell navigation is suppressed on /tenant while the
- * shared tenant bottom navigation remains available across every tenant page.
+ * Design integration: image-led tenant views preserve their full-screen canvas;
+ * sidebar routes use an isolated iPhone-standalone safe-area shell.
  */
 import { Switch, Route, Redirect, useLocation } from "wouter";
 import { lazy, Suspense, useEffect } from "react";
@@ -43,7 +42,7 @@ function SidebarContent({ children }: { children: React.ReactNode }) {
   const { collapsed } = useSidebar();
   return (
     <div
-      className={`min-h-screen transition-all duration-300 ease-in-out ${!collapsed ? 'md:pl-64' : ''}`}
+      className={`rentflo-sidebar-content min-h-screen transition-all duration-300 ease-in-out ${!collapsed ? 'md:pl-64' : ''}`}
       style={{ paddingTop: "var(--topbar-h)" }}
     >
       {children}

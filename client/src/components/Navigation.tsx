@@ -1,4 +1,4 @@
-/** Design: role-aware sidebar navigation, including development-only owner and tenant fallbacks for previewing original pages. */
+/** Design: role-aware navigation with an isolated iPhone standalone safe-area top shell. */
 import { Link, useLocation } from "wouter";
 import { useEffect } from "react";
 import {
@@ -63,7 +63,7 @@ export function Navigation({ showMobileTopbarWhenOpenOnly = false }: { showMobil
         className="fixed left-0 right-0 md:hidden flex items-center"
         style={{
           top: 0,
-          height: "60px",
+          height: "var(--topbar-h)",
           zIndex: 35,
           background: "var(--nav-bg)",
           backdropFilter: "blur(24px) saturate(200%)",
@@ -73,6 +73,7 @@ export function Navigation({ showMobileTopbarWhenOpenOnly = false }: { showMobil
           pointerEvents: "auto",
           paddingLeft: "4px",
           paddingRight: "4px",
+          paddingTop: "env(safe-area-inset-top, 0px)",
           position: "fixed",
         }}
       >
@@ -88,7 +89,10 @@ export function Navigation({ showMobileTopbarWhenOpenOnly = false }: { showMobil
         </button>
 
         {/* Center: wordmark — absolutely centered so it's always in the middle */}
-        <div className="absolute inset-x-0 flex items-center justify-center pointer-events-none" style={{ height: "60px" }}>
+        <div
+          className="absolute inset-x-0 flex items-center justify-center pointer-events-none"
+          style={{ height: "var(--topbar-h)", paddingTop: "env(safe-area-inset-top, 0px)" }}
+        >
           <img src={newHeaderWordmark} alt="RentFLO" className="dashboard-header-wordmark dashboard-header-wordmark-mobile" />
         </div>
 
