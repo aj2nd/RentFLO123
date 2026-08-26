@@ -121,14 +121,13 @@
         transition: top 0.3s ease, transform 0.3s ease;
       }
 
-      /* The supplied landing hero already contains the RentFLO wordmark.
-         Keep this separate browser header mark hidden at hero load so the
-         two marks never overlap; it returns when the existing scroll state
-         applies the .glass class. */
+      /* Browser landing wordmark: align its center with the user-marked
+         space below the hero navigation. The existing .glass state below
+         moves it to the top as soon as the page is scrolled. */
       .i18n-header.landing-header:not(.glass) .logo-left {
-        opacity: 0;
-        visibility: hidden;
-        pointer-events: none;
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
       }
 
       .i18n-header .logo-center {
@@ -367,6 +366,11 @@
           padding: 7px 28px 7px 12px;
           font-size: 11px;
           min-height: 34px;
+        }
+        /* iPhone browser landing view: the wordmark's visual center matches
+           the user-marked space beneath the hero navigation. */
+        .i18n-header.landing-header:not(.glass) .logo-left {
+          top: clamp(118px, 15svh, 128px);
         }
       }
     </style>
