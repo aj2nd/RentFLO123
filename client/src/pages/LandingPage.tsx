@@ -139,6 +139,21 @@ export default function LandingPage() {
           </div>
 
           {/* Card */}
+          <div className="relative mx-auto w-full max-w-[853px] overflow-hidden rounded-[28px]">
+            <img
+              src={audienceTab === "owners" ? "/rentflo-owner-card-blue.jpeg" : "/rentflo-tenant-card-gold.jpeg"}
+              alt={audienceTab === "owners" ? "RentFLO owner benefits and rent collection workflow" : "RentFLO tenant benefits and flexible rent payment workflow"}
+              className="block h-auto w-full"
+              loading="lazy"
+            />
+            <a
+              href="/api/login"
+              aria-label={audienceTab === "owners" ? "Get started as an owner" : "Get started as a tenant"}
+              className="absolute z-10 rounded-[14px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+              style={{ left: "13%", width: "72%", top: audienceTab === "owners" ? "49%" : "54%", height: audienceTab === "owners" ? "7.2%" : "6.6%" }}
+            />
+          </div>
+          <div className="hidden" aria-hidden="true">
           <div
             className="audience-panel relative overflow-hidden rounded-[34px]"
             data-audience={audienceTab}
@@ -319,6 +334,7 @@ export default function LandingPage() {
               </div>
 
             </div>
+          </div>
           </div>
 
         </div>
