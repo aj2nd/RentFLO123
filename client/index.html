@@ -172,7 +172,7 @@
       /* On scroll, dock the wordmark to the top edge without changing its
          initial position on public pages. */
       .i18n-header.glass .logo-left {
-        top: max(0px, env(safe-area-inset-top));
+        top: env(safe-area-inset-top, 0px);
       }
 
       .i18n-header .right-controls {
@@ -351,9 +351,6 @@
           padding-top: env(safe-area-inset-top);
           min-height: 68px;
         }
-        .i18n-header.landing-header .logo-left {
-          top: clamp(126px, 15svh, 164px);
-        }
         .language-select {
           padding: 7px 28px 7px 12px;
           font-size: 11px;
@@ -426,11 +423,14 @@
         var GLASS_THRESHOLD = 40;
 
         function updateGlass() {
-          var scrolled = window.scrollY > GLASS_THRESHOLD;
+          var scrollTop = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
+          var scrolled = scrollTop > GLASS_THRESHOLD;
           if (header) header.classList.toggle('glass', scrolled);
         }
 
         window.addEventListener('scroll', updateGlass, { passive: true });
+        document.addEventListener('scroll', updateGlass, { passive: true });
+        window.addEventListener('pageshow', updateGlass, { passive: true });
         updateGlass();
 
         // Listen for browser back/forward navigation
