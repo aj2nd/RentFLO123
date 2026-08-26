@@ -461,14 +461,45 @@
         // Dock the landing wordmark at the very first positive scroll pixel.
         var GLASS_THRESHOLD = 0;
 
+        var touchStartY = 0;
+
+        function getScrollTop() {
+          return Math.max(
+            window.scrollY || 0,
+            document.documentElement.scrollTop || 0,
+            document.body.scrollTop || 0,
+            (document.scrollingElement && document.scrollingElement.scrollTop) || 0
+          );
+        }
+
         function updateGlass() {
-          var scrollTop = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
+          var scrollTop = getScrollTop();
           var scrolled = scrollTop > GLASS_THRESHOLD;
           if (header) header.classList.toggle('glass', scrolled);
         }
 
+        function onLandingTouchStart(event) {
+          var touch = event.touches && event.touches[0];
+          touchStartY = touch ? touch.clientY : 0;
+          updateGlass();
+        }
+
+        function onLandingTouchMove(event) {
+          var touch = event.touches && event.touches[0];
+          if (!touch || window.location.pathname !== '/') return;
+          if (touchStartY - touch.clientY > 1 && header) header.classList.add('glass');
+        }
+
+        function onLandingTouchEnd() {
+          requestAnimationFrame(updateGlass);
+        }
+
         window.addEventListener('scroll', updateGlass, { passive: true });
         document.addEventListener('scroll', updateGlass, { passive: true });
+        window.addEventListener('touchstart', onLandingTouchStart, { passive: true });
+        window.addEventListener('touchmove', onLandingTouchMove, { passive: true });
+        window.addEventListener('touchend', onLandingTouchEnd, { passive: true });
+        window.addEventListener('touchcancel', onLandingTouchEnd, { passive: true });
         window.addEventListener('pageshow', updateGlass, { passive: true });
         updateGlass();
 
