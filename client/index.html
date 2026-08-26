@@ -178,6 +178,12 @@
         filter: brightness(0) invert(1) drop-shadow(0 0 10px rgba(255, 255, 255, 0.22));
       }
 
+      /* Authenticated and utility pages render their own navigation branding;
+         never add a second global wordmark above those page layouts. */
+      body.route-no-global-header .i18n-header {
+        display: none !important;
+      }
+
       /* On scroll, dock the wordmark to the top edge without changing its
          initial position on public pages. */
       .i18n-header.glass .logo-left {
@@ -417,14 +423,15 @@
           var headerEl = document.querySelector('.i18n-header');
           var loginBar = document.getElementById('login-bar');
 
-          // Only show the header on public (non-authenticated) pages
-           var isPublic = PUBLIC_PATHS.includes(path);
-           // Keep the minimal wordmark header visible on all public pages,
-           // including the landing page.
-            if (headerEl) {
-              headerEl.style.display = isPublic ? '' : 'none';
-              headerEl.classList.toggle('landing-header', path === '/');
-            }
+          // The landing page owns the public browser header. All other
+          // routes own their navigation branding and must not get a second mark.
+          var isLanding = path === '/';
+          var isPublic = PUBLIC_PATHS.includes(path);
+          if (headerEl) {
+            headerEl.style.display = isPublic ? '' : 'none';
+            headerEl.classList.toggle('landing-header', isLanding);
+          }
+          document.body.classList.toggle('route-no-global-header', !isLanding);
 
           // Show the login sub-bar only on the exact landing page
           if (loginBar) loginBar.style.display = (path === '/') ? 'flex' : 'none';
