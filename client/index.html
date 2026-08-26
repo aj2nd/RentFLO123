@@ -463,6 +463,7 @@
 
         // ── Scroll-triggered liquid glass ───────────────────────────────────
         var header = document.querySelector('.i18n-header');
+        var logoLeft = header ? header.querySelector('.logo-left') : null;
         var loginBar = document.getElementById('login-bar');
         // Dock the landing wordmark at the very first positive scroll pixel.
         var GLASS_THRESHOLD = 0;
@@ -479,11 +480,33 @@
           );
         }
 
+        function setDockedLandingWordmark(docked) {
+          if (!header || !logoLeft) return;
+          header.classList.toggle('glass', docked);
+
+          // The landing header needs an element-level dock because mobile
+          // Safari can retain a responsive hero offset after a class change.
+          if (!header.classList.contains('landing-header')) return;
+          if (docked) {
+            logoLeft.style.setProperty('position', 'fixed', 'important');
+            logoLeft.style.setProperty('top', '0px', 'important');
+            logoLeft.style.setProperty('left', '50%', 'important');
+            logoLeft.style.setProperty('transform', 'translateX(-50%)', 'important');
+            logoLeft.style.setProperty('z-index', '10000', 'important');
+          } else {
+            logoLeft.style.removeProperty('position');
+            logoLeft.style.removeProperty('top');
+            logoLeft.style.removeProperty('left');
+            logoLeft.style.removeProperty('transform');
+            logoLeft.style.removeProperty('z-index');
+          }
+        }
+
         function updateGlass() {
           var scrollTop = getScrollTop();
           if (scrollTop > GLASS_THRESHOLD) touchDockPending = false;
           var scrolled = scrollTop > GLASS_THRESHOLD || touchDockPending;
-          if (header) header.classList.toggle('glass', scrolled);
+          setDockedLandingWordmark(scrolled);
         }
 
         function onLandingTouchStart(event) {
@@ -498,7 +521,7 @@
           if (!touch || !header || !header.classList.contains('landing-header')) return;
           if (touchStartY - touch.clientY > 1) {
             touchDockPending = true;
-            header.classList.add('glass');
+            setDockedLandingWordmark(true);
           }
         }
 
