@@ -390,8 +390,17 @@
 }
 
 @media (max-width: 640px) {
+  /* The supplied landing artwork is portrait. Containing it at its native
+     ratio prevents iPhone and Home Screen modes from cropping the Login edge. */
+  .rentflo-hero {
+    height: auto;
+    min-height: 0;
+    aspect-ratio: 941 / 1672;
+  }
+
   .rentflo-hero-image {
-    object-position: 50% center;
+    object-fit: contain;
+    object-position: center top;
   }
 
   .rentflo-hero-hotspot {
