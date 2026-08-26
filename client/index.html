@@ -375,17 +375,23 @@
           font-size: 11px;
           min-height: 34px;
         }
-        /* iPhone browser landing view: center the wordmark in the user-supplied
-           reference band between the hero navigation and Tenant/Owner controls. */
+        /* iPhone browser landing view: align the wordmark center to the moon
+           while keeping it in the clear band above the audience controls. */
         .i18n-header.landing-header:not(.glass) .logo-left {
-          top: clamp(118px, 15svh, 128px);
+          top: clamp(68px, 8.25svh, 82px);
         }
 
         /* The landing hero is the reliable page marker after React route
            rendering. This keeps the same target position even if the header
            route class is attached a moment later. */
         body:has(.rentflo-hero) .i18n-header:not(.glass) .logo-left {
-          top: clamp(118px, 15svh, 128px);
+          top: clamp(68px, 8.25svh, 82px);
+        }
+
+        /* 34px × 1.25 = 42.5px. Keep the enlargement on the unscrolled
+           landing page only; the compact scrolled header remains unchanged. */
+        body:has(.rentflo-hero) .i18n-header:not(.glass) .logo-wordmark {
+          height: 42.5px;
         }
       }
     </style>
