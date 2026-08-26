@@ -458,7 +458,8 @@
         // ── Scroll-triggered liquid glass ───────────────────────────────────
         var header = document.querySelector('.i18n-header');
         var loginBar = document.getElementById('login-bar');
-        var GLASS_THRESHOLD = 40;
+        // Dock the landing wordmark at the very first positive scroll pixel.
+        var GLASS_THRESHOLD = 0;
 
         function updateGlass() {
           var scrollTop = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
