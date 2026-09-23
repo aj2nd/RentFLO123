@@ -28,12 +28,15 @@
 
 @media (min-width: 641px) {
   .rentflo-hero {
+    height: auto;
+    min-height: 0;
+    aspect-ratio: 1671 / 941;
     background: #050812;
   }
 
   .rentflo-hero-image {
-    /* The supplied artwork is portrait. Desktop must show the complete
-       screenshot-style composition instead of cropping it with `cover`. */
+    /* The supplied desktop artwork matches this container ratio, so the
+       complete custom-sized composition fills the first viewport. */
     z-index: 0;
     width: 100%;
     max-width: none;
@@ -52,7 +55,7 @@
      This changes only desktop/tablet positioning; mobile remains untouched. */
   .rentflo-hero-hotspots {
     left: 50%;
-    width: min(100%, calc(100svh * 941 / 1672));
+    width: 100%;
     transform: translateX(-50%);
   }
 

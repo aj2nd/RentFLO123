@@ -31,11 +31,14 @@ export default function LandingPage() {
 
       {/* ── New cinematic hero ───────────────────────────────────────────── */}
       <main className="rentflo-hero">
-        <img
-          src="/rentflo-home-hero.png"
-          alt="RentFLO flexible rent payments for tenants and upfront rent collection for owners"
-          className="rentflo-hero-image"
-        />
+        <picture>
+          <source media="(min-width: 641px)" srcSet="/rentflo-home-hero-desktop.png" />
+          <img
+            src="/rentflo-home-hero.png"
+            alt="RentFLO flexible rent payments for tenants and upfront rent collection for owners"
+            className="rentflo-hero-image"
+          />
+        </picture>
         <div className="rentflo-hero-scrim" />
         <div className="rentflo-hero-hotspots" aria-label="RentFLO navigation">
           <a href="/about" className="rentflo-hero-hotspot rentflo-hero-hotspot-about" aria-label="About RentFLO" />
