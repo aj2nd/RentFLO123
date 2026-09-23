@@ -32,6 +32,10 @@
   }
 
   .rentflo-hero-image {
+    /* The hero isolates its stacking context. Keep the artwork above the
+       opaque fallback background on desktop, while preserving the mobile
+       stacking and composition exactly as-is. */
+    z-index: 0;
     width: 100%;
     max-width: none;
     left: 0;
@@ -39,6 +43,10 @@
     transform: none;
     object-fit: cover;
     object-position: center top;
+  }
+
+  .rentflo-hero-scrim {
+    z-index: 1;
   }
 
   /* The source artwork scales from its width on desktop, so these controls
