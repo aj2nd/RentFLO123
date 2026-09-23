@@ -26,22 +26,21 @@
   object-position: center center;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 641px) {
   .rentflo-hero {
     background: #050812;
   }
 
   .rentflo-hero-image {
-    /* The hero isolates its stacking context. Keep the artwork above the
-       opaque fallback background on desktop, while preserving the mobile
-       stacking and composition exactly as-is. */
+    /* The supplied artwork is portrait. Desktop must show the complete
+       screenshot-style composition instead of cropping it with `cover`. */
     z-index: 0;
     width: 100%;
     max-width: none;
     left: 0;
     right: 0;
     transform: none;
-    object-fit: cover;
+    object-fit: contain;
     object-position: center top;
   }
 
@@ -49,50 +48,56 @@
     z-index: 1;
   }
 
-  /* The source artwork scales from its width on desktop, so these controls
-     follow the artwork instead of using the mobile percentage positions. */
+  /* Keep the hit areas on the same centered, contained artwork as the image.
+     This changes only desktop/tablet positioning; mobile remains untouched. */
+  .rentflo-hero-hotspots {
+    left: 50%;
+    width: min(100%, calc(100svh * 941 / 1672));
+    transform: translateX(-50%);
+  }
+
   .rentflo-hero-hotspot-about,
   .rentflo-hero-hotspot-how,
   .rentflo-hero-hotspot-contact,
   .rentflo-hero-hotspot-login {
-    top: clamp(70px, 7.9vw, 150px);
-    height: clamp(42px, 4.8vw, 78px);
+    top: 4%;
+    height: 4%;
   }
 
   .rentflo-hero-hotspot-about {
-    left: 31%;
-    width: 13%;
-  }
-
-  .rentflo-hero-hotspot-how {
-    left: 46%;
-    width: 16%;
-  }
-
-  .rentflo-hero-hotspot-contact {
-    left: 66%;
+    left: 28%;
     width: 14%;
   }
 
+  .rentflo-hero-hotspot-how {
+    left: 45%;
+    width: 15%;
+  }
+
+  .rentflo-hero-hotspot-contact {
+    left: 62%;
+    width: 13%;
+  }
+
   .rentflo-hero-hotspot-login {
-    right: 3%;
-    width: 17%;
+    right: 4%;
+    width: 16%;
   }
 
   .rentflo-hero-hotspot-tenant,
   .rentflo-hero-hotspot-owner {
-    top: clamp(360px, 40.9vw, 760px);
-    height: clamp(78px, 10vw, 150px);
+    top: 22.8%;
+    height: 5.2%;
   }
 
   .rentflo-hero-hotspot-tenant {
     left: 10%;
-    width: 30%;
+    width: 27%;
   }
 
   .rentflo-hero-hotspot-owner {
     right: 10%;
-    width: 32%;
+    width: 27%;
   }
 }
 
