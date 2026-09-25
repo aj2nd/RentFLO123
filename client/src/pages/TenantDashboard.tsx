@@ -12,6 +12,7 @@ import { PayRentButton } from "@/components/PayRentButton";
 import { LegalFooter } from "@/components/LegalFooter";
 import type { Agreement, User } from "@shared/schema";
 import tenantDashboardArtwork from "@assets/rentflo-tenant-dashboard-embedded-nav-reference.png";
+import tenantDashboardDesktopArtwork from "@assets/rentflo-tenant-dashboard-desktop-reference.png";
 
 const RENTFLO_VPA = "8891266898-3@ybl";
 type AmountChoice = "full" | "half" | "custom" | "other";
@@ -71,9 +72,12 @@ export default function TenantDashboard() {
   const tenantName = user?.firstName || currentUser?.firstName || "Tenant";
 
   return <main className="dashboard-tenant bg-[#061427] text-white">
-    <div className="mx-auto w-full max-w-[640px] px-0 sm:px-5 sm:py-5">
-      <section className="relative aspect-[853/1844] w-full overflow-hidden sm:rounded-[30px] sm:shadow-[0_28px_80px_rgba(0,0,0,0.55)]" aria-label={`RentFLO tenant payment dashboard for ${tenantName}`}>
-        <img src={tenantDashboardArtwork} alt="RentFLO tenant payment dashboard" className="pointer-events-none absolute inset-0 h-full w-full select-none object-contain" draggable={false} />
+    <div className="tenant-dashboard-shell mx-auto w-full max-w-[640px] px-0 sm:px-5 sm:py-5">
+      <section className="tenant-dashboard-art relative aspect-[853/1844] w-full overflow-hidden sm:rounded-[30px] sm:shadow-[0_28px_80px_rgba(0,0,0,0.55)]" aria-label={`RentFLO tenant payment dashboard for ${tenantName}`}>
+        <picture>
+          <source media="(min-width: 768px)" srcSet={tenantDashboardDesktopArtwork} />
+          <img src={tenantDashboardArtwork} alt="RentFLO tenant payment dashboard" className="pointer-events-none absolute inset-0 h-full w-full select-none object-contain" draggable={false} />
+        </picture>
         <label className="absolute left-[8.4%] top-[62.68%] z-30 flex h-[2.4%] w-[22.1%] min-w-0 items-center gap-1 overflow-hidden px-1 text-[clamp(12px,3.1vw,20px)] font-semibold text-white" aria-label="Total monthly rent in Indian rupees">
           <span className="shrink-0" aria-hidden>₹</span>
           {!monthlyRentInput && <span data-testid="rent-dash-placeholder" className="pointer-events-none absolute left-[24%] right-[5%] top-1/2 flex -translate-y-1/2 items-center justify-between" aria-hidden>{Array.from({ length: 5 }, (_, index) => <span key={index} className="h-[2px] w-[15%] rounded-full bg-white" />)}</span>}

@@ -1205,3 +1205,214 @@
     padding-bottom: max(1.25rem, env(safe-area-inset-bottom, 0px));
   }
 }
+
+/* The tenant dashboard has a separate wide desktop artwork. Keep the
+   portrait artwork, container ratio, and interaction percentages unchanged
+   below the desktop breakpoint. */
+@media (min-width: 768px) {
+  .dashboard-tenant .tenant-dashboard-shell {
+    max-width: none;
+    padding: 0;
+  }
+
+  .dashboard-tenant .tenant-dashboard-art {
+    aspect-ratio: 1672 / 941;
+    max-width: 1672px;
+    margin-inline: auto;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .dashboard-tenant .tenant-dashboard-art picture,
+  .dashboard-tenant .tenant-dashboard-art picture img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .dashboard-tenant .tenant-dashboard-art > [aria-label="Open navigation"] {
+    left: 3% !important;
+    top: 2.8% !important;
+    width: 8% !important;
+    height: 7% !important;
+  }
+
+  .dashboard-tenant .tenant-dashboard-art > [aria-label="View notifications"] {
+    right: 3.2% !important;
+    top: 2.8% !important;
+    width: 6% !important;
+    height: 7% !important;
+  }
+
+  .dashboard-tenant .tenant-dashboard-art > [aria-label="KYC verification"],
+  .dashboard-tenant .tenant-dashboard-art > [aria-label="Agreement signing"],
+  .dashboard-tenant .tenant-dashboard-art > [aria-label="Pay rent stage"] {
+    top: 11% !important;
+    height: 13% !important;
+  }
+
+  .dashboard-tenant .tenant-dashboard-art > [aria-label="KYC verification"] {
+    left: 25% !important;
+    width: 17% !important;
+  }
+
+  .dashboard-tenant .tenant-dashboard-art > [aria-label="Agreement signing"] {
+    left: 43% !important;
+    width: 17% !important;
+  }
+
+  .dashboard-tenant .tenant-dashboard-art > [aria-label="Pay rent stage"] {
+    left: 61% !important;
+    width: 17% !important;
+  }
+
+  .dashboard-tenant .tenant-dashboard-art > [aria-label="Total monthly rent in Indian rupees"] {
+    left: 10% !important;
+    top: 65% !important;
+    width: 35% !important;
+    height: 6% !important;
+  }
+
+  .dashboard-tenant .tenant-dashboard-art > [aria-label="Select due date in the current month"] {
+    left: 56% !important;
+    top: 64% !important;
+    width: 28% !important;
+    height: 7% !important;
+  }
+
+  .dashboard-tenant .tenant-dashboard-art > [aria-label^="Choose "][aria-label$="rent amount"] {
+    top: 77% !important;
+    height: 9% !important;
+  }
+
+  .dashboard-tenant .tenant-dashboard-art > [aria-label="Choose full rent amount"] { left: 10% !important; width: 21% !important; }
+  .dashboard-tenant .tenant-dashboard-art > [aria-label="Choose half rent amount"] { left: 33% !important; width: 21% !important; }
+  .dashboard-tenant .tenant-dashboard-art > [aria-label="Choose custom rent amount"] { left: 56% !important; width: 21% !important; }
+  .dashboard-tenant .tenant-dashboard-art > [aria-label="Choose other rent amount"] { left: 79% !important; width: 11% !important; }
+
+  .dashboard-tenant .tenant-dashboard-art > [aria-label^="Choose Apple Pay"],
+  .dashboard-tenant .tenant-dashboard-art > [aria-label="Choose UPI"],
+  .dashboard-tenant .tenant-dashboard-art > [aria-label="Choose PhonePe"],
+  .dashboard-tenant .tenant-dashboard-art > [aria-label="Choose Google Pay"],
+  .dashboard-tenant .tenant-dashboard-art > [aria-label="Choose Paytm"] {
+    top: 64% !important;
+    height: 9% !important;
+  }
+
+  .dashboard-tenant .tenant-dashboard-art > [aria-label="Choose Apple Pay"] { left: 58% !important; width: 7% !important; }
+  .dashboard-tenant .tenant-dashboard-art > [aria-label="Choose UPI"] { left: 66% !important; width: 7% !important; }
+  .dashboard-tenant .tenant-dashboard-art > [aria-label="Choose PhonePe"] { left: 74% !important; width: 7% !important; }
+  .dashboard-tenant .tenant-dashboard-art > [aria-label="Choose Google Pay"] { left: 82% !important; width: 7% !important; }
+  .dashboard-tenant .tenant-dashboard-art > [aria-label="Choose Paytm"] { left: 90% !important; width: 7% !important; }
+
+  .dashboard-tenant .tenant-dashboard-art > [aria-label="Continue to secure rent payment"] {
+    left: 58% !important;
+    top: 76% !important;
+    width: 30% !important;
+    height: 9% !important;
+  }
+
+  .dashboard-tenant .tenant-dashboard-art > [aria-label="Home navigation"],
+  .dashboard-tenant .tenant-dashboard-art > [aria-label="Ledger navigation"],
+  .dashboard-tenant .tenant-dashboard-art > [aria-label="Repairs navigation"],
+  .dashboard-tenant .tenant-dashboard-art > [aria-label="Messages navigation"],
+  .dashboard-tenant .tenant-dashboard-art > [aria-label="Profile navigation"] {
+    top: 89% !important;
+    height: 9% !important;
+    width: 14% !important;
+  }
+
+  .dashboard-tenant .tenant-dashboard-art > [aria-label="Home navigation"] { left: 10% !important; }
+  .dashboard-tenant .tenant-dashboard-art > [aria-label="Ledger navigation"] { left: 27% !important; }
+  .dashboard-tenant .tenant-dashboard-art > [aria-label="Repairs navigation"] { left: 44% !important; }
+  .dashboard-tenant .tenant-dashboard-art > [aria-label="Messages navigation"] { left: 61% !important; }
+  .dashboard-tenant .tenant-dashboard-art > [aria-label="Profile navigation"] { left: 78% !important; }
+
+  .dashboard-owner .owner-dashboard-shell {
+    max-width: none;
+    padding: 0;
+  }
+
+  .dashboard-owner .owner-dashboard-art {
+    aspect-ratio: 1671 / 941;
+    max-width: 1671px;
+    margin-inline: auto;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .dashboard-owner .owner-dashboard-art picture,
+  .dashboard-owner .owner-dashboard-art picture img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .dashboard-owner .owner-dashboard-art > [aria-label="Open owner navigation"] {
+    left: 5% !important;
+    top: 2.5% !important;
+    width: 8% !important;
+    height: 7% !important;
+  }
+
+  .dashboard-owner .owner-dashboard-art > [aria-label="View owner notifications"] {
+    left: 80% !important;
+    top: 2.5% !important;
+    width: 8% !important;
+    height: 7% !important;
+  }
+
+  .dashboard-owner .owner-dashboard-art > [aria-label="Complete owner KYC"],
+  .dashboard-owner .owner-dashboard-art > [aria-label="Sign owner agreement"],
+  .dashboard-owner .owner-dashboard-art > [aria-label="Review rent collection"] {
+    top: 9% !important;
+    height: 14% !important;
+  }
+
+  .dashboard-owner .owner-dashboard-art > [aria-label="Complete owner KYC"] { left: 18% !important; width: 20% !important; }
+  .dashboard-owner .owner-dashboard-art > [aria-label="Sign owner agreement"] { left: 41% !important; width: 20% !important; }
+  .dashboard-owner .owner-dashboard-art > [aria-label="Review rent collection"] { left: 64% !important; width: 20% !important; }
+
+  .dashboard-owner .owner-dashboard-art > [aria-label="Open upcoming payout details"] {
+    left: 31% !important;
+    top: 25% !important;
+    width: 38% !important;
+    height: 42% !important;
+  }
+
+  .dashboard-owner .owner-dashboard-art > [aria-label="View all owner collection details"] {
+    left: 62% !important;
+    top: 47% !important;
+    width: 9% !important;
+    height: 5% !important;
+  }
+
+  .dashboard-owner .owner-dashboard-art > [aria-label="View active tenants"],
+  .dashboard-owner .owner-dashboard-art > [aria-label="View rent collected this month"],
+  .dashboard-owner .owner-dashboard-art > [aria-label="View total rent collected"] {
+    top: 50% !important;
+    height: 15% !important;
+  }
+
+  .dashboard-owner .owner-dashboard-art > [aria-label="View active tenants"] { left: 32% !important; width: 10% !important; }
+  .dashboard-owner .owner-dashboard-art > [aria-label="View rent collected this month"] { left: 44% !important; width: 10% !important; }
+  .dashboard-owner .owner-dashboard-art > [aria-label="View total rent collected"] { left: 56% !important; width: 12% !important; }
+
+  .dashboard-owner .owner-dashboard-art > [aria-label="Owner home"],
+  .dashboard-owner .owner-dashboard-art > [aria-label="Open owner ledger"],
+  .dashboard-owner .owner-dashboard-art > [aria-label="Open repairs"],
+  .dashboard-owner .owner-dashboard-art > [aria-label="Open owner messages"],
+  .dashboard-owner .owner-dashboard-art > [aria-label="Open owner profile"] {
+    top: 87% !important;
+    height: 11% !important;
+    width: 14% !important;
+  }
+
+  .dashboard-owner .owner-dashboard-art > [aria-label="Owner home"] { left: 22% !important; }
+  .dashboard-owner .owner-dashboard-art > [aria-label="Open owner ledger"] { left: 35% !important; }
+  .dashboard-owner .owner-dashboard-art > [aria-label="Open repairs"] { left: 48% !important; }
+  .dashboard-owner .owner-dashboard-art > [aria-label="Open owner messages"] { left: 61% !important; }
+  .dashboard-owner .owner-dashboard-art > [aria-label="Open owner profile"] { left: 74% !important; }
+}

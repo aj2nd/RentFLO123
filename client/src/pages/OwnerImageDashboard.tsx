@@ -5,6 +5,7 @@
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import ownerDashboardArtwork from "@assets/rentflo-owner-dashboard-corrected-reference.jpeg";
+import ownerDashboardDesktopArtwork from "@assets/rentflo-owner-dashboard-desktop-reference.png";
 import { useSidebar } from "@/contexts/SidebarContext";
 import type { Agreement, User } from "@shared/schema";
 
@@ -21,9 +22,12 @@ export default function OwnerImageDashboard() {
 
   return (
     <main className="dashboard-owner bg-[#020812] text-white">
-      <div className="mx-auto w-full max-w-[640px] px-0 sm:px-5 sm:py-5">
-        <section className="relative aspect-[822/1735] w-full overflow-hidden sm:rounded-[30px] sm:shadow-[0_28px_80px_rgba(0,0,0,0.55)]" aria-label="RentFLO owner dashboard">
-          <img src={ownerDashboardArtwork} alt="RentFLO owner dashboard" className="pointer-events-none absolute inset-0 h-full w-full select-none object-contain" draggable={false} />
+      <div className="owner-dashboard-shell mx-auto w-full max-w-[640px] px-0 sm:px-5 sm:py-5">
+        <section className="owner-dashboard-art relative aspect-[822/1735] w-full overflow-hidden sm:rounded-[30px] sm:shadow-[0_28px_80px_rgba(0,0,0,0.55)]" aria-label="RentFLO owner dashboard">
+          <picture>
+            <source media="(min-width: 768px)" srcSet={ownerDashboardDesktopArtwork} />
+            <img src={ownerDashboardArtwork} alt="RentFLO owner dashboard" className="pointer-events-none absolute inset-0 h-full w-full select-none object-contain" draggable={false} />
+          </picture>
           {completeKyc && <span data-testid="owner-kyc-complete" className="pointer-events-none absolute left-[16.8%] top-[12.8%] z-30 flex h-[2.8%] w-[5.8%] items-center justify-center rounded-full border border-white/80 bg-emerald-500 text-[clamp(9px,2.4vw,15px)] font-black leading-none text-white shadow-[0_0_14px_rgba(16,185,129,0.9)]" aria-label="KYC completed">✓</span>}
           {completeKyc && !agreementSigned && <span data-testid="owner-agreement-next" className="pointer-events-none absolute left-[29.6%] top-[10.8%] z-10 h-[7.6%] w-[25%] rounded-2xl border-2 border-violet-300/90 bg-violet-400/[0.14] shadow-[inset_0_0_24px_rgba(196,181,253,0.33),0_0_18px_rgba(139,92,246,0.62)]" aria-label="Sign Agreement is the next required step" />}
 
